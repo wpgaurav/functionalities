@@ -1,0 +1,12 @@
+.func-fs-wrap{position:relative}
+.func-fs-btn{margin:4px 0}
+.func-fs-active{z-index:100000}
+html.func-fs-open,html.func-fs-open body{overflow:hidden}
+.func-fs-active textarea{
+  position:fixed !important;left:0;top:0;width:100vw;height:100vh;
+  z-index:100001;background:#0b1020;color:#e2e8f0;border:0;border-radius:0;
+  padding:16px;font-size:16px;line-height:1.5;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+}
+.func-fs-active .func-fs-close{
+  position:fixed;right:16px;top:16px;z-index:100002;
+}
