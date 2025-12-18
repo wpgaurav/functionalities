@@ -33,6 +33,38 @@ class Admin {
 		\add_action( 'admin_menu', array( __CLASS__, 'register_menu' ) );
 		\add_action( 'admin_init', array( __CLASS__, 'register_settings' ) );
 		\add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_admin_assets' ) );
+
+		// AJAX handler for database update tool.
+		\add_action( 'wp_ajax_functionalities_update_database', array( __CLASS__, 'ajax_update_database' ) );
+	}
+
+	/**
+	 * AJAX handler for database update tool.
+	 *
+	 * @return void
+	 */
+	public static function ajax_update_database() : void {
+		// Verify nonce.
+		if ( ! isset( $_POST['nonce'] ) || ! \wp_verify_nonce( $_POST['nonce'], 'functionalities_db_update' ) ) {
+			\wp_send_json_error( array( 'message' => \__( 'Security check failed.', 'functionalities' ) ) );
+		}
+
+		// Check capabilities.
+		if ( ! \current_user_can( 'manage_options' ) ) {
+			\wp_send_json_error( array( 'message' => \__( 'Insufficient permissions.', 'functionalities' ) ) );
+		}
+
+		// Get URL from request.
+		$url = isset( $_POST['url'] ) ? \sanitize_text_field( $_POST['url'] ) : '';
+
+		// Call the update method.
+		$result = \Functionalities\Features\Link_Management::update_links_in_database( $url );
+
+		if ( $result['success'] ) {
+			\wp_send_json_success( $result );
+		} else {
+			\wp_send_json_error( $result );
+		}
 	}
 
 	/**
@@ -291,6 +323,29 @@ class Admin {
 			'internal_new_tab_exceptions',
 			\__( 'Internal new-tab exceptions (domains)', 'functionalities' ),
 			array( __CLASS__, 'field_internal_new_tab_exceptions' ),
+			'functionalities_link_management',
+			'functionalities_link_management_section'
+		);
+
+		// GT Nofollow Manager features.
+		\add_settings_field(
+			'json_preset_url',
+			\__( 'JSON Preset File Path', 'functionalities' ),
+			array( __CLASS__, 'field_json_preset_url' ),
+			'functionalities_link_management',
+			'functionalities_link_management_section'
+		);
+		\add_settings_field(
+			'enable_developer_filters',
+			\__( 'Enable Developer Filters', 'functionalities' ),
+			array( __CLASS__, 'field_enable_developer_filters' ),
+			'functionalities_link_management',
+			'functionalities_link_management_section'
+		);
+		\add_settings_field(
+			'database_update_tool',
+			\__( 'Database Update Tool', 'functionalities' ),
+			array( __CLASS__, 'field_database_update_tool' ),
 			'functionalities_link_management',
 			'functionalities_link_management_section'
 		);
@@ -855,6 +910,96 @@ class Admin {
 	}
 
 	/**
+	 * Render JSON preset URL field.
+	 *
+	 * @return void
+	 */
+	public static function field_json_preset_url() : void {
+		$opts = self::get_link_management_options();
+		$val  = isset( $opts['json_preset_url'] ) ? (string) $opts['json_preset_url'] : '';
+		echo '<input type="text" class="regular-text code" name="functionalities_link_management[json_preset_url]" value="' . \esc_attr( $val ) . '" placeholder="' . \esc_attr( FUNCTIONALITIES_DIR . 'exception-urls.json' ) . '" />';
+		echo '<p class="description">' . \esc_html__( 'Optional: Path to JSON file containing exception URLs. Format: {"urls": ["https://example.com"]}', 'functionalities' ) . '</p>';
+		echo '<p class="description">' . \esc_html__( 'Filter available: functionalities_json_preset_path', 'functionalities' ) . '</p>';
+	}
+
+	/**
+	 * Render enable developer filters field.
+	 *
+	 * @return void
+	 */
+	public static function field_enable_developer_filters() : void {
+		$opts    = self::get_link_management_options();
+		$checked = ! empty( $opts['enable_developer_filters'] ) ? 'checked' : '';
+		echo '<label><input type="checkbox" name="functionalities_link_management[enable_developer_filters]" value="1" ' . $checked . '> ';
+		echo \esc_html__( 'Enable developer filters for exception customization', 'functionalities' ) . '</label>';
+		echo '<p class="description">' . \esc_html__( 'Available filters: functionalities_exception_domains, functionalities_exception_urls, gtnf_exception_domains (legacy), gtnf_exception_urls (legacy)', 'functionalities' ) . '</p>';
+	}
+
+	/**
+	 * Render database update tool field.
+	 *
+	 * @return void
+	 */
+	public static function field_database_update_tool() : void {
+		?>
+		<div class="functionalities-db-tool">
+			<p class="description">
+				<?php echo \esc_html__( 'Bulk add nofollow to a specific URL across all posts in the database. Use with caution!', 'functionalities' ); ?>
+			</p>
+			<input type="text" id="functionalities_db_url" class="regular-text code" placeholder="https://example.com/page" />
+			<button type="button" id="functionalities_db_update_btn" class="button button-secondary">
+				<?php echo \esc_html__( 'Update Database', 'functionalities' ); ?>
+			</button>
+			<div id="functionalities_db_result" style="margin-top: 10px;"></div>
+			<script>
+			jQuery(document).ready(function($) {
+				$('#functionalities_db_update_btn').on('click', function() {
+					var url = $('#functionalities_db_url').val().trim();
+					var $btn = $(this);
+					var $result = $('#functionalities_db_result');
+
+					if (!url) {
+						$result.html('<div class="notice notice-error"><p><?php echo \esc_js( \__( 'Please enter a URL.', 'functionalities' ) ); ?></p></div>');
+						return;
+					}
+
+					if (!confirm('<?php echo \esc_js( \__( 'This will update all posts containing this URL. Are you sure?', 'functionalities' ) ); ?>')) {
+						return;
+					}
+
+					$btn.prop('disabled', true).text('<?php echo \esc_js( \__( 'Processing...', 'functionalities' ) ); ?>');
+					$result.html('<div class="notice notice-info"><p><?php echo \esc_js( \__( 'Processing...', 'functionalities' ) ); ?></p></div>');
+
+					$.ajax({
+						url: ajaxurl,
+						type: 'POST',
+						data: {
+							action: 'functionalities_update_database',
+							url: url,
+							nonce: '<?php echo \wp_create_nonce( 'functionalities_db_update' ); ?>'
+						},
+						success: function(response) {
+							if (response.success) {
+								$result.html('<div class="notice notice-success"><p>' + response.data.message + '</p></div>');
+							} else {
+								$result.html('<div class="notice notice-error"><p>' + response.data.message + '</p></div>');
+							}
+						},
+						error: function() {
+							$result.html('<div class="notice notice-error"><p><?php echo \esc_js( \__( 'An error occurred.', 'functionalities' ) ); ?></p></div>');
+						},
+						complete: function() {
+							$btn.prop('disabled', false).text('<?php echo \esc_js( \__( 'Update Database', 'functionalities' ) ); ?>');
+						}
+					});
+				});
+			});
+			</script>
+		</div>
+		<?php
+	}
+
+	/**
 	 * Render section description for block cleanup.
 	 *
 	 * @return void
@@ -870,13 +1015,15 @@ class Admin {
 	 * @return array Sanitized data.
 	 */
 	public static function sanitize_link_management( $input ) : array {
-		$out = [
-			'nofollow_external' => ! empty( $input['nofollow_external'] ),
-			'exceptions'        => '',
-			'open_external_new_tab' => ! empty( $input['open_external_new_tab'] ),
-			'open_internal_new_tab' => ! empty( $input['open_internal_new_tab'] ),
-			'internal_new_tab_exceptions' => '',
-		];
+		$out = array(
+			'nofollow_external'             => ! empty( $input['nofollow_external'] ),
+			'exceptions'                    => '',
+			'open_external_new_tab'         => ! empty( $input['open_external_new_tab'] ),
+			'open_internal_new_tab'         => ! empty( $input['open_internal_new_tab'] ),
+			'internal_new_tab_exceptions'   => '',
+			'json_preset_url'               => '',
+			'enable_developer_filters'      => ! empty( $input['enable_developer_filters'] ),
+		);
 
 		if ( isset( $input['exceptions'] ) ) {
 			$raw = (string) $input['exceptions'];
@@ -891,29 +1038,43 @@ class Admin {
 		}
 
 		if ( isset( $input['internal_new_tab_exceptions'] ) ) {
-			$raw = (string) $input['internal_new_tab_exceptions'];
+			$raw   = (string) $input['internal_new_tab_exceptions'];
 			$lines = preg_split( '/\r\n|\r|\n|,/', $raw );
-			$clean = [];
+			$clean = array();
 			foreach ( $lines as $line ) {
 				$line = trim( (string) $line );
-				if ( $line === '' ) { continue; }
+				if ( $line === '' ) {
+					continue;
+				}
 				$clean[] = \sanitize_text_field( $line );
 			}
 			$out['internal_new_tab_exceptions'] = implode( "\n", $clean );
+		}
+
+		// Sanitize JSON preset URL.
+		if ( isset( $input['json_preset_url'] ) ) {
+			$out['json_preset_url'] = \sanitize_text_field( (string) $input['json_preset_url'] );
 		}
 
 		return $out;
 	}
 
 
+	/**
+	 * Get link management options with defaults.
+	 *
+	 * @return array Link management options.
+	 */
 	public static function get_link_management_options() : array {
-		$defaults = [
-			'nofollow_external' => false,
-			'exceptions' => '',
-			'open_external_new_tab' => false,
-			'open_internal_new_tab' => false,
-			'internal_new_tab_exceptions' => '',
-		];
+		$defaults = array(
+			'nofollow_external'             => false,
+			'exceptions'                    => '',
+			'open_external_new_tab'         => false,
+			'open_internal_new_tab'         => false,
+			'internal_new_tab_exceptions'   => '',
+			'json_preset_url'               => '',
+			'enable_developer_filters'      => false,
+		);
 		$opts = (array) \get_option( 'functionalities_link_management', $defaults );
 		return array_merge( $defaults, $opts );
 	}

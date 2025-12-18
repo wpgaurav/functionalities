@@ -28,7 +28,13 @@ class Link_Management {
 	 * @return void
 	 */
 	public static function init() : void {
-		\add_filter( 'the_content', array( __CLASS__, 'filter_content' ), 11 );
+		// Apply to content, widgets, and comments (GT Nofollow Manager compatibility).
+		\add_filter( 'the_content', array( __CLASS__, 'filter_content' ), 999 );
+		\add_filter( 'widget_text', array( __CLASS__, 'filter_content' ), 999 );
+		\add_filter( 'comment_text', array( __CLASS__, 'filter_content' ), 999 );
+
+		// Load JSON preset if available.
+		\add_action( 'init', array( __CLASS__, 'load_json_preset' ) );
 	}
 
 	/**
@@ -37,16 +43,65 @@ class Link_Management {
 	 * @return array Options array.
 	 */
 	protected static function get_options() : array {
-		$defaults = [
-			'nofollow_external' => false,
-			'exceptions' => '',
-			'open_external_new_tab' => false,
-			'open_internal_new_tab' => false,
-			'internal_new_tab_exceptions' => '',
-		];
+		$defaults = array(
+			'nofollow_external'             => false,
+			'exceptions'                    => '',
+			'open_external_new_tab'         => false,
+			'open_internal_new_tab'         => false,
+			'internal_new_tab_exceptions'   => '',
+			'json_preset_url'               => '',
+			'enable_developer_filters'      => false,
+		);
 		$opts = (array) \get_option( 'functionalities_link_management', $defaults );
 		return array_merge( $defaults, $opts );
 	}
+
+	/**
+	 * Load JSON preset file for exceptions.
+	 *
+	 * @return void
+	 */
+	public static function load_json_preset() : void {
+		$opts = self::get_options();
+
+		// Allow developers to filter the JSON file path.
+		$json_path = \apply_filters( 'functionalities_json_preset_path', FUNCTIONALITIES_DIR . 'exception-urls.json' );
+
+		// Also check if user provided a custom URL.
+		if ( ! empty( $opts['json_preset_url'] ) ) {
+			$json_path = $opts['json_preset_url'];
+		}
+
+		// Only load if file exists.
+		if ( ! file_exists( $json_path ) || ! is_readable( $json_path ) ) {
+			return;
+		}
+
+		$json_content = file_get_contents( $json_path );
+		if ( false === $json_content ) {
+			return;
+		}
+
+		$preset = json_decode( $json_content, true );
+		if ( ! is_array( $preset ) || ! isset( $preset['urls'] ) ) {
+			return;
+		}
+
+		// Merge JSON URLs with existing exceptions.
+		$current_exceptions = self::parse_exceptions( $opts['exceptions'] );
+		$json_urls          = is_array( $preset['urls'] ) ? $preset['urls'] : array();
+		$merged             = array_unique( array_merge( $current_exceptions, $json_urls ) );
+
+		// Update option temporarily (won't persist).
+		self::$cached_exceptions = $merged;
+	}
+
+	/**
+	 * Cached exceptions for performance.
+	 *
+	 * @var array
+	 */
+	private static $cached_exceptions = array();
 
 	/**
 	 * Filter content to modify links.
@@ -142,6 +197,11 @@ class Link_Management {
 	 * @return array Array of exceptions.
 	 */
 	protected static function parse_exceptions( string $raw ) : array {
+		// Use cached if available.
+		if ( ! empty( self::$cached_exceptions ) ) {
+			return self::$cached_exceptions;
+		}
+
 		$lines = preg_split( '/\r\n|\r|\n|,/', $raw );
 		$items = array();
 		foreach ( $lines as $line ) {
@@ -151,7 +211,119 @@ class Link_Management {
 			}
 			$items[] = $line;
 		}
+
+		// Apply developer filters (GT Nofollow Manager compatibility).
+		$opts = self::get_options();
+		if ( ! empty( $opts['enable_developer_filters'] ) ) {
+			$items = \apply_filters( 'functionalities_exception_domains', $items );
+			$items = \apply_filters( 'functionalities_exception_urls', $items );
+
+			// Legacy GT Nofollow Manager filter names for backward compatibility.
+			$items = \apply_filters( 'gtnf_exception_domains', $items );
+			$items = \apply_filters( 'gtnf_exception_urls', $items );
+		}
+
 		return $items;
+	}
+
+	/**
+	 * Bulk update links in database for a specific URL.
+	 * GT Nofollow Manager compatibility feature.
+	 *
+	 * @param string $target_url The URL to add nofollow to.
+	 * @return array Results with success count and errors.
+	 */
+	public static function update_links_in_database( string $target_url ) : array {
+		global $wpdb;
+
+		$target_url = trim( $target_url );
+		if ( empty( $target_url ) ) {
+			return array(
+				'success' => false,
+				'message' => \__( 'Please provide a valid URL.', 'functionalities' ),
+			);
+		}
+
+		// Query posts containing the target URL.
+		$posts = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT ID, post_content FROM {$wpdb->posts}
+				WHERE post_content LIKE %s
+				AND post_status IN ('publish', 'draft', 'pending', 'future', 'private')
+				AND post_type NOT IN ('revision', 'nav_menu_item')",
+				'%' . $wpdb->esc_like( $target_url ) . '%'
+			)
+		);
+
+		if ( empty( $posts ) ) {
+			return array(
+				'success' => true,
+				'count'   => 0,
+				'message' => \__( 'No posts found containing this URL.', 'functionalities' ),
+			);
+		}
+
+		$updated_count = 0;
+
+		foreach ( $posts as $post ) {
+			// Process links in content.
+			$new_content = self::add_nofollow_to_url_in_content( $post->post_content, $target_url );
+
+			if ( $new_content !== $post->post_content ) {
+				$wpdb->update(
+					$wpdb->posts,
+					array( 'post_content' => $new_content ),
+					array( 'ID' => $post->ID ),
+					array( '%s' ),
+					array( '%d' )
+				);
+				\clean_post_cache( $post->ID );
+				$updated_count++;
+			}
+		}
+
+		return array(
+			'success' => true,
+			'count'   => $updated_count,
+			'message' => sprintf(
+				\__( 'Successfully updated %d post(s).', 'functionalities' ),
+				$updated_count
+			),
+		);
+	}
+
+	/**
+	 * Add nofollow to specific URL in content.
+	 *
+	 * @param string $content    Post content.
+	 * @param string $target_url URL to add nofollow to.
+	 * @return string Modified content.
+	 */
+	protected static function add_nofollow_to_url_in_content( string $content, string $target_url ) : string {
+		// Early exit if no links.
+		if ( false === strpos( $content, '<a ' ) ) {
+			return $content;
+		}
+
+		// Regex to find links with the target URL.
+		$pattern = '/<a\s+([^>]*href=["\']' . preg_quote( $target_url, '/' ) . '["\'][^>]*)>/i';
+
+		return preg_replace_callback( $pattern, function( $matches ) {
+			$tag        = $matches[0];
+			$attributes = $matches[1];
+
+			// Check if already has nofollow.
+			if ( preg_match( '/rel=["\']([^"\']*nofollow[^"\']*)["\']/i', $attributes ) ) {
+				return $tag;
+			}
+
+			// Add or append nofollow.
+			if ( preg_match( '/rel=["\']/i', $attributes ) ) {
+				return preg_replace( '/rel=["\']([^"\']*)["\']/i', 'rel="$1 nofollow"', $tag );
+			} else {
+				return str_replace( '<a ', '<a rel="nofollow" ', $tag );
+			}
+		}, $content );
 	}
 
 	/**
