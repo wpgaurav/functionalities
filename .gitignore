@@ -1,5 +1,5 @@
 # Distribution files
-*.zip
+# *.zip - allowing release zips in repo
 
 # OS files
 .DS_Store
