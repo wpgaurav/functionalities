@@ -1,6 +1,14 @@
 <?php
 /**
  * Link Management features (frontend behaviors).
+ *
+ * Provides comprehensive link management including:
+ * - Automatic nofollow for external links with exceptions
+ * - Open external/internal links in new tab
+ * - Customizable exception lists
+ * - Smart pattern matching for domains and URLs
+ *
+ * @package Functionalities\Features
  */
 
 namespace Functionalities\Features;
@@ -9,11 +17,25 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Link Management class.
+ */
 class Link_Management {
+
+	/**
+	 * Initialize link management features.
+	 *
+	 * @return void
+	 */
 	public static function init() : void {
-		\add_filter( 'the_content', [ __CLASS__, 'filter_content' ], 11 );
+		\add_filter( 'the_content', array( __CLASS__, 'filter_content' ), 11 );
 	}
 
+	/**
+	 * Get link management options.
+	 *
+	 * @return array Options array.
+	 */
 	protected static function get_options() : array {
 		$defaults = [
 			'nofollow_external' => false,
@@ -26,6 +48,12 @@ class Link_Management {
 		return array_merge( $defaults, $opts );
 	}
 
+	/**
+	 * Filter content to modify links.
+	 *
+	 * @param string $content The content to filter.
+	 * @return string Filtered content.
+	 */
 	public static function filter_content( string $content ) : string {
 		// Skip in admin, feeds, and REST requests.
 		$is_rest = \defined( 'REST_REQUEST' ) && \constant( 'REST_REQUEST' );
@@ -37,10 +65,10 @@ class Link_Management {
 			return $content;
 		}
 
-	$opts = self::get_options();
-	$exceptions = self::parse_exceptions( (string) $opts['exceptions'] );
-	$internal_ex = self::parse_exceptions( (string) $opts['internal_new_tab_exceptions'] );
-		$site_host = (string) parse_url( \home_url(), PHP_URL_HOST );
+		$opts        = self::get_options();
+		$exceptions  = self::parse_exceptions( (string) $opts['exceptions'] );
+		$internal_ex = self::parse_exceptions( (string) $opts['internal_new_tab_exceptions'] );
+		$site_host   = (string) \wp_parse_url( \home_url(), PHP_URL_HOST );
 
 		$libxml_previous = libxml_use_internal_errors( true );
 		$dom = new \DOMDocument( '1.0', 'UTF-8' );
@@ -107,17 +135,32 @@ class Link_Management {
 		return $out !== '' ? $out : $content;
 	}
 
+	/**
+	 * Parse exception list from raw text.
+	 *
+	 * @param string $raw Raw exception text (one per line or comma-separated).
+	 * @return array Array of exceptions.
+	 */
 	protected static function parse_exceptions( string $raw ) : array {
 		$lines = preg_split( '/\r\n|\r|\n|,/', $raw );
-		$items = [];
+		$items = array();
 		foreach ( $lines as $line ) {
 			$line = strtolower( trim( $line ) );
-			if ( $line === '' ) { continue; }
+			if ( $line === '' ) {
+				continue;
+			}
 			$items[] = $line;
 		}
 		return $items;
 	}
 
+	/**
+	 * Check if URL is external.
+	 *
+	 * @param string $href      The URL to check.
+	 * @param string $site_host The site's hostname.
+	 * @return bool True if external, false otherwise.
+	 */
 	protected static function is_external_url( string $href, string $site_host ) : bool {
 		$href = trim( $href );
 		if ( $href === '' ) { return false; }
@@ -139,6 +182,13 @@ class Link_Management {
 		return strcasecmp( $host, $site_host ) !== 0;
 	}
 
+	/**
+	 * Check if URL matches any exception pattern.
+	 *
+	 * @param string $href       The URL to check.
+	 * @param array  $exceptions Array of exception patterns.
+	 * @return bool True if matches exception, false otherwise.
+	 */
 	protected static function is_exception( string $href, array $exceptions ) : bool {
 		$h = strtolower( $href );
 		$host = '';

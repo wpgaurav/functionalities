@@ -1,6 +1,8 @@
 <?php
 /**
  * Admin pages and settings for Functionalities plugin.
+ *
+ * @package Functionalities\Admin
  */
 
 namespace Functionalities\Admin;
@@ -9,130 +11,226 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Admin class for managing plugin settings and UI.
+ */
 class Admin {
+
+	/**
+	 * Available modules configuration.
+	 *
+	 * @var array
+	 */
+	private static $modules = array();
+
+	/**
+	 * Initialize admin hooks.
+	 *
+	 * @return void
+	 */
 	public static function init() : void {
-		\add_action( 'admin_menu', [ __CLASS__, 'register_menu' ] );
-		\add_action( 'admin_init', [ __CLASS__, 'register_settings' ] );
+		self::define_modules();
+		\add_action( 'admin_menu', array( __CLASS__, 'register_menu' ) );
+		\add_action( 'admin_init', array( __CLASS__, 'register_settings' ) );
+		\add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_admin_assets' ) );
 	}
 
+	/**
+	 * Define available modules.
+	 *
+	 * @return void
+	 */
+	private static function define_modules() : void {
+		self::$modules = array(
+			'link-management' => array(
+				'title'       => \__( 'Link Management', 'functionalities' ),
+				'description' => \__( 'Control how external and internal links are handled.', 'functionalities' ),
+				'icon'        => 'dashicons-admin-links',
+			),
+			'block-cleanup'   => array(
+				'title'       => \__( 'Block Cleanup', 'functionalities' ),
+				'description' => \__( 'Strip block classes from frontend output.', 'functionalities' ),
+				'icon'        => 'dashicons-block-default',
+			),
+			'editor-links'    => array(
+				'title'       => \__( 'Editor Link Suggestions', 'functionalities' ),
+				'description' => \__( 'Limit link suggestions to selected post types.', 'functionalities' ),
+				'icon'        => 'dashicons-editor-unlink',
+			),
+			'misc'            => array(
+				'title'       => \__( 'Miscellaneous', 'functionalities' ),
+				'description' => \__( 'Bloat control and performance tweaks.', 'functionalities' ),
+				'icon'        => 'dashicons-admin-tools',
+			),
+			'snippets'        => array(
+				'title'       => \__( 'Header & Footer', 'functionalities' ),
+				'description' => \__( 'Add GA4, custom header and footer code.', 'functionalities' ),
+				'icon'        => 'dashicons-editor-code',
+			),
+			'schema'          => array(
+				'title'       => \__( 'Schema Settings', 'functionalities' ),
+				'description' => \__( 'Add microdata to key areas and content.', 'functionalities' ),
+				'icon'        => 'dashicons-networking',
+			),
+			'components'      => array(
+				'title'       => \__( 'Components', 'functionalities' ),
+				'description' => \__( 'Define reusable CSS components.', 'functionalities' ),
+				'icon'        => 'dashicons-layout',
+			),
+			'fonts'           => array(
+				'title'       => \__( 'Fonts', 'functionalities' ),
+				'description' => \__( 'Register custom font families.', 'functionalities' ),
+				'icon'        => 'dashicons-editor-textcolor',
+			),
+			'icons'           => array(
+				'title'       => \__( 'Icons', 'functionalities' ),
+				'description' => \__( 'Replace Font Awesome with SVG icons.', 'functionalities' ),
+				'icon'        => 'dashicons-star-filled',
+			),
+		);
+	}
+
+	/**
+	 * Register admin menu.
+	 *
+	 * @return void
+	 */
 	public static function register_menu() : void {
 		\add_menu_page(
 			\__( 'Functionalities', 'functionalities' ),
 			\__( 'Functionalities', 'functionalities' ),
 			'manage_options',
 			'functionalities',
-			[ __CLASS__, 'render_main_page' ],
+			array( __CLASS__, 'render_main_page' ),
 			'dashicons-admin-generic',
 			65
 		);
+	}
 
-		\add_submenu_page(
-			'functionalities',
-			\__( 'Link Management', 'functionalities' ),
-			\__( 'Link Management', 'functionalities' ),
-			'manage_options',
-			'functionalities-link-management',
-			[ __CLASS__, 'render_link_management' ]
+	/**
+	 * Enqueue admin assets.
+	 *
+	 * @param string $hook Current admin page hook.
+	 * @return void
+	 */
+	public static function enqueue_admin_assets( $hook ) : void {
+		if ( 'toplevel_page_functionalities' !== $hook ) {
+			return;
+		}
+
+		\wp_enqueue_style(
+			'functionalities-admin',
+			FUNCTIONALITIES_URL . 'assets/css/admin.css',
+			array(),
+			FUNCTIONALITIES_VERSION
 		);
 
-		\add_submenu_page(
-			'functionalities',
-			\__( 'Block Cleanup', 'functionalities' ),
-			\__( 'Block Cleanup', 'functionalities' ),
-			'manage_options',
-			'functionalities-block-cleanup',
-			[ __CLASS__, 'render_block_cleanup' ]
-		);
-
-		\add_submenu_page(
-			'functionalities',
-			\__( 'Editor Link Suggestions', 'functionalities' ),
-			\__( 'Editor Link Suggestions', 'functionalities' ),
-			'manage_options',
-			'functionalities-editor-links',
-			[ __CLASS__, 'render_editor_links' ]
-		);
-
-		\add_submenu_page(
-			'functionalities',
-			\__( 'Miscellaneous', 'functionalities' ),
-			\__( 'Miscellaneous', 'functionalities' ),
-			'manage_options',
-			'functionalities-misc',
-			[ __CLASS__, 'render_misc' ]
-		);
-
-		\add_submenu_page(
-			'functionalities',
-			\__( 'Header & Footer', 'functionalities' ),
-			\__( 'Header & Footer', 'functionalities' ),
-			'manage_options',
-			'functionalities-snippets',
-			[ __CLASS__, 'render_snippets' ]
-		);
-
-		\add_submenu_page(
-			'functionalities',
-			\__( 'Schema Settings', 'functionalities' ),
-			\__( 'Schema Settings', 'functionalities' ),
-			'manage_options',
-			'functionalities-schema',
-			[ __CLASS__, 'render_schema' ]
-		);
-
-		\add_submenu_page(
-			'functionalities',
-			\__( 'Components', 'functionalities' ),
-			\__( 'Components', 'functionalities' ),
-			'manage_options',
-			'functionalities-components',
-			[ __CLASS__, 'render_components' ]
-		);
-
-		\add_submenu_page(
-			'functionalities',
-			\__( 'Fonts', 'functionalities' ),
-			\__( 'Fonts', 'functionalities' ),
-			'manage_options',
-			'functionalities-fonts',
-			[ __CLASS__, 'render_fonts' ]
-		);
-
-		\add_submenu_page(
-			'functionalities',
-			\__( 'Icons', 'functionalities' ),
-			\__( 'Icons', 'functionalities' ),
-			'manage_options',
-			'functionalities-icons',
-			[ __CLASS__, 'render_icons' ]
+		\wp_enqueue_script(
+			'functionalities-admin',
+			FUNCTIONALITIES_URL . 'assets/js/admin.js',
+			array( 'jquery' ),
+			FUNCTIONALITIES_VERSION,
+			true
 		);
 	}
 
+	/**
+	 * Render main admin page with module navigation.
+	 *
+	 * @return void
+	 */
 	public static function render_main_page() : void {
 		if ( ! \current_user_can( 'manage_options' ) ) {
 			\wp_die( \esc_html__( 'Insufficient permissions', 'functionalities' ) );
 		}
-		echo '<div class="wrap">';
-		echo '<h1>' . \esc_html__( 'Functionalities', 'functionalities' ) . '</h1>';
-		echo '<p>' . \esc_html__( 'Choose a subpage to configure features.', 'functionalities' ) . '</p>';
-		echo '<ul style="margin-top:1em; list-style:disc inside;">';
-		$links = [
-			[ 'slug' => 'functionalities-link-management', 'label' => \__( 'Link Management', 'functionalities' ) ],
-			[ 'slug' => 'functionalities-block-cleanup', 'label' => \__( 'Block Cleanup', 'functionalities' ) ],
-			[ 'slug' => 'functionalities-editor-links', 'label' => \__( 'Editor Link Suggestions', 'functionalities' ) ],
-			[ 'slug' => 'functionalities-misc', 'label' => \__( 'Miscellaneous', 'functionalities' ) ],
-			[ 'slug' => 'functionalities-snippets', 'label' => \__( 'Header & Footer', 'functionalities' ) ],
-			[ 'slug' => 'functionalities-schema', 'label' => \__( 'Schema Settings', 'functionalities' ) ],
-			[ 'slug' => 'functionalities-components', 'label' => \__( 'Components', 'functionalities' ) ],
-			[ 'slug' => 'functionalities-fonts', 'label' => \__( 'Fonts', 'functionalities' ) ],
-			[ 'slug' => 'functionalities-icons', 'label' => \__( 'Icons', 'functionalities' ) ],
-		];
-		foreach ( $links as $l ) {
-			$url = \admin_url( 'admin.php?page=' . $l['slug'] );
-			echo '<li><a href="' . \esc_url( $url ) . '">' . \esc_html( $l['label'] ) . '</a></li>';
+
+		// Get current module from URL parameter.
+		$current_module = isset( $_GET['module'] ) ? \sanitize_key( $_GET['module'] ) : '';
+
+		// If no module or invalid module, show dashboard.
+		if ( empty( $current_module ) || ! isset( self::$modules[ $current_module ] ) ) {
+			self::render_dashboard();
+			return;
 		}
-		echo '</ul>';
-		echo '</div>';
+
+		// Render specific module.
+		self::render_module( $current_module );
+	}
+
+	/**
+	 * Render dashboard with module cards.
+	 *
+	 * @return void
+	 */
+	private static function render_dashboard() : void {
+		?>
+		<div class="wrap functionalities-dashboard">
+			<h1><?php echo \esc_html__( 'Functionalities', 'functionalities' ); ?></h1>
+			<p class="description">
+				<?php echo \esc_html__( 'Modular site-specific plugin to organize common features with simple toggles.', 'functionalities' ); ?>
+			</p>
+
+			<div class="functionalities-modules-grid">
+				<?php foreach ( self::$modules as $slug => $module ) : ?>
+					<div class="functionalities-module-card">
+						<div class="module-card-header">
+							<span class="dashicons <?php echo \esc_attr( $module['icon'] ); ?>"></span>
+							<h2><?php echo \esc_html( $module['title'] ); ?></h2>
+						</div>
+						<p class="module-description"><?php echo \esc_html( $module['description'] ); ?></p>
+						<a href="<?php echo \esc_url( self::get_module_url( $slug ) ); ?>" class="button button-primary">
+							<?php echo \esc_html__( 'Configure', 'functionalities' ); ?>
+						</a>
+					</div>
+				<?php endforeach; ?>
+			</div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Render specific module page.
+	 *
+	 * @param string $module_slug Module identifier.
+	 * @return void
+	 */
+	private static function render_module( $module_slug ) : void {
+		$module = self::$modules[ $module_slug ];
+		?>
+		<div class="wrap functionalities-module">
+			<h1>
+				<span class="dashicons <?php echo \esc_attr( $module['icon'] ); ?>"></span>
+				<?php echo \esc_html( $module['title'] ); ?>
+			</h1>
+
+			<nav class="functionalities-breadcrumb">
+				<a href="<?php echo \esc_url( \admin_url( 'admin.php?page=functionalities' ) ); ?>">
+					<?php echo \esc_html__( 'Functionalities', 'functionalities' ); ?>
+				</a>
+				<span class="separator">›</span>
+				<span class="current"><?php echo \esc_html( $module['title'] ); ?></span>
+			</nav>
+
+			<form method="post" action="options.php">
+				<?php
+				$settings_group = 'functionalities_' . str_replace( '-', '_', $module_slug );
+				\settings_fields( $settings_group );
+				\do_settings_sections( $settings_group );
+				\submit_button();
+				?>
+			</form>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Get module URL.
+	 *
+	 * @param string $module_slug Module identifier.
+	 * @return string URL to module page.
+	 */
+	private static function get_module_url( $module_slug ) : string {
+		return \admin_url( 'admin.php?page=functionalities&module=' . \rawurlencode( $module_slug ) );
 	}
 
 	public static function register_settings() : void {
@@ -154,9 +252,7 @@ class Admin {
 		\add_settings_section(
 			'functionalities_link_management_section',
 			\__( 'Link Management Settings', 'functionalities' ),
-			function() {
-				echo '<p>' . \esc_html__( 'Control how external links are handled.', 'functionalities' ) . '</p>';
-			},
+			array( __CLASS__, 'section_link_management' ),
 			'functionalities_link_management'
 		);
 
@@ -176,38 +272,25 @@ class Admin {
 			'functionalities_link_management_section'
 		);
 
-		// New tab options
+		// New tab options.
 		\add_settings_field(
 			'open_external_new_tab',
 			\__( 'Open external links in new tab', 'functionalities' ),
-			function() {
-				$o = self::get_link_management_options();
-				$checked = ! empty( $o['open_external_new_tab'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_link_management[open_external_new_tab]" value="1" ' . $checked . '> ' . \esc_html__( 'Adds target="_blank" and rel="noopener" to external links', 'functionalities' ) . '</label>';
-			},
+			array( __CLASS__, 'field_open_external_new_tab' ),
 			'functionalities_link_management',
 			'functionalities_link_management_section'
 		);
 		\add_settings_field(
 			'open_internal_new_tab',
 			\__( 'Open internal links in new tab', 'functionalities' ),
-			function() {
-				$o = self::get_link_management_options();
-				$checked = ! empty( $o['open_internal_new_tab'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_link_management[open_internal_new_tab]" value="1" ' . $checked . '> ' . \esc_html__( 'Adds target="_blank" to same-domain links (see exceptions)', 'functionalities' ) . '</label>';
-			},
+			array( __CLASS__, 'field_open_internal_new_tab' ),
 			'functionalities_link_management',
 			'functionalities_link_management_section'
 		);
 		\add_settings_field(
 			'internal_new_tab_exceptions',
 			\__( 'Internal new-tab exceptions (domains)', 'functionalities' ),
-			function() {
-				$o = self::get_link_management_options();
-				$val = isset( $o['internal_new_tab_exceptions'] ) ? (string) $o['internal_new_tab_exceptions'] : '';
-				echo '<textarea name="functionalities_link_management[internal_new_tab_exceptions]" rows="3" cols="60" class="large-text code">' . \esc_textarea( $val ) . '</textarea>';
-				echo '<p class="description">' . \esc_html__( 'One domain per line. Matching hosts will NOT be forced to open in a new tab when internal option is enabled.', 'functionalities' ) . '</p>';
-			},
+			array( __CLASS__, 'field_internal_new_tab_exceptions' ),
 			'functionalities_link_management',
 			'functionalities_link_management_section'
 		);
@@ -229,9 +312,7 @@ class Admin {
 		\add_settings_section(
 			'functionalities_block_cleanup_section',
 			\__( 'Frontend Block Class Cleanup', 'functionalities' ),
-			function() {
-				echo '<p>' . \esc_html__( 'Strip block classes from frontend output.', 'functionalities' ) . '</p>';
-			},
+			array( __CLASS__, 'section_block_cleanup' ),
 			'functionalities_block_cleanup'
 		);
 
@@ -716,13 +797,78 @@ class Admin {
 		echo '<label><input type="checkbox" name="functionalities_link_management[nofollow_external]" value="1" ' . $checked . '> ' . \esc_html__( 'Enable rel="nofollow" for all external links', 'functionalities' ) . '</label>';
 	}
 
+	/**
+	 * Render exceptions field.
+	 *
+	 * @return void
+	 */
 	public static function field_exceptions() : void {
-		$opts = self::get_link_management_options();
+		$opts  = self::get_link_management_options();
 		$value = isset( $opts['exceptions'] ) ? (string) $opts['exceptions'] : '';
 		echo '<textarea name="functionalities_link_management[exceptions]" rows="6" cols="60" class="large-text code">' . \esc_textarea( $value ) . '</textarea>';
 		echo '<p class="description">' . \esc_html__( 'One per line. Supports full URLs (https://example.com/page), domains (example.com), or partial matches (e.g., /partner/).', 'functionalities' ) . '</p>';
 	}
 
+	/**
+	 * Render section description for link management.
+	 *
+	 * @return void
+	 */
+	public static function section_link_management() : void {
+		echo '<p>' . \esc_html__( 'Control how external and internal links are handled.', 'functionalities' ) . '</p>';
+	}
+
+	/**
+	 * Render open external links in new tab field.
+	 *
+	 * @return void
+	 */
+	public static function field_open_external_new_tab() : void {
+		$opts    = self::get_link_management_options();
+		$checked = ! empty( $opts['open_external_new_tab'] ) ? 'checked' : '';
+		echo '<label><input type="checkbox" name="functionalities_link_management[open_external_new_tab]" value="1" ' . $checked . '> ';
+		echo \esc_html__( 'Adds target="_blank" and rel="noopener" to external links', 'functionalities' ) . '</label>';
+	}
+
+	/**
+	 * Render open internal links in new tab field.
+	 *
+	 * @return void
+	 */
+	public static function field_open_internal_new_tab() : void {
+		$opts    = self::get_link_management_options();
+		$checked = ! empty( $opts['open_internal_new_tab'] ) ? 'checked' : '';
+		echo '<label><input type="checkbox" name="functionalities_link_management[open_internal_new_tab]" value="1" ' . $checked . '> ';
+		echo \esc_html__( 'Adds target="_blank" to same-domain links (see exceptions)', 'functionalities' ) . '</label>';
+	}
+
+	/**
+	 * Render internal new tab exceptions field.
+	 *
+	 * @return void
+	 */
+	public static function field_internal_new_tab_exceptions() : void {
+		$opts = self::get_link_management_options();
+		$val  = isset( $opts['internal_new_tab_exceptions'] ) ? (string) $opts['internal_new_tab_exceptions'] : '';
+		echo '<textarea name="functionalities_link_management[internal_new_tab_exceptions]" rows="3" cols="60" class="large-text code">' . \esc_textarea( $val ) . '</textarea>';
+		echo '<p class="description">' . \esc_html__( 'One domain per line. Matching hosts will NOT be forced to open in a new tab when internal option is enabled.', 'functionalities' ) . '</p>';
+	}
+
+	/**
+	 * Render section description for block cleanup.
+	 *
+	 * @return void
+	 */
+	public static function section_block_cleanup() : void {
+		echo '<p>' . \esc_html__( 'Strip block classes from frontend output.', 'functionalities' ) . '</p>';
+	}
+
+	/**
+	 * Sanitize link management settings.
+	 *
+	 * @param array $input Raw input data.
+	 * @return array Sanitized data.
+	 */
 	public static function sanitize_link_management( $input ) : array {
 		$out = [
 			'nofollow_external' => ! empty( $input['nofollow_external'] ),
@@ -759,48 +905,6 @@ class Admin {
 		return $out;
 	}
 
-	public static function render_link_management() : void {
-		if ( ! \current_user_can( 'manage_options' ) ) {
-			\wp_die( \esc_html__( 'Insufficient permissions', 'functionalities' ) );
-		}
-
-		echo '<div class="wrap">';
-		echo '<h1>' . \esc_html__( 'Link Management', 'functionalities' ) . '</h1>';
-		echo '<form method="post" action="options.php">';
-		\settings_fields( 'functionalities_link_management' );
-		\do_settings_sections( 'functionalities_link_management' );
-		\submit_button();
-		echo '</form>';
-		echo '</div>';
-	}
-
-	public static function render_block_cleanup() : void {
-		if ( ! \current_user_can( 'manage_options' ) ) {
-			\wp_die( \esc_html__( 'Insufficient permissions', 'functionalities' ) );
-		}
-		echo '<div class="wrap">';
-		echo '<h1>' . \esc_html__( 'Block Cleanup', 'functionalities' ) . '</h1>';
-		echo '<form method="post" action="options.php">';
-		\settings_fields( 'functionalities_block_cleanup' );
-		\do_settings_sections( 'functionalities_block_cleanup' );
-		\submit_button();
-		echo '</form>';
-		echo '</div>';
-	}
-
-	public static function render_editor_links() : void {
-		if ( ! \current_user_can( 'manage_options' ) ) {
-			\wp_die( \esc_html__( 'Insufficient permissions', 'functionalities' ) );
-		}
-		echo '<div class="wrap">';
-		echo '<h1>' . \esc_html__( 'Editor Link Suggestions', 'functionalities' ) . '</h1>';
-		echo '<form method="post" action="options.php">';
-		\settings_fields( 'functionalities_editor_links' );
-		\do_settings_sections( 'functionalities_editor_links' );
-		\submit_button();
-		echo '</form>';
-		echo '</div>';
-	}
 
 	public static function get_link_management_options() : array {
 		$defaults = [
@@ -896,19 +1000,6 @@ class Admin {
 		return array_merge( $defaults, $opts );
 	}
 
-	public static function render_snippets() : void {
-		if ( ! \current_user_can( 'manage_options' ) ) {
-			\wp_die( \esc_html__( 'Insufficient permissions', 'functionalities' ) );
-		}
-		echo '<div class="wrap">';
-		echo '<h1>' . \esc_html__( 'Header & Footer', 'functionalities' ) . '</h1>';
-		echo '<form method="post" action="options.php">';
-		\settings_fields( 'functionalities_snippets' );
-		\do_settings_sections( 'functionalities_snippets' );
-		\submit_button();
-		echo '</form>';
-		echo '</div>';
-	}
 
 	public static function sanitize_snippets( $input ) : array {
 		$out = [
@@ -964,19 +1055,6 @@ class Admin {
 		return array_merge( $defaults, $opts );
 	}
 
-	public static function render_schema() : void {
-		if ( ! \current_user_can( 'manage_options' ) ) {
-			\wp_die( \esc_html__( 'Insufficient permissions', 'functionalities' ) );
-		}
-		echo '<div class="wrap">';
-		echo '<h1>' . \esc_html__( 'Schema Settings', 'functionalities' ) . '</h1>';
-		echo '<form method="post" action="options.php">';
-		\settings_fields( 'functionalities_schema' );
-		\do_settings_sections( 'functionalities_schema' );
-		\submit_button();
-		echo '</form>';
-		echo '</div>';
-	}
 
 	public static function sanitize_schema( $input ) : array {
 		return [
@@ -1007,20 +1085,6 @@ class Admin {
 		return array_merge( $defaults, $opts );
 	}
 
-	public static function render_components() : void {
-		if ( ! \current_user_can( 'manage_options' ) ) {
-			\wp_die( \esc_html__( 'Insufficient permissions', 'functionalities' ) );
-		}
-		$o = self::get_components_options();
-		echo '<div class="wrap">';
-		echo '<h1>' . \esc_html__( 'Components', 'functionalities' ) . '</h1>';
-		echo '<form method="post" action="options.php">';
-		\settings_fields( 'functionalities_components' );
-		\do_settings_sections( 'functionalities_components' );
-		\submit_button();
-		echo '</form>';
-		echo '</div>';
-	}
 	public static function sanitize_components( $input ) : array {
 		$out = [ 'enabled' => ! empty( $input['enabled'] ), 'items' => [] ];
 		if ( isset( $input['items'] ) && is_array( $input['items'] ) ) {
@@ -1109,20 +1173,7 @@ class Admin {
 		];
 	}
 
-	// Misc page render & helpers
-	public static function render_misc() : void {
-		if ( ! \current_user_can( 'manage_options' ) ) {
-			\wp_die( \esc_html__( 'Insufficient permissions', 'functionalities' ) );
-		}
-		echo '<div class="wrap">';
-		echo '<h1>' . \esc_html__( 'Miscellaneous', 'functionalities' ) . '</h1>';
-		echo '<form method="post" action="options.php">';
-		\settings_fields( 'functionalities_misc' );
-		\do_settings_sections( 'functionalities_misc' );
-		\submit_button();
-		echo '</form>';
-		echo '</div>';
-	}
+	// Misc helpers
 	protected static function add_misc_field( string $key, string $label ) : void {
 		\add_settings_field(
 			$key,
@@ -1182,20 +1233,7 @@ class Admin {
 		return array_merge( $defaults, $opts );
 	}
 
-	// Fonts: render and helpers
-	public static function render_fonts() : void {
-		if ( ! \current_user_can( 'manage_options' ) ) {
-			\wp_die( \esc_html__( 'Insufficient permissions', 'functionalities' ) );
-		}
-		echo '<div class="wrap">';
-		echo '<h1>' . \esc_html__( 'Fonts', 'functionalities' ) . '</h1>';
-		echo '<form method="post" action="options.php">';
-		\settings_fields( 'functionalities_fonts' );
-		\do_settings_sections( 'functionalities_fonts' );
-		\submit_button();
-		echo '</form>';
-		echo '</div>';
-	}
+	// Fonts helpers
 	public static function get_fonts_options() : array {
 		$defaults = [ 'enabled' => false, 'items' => [] ];
 		$opts = (array) \get_option( 'functionalities_fonts', $defaults );
@@ -1269,20 +1307,7 @@ class Admin {
 		echo '</div>';
 	}
 
-	// Icons: render and helpers
-	public static function render_icons() : void {
-		if ( ! \current_user_can( 'manage_options' ) ) {
-			\wp_die( \esc_html__( 'Insufficient permissions', 'functionalities' ) );
-		}
-		echo '<div class="wrap">';
-		echo '<h1>' . \esc_html__( 'Icons', 'functionalities' ) . '</h1>';
-		echo '<form method="post" action="options.php">';
-		\settings_fields( 'functionalities_icons' );
-		\do_settings_sections( 'functionalities_icons' );
-		\submit_button();
-		echo '</form>';
-		echo '</div>';
-	}
+	// Icons helpers
 	public static function get_icons_options() : array {
 		$defaults = [ 'enable_fa_replacement' => false, 'remove_fa_assets' => true, 'sprite_url' => '', 'mappings' => '' ];
 		$opts = (array) \get_option( 'functionalities_icons', $defaults );
