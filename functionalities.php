@@ -2,8 +2,8 @@
 /**
  * Plugin Name: Functionalities
  * Plugin URI: https://example.com/
- * Description: Modular site-specific plugin with modern dashboard, comprehensive link management, and WordPress coding standards compliance.
- * Version: 0.3.0
+ * Description: Modular site-specific plugin with modern dashboard, complete GT Nofollow Manager integration, and WordPress coding standards compliance.
+ * Version: 0.4.0
  * Author: Your Name
  * Author URI: https://example.com/
  * License: GPL-2.0-or-later
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Define constants.
 if ( ! defined( 'FUNCTIONALITIES_VERSION' ) ) {
-	define( 'FUNCTIONALITIES_VERSION', '0.3.0' );
+	define( 'FUNCTIONALITIES_VERSION', '0.4.0' );
 }
 if ( ! defined( 'FUNCTIONALITIES_FILE' ) ) {
 	define( 'FUNCTIONALITIES_FILE', __FILE__ );

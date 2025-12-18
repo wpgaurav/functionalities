@@ -15,11 +15,17 @@ A modular site-specific plugin to organize common features with simple toggles. 
 
 ### Modules
 
-**Link Management** (GT Nofollow Manager Features)
-- Automatic `rel="nofollow"` for external links with smart exception handling
-- Open external/internal links in new tab with fine-grained control
-- Exception lists supporting full URLs, domains, or partial matches
-- Pattern-based domain matching
+**Link Management** (Complete GT Nofollow Manager)
+- ✅ Automatic `rel="nofollow"` for external links with smart exception handling
+- ✅ Applies to content, widgets, and comments (high priority filter at 999)
+- ✅ Exception lists supporting full URLs, domains, or partial matches
+- ✅ JSON preset file support for bulk exception loading
+- ✅ Database update tool for bulk nofollow addition to existing posts
+- ✅ Developer filters for programmatic customization
+- ✅ Legacy GT Nofollow Manager filter compatibility (gtnf_*)
+- ✅ Open external/internal links in new tab with fine-grained control
+- ✅ Pattern-based domain matching
+- ✅ Zero frontend footprint (no CSS/JS)
 - Navigate to: `?page=functionalities&module=link-management`
 
 **Block Cleanup**
@@ -198,11 +204,13 @@ Example:
    - Responsive grid layout
    - Hover effects and transitions
 
-## GT Nofollow Manager Features
+## GT Nofollow Manager - Complete Feature Parity
 
-The Link Management module includes all essential features found in GT Nofollow Manager:
+The Link Management module is a **complete implementation** of GT Nofollow Manager with additional enhancements:
 
-- ✅ Automatic nofollow for external links
+### Core Features
+- ✅ Automatic nofollow for external links (high priority 999)
+- ✅ Applies to `the_content`, `widget_text`, and `comment_text`
 - ✅ Smart exception system (URLs, domains, partial matches)
 - ✅ Open links in new tab (external and internal)
 - ✅ Fine-grained control with exception lists
@@ -210,6 +218,71 @@ The Link Management module includes all essential features found in GT Nofollow 
 - ✅ Proper `rel="noopener"` for security
 - ✅ Internal link new-tab exceptions
 - ✅ DOM-based content filtering
+- ✅ Zero frontend footprint
+
+### Advanced Features
+- ✅ **JSON Preset Support**: Load exception URLs from JSON file
+- ✅ **Database Update Tool**: Bulk add nofollow to specific URLs across all posts
+- ✅ **Developer Filters**: Programmatic exception customization
+- ✅ **Legacy Compatibility**: Supports original `gtnf_*` filter names
+
+### JSON Preset Format
+
+Create a file `exception-urls.json` in the plugin directory:
+
+```json
+{
+  "urls": [
+    "https://example.com/trusted-page",
+    "https://partner-site.com",
+    "https://another-trusted-site.com/blog"
+  ]
+}
+```
+
+### Developer Filters
+
+```php
+// Add exception domains (new)
+add_filter( 'functionalities_exception_domains', function( $domains ) {
+    $domains[] = 'trusted-site.com';
+    return $domains;
+});
+
+// Add exception URLs (new)
+add_filter( 'functionalities_exception_urls', function( $urls ) {
+    $urls[] = 'https://example.com/page';
+    return $urls;
+});
+
+// Custom JSON file path
+add_filter( 'functionalities_json_preset_path', function( $path ) {
+    return get_stylesheet_directory() . '/my-exceptions.json';
+});
+
+// Legacy GT Nofollow Manager compatibility
+add_filter( 'gtnf_exception_domains', function( $domains ) {
+    $domains[] = 'legacy-trusted.com';
+    return $domains;
+});
+
+add_filter( 'gtnf_exception_urls', function( $urls ) {
+    $urls[] = 'https://legacy-example.com';
+    return $urls;
+});
+```
+
+### Database Update Tool
+
+Navigate to **Functionalities → Link Management** and scroll to the "Database Update Tool" section:
+
+1. Enter the URL you want to add nofollow to
+2. Click "Update Database"
+3. Confirm the operation
+4. The tool will scan all posts and add `rel="nofollow"` to matching links
+5. Results show how many posts were updated
+
+**Use with caution!** This directly modifies post content in the database.
 
 ## Localization
 
@@ -223,7 +296,19 @@ GPL-2.0-or-later
 
 ## Changelog
 
-### Version 0.3.0 (Current)
+### Version 0.4.0 (Current)
+- **MAJOR:** Complete GT Nofollow Manager integration with full feature parity
+- Added filters to `widget_text` and `comment_text` (priority 999)
+- Added JSON preset file support for bulk exception loading
+- Added database update tool for bulk nofollow operations
+- Added developer filters (functionalities_* and gtnf_* for legacy compatibility)
+- Added AJAX handler for database updates with nonce verification
+- Added sample JSON file (exception-urls.json.sample)
+- Enhanced Link Management admin interface with new fields
+- Improved exception caching for better performance
+- Added comprehensive documentation for all GT Nofollow Manager features
+
+### Version 0.3.0
 - **MAJOR:** Refactored admin interface to module-based dashboard
 - **MAJOR:** Implemented URL parameter navigation (removed separate submenus)
 - Improved WordPress Coding Standards compliance
