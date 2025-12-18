@@ -2,13 +2,15 @@
 /**
  * Plugin Name: Functionalities
  * Plugin URI: https://example.com/
- * Description: A starter plugin scaffold for custom site functionalities.
- * Version: 0.2.2
+ * Description: Modular site-specific plugin with modern dashboard, comprehensive link management, and WordPress coding standards compliance.
+ * Version: 0.3.0
  * Author: Your Name
  * Author URI: https://example.com/
  * License: GPL-2.0-or-later
  * Text Domain: functionalities
  * Domain Path: /languages
+ * Requires at least: 5.8
+ * Requires PHP: 7.4
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -17,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Define constants.
 if ( ! defined( 'FUNCTIONALITIES_VERSION' ) ) {
-	define( 'FUNCTIONALITIES_VERSION', '0.2.2' );
+	define( 'FUNCTIONALITIES_VERSION', '0.3.0' );
 }
 if ( ! defined( 'FUNCTIONALITIES_FILE' ) ) {
 	define( 'FUNCTIONALITIES_FILE', __FILE__ );
@@ -54,9 +56,9 @@ require_once FUNCTIONALITIES_DIR . 'includes/features/class-icons.php';
 	\Functionalities\Features\Snippets::init();
 	\Functionalities\Features\Schema::init();
 	\Functionalities\Features\Components::init();
-\Functionalities\Features\Fonts::init();
-\Functionalities\Features\Icons::init();
-} );
+	\Functionalities\Features\Fonts::init();
+	\Functionalities\Features\Icons::init();
+}, 10 );
 
 // Activation/Deactivation hooks.
 \register_activation_hook( __FILE__, function () {
@@ -68,7 +70,7 @@ require_once FUNCTIONALITIES_DIR . 'includes/features/class-icons.php';
 
 // Quick Settings link on the Plugins screen.
 \add_filter( 'plugin_action_links_' . \plugin_basename( __FILE__ ), function( array $links ) : array {
-	$url = \admin_url( 'admin.php?page=functionalities-link-management' );
+	$url = \admin_url( 'admin.php?page=functionalities' );
 	$links[] = '<a href="' . \esc_url( $url ) . '">' . \esc_html__( 'Settings', 'functionalities' ) . '</a>';
 	return $links;
 } );
