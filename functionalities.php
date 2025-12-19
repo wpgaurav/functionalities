@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name: Functionalities
- * Plugin URI: https://example.com/
+ * Plugin URI: https://functionalities.dev
  * Description: Modular site-specific plugin with modern dashboard, complete GT Nofollow Manager integration, and WordPress coding standards compliance.
  * Version: 0.7.1
- * Author: Your Name
- * Author URI: https://example.com/
+ * Author: Gaurav Tiwari
+ * Author URI: https://gauravtiwari.org
  * License: GPL-2.0-or-later
  * Text Domain: functionalities
  * Domain Path: /languages
