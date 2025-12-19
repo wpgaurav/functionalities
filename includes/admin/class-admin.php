@@ -1084,8 +1084,8 @@ class Admin {
 				'sanitize_callback' => array( __CLASS__, 'sanitize_updates' ),
 				'default'           => array(
 					'enabled'        => false,
-					'github_owner'   => '',
-					'github_repo'    => '',
+					'github_owner'   => 'wpgaurav',
+					'github_repo'    => 'functionalities',
 					'access_token'   => '',
 					'cache_duration' => 21600,
 				),
@@ -2626,8 +2626,8 @@ class Admin {
 
 		$out = array(
 			'enabled'        => ! empty( $input['enabled'] ),
-			'github_owner'   => '',
-			'github_repo'    => '',
+			'github_owner'   => 'wpgaurav',
+			'github_repo'    => 'functionalities',
 			'access_token'   => $current['access_token'], // Preserve existing token by default.
 			'cache_duration' => 21600,
 		);
@@ -2671,8 +2671,8 @@ class Admin {
 	public static function get_updates_options() : array {
 		$defaults = array(
 			'enabled'        => false,
-			'github_owner'   => '',
-			'github_repo'    => '',
+			'github_owner'   => 'wpgaurav',
+			'github_repo'    => 'functionalities',
 			'access_token'   => '',
 			'cache_duration' => 21600,
 		);

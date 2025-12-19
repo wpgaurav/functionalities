@@ -294,7 +294,11 @@ GPL-2.0-or-later
 
 ## Changelog
 
-### Version 0.7.0 (Current)
+### Version 0.7.1 (Current)
+- Set default GitHub repository values to `wpgaurav/functionalities`
+- Simplified GitHub Updates module configuration for this plugin
+
+### Version 0.7.0
 - **MAJOR:** Complete redesign of Components module UI
 - Beautiful grid-based card layout with live CSS previews
 - Pagination with 24 components per page for better organization
