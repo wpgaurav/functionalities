@@ -44,6 +44,7 @@ require_once FUNCTIONALITIES_DIR . 'includes/features/class-components.php';
 require_once FUNCTIONALITIES_DIR . 'includes/features/class-fonts.php';
 require_once FUNCTIONALITIES_DIR . 'includes/features/class-icons.php';
 require_once FUNCTIONALITIES_DIR . 'includes/features/class-meta.php';
+require_once FUNCTIONALITIES_DIR . 'includes/class-github-updater.php';
 
 // Initialize plugin.
 \add_action( 'plugins_loaded', function() {
@@ -60,6 +61,19 @@ require_once FUNCTIONALITIES_DIR . 'includes/features/class-meta.php';
 	\Functionalities\Features\Fonts::init();
 	\Functionalities\Features\Icons::init();
 	\Functionalities\Features\Meta::init();
+
+	// Initialize GitHub Updater if enabled.
+	$update_options = \Functionalities\Admin\Admin::get_updates_options();
+	if ( ! empty( $update_options['enabled'] ) && ! empty( $update_options['github_owner'] ) && ! empty( $update_options['github_repo'] ) ) {
+		$updater = new \Functionalities\GitHub_Updater( array(
+			'plugin_file'    => FUNCTIONALITIES_FILE,
+			'github_owner'   => $update_options['github_owner'],
+			'github_repo'    => $update_options['github_repo'],
+			'access_token'   => $update_options['access_token'],
+			'cache_duration' => (int) $update_options['cache_duration'],
+		) );
+		$updater->init();
+	}
 }, 10 );
 
 // Activation/Deactivation hooks.
