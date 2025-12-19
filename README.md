@@ -294,7 +294,34 @@ GPL-2.0-or-later
 
 ## Changelog
 
-### Version 0.4.0 (Current)
+### Version 0.7.0 (Current)
+- **MAJOR:** Complete redesign of Components module UI
+- Beautiful grid-based card layout with live CSS previews
+- Pagination with 24 components per page for better organization
+- Inline editing with real-time preview updates
+- Modern visual design with hover effects and transitions
+- Add/Edit/Delete functionality with intuitive controls
+- Template-based new component creation
+
+### Version 0.6.1
+- Removed example shortcode `[functionalities_hello]`
+- Fixed Meta module to work without SEO plugins (standalone JSON-LD output)
+- Maintained compatibility with all supported SEO plugins
+
+### Version 0.6.0
+- Added GitHub Updates module for automatic plugin updates from GitHub releases
+- Support for public and private repositories
+- Configurable cache duration to avoid API rate limits
+
+### Version 0.5.0
+- **NEW:** Meta & Copyright module with comprehensive SEO plugin integration
+- Dublin Core (DCMI) metadata support
+- Creative Commons licensing options
+- Automatic schema.org copyrightYear and copyrightHolder
+- SEO plugin integration: Rank Math, Yoast SEO, The SEO Framework, SEOPress, AIOSEO
+- Performance-optimized with static caching
+
+### Version 0.4.0
 - **MAJOR:** Complete GT Nofollow Manager integration with full feature parity
 - Added filters to `widget_text` and `comment_text` (priority 999)
 - Added JSON preset file support for bulk exception loading
