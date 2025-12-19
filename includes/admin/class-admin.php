@@ -119,6 +119,11 @@ class Admin {
 				'description' => \__( 'Replace Font Awesome with SVG icons.', 'functionalities' ),
 				'icon'        => 'dashicons-star-filled',
 			),
+			'meta'            => array(
+				'title'       => \__( 'Meta & Copyright', 'functionalities' ),
+				'description' => \__( 'Copyright, Dublin Core, licensing, and SEO plugin integration.', 'functionalities' ),
+				'icon'        => 'dashicons-shield',
+			),
 		);
 	}
 
@@ -844,6 +849,227 @@ class Admin {
 			'functionalities_icons',
 			'functionalities_icons_section'
 		);
+
+		// Meta & Copyright settings.
+		\register_setting(
+			'functionalities_meta',
+			'functionalities_meta',
+			array(
+				'sanitize_callback' => array( __CLASS__, 'sanitize_meta' ),
+				'default'           => array(
+					'enabled'                   => false,
+					'enable_copyright_meta'     => true,
+					'enable_dublin_core'        => true,
+					'enable_license_metabox'    => true,
+					'enable_schema_integration' => true,
+					'default_license'           => 'all-rights-reserved',
+					'default_license_url'       => '',
+					'post_types'                => array( 'post' ),
+					'copyright_holder_type'     => 'author',
+					'custom_copyright_holder'   => '',
+					'dc_language'               => '',
+				),
+			)
+		);
+
+		\add_settings_section(
+			'functionalities_meta_section',
+			\__( 'Meta & Copyright Settings', 'functionalities' ),
+			array( __CLASS__, 'section_meta' ),
+			'functionalities_meta'
+		);
+
+		\add_settings_field(
+			'meta_enabled',
+			\__( 'Enable Meta Module', 'functionalities' ),
+			function() {
+				$o = self::get_meta_options();
+				$checked = ! empty( $o['enabled'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_meta[enabled]" value="1" ' . $checked . '> ';
+				echo \esc_html__( 'Enable copyright, Dublin Core, and licensing features', 'functionalities' ) . '</label>';
+			},
+			'functionalities_meta',
+			'functionalities_meta_section'
+		);
+
+		\add_settings_field(
+			'enable_copyright_meta',
+			\__( 'Copyright Meta Tags', 'functionalities' ),
+			function() {
+				$o = self::get_meta_options();
+				$checked = ! empty( $o['enable_copyright_meta'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_meta[enable_copyright_meta]" value="1" ' . $checked . '> ';
+				echo \esc_html__( 'Output copyright, author, owner, and rights meta tags', 'functionalities' ) . '</label>';
+			},
+			'functionalities_meta',
+			'functionalities_meta_section'
+		);
+
+		\add_settings_field(
+			'enable_dublin_core',
+			\__( 'Dublin Core (DCMI) Metadata', 'functionalities' ),
+			function() {
+				$o = self::get_meta_options();
+				$checked = ! empty( $o['enable_dublin_core'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_meta[enable_dublin_core]" value="1" ' . $checked . '> ';
+				echo \esc_html__( 'Output Dublin Core metadata (DC.title, DC.creator, DC.rights, etc.)', 'functionalities' ) . '</label>';
+			},
+			'functionalities_meta',
+			'functionalities_meta_section'
+		);
+
+		\add_settings_field(
+			'enable_license_metabox',
+			\__( 'License Metabox', 'functionalities' ),
+			function() {
+				$o = self::get_meta_options();
+				$checked = ! empty( $o['enable_license_metabox'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_meta[enable_license_metabox]" value="1" ' . $checked . '> ';
+				echo \esc_html__( 'Show license selection metabox in post editor', 'functionalities' ) . '</label>';
+			},
+			'functionalities_meta',
+			'functionalities_meta_section'
+		);
+
+		\add_settings_field(
+			'enable_schema_integration',
+			\__( 'SEO Plugin Schema Integration', 'functionalities' ),
+			function() {
+				$o = self::get_meta_options();
+				$checked = ! empty( $o['enable_schema_integration'] ) ? 'checked' : '';
+				$detected = \Functionalities\Features\Meta::detect_seo_plugin();
+				$plugin_names = array(
+					'rank-math'     => 'Rank Math',
+					'yoast'         => 'Yoast SEO',
+					'seo-framework' => 'The SEO Framework',
+					'seopress'      => 'SEOPress',
+					'aioseo'        => 'All in One SEO',
+					'none'          => \__( 'None detected', 'functionalities' ),
+				);
+				echo '<label><input type="checkbox" name="functionalities_meta[enable_schema_integration]" value="1" ' . $checked . '> ';
+				echo \esc_html__( 'Add copyright data to SEO plugin Schema.org output', 'functionalities' ) . '</label>';
+				echo '<p class="description" style="margin-top:4px">';
+				if ( $detected !== 'none' ) {
+					echo '<span style="color:#059669">✓ ' . \esc_html__( 'Detected:', 'functionalities' ) . ' <strong>' . \esc_html( $plugin_names[ $detected ] ) . '</strong></span>';
+				} else {
+					echo \esc_html__( 'Supports: Rank Math, Yoast SEO, The SEO Framework, SEOPress, AIOSEO', 'functionalities' );
+				}
+				echo '</p>';
+			},
+			'functionalities_meta',
+			'functionalities_meta_section'
+		);
+
+		\add_settings_field(
+			'default_license',
+			\__( 'Default License', 'functionalities' ),
+			function() {
+				$o = self::get_meta_options();
+				$val = isset( $o['default_license'] ) ? (string) $o['default_license'] : 'all-rights-reserved';
+				$licenses = array(
+					'all-rights-reserved' => \__( 'All Rights Reserved', 'functionalities' ),
+					'cc-by'               => 'CC BY 4.0',
+					'cc-by-sa'            => 'CC BY-SA 4.0',
+					'cc-by-nc'            => 'CC BY-NC 4.0',
+					'cc-by-nc-sa'         => 'CC BY-NC-SA 4.0',
+					'cc-by-nd'            => 'CC BY-ND 4.0',
+					'cc-by-nc-nd'         => 'CC BY-NC-ND 4.0',
+					'cc0'                 => 'CC0 1.0 (Public Domain)',
+				);
+				echo '<select name="functionalities_meta[default_license]">';
+				foreach ( $licenses as $key => $label ) {
+					$sel = selected( $val, $key, false );
+					echo '<option value="' . \esc_attr( $key ) . '" ' . $sel . '>' . \esc_html( $label ) . '</option>';
+				}
+				echo '</select>';
+				echo '<p class="description">' . \esc_html__( 'Default license for new posts (can be overridden per-post).', 'functionalities' ) . '</p>';
+			},
+			'functionalities_meta',
+			'functionalities_meta_section'
+		);
+
+		\add_settings_field(
+			'default_license_url',
+			\__( 'Custom License URL', 'functionalities' ),
+			function() {
+				$o = self::get_meta_options();
+				$val = isset( $o['default_license_url'] ) ? (string) $o['default_license_url'] : '';
+				echo '<input type="url" class="regular-text" name="functionalities_meta[default_license_url]" value="' . \esc_attr( $val ) . '" placeholder="https://example.com/terms/" />';
+				echo '<p class="description">' . \esc_html__( 'Custom URL for "All Rights Reserved" license (e.g., your terms/disclaimer page).', 'functionalities' ) . '</p>';
+			},
+			'functionalities_meta',
+			'functionalities_meta_section'
+		);
+
+		\add_settings_field(
+			'meta_post_types',
+			\__( 'Post Types', 'functionalities' ),
+			function() {
+				$o = self::get_meta_options();
+				$selected = isset( $o['post_types'] ) && is_array( $o['post_types'] ) ? $o['post_types'] : array( 'post' );
+				$pts = \get_post_types( array( 'public' => true ), 'objects' );
+				echo '<fieldset>';
+				foreach ( $pts as $name => $obj ) {
+					$is_checked = in_array( $name, $selected, true ) ? 'checked' : '';
+					$label = sprintf( '%s (%s)', $obj->labels->singular_name ?? $name, $name );
+					echo '<label style="display:block; margin:2px 0;"><input type="checkbox" name="functionalities_meta[post_types][]" value="' . \esc_attr( $name ) . '" ' . $is_checked . '> ' . \esc_html( $label ) . '</label>';
+				}
+				echo '</fieldset>';
+				echo '<p class="description">' . \esc_html__( 'Select post types where meta tags and license metabox should appear.', 'functionalities' ) . '</p>';
+			},
+			'functionalities_meta',
+			'functionalities_meta_section'
+		);
+
+		\add_settings_field(
+			'copyright_holder_type',
+			\__( 'Copyright Holder', 'functionalities' ),
+			function() {
+				$o = self::get_meta_options();
+				$val = isset( $o['copyright_holder_type'] ) ? (string) $o['copyright_holder_type'] : 'author';
+				$options = array(
+					'author' => \__( 'Post Author', 'functionalities' ),
+					'site'   => \__( 'Site Name', 'functionalities' ),
+					'custom' => \__( 'Custom Name', 'functionalities' ),
+				);
+				echo '<select name="functionalities_meta[copyright_holder_type]" id="meta_copyright_holder_type">';
+				foreach ( $options as $key => $label ) {
+					$sel = selected( $val, $key, false );
+					echo '<option value="' . \esc_attr( $key ) . '" ' . $sel . '>' . \esc_html( $label ) . '</option>';
+				}
+				echo '</select>';
+				echo '<p class="description">' . \esc_html__( 'Who should be listed as the copyright holder.', 'functionalities' ) . '</p>';
+			},
+			'functionalities_meta',
+			'functionalities_meta_section'
+		);
+
+		\add_settings_field(
+			'custom_copyright_holder',
+			\__( 'Custom Copyright Holder Name', 'functionalities' ),
+			function() {
+				$o = self::get_meta_options();
+				$val = isset( $o['custom_copyright_holder'] ) ? (string) $o['custom_copyright_holder'] : '';
+				echo '<input type="text" class="regular-text" name="functionalities_meta[custom_copyright_holder]" value="' . \esc_attr( $val ) . '" placeholder="' . \esc_attr__( 'Company Name or Person', 'functionalities' ) . '" />';
+				echo '<p class="description">' . \esc_html__( 'Used when "Custom Name" is selected above.', 'functionalities' ) . '</p>';
+			},
+			'functionalities_meta',
+			'functionalities_meta_section'
+		);
+
+		\add_settings_field(
+			'dc_language',
+			\__( 'Dublin Core Language', 'functionalities' ),
+			function() {
+				$o = self::get_meta_options();
+				$val = isset( $o['dc_language'] ) ? (string) $o['dc_language'] : '';
+				$site_lang = \get_bloginfo( 'language' );
+				echo '<input type="text" class="small-text" name="functionalities_meta[dc_language]" value="' . \esc_attr( $val ) . '" placeholder="' . \esc_attr( $site_lang ) . '" />';
+				echo '<p class="description">' . \esc_html__( 'Leave empty to use site language. Use ISO 639 codes (en, en-US, de, etc.).', 'functionalities' ) . '</p>';
+			},
+			'functionalities_meta',
+			'functionalities_meta_section'
+		);
 	}
 
 	public static function field_nofollow_external() : void {
@@ -1481,5 +1707,139 @@ class Admin {
 			'sprite_url'            => isset( $input['sprite_url'] ) ? \esc_url_raw( (string) $input['sprite_url'] ) : '',
 			'mappings'              => isset( $input['mappings'] ) ? \sanitize_textarea_field( (string) $input['mappings'] ) : '',
 		];
+	}
+
+	/**
+	 * Render section description for Meta & Copyright.
+	 *
+	 * @return void
+	 */
+	public static function section_meta() : void {
+		echo '<p>' . \esc_html__( 'Add copyright metadata, Dublin Core (DCMI) tags, and per-post licensing options. Integrates with major SEO plugins to enhance Schema.org output with copyright information.', 'functionalities' ) . '</p>';
+		echo '<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:12px 16px;margin:12px 0">';
+		echo '<h4 style="margin:0 0 8px">' . \esc_html__( 'What This Module Does', 'functionalities' ) . '</h4>';
+		echo '<ul style="margin:0;padding-left:20px">';
+		echo '<li>' . \esc_html__( 'Outputs copyright and ownership meta tags in the HTML head', 'functionalities' ) . '</li>';
+		echo '<li>' . \esc_html__( 'Adds Dublin Core (DCMI) metadata for enhanced discoverability', 'functionalities' ) . '</li>';
+		echo '<li>' . \esc_html__( 'Provides a metabox in the post editor to select content license per-post', 'functionalities' ) . '</li>';
+		echo '<li>' . \esc_html__( 'Integrates with SEO plugins to add copyrightYear, copyrightHolder, and license to Schema.org JSON-LD', 'functionalities' ) . '</li>';
+		echo '</ul>';
+		echo '</div>';
+		echo '<div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:6px;padding:12px 16px;margin:12px 0">';
+		echo '<h4 style="margin:0 0 8px">' . \esc_html__( 'Supported SEO Plugins', 'functionalities' ) . '</h4>';
+		echo '<ul style="margin:0;padding-left:20px;columns:2">';
+		echo '<li><strong>Rank Math</strong> — ' . \esc_html__( 'Full support', 'functionalities' ) . '</li>';
+		echo '<li><strong>Yoast SEO</strong> — ' . \esc_html__( 'Full support', 'functionalities' ) . '</li>';
+		echo '<li><strong>The SEO Framework</strong> — ' . \esc_html__( 'Full support', 'functionalities' ) . '</li>';
+		echo '<li><strong>SEOPress</strong> — ' . \esc_html__( 'Full support', 'functionalities' ) . '</li>';
+		echo '<li><strong>All in One SEO</strong> — ' . \esc_html__( 'Full support', 'functionalities' ) . '</li>';
+		echo '</ul>';
+		echo '<p style="margin:8px 0 0;font-size:13px;color:#1e40af">' . \esc_html__( 'Plugin detection is cached for performance. Schema integration only activates when a supported plugin is detected.', 'functionalities' ) . '</p>';
+		echo '</div>';
+	}
+
+	/**
+	 * Sanitize Meta settings.
+	 *
+	 * @param array $input Raw input data.
+	 * @return array Sanitized data.
+	 */
+	public static function sanitize_meta( $input ) : array {
+		$valid_licenses = array(
+			'all-rights-reserved',
+			'cc-by',
+			'cc-by-sa',
+			'cc-by-nc',
+			'cc-by-nc-sa',
+			'cc-by-nd',
+			'cc-by-nc-nd',
+			'cc0',
+		);
+
+		$valid_holder_types = array( 'author', 'site', 'custom' );
+
+		$out = array(
+			'enabled'                   => ! empty( $input['enabled'] ),
+			'enable_copyright_meta'     => ! empty( $input['enable_copyright_meta'] ),
+			'enable_dublin_core'        => ! empty( $input['enable_dublin_core'] ),
+			'enable_license_metabox'    => ! empty( $input['enable_license_metabox'] ),
+			'enable_schema_integration' => ! empty( $input['enable_schema_integration'] ),
+			'default_license'           => 'all-rights-reserved',
+			'default_license_url'       => '',
+			'post_types'                => array( 'post' ),
+			'copyright_holder_type'     => 'author',
+			'custom_copyright_holder'   => '',
+			'dc_language'               => '',
+		);
+
+		// Validate default license.
+		if ( isset( $input['default_license'] ) ) {
+			$license = \sanitize_key( (string) $input['default_license'] );
+			if ( in_array( $license, $valid_licenses, true ) ) {
+				$out['default_license'] = $license;
+			}
+		}
+
+		// Sanitize license URL.
+		if ( isset( $input['default_license_url'] ) ) {
+			$out['default_license_url'] = \esc_url_raw( (string) $input['default_license_url'] );
+		}
+
+		// Validate post types.
+		if ( isset( $input['post_types'] ) && is_array( $input['post_types'] ) ) {
+			$out['post_types'] = array();
+			foreach ( $input['post_types'] as $pt ) {
+				$pt = \sanitize_key( (string) $pt );
+				if ( \post_type_exists( $pt ) ) {
+					$out['post_types'][] = $pt;
+				}
+			}
+			if ( empty( $out['post_types'] ) ) {
+				$out['post_types'] = array( 'post' );
+			}
+		}
+
+		// Validate copyright holder type.
+		if ( isset( $input['copyright_holder_type'] ) ) {
+			$type = \sanitize_key( (string) $input['copyright_holder_type'] );
+			if ( in_array( $type, $valid_holder_types, true ) ) {
+				$out['copyright_holder_type'] = $type;
+			}
+		}
+
+		// Sanitize custom copyright holder.
+		if ( isset( $input['custom_copyright_holder'] ) ) {
+			$out['custom_copyright_holder'] = \sanitize_text_field( (string) $input['custom_copyright_holder'] );
+		}
+
+		// Sanitize DC language.
+		if ( isset( $input['dc_language'] ) ) {
+			$out['dc_language'] = \sanitize_text_field( (string) $input['dc_language'] );
+		}
+
+		return $out;
+	}
+
+	/**
+	 * Get Meta options with defaults.
+	 *
+	 * @return array Meta options.
+	 */
+	public static function get_meta_options() : array {
+		$defaults = array(
+			'enabled'                   => false,
+			'enable_copyright_meta'     => true,
+			'enable_dublin_core'        => true,
+			'enable_license_metabox'    => true,
+			'enable_schema_integration' => true,
+			'default_license'           => 'all-rights-reserved',
+			'default_license_url'       => '',
+			'post_types'                => array( 'post' ),
+			'copyright_holder_type'     => 'author',
+			'custom_copyright_holder'   => '',
+			'dc_language'               => '',
+		);
+		$opts = (array) \get_option( 'functionalities_meta', $defaults );
+		return array_merge( $defaults, $opts );
 	}
 }
