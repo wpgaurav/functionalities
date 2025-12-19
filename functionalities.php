@@ -3,7 +3,7 @@
  * Plugin Name: Functionalities
  * Plugin URI: https://example.com/
  * Description: Modular site-specific plugin with modern dashboard, complete GT Nofollow Manager integration, and WordPress coding standards compliance.
- * Version: 0.4.0
+ * Version: 0.5.0
  * Author: Your Name
  * Author URI: https://example.com/
  * License: GPL-2.0-or-later
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Define constants.
 if ( ! defined( 'FUNCTIONALITIES_VERSION' ) ) {
-	define( 'FUNCTIONALITIES_VERSION', '0.4.0' );
+	define( 'FUNCTIONALITIES_VERSION', '0.5.0' );
 }
 if ( ! defined( 'FUNCTIONALITIES_FILE' ) ) {
 	define( 'FUNCTIONALITIES_FILE', __FILE__ );
@@ -43,6 +43,7 @@ require_once FUNCTIONALITIES_DIR . 'includes/features/class-schema.php';
 require_once FUNCTIONALITIES_DIR . 'includes/features/class-components.php';
 require_once FUNCTIONALITIES_DIR . 'includes/features/class-fonts.php';
 require_once FUNCTIONALITIES_DIR . 'includes/features/class-icons.php';
+require_once FUNCTIONALITIES_DIR . 'includes/features/class-meta.php';
 
 // Initialize plugin.
 \add_action( 'plugins_loaded', function() {
@@ -58,6 +59,7 @@ require_once FUNCTIONALITIES_DIR . 'includes/features/class-icons.php';
 	\Functionalities\Features\Components::init();
 	\Functionalities\Features\Fonts::init();
 	\Functionalities\Features\Icons::init();
+	\Functionalities\Features\Meta::init();
 }, 10 );
 
 // Activation/Deactivation hooks.
