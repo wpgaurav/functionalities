@@ -210,7 +210,91 @@ class Meta {
 			case 'aioseo':
 				\add_filter( 'aioseo_schema_output', array( __CLASS__, 'add_copyright_to_aioseo' ), 99, 1 );
 				break;
+
+			case 'none':
+			default:
+				// Output standalone JSON-LD schema when no SEO plugin is detected.
+				\add_action( 'wp_head', array( __CLASS__, 'output_standalone_schema' ), 10 );
+				break;
 		}
+	}
+
+	/**
+	 * Output standalone JSON-LD schema when no SEO plugin is detected.
+	 *
+	 * This provides schema.org copyright data independently, ensuring the
+	 * meta module works without requiring a third-party SEO plugin.
+	 *
+	 * @return void
+	 */
+	public static function output_standalone_schema() : void {
+		$options = self::get_options();
+
+		// Check if we should output on this post type.
+		if ( ! \is_singular( $options['post_types'] ) ) {
+			return;
+		}
+
+		global $post;
+		if ( ! $post instanceof \WP_Post ) {
+			return;
+		}
+
+		$copyright = self::get_copyright_schema_data();
+		if ( $copyright === null ) {
+			return;
+		}
+
+		$holder = self::get_copyright_holder( $post );
+
+		// Build the schema.
+		$schema = array(
+			'@context'        => 'https://schema.org',
+			'@type'           => 'Article',
+			'headline'        => \get_the_title(),
+			'datePublished'   => \get_the_date( 'c' ),
+			'dateModified'    => \get_the_modified_date( 'c' ),
+			'copyrightYear'   => $copyright['copyrightYear'],
+			'copyrightHolder' => $copyright['copyrightHolder'],
+			'author'          => array(
+				'@type' => $holder['type'],
+				'name'  => $holder['name'],
+				'url'   => $holder['url'],
+			),
+			'publisher'       => array(
+				'@type' => 'Organization',
+				'name'  => \get_bloginfo( 'name' ),
+				'url'   => \home_url( '/' ),
+			),
+			'mainEntityOfPage' => array(
+				'@type' => 'WebPage',
+				'@id'   => \get_permalink(),
+			),
+		);
+
+		// Add license if not all-rights-reserved.
+		if ( $copyright['license'] !== null ) {
+			$schema['license'] = $copyright['license'];
+		}
+
+		// Add featured image if available.
+		if ( \has_post_thumbnail() ) {
+			$image_id  = \get_post_thumbnail_id();
+			$image_url = \wp_get_attachment_image_url( $image_id, 'full' );
+			if ( $image_url ) {
+				$schema['image'] = $image_url;
+			}
+		}
+
+		// Allow filtering the schema.
+		$schema = \apply_filters( 'functionalities_meta_standalone_schema', $schema, $post );
+
+		// Output the JSON-LD.
+		echo "\n<!-- Functionalities Schema.org (Standalone) -->\n";
+		echo '<script type="application/ld+json">';
+		echo \wp_json_encode( $schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
+		echo '</script>';
+		echo "\n<!-- /Functionalities Schema.org -->\n\n";
 	}
 
 	/**
@@ -415,9 +499,9 @@ class Meta {
 		<p class="description" style="margin-top:8px">
 			<?php \esc_html_e( 'Choose content license for this post.', 'functionalities' ); ?>
 		</p>
-		<?php if ( $detected_plugin !== 'none' ) : ?>
-			<p class="description" style="margin-top:4px;color:#059669">
-				<span class="dashicons dashicons-yes" style="font-size:14px;width:14px;height:14px"></span>
+		<p class="description" style="margin-top:4px;color:#059669">
+			<span class="dashicons dashicons-yes" style="font-size:14px;width:14px;height:14px"></span>
+			<?php if ( $detected_plugin !== 'none' ) : ?>
 				<?php
 				printf(
 					/* translators: %s: SEO plugin name */
@@ -425,8 +509,10 @@ class Meta {
 					\esc_html( self::get_plugin_display_name( $detected_plugin ) )
 				);
 				?>
-			</p>
-		<?php endif; ?>
+			<?php else : ?>
+				<?php \esc_html_e( 'Schema: Standalone JSON-LD', 'functionalities' ); ?>
+			<?php endif; ?>
+		</p>
 		<?php
 	}
 

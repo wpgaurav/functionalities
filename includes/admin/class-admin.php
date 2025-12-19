@@ -124,6 +124,11 @@ class Admin {
 				'description' => \__( 'Copyright, Dublin Core, licensing, and SEO plugin integration.', 'functionalities' ),
 				'icon'        => 'dashicons-shield',
 			),
+			'updates'         => array(
+				'title'       => \__( 'GitHub Updates', 'functionalities' ),
+				'description' => \__( 'Receive plugin updates directly from GitHub releases.', 'functionalities' ),
+				'icon'        => 'dashicons-update',
+			),
 		);
 	}
 
@@ -1070,6 +1075,118 @@ class Admin {
 			'functionalities_meta',
 			'functionalities_meta_section'
 		);
+
+		// GitHub Updates settings.
+		\register_setting(
+			'functionalities_updates',
+			'functionalities_updates',
+			array(
+				'sanitize_callback' => array( __CLASS__, 'sanitize_updates' ),
+				'default'           => array(
+					'enabled'        => false,
+					'github_owner'   => '',
+					'github_repo'    => '',
+					'access_token'   => '',
+					'cache_duration' => 21600,
+				),
+			)
+		);
+
+		\add_settings_section(
+			'functionalities_updates_section',
+			\__( 'GitHub Updates Settings', 'functionalities' ),
+			array( __CLASS__, 'section_updates' ),
+			'functionalities_updates'
+		);
+
+		\add_settings_field(
+			'updates_enabled',
+			\__( 'Enable GitHub Updates', 'functionalities' ),
+			function() {
+				$o = self::get_updates_options();
+				$checked = ! empty( $o['enabled'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_updates[enabled]" value="1" ' . $checked . '> ';
+				echo \esc_html__( 'Check for plugin updates from GitHub releases', 'functionalities' ) . '</label>';
+			},
+			'functionalities_updates',
+			'functionalities_updates_section'
+		);
+
+		\add_settings_field(
+			'github_owner',
+			\__( 'GitHub Owner/Organization', 'functionalities' ),
+			function() {
+				$o = self::get_updates_options();
+				$val = isset( $o['github_owner'] ) ? (string) $o['github_owner'] : '';
+				echo '<input type="text" class="regular-text" name="functionalities_updates[github_owner]" value="' . \esc_attr( $val ) . '" placeholder="wpgaurav" />';
+				echo '<p class="description">' . \esc_html__( 'The GitHub username or organization that owns the repository.', 'functionalities' ) . '</p>';
+			},
+			'functionalities_updates',
+			'functionalities_updates_section'
+		);
+
+		\add_settings_field(
+			'github_repo',
+			\__( 'GitHub Repository Name', 'functionalities' ),
+			function() {
+				$o = self::get_updates_options();
+				$val = isset( $o['github_repo'] ) ? (string) $o['github_repo'] : '';
+				echo '<input type="text" class="regular-text" name="functionalities_updates[github_repo]" value="' . \esc_attr( $val ) . '" placeholder="functionalities" />';
+				echo '<p class="description">' . \esc_html__( 'The name of the GitHub repository.', 'functionalities' ) . '</p>';
+			},
+			'functionalities_updates',
+			'functionalities_updates_section'
+		);
+
+		\add_settings_field(
+			'access_token',
+			\__( 'GitHub Access Token (Optional)', 'functionalities' ),
+			function() {
+				$o = self::get_updates_options();
+				$val = isset( $o['access_token'] ) ? (string) $o['access_token'] : '';
+				$masked = ! empty( $val ) ? str_repeat( '•', 20 ) . substr( $val, -4 ) : '';
+				echo '<input type="password" class="regular-text" name="functionalities_updates[access_token]" value="" placeholder="' . \esc_attr( $masked ?: 'ghp_xxxxxxxxxxxx' ) . '" autocomplete="new-password" />';
+				echo '<p class="description">' . \esc_html__( 'Required for private repositories. Leave empty for public repos. Token needs "repo" scope.', 'functionalities' ) . '</p>';
+				if ( ! empty( $val ) ) {
+					echo '<p class="description" style="color:#059669">✓ ' . \esc_html__( 'Token is saved. Leave empty to keep current token, or enter new one to replace.', 'functionalities' ) . '</p>';
+				}
+			},
+			'functionalities_updates',
+			'functionalities_updates_section'
+		);
+
+		\add_settings_field(
+			'cache_duration',
+			\__( 'Update Check Interval', 'functionalities' ),
+			function() {
+				$o = self::get_updates_options();
+				$val = isset( $o['cache_duration'] ) ? (int) $o['cache_duration'] : 21600;
+				$options = array(
+					3600   => \__( '1 hour', 'functionalities' ),
+					10800  => \__( '3 hours', 'functionalities' ),
+					21600  => \__( '6 hours (recommended)', 'functionalities' ),
+					43200  => \__( '12 hours', 'functionalities' ),
+					86400  => \__( '24 hours', 'functionalities' ),
+				);
+				echo '<select name="functionalities_updates[cache_duration]">';
+				foreach ( $options as $seconds => $label ) {
+					$sel = selected( $val, $seconds, false );
+					echo '<option value="' . \esc_attr( $seconds ) . '" ' . $sel . '>' . \esc_html( $label ) . '</option>';
+				}
+				echo '</select>';
+				echo '<p class="description">' . \esc_html__( 'How often to check GitHub for new releases. More frequent checks may hit API rate limits.', 'functionalities' ) . '</p>';
+			},
+			'functionalities_updates',
+			'functionalities_updates_section'
+		);
+
+		\add_settings_field(
+			'update_status',
+			\__( 'Current Status', 'functionalities' ),
+			array( __CLASS__, 'field_update_status' ),
+			'functionalities_updates',
+			'functionalities_updates_section'
+		);
 	}
 
 	public static function field_nofollow_external() : void {
@@ -1498,49 +1615,188 @@ class Admin {
 	public static function field_components_items() : void {
 		$o = self::get_components_options();
 		$items = isset( $o['items'] ) && is_array( $o['items'] ) ? $o['items'] : [];
-		echo '<style>
-			.fc-accordions{border:1px solid #e5e7eb;border-radius:8px;overflow:hidden}
-			.fc-acc{border-top:1px solid #e5e7eb}
-			.fc-acc:first-child{border-top:0}
-			.fc-acc__hdr{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;background:#f9fafb;cursor:pointer}
-			.fc-acc__title{font-weight:600;margin:0}
-			.fc-acc__body{display:none;padding:1rem;background:#fff}
-			.fc-acc.is-open .fc-acc__body{display:block}
-			.fc-fields .field{margin-bottom:.5rem}
-			.fc-fields .field label{display:block;font-weight:600;margin-bottom:.25rem}
-		</style>';
-		echo '<div class="fc-accordions" id="fc-accordions">';
+		?>
+		<style>
+			.fc-accordions {
+				border: 1px solid #e5e7eb;
+				border-radius: 8px;
+				overflow: hidden;
+				margin-bottom: 12px;
+			}
+			.fc-acc {
+				border-top: 1px solid #e5e7eb;
+			}
+			.fc-acc:first-child {
+				border-top: 0;
+			}
+			.fc-acc__hdr {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				padding: 12px 16px;
+				background: #f9fafb;
+				cursor: pointer;
+				user-select: none;
+				transition: background-color 0.15s ease;
+			}
+			.fc-acc__hdr:hover {
+				background: #f3f4f6;
+			}
+			.fc-acc__title {
+				font-weight: 600;
+				margin: 0;
+				font-size: 14px;
+				flex: 1;
+			}
+			.fc-acc__toggle {
+				width: 20px;
+				height: 20px;
+				transition: transform 0.2s ease;
+				color: #6b7280;
+			}
+			.fc-acc.is-open .fc-acc__toggle {
+				transform: rotate(180deg);
+			}
+			.fc-acc__body {
+				display: none;
+				padding: 16px;
+				background: #fff;
+				border-top: 1px solid #e5e7eb;
+			}
+			.fc-acc.is-open .fc-acc__body {
+				display: block;
+			}
+			.fc-acc__delete {
+				color: #dc2626;
+				background: none;
+				border: none;
+				cursor: pointer;
+				padding: 4px 8px;
+				margin-left: 8px;
+				border-radius: 4px;
+				font-size: 12px;
+				transition: background 0.15s;
+			}
+			.fc-acc__delete:hover {
+				background: #fef2f2;
+			}
+			.fc-fields .field {
+				margin-bottom: 12px;
+			}
+			.fc-fields .field:last-child {
+				margin-bottom: 0;
+			}
+			.fc-fields .field label {
+				display: block;
+				font-weight: 600;
+				margin-bottom: 4px;
+				font-size: 13px;
+			}
+			.fc-acc--new .fc-acc__hdr {
+				background: #eff6ff;
+			}
+			.fc-acc--new .fc-acc__hdr:hover {
+				background: #dbeafe;
+			}
+		</style>
+		<div class="fc-accordions" id="fc-accordions">
+		<?php
 		$i = 0;
 		foreach ( $items as $item ) {
-			$name = \esc_attr( $item['name'] ?? '' );
+			$name  = \esc_attr( $item['name'] ?? '' );
 			$class = \esc_attr( $item['class'] ?? '' );
-			$css = \esc_textarea( $item['css'] ?? '' );
-			echo '<div class="fc-acc">';
-			echo '<div class="fc-acc__hdr"><h3 class="fc-acc__title">' . ( $name !== '' ? $name : \esc_html__( 'Component', 'functionalities' ) ) . '</h3><span class="dashicons dashicons-arrow-down-alt2"></span></div>';
-			echo '<div class="fc-acc__body">';
-			echo '<div class="fc-fields">';
-			echo '<div class="field"><label>' . \esc_html__( 'Name', 'functionalities' ) . '</label><input type="text" name="functionalities_components[items]['.$i.'][name]" value="'.$name.'" class="regular-text" /></div>';
-			echo '<div class="field"><label>' . \esc_html__( 'Class', 'functionalities' ) . '</label><input type="text" name="functionalities_components[items]['.$i.'][class]" value="'.$class.'" class="regular-text code" placeholder=".c-card or .btn.primary" /></div>';
-			echo '<div class="field"><label>' . \esc_html__( 'CSS Rules', 'functionalities' ) . '</label><textarea name="functionalities_components[items]['.$i.'][css]" rows="5" cols="50" class="large-text code">'.$css.'</textarea></div>';
-			echo '</div>'; // fields
-			echo '</div>'; // body
-			echo '</div>'; // acc
+			$css   = \esc_textarea( $item['css'] ?? '' );
+			?>
+			<div class="fc-acc" data-index="<?php echo $i; ?>">
+				<div class="fc-acc__hdr">
+					<h3 class="fc-acc__title"><?php echo $name !== '' ? \esc_html( $item['name'] ) : \esc_html__( 'Component', 'functionalities' ); ?></h3>
+					<button type="button" class="fc-acc__delete" title="<?php \esc_attr_e( 'Remove component', 'functionalities' ); ?>">&times; <?php \esc_html_e( 'Remove', 'functionalities' ); ?></button>
+					<span class="dashicons dashicons-arrow-down-alt2 fc-acc__toggle"></span>
+				</div>
+				<div class="fc-acc__body">
+					<div class="fc-fields">
+						<div class="field">
+							<label><?php \esc_html_e( 'Name', 'functionalities' ); ?></label>
+							<input type="text" name="functionalities_components[items][<?php echo $i; ?>][name]" value="<?php echo $name; ?>" class="regular-text" />
+						</div>
+						<div class="field">
+							<label><?php \esc_html_e( 'CSS Selector', 'functionalities' ); ?></label>
+							<input type="text" name="functionalities_components[items][<?php echo $i; ?>][class]" value="<?php echo $class; ?>" class="regular-text code" placeholder=".c-card or .btn.primary" />
+						</div>
+						<div class="field">
+							<label><?php \esc_html_e( 'CSS Rules', 'functionalities' ); ?></label>
+							<textarea name="functionalities_components[items][<?php echo $i; ?>][css]" rows="4" cols="50" class="large-text code"><?php echo $css; ?></textarea>
+						</div>
+					</div>
+				</div>
+			</div>
+			<?php
 			$i++;
 		}
-		// one empty accordion for new entry
-		echo '<div class="fc-acc is-open">';
-		echo '<div class="fc-acc__hdr"><h3 class="fc-acc__title">' . \esc_html__( 'New Component', 'functionalities' ) . '</h3><span class="dashicons dashicons-arrow-down-alt2"></span></div>';
-		echo '<div class="fc-acc__body">';
-		echo '<div class="fc-fields">';
-		echo '<div class="field"><label>' . \esc_html__( 'Name', 'functionalities' ) . '</label><input type="text" name="functionalities_components[items]['.$i.'][name]" value="" class="regular-text" /></div>';
-		echo '<div class="field"><label>' . \esc_html__( 'Class', 'functionalities' ) . '</label><input type="text" name="functionalities_components[items]['.$i.'][class]" value="" class="regular-text code" placeholder=".c-custom" /></div>';
-		echo '<div class="field"><label>' . \esc_html__( 'CSS Rules', 'functionalities' ) . '</label><textarea name="functionalities_components[items]['.$i.'][css]" rows="5" cols="50" class="large-text code"></textarea></div>';
-		echo '</div>';
-		echo '</div>';
-		echo '</div>';
-		echo '</div>';
-		echo '<script>(function(){const root=document.getElementById("fc-accordions");if(!root)return;root.addEventListener("click",function(e){const hdr=e.target.closest(".fc-acc__hdr");if(!hdr)return;const acc=hdr.parentElement;acc.classList.toggle("is-open");});})();</script>';
-		echo '<p class="description">' . \esc_html__( 'Click a panel to expand. Fill the last “New Component” panel to add more; a fresh one will appear after saving.', 'functionalities' ) . '</p>';
+		?>
+		<!-- New component panel -->
+		<div class="fc-acc fc-acc--new is-open" data-index="<?php echo $i; ?>">
+			<div class="fc-acc__hdr">
+				<h3 class="fc-acc__title"><?php \esc_html_e( '+ Add New Component', 'functionalities' ); ?></h3>
+				<span class="dashicons dashicons-arrow-down-alt2 fc-acc__toggle"></span>
+			</div>
+			<div class="fc-acc__body">
+				<div class="fc-fields">
+					<div class="field">
+						<label><?php \esc_html_e( 'Name', 'functionalities' ); ?></label>
+						<input type="text" name="functionalities_components[items][<?php echo $i; ?>][name]" value="" class="regular-text" placeholder="<?php \esc_attr_e( 'Component Name', 'functionalities' ); ?>" />
+					</div>
+					<div class="field">
+						<label><?php \esc_html_e( 'CSS Selector', 'functionalities' ); ?></label>
+						<input type="text" name="functionalities_components[items][<?php echo $i; ?>][class]" value="" class="regular-text code" placeholder=".c-custom" />
+					</div>
+					<div class="field">
+						<label><?php \esc_html_e( 'CSS Rules', 'functionalities' ); ?></label>
+						<textarea name="functionalities_components[items][<?php echo $i; ?>][css]" rows="4" cols="50" class="large-text code" placeholder="background: #fff; padding: 1rem;"></textarea>
+					</div>
+				</div>
+			</div>
+		</div>
+		</div>
+		<script>
+		(function() {
+			var root = document.getElementById('fc-accordions');
+			if (!root) return;
+
+			// Toggle accordion on header click
+			root.addEventListener('click', function(e) {
+				var hdr = e.target.closest('.fc-acc__hdr');
+				var deleteBtn = e.target.closest('.fc-acc__delete');
+
+				// Handle delete button
+				if (deleteBtn) {
+					e.preventDefault();
+					e.stopPropagation();
+					var acc = deleteBtn.closest('.fc-acc');
+					if (acc && confirm('<?php echo \esc_js( \__( 'Remove this component?', 'functionalities' ) ); ?>')) {
+						// Clear the input values so they won't be saved
+						var inputs = acc.querySelectorAll('input, textarea');
+						inputs.forEach(function(input) {
+							input.value = '';
+							input.name = '';
+						});
+						acc.style.display = 'none';
+					}
+					return;
+				}
+
+				// Handle accordion toggle
+				if (hdr && !e.target.closest('.fc-acc__delete')) {
+					var acc = hdr.closest('.fc-acc');
+					if (acc) {
+						acc.classList.toggle('is-open');
+					}
+				}
+			});
+		})();
+		</script>
+		<p class="description"><?php \esc_html_e( 'Click a panel header to expand/collapse. Use "Remove" to delete a component. Fill the "Add New Component" panel to create new ones.', 'functionalities' ); ?></p>
+		<?php
 	}
 	public static function default_components() : array {
 		return [
@@ -1715,26 +1971,44 @@ class Admin {
 	 * @return void
 	 */
 	public static function section_meta() : void {
-		echo '<p>' . \esc_html__( 'Add copyright metadata, Dublin Core (DCMI) tags, and per-post licensing options. Integrates with major SEO plugins to enhance Schema.org output with copyright information.', 'functionalities' ) . '</p>';
+		$detected = \Functionalities\Features\Meta::detect_seo_plugin();
+		echo '<p>' . \esc_html__( 'Add copyright metadata, Dublin Core (DCMI) tags, and per-post licensing options. Works standalone or integrates with major SEO plugins.', 'functionalities' ) . '</p>';
 		echo '<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:12px 16px;margin:12px 0">';
 		echo '<h4 style="margin:0 0 8px">' . \esc_html__( 'What This Module Does', 'functionalities' ) . '</h4>';
 		echo '<ul style="margin:0;padding-left:20px">';
 		echo '<li>' . \esc_html__( 'Outputs copyright and ownership meta tags in the HTML head', 'functionalities' ) . '</li>';
 		echo '<li>' . \esc_html__( 'Adds Dublin Core (DCMI) metadata for enhanced discoverability', 'functionalities' ) . '</li>';
 		echo '<li>' . \esc_html__( 'Provides a metabox in the post editor to select content license per-post', 'functionalities' ) . '</li>';
-		echo '<li>' . \esc_html__( 'Integrates with SEO plugins to add copyrightYear, copyrightHolder, and license to Schema.org JSON-LD', 'functionalities' ) . '</li>';
+		echo '<li>' . \esc_html__( 'Outputs Schema.org JSON-LD with copyright data (standalone or via SEO plugin)', 'functionalities' ) . '</li>';
 		echo '</ul>';
 		echo '</div>';
 		echo '<div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:6px;padding:12px 16px;margin:12px 0">';
-		echo '<h4 style="margin:0 0 8px">' . \esc_html__( 'Supported SEO Plugins', 'functionalities' ) . '</h4>';
-		echo '<ul style="margin:0;padding-left:20px;columns:2">';
-		echo '<li><strong>Rank Math</strong> — ' . \esc_html__( 'Full support', 'functionalities' ) . '</li>';
-		echo '<li><strong>Yoast SEO</strong> — ' . \esc_html__( 'Full support', 'functionalities' ) . '</li>';
-		echo '<li><strong>The SEO Framework</strong> — ' . \esc_html__( 'Full support', 'functionalities' ) . '</li>';
-		echo '<li><strong>SEOPress</strong> — ' . \esc_html__( 'Full support', 'functionalities' ) . '</li>';
-		echo '<li><strong>All in One SEO</strong> — ' . \esc_html__( 'Full support', 'functionalities' ) . '</li>';
+		echo '<h4 style="margin:0 0 8px">' . \esc_html__( 'Schema.org Support', 'functionalities' ) . '</h4>';
+		if ( $detected !== 'none' ) {
+			$plugin_names = array(
+				'rank-math'     => 'Rank Math',
+				'yoast'         => 'Yoast SEO',
+				'seo-framework' => 'The SEO Framework',
+				'seopress'      => 'SEOPress',
+				'aioseo'        => 'All in One SEO',
+			);
+			echo '<p style="margin:0 0 8px;color:#059669"><strong>✓ ' . \esc_html__( 'Detected:', 'functionalities' ) . '</strong> ' . \esc_html( $plugin_names[ $detected ] ?? $detected ) . '</p>';
+			echo '<p style="margin:0;font-size:13px;color:#1e3a8a">' . \esc_html__( 'Copyright data will be added to your SEO plugin\'s existing schema output.', 'functionalities' ) . '</p>';
+		} else {
+			echo '<p style="margin:0 0 8px;color:#059669"><strong>✓ ' . \esc_html__( 'Standalone Mode', 'functionalities' ) . '</strong></p>';
+			echo '<p style="margin:0;font-size:13px;color:#1e3a8a">' . \esc_html__( 'No SEO plugin detected. Complete Article schema with copyright will be output independently.', 'functionalities' ) . '</p>';
+		}
+		echo '</div>';
+		echo '<div style="background:#faf5ff;border:1px solid #d8b4fe;border-radius:6px;padding:12px 16px;margin:12px 0">';
+		echo '<h4 style="margin:0 0 8px;color:#6b21a8">' . \esc_html__( 'Compatible SEO Plugins', 'functionalities' ) . '</h4>';
+		echo '<ul style="margin:0;padding-left:20px;columns:2;color:#581c87">';
+		echo '<li>Rank Math</li>';
+		echo '<li>Yoast SEO</li>';
+		echo '<li>The SEO Framework</li>';
+		echo '<li>SEOPress</li>';
+		echo '<li>All in One SEO</li>';
+		echo '<li><em>' . \esc_html__( 'or Standalone', 'functionalities' ) . '</em></li>';
 		echo '</ul>';
-		echo '<p style="margin:8px 0 0;font-size:13px;color:#1e40af">' . \esc_html__( 'Plugin detection is cached for performance. Schema integration only activates when a supported plugin is detected.', 'functionalities' ) . '</p>';
 		echo '</div>';
 	}
 
@@ -1840,6 +2114,146 @@ class Admin {
 			'dc_language'               => '',
 		);
 		$opts = (array) \get_option( 'functionalities_meta', $defaults );
+		return array_merge( $defaults, $opts );
+	}
+
+	/**
+	 * Render section description for GitHub Updates.
+	 *
+	 * @return void
+	 */
+	public static function section_updates() : void {
+		echo '<p>' . \esc_html__( 'Receive plugin updates directly from GitHub releases. Configure your repository details below to enable automatic update checks.', 'functionalities' ) . '</p>';
+		echo '<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;padding:12px 16px;margin:12px 0">';
+		echo '<h4 style="margin:0 0 8px;color:#92400e">' . \esc_html__( 'How It Works', 'functionalities' ) . '</h4>';
+		echo '<ol style="margin:0;padding-left:20px;color:#78350f">';
+		echo '<li>' . \esc_html__( 'Create releases on GitHub with version tags (e.g., v0.5.0 or 0.5.0)', 'functionalities' ) . '</li>';
+		echo '<li>' . \esc_html__( 'WordPress will check GitHub for new releases based on your interval setting', 'functionalities' ) . '</li>';
+		echo '<li>' . \esc_html__( 'When a new version is found, update notification appears in your dashboard', 'functionalities' ) . '</li>';
+		echo '<li>' . \esc_html__( 'Click "Update Now" to install the new version with one click', 'functionalities' ) . '</li>';
+		echo '</ol>';
+		echo '</div>';
+		echo '<div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:6px;padding:12px 16px;margin:12px 0">';
+		echo '<h4 style="margin:0 0 8px;color:#1e40af">' . \esc_html__( 'Release Requirements', 'functionalities' ) . '</h4>';
+		echo '<ul style="margin:0;padding-left:20px;color:#1e3a8a">';
+		echo '<li>' . \esc_html__( 'Tag format: v1.0.0, 1.0.0, or any semver format', 'functionalities' ) . '</li>';
+		echo '<li>' . \esc_html__( 'Attach a .zip file to the release (recommended) OR use auto-generated zipball', 'functionalities' ) . '</li>';
+		echo '<li>' . \esc_html__( 'The zip should contain the plugin files in a folder matching the plugin directory name', 'functionalities' ) . '</li>';
+		echo '</ul>';
+		echo '</div>';
+	}
+
+	/**
+	 * Render update status field.
+	 *
+	 * @return void
+	 */
+	public static function field_update_status() : void {
+		$options = self::get_updates_options();
+
+		if ( empty( $options['enabled'] ) || empty( $options['github_owner'] ) || empty( $options['github_repo'] ) ) {
+			echo '<p style="color:#6b7280">' . \esc_html__( 'Configure settings above and save to check for updates.', 'functionalities' ) . '</p>';
+			return;
+		}
+
+		// Get current version.
+		$current_version = FUNCTIONALITIES_VERSION;
+
+		// Try to get cached release info.
+		$cache_key = 'functionalities_github_update_' . md5( \plugin_basename( FUNCTIONALITIES_FILE ) );
+		$release   = \get_transient( $cache_key );
+
+		echo '<div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:12px 16px">';
+		echo '<p style="margin:0 0 8px"><strong>' . \esc_html__( 'Current Version:', 'functionalities' ) . '</strong> ' . \esc_html( $current_version ) . '</p>';
+		echo '<p style="margin:0 0 8px"><strong>' . \esc_html__( 'Repository:', 'functionalities' ) . '</strong> ';
+		echo '<a href="https://github.com/' . \esc_attr( $options['github_owner'] ) . '/' . \esc_attr( $options['github_repo'] ) . '" target="_blank">';
+		echo \esc_html( $options['github_owner'] . '/' . $options['github_repo'] );
+		echo '</a></p>';
+
+		if ( $release && is_object( $release ) ) {
+			echo '<p style="margin:0 0 8px"><strong>' . \esc_html__( 'Latest Release:', 'functionalities' ) . '</strong> ';
+			if ( version_compare( $current_version, $release->version, '<' ) ) {
+				echo '<span style="color:#dc2626">' . \esc_html( $release->version ) . ' (' . \esc_html__( 'Update available!', 'functionalities' ) . ')</span>';
+			} else {
+				echo '<span style="color:#059669">' . \esc_html( $release->version ) . ' (' . \esc_html__( 'Up to date', 'functionalities' ) . ')</span>';
+			}
+			echo '</p>';
+		} else {
+			echo '<p style="margin:0;color:#6b7280">' . \esc_html__( 'No cached release data. Use "Check for updates" link on the Plugins page.', 'functionalities' ) . '</p>';
+		}
+
+		echo '</div>';
+
+		// Add manual check link.
+		$check_url = \wp_nonce_url(
+			\admin_url( 'plugins.php?functionalities_check_update=1' ),
+			'functionalities_check_update'
+		);
+		echo '<p style="margin-top:8px"><a href="' . \esc_url( $check_url ) . '" class="button">' . \esc_html__( 'Check Now', 'functionalities' ) . '</a></p>';
+	}
+
+	/**
+	 * Sanitize GitHub Updates settings.
+	 *
+	 * @param array $input Raw input data.
+	 * @return array Sanitized data.
+	 */
+	public static function sanitize_updates( $input ) : array {
+		$current = self::get_updates_options();
+
+		$out = array(
+			'enabled'        => ! empty( $input['enabled'] ),
+			'github_owner'   => '',
+			'github_repo'    => '',
+			'access_token'   => $current['access_token'], // Preserve existing token by default.
+			'cache_duration' => 21600,
+		);
+
+		// Sanitize owner (alphanumeric, hyphens, underscores).
+		if ( isset( $input['github_owner'] ) ) {
+			$out['github_owner'] = preg_replace( '/[^a-zA-Z0-9\-_]/', '', (string) $input['github_owner'] );
+		}
+
+		// Sanitize repo name.
+		if ( isset( $input['github_repo'] ) ) {
+			$out['github_repo'] = preg_replace( '/[^a-zA-Z0-9\-_\.]/', '', (string) $input['github_repo'] );
+		}
+
+		// Only update token if a new one was provided.
+		if ( isset( $input['access_token'] ) && ! empty( trim( $input['access_token'] ) ) ) {
+			$out['access_token'] = \sanitize_text_field( $input['access_token'] );
+		}
+
+		// Validate cache duration.
+		$valid_durations = array( 3600, 10800, 21600, 43200, 86400 );
+		if ( isset( $input['cache_duration'] ) ) {
+			$duration = (int) $input['cache_duration'];
+			if ( in_array( $duration, $valid_durations, true ) ) {
+				$out['cache_duration'] = $duration;
+			}
+		}
+
+		// Clear update cache when settings change.
+		$cache_key = 'functionalities_github_update_' . md5( \plugin_basename( FUNCTIONALITIES_FILE ) );
+		\delete_transient( $cache_key );
+
+		return $out;
+	}
+
+	/**
+	 * Get GitHub Updates options with defaults.
+	 *
+	 * @return array Updates options.
+	 */
+	public static function get_updates_options() : array {
+		$defaults = array(
+			'enabled'        => false,
+			'github_owner'   => '',
+			'github_repo'    => '',
+			'access_token'   => '',
+			'cache_duration' => 21600,
+		);
+		$opts = (array) \get_option( 'functionalities_updates', $defaults );
 		return array_merge( $defaults, $opts );
 	}
 }
