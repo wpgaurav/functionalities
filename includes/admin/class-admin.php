@@ -1615,49 +1615,188 @@ class Admin {
 	public static function field_components_items() : void {
 		$o = self::get_components_options();
 		$items = isset( $o['items'] ) && is_array( $o['items'] ) ? $o['items'] : [];
-		echo '<style>
-			.fc-accordions{border:1px solid #e5e7eb;border-radius:8px;overflow:hidden}
-			.fc-acc{border-top:1px solid #e5e7eb}
-			.fc-acc:first-child{border-top:0}
-			.fc-acc__hdr{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;background:#f9fafb;cursor:pointer}
-			.fc-acc__title{font-weight:600;margin:0}
-			.fc-acc__body{display:none;padding:1rem;background:#fff}
-			.fc-acc.is-open .fc-acc__body{display:block}
-			.fc-fields .field{margin-bottom:.5rem}
-			.fc-fields .field label{display:block;font-weight:600;margin-bottom:.25rem}
-		</style>';
-		echo '<div class="fc-accordions" id="fc-accordions">';
+		?>
+		<style>
+			.fc-accordions {
+				border: 1px solid #e5e7eb;
+				border-radius: 8px;
+				overflow: hidden;
+				margin-bottom: 12px;
+			}
+			.fc-acc {
+				border-top: 1px solid #e5e7eb;
+			}
+			.fc-acc:first-child {
+				border-top: 0;
+			}
+			.fc-acc__hdr {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				padding: 12px 16px;
+				background: #f9fafb;
+				cursor: pointer;
+				user-select: none;
+				transition: background-color 0.15s ease;
+			}
+			.fc-acc__hdr:hover {
+				background: #f3f4f6;
+			}
+			.fc-acc__title {
+				font-weight: 600;
+				margin: 0;
+				font-size: 14px;
+				flex: 1;
+			}
+			.fc-acc__toggle {
+				width: 20px;
+				height: 20px;
+				transition: transform 0.2s ease;
+				color: #6b7280;
+			}
+			.fc-acc.is-open .fc-acc__toggle {
+				transform: rotate(180deg);
+			}
+			.fc-acc__body {
+				display: none;
+				padding: 16px;
+				background: #fff;
+				border-top: 1px solid #e5e7eb;
+			}
+			.fc-acc.is-open .fc-acc__body {
+				display: block;
+			}
+			.fc-acc__delete {
+				color: #dc2626;
+				background: none;
+				border: none;
+				cursor: pointer;
+				padding: 4px 8px;
+				margin-left: 8px;
+				border-radius: 4px;
+				font-size: 12px;
+				transition: background 0.15s;
+			}
+			.fc-acc__delete:hover {
+				background: #fef2f2;
+			}
+			.fc-fields .field {
+				margin-bottom: 12px;
+			}
+			.fc-fields .field:last-child {
+				margin-bottom: 0;
+			}
+			.fc-fields .field label {
+				display: block;
+				font-weight: 600;
+				margin-bottom: 4px;
+				font-size: 13px;
+			}
+			.fc-acc--new .fc-acc__hdr {
+				background: #eff6ff;
+			}
+			.fc-acc--new .fc-acc__hdr:hover {
+				background: #dbeafe;
+			}
+		</style>
+		<div class="fc-accordions" id="fc-accordions">
+		<?php
 		$i = 0;
 		foreach ( $items as $item ) {
-			$name = \esc_attr( $item['name'] ?? '' );
+			$name  = \esc_attr( $item['name'] ?? '' );
 			$class = \esc_attr( $item['class'] ?? '' );
-			$css = \esc_textarea( $item['css'] ?? '' );
-			echo '<div class="fc-acc">';
-			echo '<div class="fc-acc__hdr"><h3 class="fc-acc__title">' . ( $name !== '' ? $name : \esc_html__( 'Component', 'functionalities' ) ) . '</h3><span class="dashicons dashicons-arrow-down-alt2"></span></div>';
-			echo '<div class="fc-acc__body">';
-			echo '<div class="fc-fields">';
-			echo '<div class="field"><label>' . \esc_html__( 'Name', 'functionalities' ) . '</label><input type="text" name="functionalities_components[items]['.$i.'][name]" value="'.$name.'" class="regular-text" /></div>';
-			echo '<div class="field"><label>' . \esc_html__( 'Class', 'functionalities' ) . '</label><input type="text" name="functionalities_components[items]['.$i.'][class]" value="'.$class.'" class="regular-text code" placeholder=".c-card or .btn.primary" /></div>';
-			echo '<div class="field"><label>' . \esc_html__( 'CSS Rules', 'functionalities' ) . '</label><textarea name="functionalities_components[items]['.$i.'][css]" rows="5" cols="50" class="large-text code">'.$css.'</textarea></div>';
-			echo '</div>'; // fields
-			echo '</div>'; // body
-			echo '</div>'; // acc
+			$css   = \esc_textarea( $item['css'] ?? '' );
+			?>
+			<div class="fc-acc" data-index="<?php echo $i; ?>">
+				<div class="fc-acc__hdr">
+					<h3 class="fc-acc__title"><?php echo $name !== '' ? \esc_html( $item['name'] ) : \esc_html__( 'Component', 'functionalities' ); ?></h3>
+					<button type="button" class="fc-acc__delete" title="<?php \esc_attr_e( 'Remove component', 'functionalities' ); ?>">&times; <?php \esc_html_e( 'Remove', 'functionalities' ); ?></button>
+					<span class="dashicons dashicons-arrow-down-alt2 fc-acc__toggle"></span>
+				</div>
+				<div class="fc-acc__body">
+					<div class="fc-fields">
+						<div class="field">
+							<label><?php \esc_html_e( 'Name', 'functionalities' ); ?></label>
+							<input type="text" name="functionalities_components[items][<?php echo $i; ?>][name]" value="<?php echo $name; ?>" class="regular-text" />
+						</div>
+						<div class="field">
+							<label><?php \esc_html_e( 'CSS Selector', 'functionalities' ); ?></label>
+							<input type="text" name="functionalities_components[items][<?php echo $i; ?>][class]" value="<?php echo $class; ?>" class="regular-text code" placeholder=".c-card or .btn.primary" />
+						</div>
+						<div class="field">
+							<label><?php \esc_html_e( 'CSS Rules', 'functionalities' ); ?></label>
+							<textarea name="functionalities_components[items][<?php echo $i; ?>][css]" rows="4" cols="50" class="large-text code"><?php echo $css; ?></textarea>
+						</div>
+					</div>
+				</div>
+			</div>
+			<?php
 			$i++;
 		}
-		// one empty accordion for new entry
-		echo '<div class="fc-acc is-open">';
-		echo '<div class="fc-acc__hdr"><h3 class="fc-acc__title">' . \esc_html__( 'New Component', 'functionalities' ) . '</h3><span class="dashicons dashicons-arrow-down-alt2"></span></div>';
-		echo '<div class="fc-acc__body">';
-		echo '<div class="fc-fields">';
-		echo '<div class="field"><label>' . \esc_html__( 'Name', 'functionalities' ) . '</label><input type="text" name="functionalities_components[items]['.$i.'][name]" value="" class="regular-text" /></div>';
-		echo '<div class="field"><label>' . \esc_html__( 'Class', 'functionalities' ) . '</label><input type="text" name="functionalities_components[items]['.$i.'][class]" value="" class="regular-text code" placeholder=".c-custom" /></div>';
-		echo '<div class="field"><label>' . \esc_html__( 'CSS Rules', 'functionalities' ) . '</label><textarea name="functionalities_components[items]['.$i.'][css]" rows="5" cols="50" class="large-text code"></textarea></div>';
-		echo '</div>';
-		echo '</div>';
-		echo '</div>';
-		echo '</div>';
-		echo '<script>(function(){const root=document.getElementById("fc-accordions");if(!root)return;root.addEventListener("click",function(e){const hdr=e.target.closest(".fc-acc__hdr");if(!hdr)return;const acc=hdr.parentElement;acc.classList.toggle("is-open");});})();</script>';
-		echo '<p class="description">' . \esc_html__( 'Click a panel to expand. Fill the last “New Component” panel to add more; a fresh one will appear after saving.', 'functionalities' ) . '</p>';
+		?>
+		<!-- New component panel -->
+		<div class="fc-acc fc-acc--new is-open" data-index="<?php echo $i; ?>">
+			<div class="fc-acc__hdr">
+				<h3 class="fc-acc__title"><?php \esc_html_e( '+ Add New Component', 'functionalities' ); ?></h3>
+				<span class="dashicons dashicons-arrow-down-alt2 fc-acc__toggle"></span>
+			</div>
+			<div class="fc-acc__body">
+				<div class="fc-fields">
+					<div class="field">
+						<label><?php \esc_html_e( 'Name', 'functionalities' ); ?></label>
+						<input type="text" name="functionalities_components[items][<?php echo $i; ?>][name]" value="" class="regular-text" placeholder="<?php \esc_attr_e( 'Component Name', 'functionalities' ); ?>" />
+					</div>
+					<div class="field">
+						<label><?php \esc_html_e( 'CSS Selector', 'functionalities' ); ?></label>
+						<input type="text" name="functionalities_components[items][<?php echo $i; ?>][class]" value="" class="regular-text code" placeholder=".c-custom" />
+					</div>
+					<div class="field">
+						<label><?php \esc_html_e( 'CSS Rules', 'functionalities' ); ?></label>
+						<textarea name="functionalities_components[items][<?php echo $i; ?>][css]" rows="4" cols="50" class="large-text code" placeholder="background: #fff; padding: 1rem;"></textarea>
+					</div>
+				</div>
+			</div>
+		</div>
+		</div>
+		<script>
+		(function() {
+			var root = document.getElementById('fc-accordions');
+			if (!root) return;
+
+			// Toggle accordion on header click
+			root.addEventListener('click', function(e) {
+				var hdr = e.target.closest('.fc-acc__hdr');
+				var deleteBtn = e.target.closest('.fc-acc__delete');
+
+				// Handle delete button
+				if (deleteBtn) {
+					e.preventDefault();
+					e.stopPropagation();
+					var acc = deleteBtn.closest('.fc-acc');
+					if (acc && confirm('<?php echo \esc_js( \__( 'Remove this component?', 'functionalities' ) ); ?>')) {
+						// Clear the input values so they won't be saved
+						var inputs = acc.querySelectorAll('input, textarea');
+						inputs.forEach(function(input) {
+							input.value = '';
+							input.name = '';
+						});
+						acc.style.display = 'none';
+					}
+					return;
+				}
+
+				// Handle accordion toggle
+				if (hdr && !e.target.closest('.fc-acc__delete')) {
+					var acc = hdr.closest('.fc-acc');
+					if (acc) {
+						acc.classList.toggle('is-open');
+					}
+				}
+			});
+		})();
+		</script>
+		<p class="description"><?php \esc_html_e( 'Click a panel header to expand/collapse. Use "Remove" to delete a component. Fill the "Add New Component" panel to create new ones.', 'functionalities' ); ?></p>
+		<?php
 	}
 	public static function default_components() : array {
 		return [
@@ -1832,26 +1971,44 @@ class Admin {
 	 * @return void
 	 */
 	public static function section_meta() : void {
-		echo '<p>' . \esc_html__( 'Add copyright metadata, Dublin Core (DCMI) tags, and per-post licensing options. Integrates with major SEO plugins to enhance Schema.org output with copyright information.', 'functionalities' ) . '</p>';
+		$detected = \Functionalities\Features\Meta::detect_seo_plugin();
+		echo '<p>' . \esc_html__( 'Add copyright metadata, Dublin Core (DCMI) tags, and per-post licensing options. Works standalone or integrates with major SEO plugins.', 'functionalities' ) . '</p>';
 		echo '<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:12px 16px;margin:12px 0">';
 		echo '<h4 style="margin:0 0 8px">' . \esc_html__( 'What This Module Does', 'functionalities' ) . '</h4>';
 		echo '<ul style="margin:0;padding-left:20px">';
 		echo '<li>' . \esc_html__( 'Outputs copyright and ownership meta tags in the HTML head', 'functionalities' ) . '</li>';
 		echo '<li>' . \esc_html__( 'Adds Dublin Core (DCMI) metadata for enhanced discoverability', 'functionalities' ) . '</li>';
 		echo '<li>' . \esc_html__( 'Provides a metabox in the post editor to select content license per-post', 'functionalities' ) . '</li>';
-		echo '<li>' . \esc_html__( 'Integrates with SEO plugins to add copyrightYear, copyrightHolder, and license to Schema.org JSON-LD', 'functionalities' ) . '</li>';
+		echo '<li>' . \esc_html__( 'Outputs Schema.org JSON-LD with copyright data (standalone or via SEO plugin)', 'functionalities' ) . '</li>';
 		echo '</ul>';
 		echo '</div>';
 		echo '<div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:6px;padding:12px 16px;margin:12px 0">';
-		echo '<h4 style="margin:0 0 8px">' . \esc_html__( 'Supported SEO Plugins', 'functionalities' ) . '</h4>';
-		echo '<ul style="margin:0;padding-left:20px;columns:2">';
-		echo '<li><strong>Rank Math</strong> — ' . \esc_html__( 'Full support', 'functionalities' ) . '</li>';
-		echo '<li><strong>Yoast SEO</strong> — ' . \esc_html__( 'Full support', 'functionalities' ) . '</li>';
-		echo '<li><strong>The SEO Framework</strong> — ' . \esc_html__( 'Full support', 'functionalities' ) . '</li>';
-		echo '<li><strong>SEOPress</strong> — ' . \esc_html__( 'Full support', 'functionalities' ) . '</li>';
-		echo '<li><strong>All in One SEO</strong> — ' . \esc_html__( 'Full support', 'functionalities' ) . '</li>';
+		echo '<h4 style="margin:0 0 8px">' . \esc_html__( 'Schema.org Support', 'functionalities' ) . '</h4>';
+		if ( $detected !== 'none' ) {
+			$plugin_names = array(
+				'rank-math'     => 'Rank Math',
+				'yoast'         => 'Yoast SEO',
+				'seo-framework' => 'The SEO Framework',
+				'seopress'      => 'SEOPress',
+				'aioseo'        => 'All in One SEO',
+			);
+			echo '<p style="margin:0 0 8px;color:#059669"><strong>✓ ' . \esc_html__( 'Detected:', 'functionalities' ) . '</strong> ' . \esc_html( $plugin_names[ $detected ] ?? $detected ) . '</p>';
+			echo '<p style="margin:0;font-size:13px;color:#1e3a8a">' . \esc_html__( 'Copyright data will be added to your SEO plugin\'s existing schema output.', 'functionalities' ) . '</p>';
+		} else {
+			echo '<p style="margin:0 0 8px;color:#059669"><strong>✓ ' . \esc_html__( 'Standalone Mode', 'functionalities' ) . '</strong></p>';
+			echo '<p style="margin:0;font-size:13px;color:#1e3a8a">' . \esc_html__( 'No SEO plugin detected. Complete Article schema with copyright will be output independently.', 'functionalities' ) . '</p>';
+		}
+		echo '</div>';
+		echo '<div style="background:#faf5ff;border:1px solid #d8b4fe;border-radius:6px;padding:12px 16px;margin:12px 0">';
+		echo '<h4 style="margin:0 0 8px;color:#6b21a8">' . \esc_html__( 'Compatible SEO Plugins', 'functionalities' ) . '</h4>';
+		echo '<ul style="margin:0;padding-left:20px;columns:2;color:#581c87">';
+		echo '<li>Rank Math</li>';
+		echo '<li>Yoast SEO</li>';
+		echo '<li>The SEO Framework</li>';
+		echo '<li>SEOPress</li>';
+		echo '<li>All in One SEO</li>';
+		echo '<li><em>' . \esc_html__( 'or Standalone', 'functionalities' ) . '</em></li>';
 		echo '</ul>';
-		echo '<p style="margin:8px 0 0;font-size:13px;color:#1e40af">' . \esc_html__( 'Plugin detection is cached for performance. Schema integration only activates when a supported plugin is detected.', 'functionalities' ) . '</p>';
 		echo '</div>';
 	}
 

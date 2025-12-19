@@ -6,7 +6,6 @@ A modular site-specific plugin to organize common features with simple toggles. 
 
 ### Core
 - Safe plugin bootstrap with constants
-- Example shortcode: `[functionalities_hello name="World"]`
 - Asset enqueues for CSS/JS
 - **NEW:** Module-based admin interface with dashboard cards
 - **NEW:** URL parameter navigation (no more separate submenu pages)
@@ -96,7 +95,6 @@ A modular site-specific plugin to organize common features with simple toggles. 
 1. Copy this folder `functionalities/` into your WordPress `wp-content/plugins/` directory.
 2. In wp-admin, go to **Plugins** and activate **Functionalities**.
 3. Navigate to **Functionalities** in the admin menu to access the module dashboard.
-4. Optional: Add the shortcode to a post or page: `[functionalities_hello name="Alice"]`.
 
 ## Usage
 
