@@ -294,7 +294,57 @@ GPL-2.0-or-later
 
 ## Changelog
 
-### Version 0.7.1 (Current)
+### Version 0.8.0 (Current)
+- **MAJOR:** Comprehensive inline documentation for all modules
+- Added 50+ hooks and filters for developer extensibility
+- Removed old zip file from repository root
+- Every feature module now includes:
+  - PHPDoc file headers with package info
+  - Class documentation with features list
+  - Method documentation with @since tags
+  - Filter documentation with examples
+  - Action documentation for extensibility
+
+#### New Filters (0.8.0)
+- `functionalities_enqueue_style` - Control main stylesheet loading
+- `functionalities_enqueue_script` - Control main script loading
+- `functionalities_block_cleanup_enabled` - Toggle block cleanup
+- `functionalities_block_cleanup_content` - Filter cleaned content
+- `functionalities_editor_links_enabled` - Toggle editor link filtering
+- `functionalities_editor_links_post_types` - Customize allowed post types
+- `functionalities_snippets_output_enabled` - Toggle snippet output
+- `functionalities_snippets_ga4_enabled` - Control GA4 output
+- `functionalities_snippets_header_code` - Filter header code
+- `functionalities_snippets_footer_code` - Filter footer code
+- `functionalities_components_enabled` - Toggle components CSS
+- `functionalities_components_items` - Modify component items
+- `functionalities_components_css` - Filter generated CSS
+- `functionalities_fonts_enabled` - Toggle font CSS output
+- `functionalities_fonts_items` - Modify font definitions
+- `functionalities_fonts_css` - Filter generated @font-face CSS
+- `functionalities_icons_remove_fa_enabled` - Toggle FA removal
+- `functionalities_icons_convert_enabled` - Toggle FA to SVG conversion
+- `functionalities_icons_sprite_url` - Customize sprite URL
+- `functionalities_schema_enabled` - Toggle schema output
+- `functionalities_schema_site_itemtype` - Customize site schema type
+- `functionalities_schema_article_itemtype` - Customize article schema type
+- `functionalities_misc_option_{$key}` - Filter individual misc options
+- `functionalities_misc_prism_theme_url` - Customize Prism.js theme
+
+#### New Actions (0.8.0)
+- `functionalities_before_enqueue_assets` - Before asset enqueuing
+- `functionalities_after_enqueue_assets` - After asset enqueuing
+- `functionalities_before_header_snippets` - Before header output
+- `functionalities_after_header_snippets` - After header output
+- `functionalities_before_footer_snippets` - Before footer output
+- `functionalities_after_footer_snippets` - After footer output
+- `functionalities_components_before_output` - Before components CSS
+- `functionalities_components_updated` - When CSS file regenerates
+- `functionalities_fonts_before_output` - Before fonts CSS
+- `functionalities_schema_before_buffer` - Before schema buffering
+- `functionalities_misc_init` - After misc module initialization
+
+### Version 0.7.1
 - Set default GitHub repository values to `wpgaurav/functionalities`
 - Simplified GitHub Updates module configuration for this plugin
 

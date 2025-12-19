@@ -1,6 +1,14 @@
 <?php
 /**
- * Schema microdata helpers (itemscope/itemtype for html, header, footer, and article).
+ * Schema Microdata Module.
+ *
+ * Adds Schema.org microdata attributes to HTML elements for improved
+ * structured data and SEO.
+ *
+ * @package    Functionalities
+ * @subpackage Features
+ * @since      0.3.0
+ * @version    0.8.0
  */
 
 namespace Functionalities\Features;
@@ -9,15 +17,125 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Schema class for adding microdata to HTML.
+ *
+ * Automatically adds itemscope, itemtype, and itemprop attributes to
+ * appropriate HTML elements. Supports WebPage, WPHeader, WPFooter,
+ * and Article schemas.
+ *
+ * ## Features
+ *
+ * - Add WebPage schema to html element
+ * - Add WPHeader schema to header element
+ * - Add WPFooter schema to footer element
+ * - Add Article schema to content wrapper
+ * - Automatic headline, date, and author itemprop assignment
+ *
+ * ## Filters
+ *
+ * ### functionalities_schema_enabled
+ * Controls whether schema output is active.
+ *
+ * @since 0.8.0
+ * @param bool $enabled Whether schema is enabled.
+ *
+ * ### functionalities_schema_site_itemtype
+ * Filters the Schema.org type for the html element.
+ *
+ * @since 0.8.0
+ * @param string $type The schema type (e.g., 'WebPage', 'WebSite').
+ *
+ * @example
+ * // Change page type based on template
+ * add_filter( 'functionalities_schema_site_itemtype', function( $type ) {
+ *     if ( is_front_page() ) {
+ *         return 'WebSite';
+ *     }
+ *     return $type;
+ * } );
+ *
+ * ### functionalities_schema_article_itemtype
+ * Filters the Schema.org type for article content.
+ *
+ * @since 0.8.0
+ * @param string $type The article type (e.g., 'Article', 'BlogPosting').
+ *
+ * @example
+ * // Use BlogPosting for posts
+ * add_filter( 'functionalities_schema_article_itemtype', function( $type ) {
+ *     if ( is_singular( 'post' ) ) {
+ *         return 'BlogPosting';
+ *     }
+ *     return $type;
+ * } );
+ *
+ * ### functionalities_schema_language_attributes
+ * Filters the language attributes output.
+ *
+ * @since 0.8.0
+ * @param string $output The language attributes string.
+ *
+ * ### functionalities_schema_article_content
+ * Filters the content after article schema has been applied.
+ *
+ * @since 0.8.0
+ * @param string $content   The processed content.
+ * @param string $original  The original content.
+ *
+ * ## Actions
+ *
+ * ### functionalities_schema_before_buffer
+ * Fires before output buffering starts for schema processing.
+ *
+ * @since 0.8.0
+ *
+ * @since 0.3.0
+ */
 class Schema {
+
+	/**
+	 * Initialize the schema module.
+	 *
+	 * Registers filters for language attributes, output buffering
+	 * for header/footer schemas, and content filtering for articles.
+	 *
+	 * @since 0.3.0
+	 *
+	 * @return void
+	 */
 	public static function init() : void {
-		\add_filter( 'language_attributes', [ __CLASS__, 'filter_language_attributes' ], 20 );
-		\add_action( 'template_redirect', [ __CLASS__, 'start_buffer' ] );
-		\add_filter( 'the_content', [ __CLASS__, 'filter_article' ], 14 );
+		// Add itemscope/itemtype to html element.
+		\add_filter( 'language_attributes', array( __CLASS__, 'filter_language_attributes' ), 20 );
+
+		// Start output buffering for header/footer schema injection.
+		\add_action( 'template_redirect', array( __CLASS__, 'start_buffer' ) );
+
+		// Add article schema to content.
+		\add_filter( 'the_content', array( __CLASS__, 'filter_article' ), 14 );
 	}
 
+	/**
+	 * Get module options with defaults.
+	 *
+	 * @since 0.3.0
+	 *
+	 * @return array {
+	 *     Schema options.
+	 *
+	 *     @type bool   $enable_site_schema  Add schema to html element.
+	 *     @type string $site_itemtype       Schema type for html (WebPage, etc.).
+	 *     @type bool   $enable_header_part  Add WPHeader schema to header.
+	 *     @type bool   $enable_footer_part  Add WPFooter schema to footer.
+	 *     @type bool   $enable_article      Add Article schema to content.
+	 *     @type string $article_itemtype    Schema type for article.
+	 *     @type bool   $add_headline        Add itemprop="headline" to headings.
+	 *     @type bool   $add_dates           Add date itemprops to time elements.
+	 *     @type bool   $add_author          Add itemprop="author" to author elements.
+	 * }
+	 */
 	protected static function get_options() : array {
-		$defaults = [
+		$defaults = array(
 			'enable_site_schema'  => true,
 			'site_itemtype'       => 'WebPage',
 			'enable_header_part'  => true,
@@ -27,59 +145,143 @@ class Schema {
 			'add_headline'        => true,
 			'add_dates'           => true,
 			'add_author'          => true,
-		];
+		);
 		$opts = (array) \get_option( 'functionalities_schema', $defaults );
 		return array_merge( $defaults, $opts );
 	}
 
+	/**
+	 * Filter language attributes to add site schema.
+	 *
+	 * Adds itemscope and itemtype attributes to the html element
+	 * if not already present.
+	 *
+	 * @since 0.3.0
+	 * @since 0.8.0 Added filters for customization.
+	 *
+	 * @param string $output The language attributes string.
+	 * @return string Modified attributes string.
+	 */
 	public static function filter_language_attributes( string $output ) : string {
-		$o = self::get_options();
-		if ( empty( $o['enable_site_schema'] ) ) { return $output; }
-		$type = preg_replace( '/[^A-Za-z]/', '', (string) ( $o['site_itemtype'] ?? 'WebPage' ) );
+		$opts = self::get_options();
+
+		/**
+		 * Filters whether site schema should be added.
+		 *
+		 * @since 0.8.0
+		 *
+		 * @param bool $enabled Whether schema is enabled.
+		 */
+		if ( ! \apply_filters( 'functionalities_schema_enabled', ! empty( $opts['enable_site_schema'] ) ) ) {
+			return $output;
+		}
+
+		/**
+		 * Filters the site schema itemtype.
+		 *
+		 * @since 0.8.0
+		 *
+		 * @param string $type The Schema.org type.
+		 */
+		$type     = \apply_filters( 'functionalities_schema_site_itemtype', $opts['site_itemtype'] ?? 'WebPage' );
+		$type     = preg_replace( '/[^A-Za-z]/', '', (string) $type );
 		$itemtype = 'https://schema.org/' . $type;
+
+		// Add itemscope if not present.
 		if ( strpos( $output, 'itemscope' ) === false ) {
 			$output .= ' itemscope';
 		}
+
+		// Add itemtype if not present.
 		if ( strpos( $output, 'itemtype=' ) === false ) {
 			$output .= ' itemtype="' . \esc_attr( $itemtype ) . '"';
 		}
-		return $output;
+
+		/**
+		 * Filters the final language attributes output.
+		 *
+		 * @since 0.8.0
+		 *
+		 * @param string $output The modified attributes string.
+		 */
+		return \apply_filters( 'functionalities_schema_language_attributes', $output );
 	}
 
+	/**
+	 * Start output buffering for header/footer schema injection.
+	 *
+	 * Skips buffering in admin and feeds where schema is not needed.
+	 *
+	 * @since 0.3.0
+	 * @since 0.8.0 Added action for extensibility.
+	 *
+	 * @return void
+	 */
 	public static function start_buffer() : void {
-		if ( \is_admin() || \is_feed() ) { return; }
-		$o = self::get_options();
-		if ( empty( $o['enable_header_part'] ) && empty( $o['enable_footer_part'] ) ) {
+		if ( \is_admin() || \is_feed() ) {
 			return;
 		}
-		ob_start( [ __CLASS__, 'buffer_callback' ] );
+
+		$opts = self::get_options();
+
+		if ( empty( $opts['enable_header_part'] ) && empty( $opts['enable_footer_part'] ) ) {
+			return;
+		}
+
+		/**
+		 * Fires before output buffering starts.
+		 *
+		 * @since 0.8.0
+		 */
+		\do_action( 'functionalities_schema_before_buffer' );
+
+		ob_start( array( __CLASS__, 'buffer_callback' ) );
 	}
 
+	/**
+	 * Process buffered output to add header/footer schemas.
+	 *
+	 * Parses the complete HTML output and adds WPHeader and WPFooter
+	 * schema attributes to the respective elements.
+	 *
+	 * @since 0.3.0
+	 *
+	 * @param string $html The complete page HTML.
+	 * @return string Modified HTML with schema attributes.
+	 */
 	public static function buffer_callback( string $html ) : string {
-		$o = self::get_options();
-		$enableHeader = ! empty( $o['enable_header_part'] );
-		$enableFooter = ! empty( $o['enable_footer_part'] );
-		if ( ! $enableHeader && ! $enableFooter ) { return $html; }
+		$opts = self::get_options();
 
-		$libprev = libxml_use_internal_errors( true );
-		$dom = new \DOMDocument( '1.0', 'UTF-8' );
+		$enable_header = ! empty( $opts['enable_header_part'] );
+		$enable_footer = ! empty( $opts['enable_footer_part'] );
+
+		if ( ! $enable_header && ! $enable_footer ) {
+			return $html;
+		}
+
+		// Parse HTML with DOMDocument.
+		$libxml_prev = libxml_use_internal_errors( true );
+		$dom         = new \DOMDocument( '1.0', 'UTF-8' );
 		$dom->loadHTML( '<?xml encoding="utf-8" ?>' . $html );
 		$xpath = new \DOMXPath( $dom );
 
-		if ( $enableHeader ) {
+		// Add WPHeader schema.
+		if ( $enable_header ) {
 			$nodes = $xpath->query( '//header' );
 			if ( $nodes instanceof \DOMNodeList && $nodes->length > 0 ) {
-				$el = $nodes->item(0);
+				$el = $nodes->item( 0 );
 				if ( $el instanceof \DOMElement && ! $el->hasAttribute( 'itemscope' ) ) {
 					$el->setAttribute( 'itemscope', '' );
 					$el->setAttribute( 'itemtype', 'https://schema.org/WPHeader' );
 				}
 			}
 		}
-		if ( $enableFooter ) {
+
+		// Add WPFooter schema.
+		if ( $enable_footer ) {
 			$nodes = $xpath->query( '//footer' );
 			if ( $nodes instanceof \DOMNodeList && $nodes->length > 0 ) {
-				$el = $nodes->item(0);
+				$el = $nodes->item( 0 );
 				if ( $el instanceof \DOMElement && ! $el->hasAttribute( 'itemscope' ) ) {
 					$el->setAttribute( 'itemscope', '' );
 					$el->setAttribute( 'itemtype', 'https://schema.org/WPFooter' );
@@ -89,80 +291,143 @@ class Schema {
 
 		$out = $dom->saveHTML();
 		libxml_clear_errors();
-		libxml_use_internal_errors( $libprev );
+		libxml_use_internal_errors( $libxml_prev );
+
 		return is_string( $out ) && $out !== '' ? $out : $html;
 	}
 
+	/**
+	 * Filter content to add article schema.
+	 *
+	 * Adds Article (or configured type) schema to the content wrapper,
+	 * and assigns appropriate itemprops to headlines, dates, and authors.
+	 *
+	 * @since 0.3.0
+	 * @since 0.8.0 Added filters for customization.
+	 *
+	 * @param string $content The post content.
+	 * @return string Modified content with schema attributes.
+	 */
 	public static function filter_article( string $content ) : string {
-		if ( trim( $content ) === '' || ! \is_singular() ) { return $content; }
-		$o = self::get_options();
-		if ( empty( $o['enable_article'] ) ) { return $content; }
-
-		$type = preg_replace( '/[^A-Za-z]/', '', (string) ( $o['article_itemtype'] ?? 'Article' ) );
-		$libprev = libxml_use_internal_errors( true );
-		$dom = new \DOMDocument( '1.0', 'UTF-8' );
-		$dom->loadHTML( '<?xml encoding="utf-8" ?><div id="___fwrap">' . $content . '</div>' );
-		$xp = new \DOMXPath( $dom );
-		$wrap = $dom->getElementById( '___fwrap' );
-		if ( ! $wrap ) { return $content; }
-
-		// Prefer an existing <article>, else first element child under the wrapper
-		$target = null;
-		$article = $xp->query( './/article', $wrap );
-		if ( $article instanceof \DOMNodeList && $article->length > 0 ) {
-			$node = $article->item(0);
-			if ( $node instanceof \DOMElement ) { $target = $node; }
+		if ( trim( $content ) === '' || ! \is_singular() ) {
+			return $content;
 		}
-		if ( ! $target ) {
-			foreach ( $wrap->childNodes as $child ) {
-				if ( $child instanceof \DOMElement ) { $target = $child; break; }
+
+		$opts = self::get_options();
+
+		/** This filter is documented in class-schema.php */
+		if ( ! \apply_filters( 'functionalities_schema_enabled', ! empty( $opts['enable_article'] ) ) ) {
+			return $content;
+		}
+
+		// Store original for filter.
+		$original = $content;
+
+		/**
+		 * Filters the article schema itemtype.
+		 *
+		 * @since 0.8.0
+		 *
+		 * @param string $type The Schema.org article type.
+		 */
+		$type = \apply_filters( 'functionalities_schema_article_itemtype', $opts['article_itemtype'] ?? 'Article' );
+		$type = preg_replace( '/[^A-Za-z]/', '', (string) $type );
+
+		// Parse HTML with DOMDocument.
+		$libxml_prev = libxml_use_internal_errors( true );
+		$dom         = new \DOMDocument( '1.0', 'UTF-8' );
+		$dom->loadHTML( '<?xml encoding="utf-8" ?><div id="___fwrap">' . $content . '</div>' );
+		$xpath = new \DOMXPath( $dom );
+		$wrap  = $dom->getElementById( '___fwrap' );
+
+		if ( ! $wrap ) {
+			return $content;
+		}
+
+		// Find target element: prefer existing <article>, else first element child.
+		$target  = null;
+		$article = $xpath->query( './/article', $wrap );
+
+		if ( $article instanceof \DOMNodeList && $article->length > 0 ) {
+			$node = $article->item( 0 );
+			if ( $node instanceof \DOMElement ) {
+				$target = $node;
 			}
 		}
+
+		if ( ! $target ) {
+			foreach ( $wrap->childNodes as $child ) {
+				if ( $child instanceof \DOMElement ) {
+					$target = $child;
+					break;
+				}
+			}
+		}
+
+		// Add article schema attributes.
 		if ( $target instanceof \DOMElement ) {
 			$target->setAttribute( 'itemscope', '' );
 			$target->setAttribute( 'itemtype', 'https://schema.org/' . $type );
 		}
 
-		if ( ! empty( $o['add_headline'] ) ) {
-			$h = $xp->query( './/h1|.//h2' );
-			if ( $h instanceof \DOMNodeList && $h->length > 0 ) {
-				$el = $h->item(0);
+		// Add headline itemprop.
+		if ( ! empty( $opts['add_headline'] ) ) {
+			$headings = $xpath->query( './/h1|.//h2' );
+			if ( $headings instanceof \DOMNodeList && $headings->length > 0 ) {
+				$el = $headings->item( 0 );
 				if ( $el instanceof \DOMElement ) {
 					$el->setAttribute( 'itemprop', 'headline' );
 				}
 			}
 		}
-		if ( ! empty( $o['add_dates'] ) ) {
-			$times = $xp->query( './/time' );
+
+		// Add date itemprops.
+		if ( ! empty( $opts['add_dates'] ) ) {
+			$times = $xpath->query( './/time' );
 			if ( $times instanceof \DOMNodeList ) {
-				foreach ( $times as $t ) {
-					if ( $t instanceof \DOMElement ) {
-						$cls = strtolower( (string) $t->getAttribute( 'class' ) );
+				foreach ( $times as $time ) {
+					if ( $time instanceof \DOMElement ) {
+						$cls = strtolower( (string) $time->getAttribute( 'class' ) );
 						if ( strpos( $cls, 'published' ) !== false ) {
-							$t->setAttribute( 'itemprop', 'datePublished' );
+							$time->setAttribute( 'itemprop', 'datePublished' );
 						} elseif ( strpos( $cls, 'updated' ) !== false || strpos( $cls, 'modified' ) !== false ) {
-							$t->setAttribute( 'itemprop', 'dateModified' );
+							$time->setAttribute( 'itemprop', 'dateModified' );
 						}
 					}
 				}
 			}
 		}
-		if ( ! empty( $o['add_author'] ) ) {
-			$author = $xp->query( './/*[contains(@class, "author")]' );
+
+		// Add author itemprop.
+		if ( ! empty( $opts['add_author'] ) ) {
+			$author = $xpath->query( './/*[contains(@class, "author")]' );
 			if ( $author instanceof \DOMNodeList && $author->length > 0 ) {
-				$el = $author->item(0);
+				$el = $author->item( 0 );
 				if ( $el instanceof \DOMElement ) {
 					$el->setAttribute( 'itemprop', 'author' );
 				}
 			}
 		}
 
+		// Extract processed content.
 		$out = '';
 		foreach ( $wrap->childNodes as $child ) {
 			$out .= $dom->saveHTML( $child );
 		}
+
 		libxml_clear_errors();
-		libxml_use_internal_errors( $libprev );
-		return $out !== '' ? $out : $content;
+		libxml_use_internal_errors( $libxml_prev );
+
+		$result = $out !== '' ? $out : $content;
+
+		/**
+		 * Filters the content after article schema has been applied.
+		 *
+		 * @since 0.8.0
+		 *
+		 * @param string $result   The processed content.
+		 * @param string $original The original content.
+		 */
+		return \apply_filters( 'functionalities_schema_article_content', $result, $original );
 	}
 }
