@@ -294,7 +294,19 @@ GPL-2.0-or-later
 
 ## Changelog
 
-### Version 0.8.0 (Current)
+### Version 0.8.1 (Current)
+- **NEW:** User-facing documentation in admin UI for all modules
+- Each module settings page now includes:
+  - "What This Module Does" explanation boxes
+  - "How to Use" or "Caution" guidance boxes
+  - "For Developers" section with available filters and actions
+- Styled documentation boxes with color-coded sections:
+  - Green: Feature descriptions
+  - Yellow/Amber: Usage tips and warnings
+  - Blue: Developer hooks and filters
+- Improved user experience for non-technical users
+
+### Version 0.8.0
 - **MAJOR:** Comprehensive inline documentation for all modules
 - Added 50+ hooks and filters for developer extensibility
 - Removed old zip file from repository root

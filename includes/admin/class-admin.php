@@ -420,7 +420,29 @@ class Admin {
 			'functionalities_editor_links_section',
 			\__( 'Editor Link Suggestions', 'functionalities' ),
 			function() {
-				echo '<p>' . \esc_html__( 'Limit link suggestions to selected post types in the editor search UI.', 'functionalities' ) . '</p>';
+				echo '<p>' . \esc_html__( 'Control which post types appear in the block editor link search suggestions.', 'functionalities' ) . '</p>';
+
+				echo '<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:12px 16px;margin:12px 0">';
+				echo '<h4 style="margin:0 0 8px">' . \esc_html__( 'What This Module Does', 'functionalities' ) . '</h4>';
+				echo '<ul style="margin:0;padding-left:20px">';
+				echo '<li>' . \esc_html__( 'Limits link search results to specific post types when inserting links in Gutenberg', 'functionalities' ) . '</li>';
+				echo '<li>' . \esc_html__( 'Reduces clutter by hiding unwanted content types from search results', 'functionalities' ) . '</li>';
+				echo '<li>' . \esc_html__( 'Works with posts, pages, and custom post types', 'functionalities' ) . '</li>';
+				echo '</ul>';
+				echo '</div>';
+
+				echo '<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;padding:12px 16px;margin:12px 0">';
+				echo '<h4 style="margin:0 0 8px;color:#92400e">' . \esc_html__( 'How to Use', 'functionalities' ) . '</h4>';
+				echo '<p style="margin:0;font-size:13px">' . \esc_html__( 'Enable limitation, then check only the post types you want to appear when searching for links in the editor. Unchecked post types will be hidden from link search results.', 'functionalities' ) . '</p>';
+				echo '</div>';
+
+				echo '<div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:6px;padding:12px 16px;margin:12px 0">';
+				echo '<h4 style="margin:0 0 8px;color:#1e40af">' . \esc_html__( 'For Developers', 'functionalities' ) . '</h4>';
+				echo '<p style="margin:0;font-size:13px;color:#1e3a8a">';
+				echo \esc_html__( 'Filter:', 'functionalities' ) . ' <code>functionalities_editor_links_enabled</code> — ' . \esc_html__( 'toggle feature', 'functionalities' ) . '<br>';
+				echo \esc_html__( 'Filter:', 'functionalities' ) . ' <code>functionalities_editor_links_post_types</code> — ' . \esc_html__( 'modify allowed post types', 'functionalities' );
+				echo '</p>';
+				echo '</div>';
 			},
 			'functionalities_editor_links'
 		);
@@ -461,7 +483,35 @@ class Admin {
 			'functionalities_snippets_section',
 			\__( 'Header & Footer Code', 'functionalities' ),
 			function() {
-				echo '<p>' . \esc_html__( 'Add service codes to header/footer. For Google Analytics 4, provide just the Measurement ID (e.g., G-XXXXXXX).', 'functionalities' ) . '</p>';
+				echo '<p>' . \esc_html__( 'Insert custom code snippets into your site header and footer without editing theme files.', 'functionalities' ) . '</p>';
+
+				echo '<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:12px 16px;margin:12px 0">';
+				echo '<h4 style="margin:0 0 8px">' . \esc_html__( 'What This Module Does', 'functionalities' ) . '</h4>';
+				echo '<ul style="margin:0;padding-left:20px">';
+				echo '<li>' . \esc_html__( 'Native Google Analytics 4 integration - just enter your Measurement ID', 'functionalities' ) . '</li>';
+				echo '<li>' . \esc_html__( 'Custom header code for meta tags, scripts, styles, and tracking codes', 'functionalities' ) . '</li>';
+				echo '<li>' . \esc_html__( 'Custom footer code for chat widgets, tracking pixels, and deferred scripts', 'functionalities' ) . '</li>';
+				echo '<li>' . \esc_html__( 'Automatically skips admin pages, feeds, and REST API requests', 'functionalities' ) . '</li>';
+				echo '</ul>';
+				echo '</div>';
+
+				echo '<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;padding:12px 16px;margin:12px 0">';
+				echo '<h4 style="margin:0 0 8px;color:#92400e">' . \esc_html__( 'Allowed Tags', 'functionalities' ) . '</h4>';
+				echo '<p style="margin:0;font-family:monospace;font-size:12px;color:#78350f">';
+				echo '&lt;script&gt;, &lt;style&gt;, &lt;link&gt;, &lt;meta&gt;, &lt;noscript&gt;';
+				echo '</p>';
+				echo '</div>';
+
+				echo '<div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:6px;padding:12px 16px;margin:12px 0">';
+				echo '<h4 style="margin:0 0 8px;color:#1e40af">' . \esc_html__( 'For Developers', 'functionalities' ) . '</h4>';
+				echo '<p style="margin:0;font-size:13px;color:#1e3a8a">';
+				echo \esc_html__( 'Filter:', 'functionalities' ) . ' <code>functionalities_snippets_output_enabled</code> — ' . \esc_html__( 'disable on specific pages', 'functionalities' ) . '<br>';
+				echo \esc_html__( 'Filter:', 'functionalities' ) . ' <code>functionalities_snippets_ga4_enabled</code> — ' . \esc_html__( 'control GA4 per user/page', 'functionalities' ) . '<br>';
+				echo \esc_html__( 'Filter:', 'functionalities' ) . ' <code>functionalities_snippets_header_code</code> — ' . \esc_html__( 'modify header code', 'functionalities' ) . '<br>';
+				echo \esc_html__( 'Filter:', 'functionalities' ) . ' <code>functionalities_snippets_footer_code</code> — ' . \esc_html__( 'modify footer code', 'functionalities' ) . '<br>';
+				echo \esc_html__( 'Actions:', 'functionalities' ) . ' <code>functionalities_before/after_header/footer_snippets</code>';
+				echo '</p>';
+				echo '</div>';
 			},
 			'functionalities_snippets'
 		);
@@ -536,7 +586,35 @@ class Admin {
 			'functionalities_schema_section',
 			\__( 'Schema Settings', 'functionalities' ),
 			function() {
-				echo '<p>' . \esc_html__( 'Add microdata (itemscope/itemtype) to key areas and article content.', 'functionalities' ) . '</p>';
+				echo '<p>' . \esc_html__( 'Add Schema.org microdata attributes to improve search engine understanding of your content.', 'functionalities' ) . '</p>';
+
+				echo '<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:12px 16px;margin:12px 0">';
+				echo '<h4 style="margin:0 0 8px">' . \esc_html__( 'What This Module Does', 'functionalities' ) . '</h4>';
+				echo '<ul style="margin:0;padding-left:20px">';
+				echo '<li>' . \esc_html__( 'Adds itemscope/itemtype to the HTML element for page-level schema', 'functionalities' ) . '</li>';
+				echo '<li>' . \esc_html__( 'Wraps article content with Article/BlogPosting microdata', 'functionalities' ) . '</li>';
+				echo '<li>' . \esc_html__( 'Adds structured data for headlines, dates, and authors', 'functionalities' ) . '</li>';
+				echo '<li>' . \esc_html__( 'Marks header and footer regions with WPHeader/WPFooter types', 'functionalities' ) . '</li>';
+				echo '</ul>';
+				echo '</div>';
+
+				echo '<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;padding:12px 16px;margin:12px 0">';
+				echo '<h4 style="margin:0 0 8px;color:#92400e">' . \esc_html__( 'Supported Types', 'functionalities' ) . '</h4>';
+				echo '<p style="margin:0;font-size:13px">';
+				echo '<strong>' . \esc_html__( 'Site:', 'functionalities' ) . '</strong> WebPage, AboutPage, ContactPage, Blog, SearchResultsPage<br>';
+				echo '<strong>' . \esc_html__( 'Article:', 'functionalities' ) . '</strong> Article, BlogPosting, NewsArticle';
+				echo '</p>';
+				echo '</div>';
+
+				echo '<div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:6px;padding:12px 16px;margin:12px 0">';
+				echo '<h4 style="margin:0 0 8px;color:#1e40af">' . \esc_html__( 'For Developers', 'functionalities' ) . '</h4>';
+				echo '<p style="margin:0;font-size:13px;color:#1e3a8a">';
+				echo \esc_html__( 'Filter:', 'functionalities' ) . ' <code>functionalities_schema_enabled</code> — ' . \esc_html__( 'toggle all schema output', 'functionalities' ) . '<br>';
+				echo \esc_html__( 'Filter:', 'functionalities' ) . ' <code>functionalities_schema_site_type</code> — ' . \esc_html__( 'modify site itemtype', 'functionalities' ) . '<br>';
+				echo \esc_html__( 'Filter:', 'functionalities' ) . ' <code>functionalities_schema_article_type</code> — ' . \esc_html__( 'modify article itemtype', 'functionalities' ) . '<br>';
+				echo \esc_html__( 'Filter:', 'functionalities' ) . ' <code>functionalities_schema_content</code> — ' . \esc_html__( 'modify wrapped content', 'functionalities' );
+				echo '</p>';
+				echo '</div>';
 			},
 			'functionalities_schema'
 		);
@@ -670,7 +748,32 @@ class Admin {
 			'functionalities_components_section',
 			\__( 'Components', 'functionalities' ),
 			function() {
-				echo '<p>' . \esc_html__( 'Define reusable UI components as CSS class + rules. These will be enqueued site-wide.', 'functionalities' ) . '</p>';
+				echo '<p>' . \esc_html__( 'Create reusable CSS components that are automatically loaded across your entire site.', 'functionalities' ) . '</p>';
+
+				echo '<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:12px 16px;margin:12px 0">';
+				echo '<h4 style="margin:0 0 8px">' . \esc_html__( 'What This Module Does', 'functionalities' ) . '</h4>';
+				echo '<ul style="margin:0;padding-left:20px">';
+				echo '<li>' . \esc_html__( 'Define CSS class names and their style rules in one place', 'functionalities' ) . '</li>';
+				echo '<li>' . \esc_html__( 'Components are compiled into a single CSS file for optimal caching', 'functionalities' ) . '</li>';
+				echo '<li>' . \esc_html__( 'Available on both frontend and admin pages', 'functionalities' ) . '</li>';
+				echo '<li>' . \esc_html__( 'Includes default utility components like visually-hidden, skip-link, and marquee', 'functionalities' ) . '</li>';
+				echo '</ul>';
+				echo '</div>';
+
+				echo '<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;padding:12px 16px;margin:12px 0">';
+				echo '<h4 style="margin:0 0 8px;color:#92400e">' . \esc_html__( 'How to Use', 'functionalities' ) . '</h4>';
+				echo '<p style="margin:0;font-size:13px">' . \esc_html__( 'Add components by entering a CSS selector (e.g., .my-button) and CSS rules (e.g., background: blue; color: white;). Use the grid below to manage your components.', 'functionalities' ) . '</p>';
+				echo '</div>';
+
+				echo '<div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:6px;padding:12px 16px;margin:12px 0">';
+				echo '<h4 style="margin:0 0 8px;color:#1e40af">' . \esc_html__( 'For Developers', 'functionalities' ) . '</h4>';
+				echo '<p style="margin:0;font-size:13px;color:#1e3a8a">';
+				echo \esc_html__( 'Filter:', 'functionalities' ) . ' <code>functionalities_components_enabled</code> — ' . \esc_html__( 'toggle output', 'functionalities' ) . '<br>';
+				echo \esc_html__( 'Filter:', 'functionalities' ) . ' <code>functionalities_components_items</code> — ' . \esc_html__( 'add components dynamically', 'functionalities' ) . '<br>';
+				echo \esc_html__( 'Filter:', 'functionalities' ) . ' <code>functionalities_components_css</code> — ' . \esc_html__( 'modify generated CSS', 'functionalities' ) . '<br>';
+				echo \esc_html__( 'Action:', 'functionalities' ) . ' <code>functionalities_components_updated</code> — ' . \esc_html__( 'fires when CSS file regenerates', 'functionalities' );
+				echo '</p>';
+				echo '</div>';
 			},
 			'functionalities_components'
 		);
@@ -746,7 +849,31 @@ class Admin {
 			'functionalities_misc_section',
 			\__( 'Miscellaneous (Bloat Control)', 'functionalities' ),
 			function() {
-				echo '<p>' . \esc_html__( 'Enable selective cleanups and performance tweaks.', 'functionalities' ) . '</p>';
+				echo '<p>' . \esc_html__( 'Remove unnecessary WordPress features to improve performance and security.', 'functionalities' ) . '</p>';
+
+				echo '<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:12px 16px;margin:12px 0">';
+				echo '<h4 style="margin:0 0 8px">' . \esc_html__( 'What This Module Does', 'functionalities' ) . '</h4>';
+				echo '<ul style="margin:0;padding-left:20px">';
+				echo '<li>' . \esc_html__( 'Remove bloat like emojis, oEmbeds, and unnecessary meta tags', 'functionalities' ) . '</li>';
+				echo '<li>' . \esc_html__( 'Disable security concerns like XML-RPC and version disclosure', 'functionalities' ) . '</li>';
+				echo '<li>' . \esc_html__( 'Improve performance by removing unused scripts and styles', 'functionalities' ) . '</li>';
+				echo '<li>' . \esc_html__( 'Add useful enhancements like PrismJS and fullscreen textareas', 'functionalities' ) . '</li>';
+				echo '</ul>';
+				echo '</div>';
+
+				echo '<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;padding:12px 16px;margin:12px 0">';
+				echo '<h4 style="margin:0 0 8px;color:#92400e">' . \esc_html__( 'Caution', 'functionalities' ) . '</h4>';
+				echo '<p style="margin:0;font-size:13px">' . \esc_html__( 'Some options may break functionality if plugins depend on them. Test after enabling. Disable Heartbeat API with care if you use auto-save or real-time features.', 'functionalities' ) . '</p>';
+				echo '</div>';
+
+				echo '<div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:6px;padding:12px 16px;margin:12px 0">';
+				echo '<h4 style="margin:0 0 8px;color:#1e40af">' . \esc_html__( 'For Developers', 'functionalities' ) . '</h4>';
+				echo '<p style="margin:0;font-size:13px;color:#1e3a8a">';
+				echo \esc_html__( 'Filter:', 'functionalities' ) . ' <code>functionalities_misc_options</code> — ' . \esc_html__( 'modify options before application', 'functionalities' ) . '<br>';
+				echo \esc_html__( 'Filter:', 'functionalities' ) . ' <code>functionalities_misc_disable_emojis</code> — ' . \esc_html__( 'control emoji removal', 'functionalities' ) . '<br>';
+				echo \esc_html__( 'Filter:', 'functionalities' ) . ' <code>functionalities_misc_disable_embeds</code> — ' . \esc_html__( 'control embed removal', 'functionalities' );
+				echo '</p>';
+				echo '</div>';
 			},
 			'functionalities_misc'
 		);
@@ -783,7 +910,32 @@ class Admin {
 			'functionalities_fonts_section',
 			\__( 'Font Families', 'functionalities' ),
 			function() {
-				echo '<p>' . \esc_html__( 'Register custom font families (WOFF2 recommended). Variable fonts supported via weight ranges.', 'functionalities' ) . '</p>';
+				echo '<p>' . \esc_html__( 'Self-host custom fonts with automatic @font-face CSS generation.', 'functionalities' ) . '</p>';
+
+				echo '<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:12px 16px;margin:12px 0">';
+				echo '<h4 style="margin:0 0 8px">' . \esc_html__( 'What This Module Does', 'functionalities' ) . '</h4>';
+				echo '<ul style="margin:0;padding-left:20px">';
+				echo '<li>' . \esc_html__( 'Generate @font-face CSS rules for self-hosted fonts', 'functionalities' ) . '</li>';
+				echo '<li>' . \esc_html__( 'Support for variable fonts with weight ranges (e.g., 100 900)', 'functionalities' ) . '</li>';
+				echo '<li>' . \esc_html__( 'WOFF2 format for modern browsers, optional WOFF fallback', 'functionalities' ) . '</li>';
+				echo '<li>' . \esc_html__( 'Configurable font-display strategy (swap, auto, block, etc.)', 'functionalities' ) . '</li>';
+				echo '</ul>';
+				echo '</div>';
+
+				echo '<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;padding:12px 16px;margin:12px 0">';
+				echo '<h4 style="margin:0 0 8px;color:#92400e">' . \esc_html__( 'How to Use', 'functionalities' ) . '</h4>';
+				echo '<p style="margin:0;font-size:13px">' . \esc_html__( 'Upload font files to your media library or server, then add font entries below with the family name and file URLs. Use the generated font-family name in your CSS.', 'functionalities' ) . '</p>';
+				echo '</div>';
+
+				echo '<div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:6px;padding:12px 16px;margin:12px 0">';
+				echo '<h4 style="margin:0 0 8px;color:#1e40af">' . \esc_html__( 'For Developers', 'functionalities' ) . '</h4>';
+				echo '<p style="margin:0;font-size:13px;color:#1e3a8a">';
+				echo \esc_html__( 'Filter:', 'functionalities' ) . ' <code>functionalities_fonts_enabled</code> — ' . \esc_html__( 'toggle output', 'functionalities' ) . '<br>';
+				echo \esc_html__( 'Filter:', 'functionalities' ) . ' <code>functionalities_fonts_items</code> — ' . \esc_html__( 'add fonts dynamically', 'functionalities' ) . '<br>';
+				echo \esc_html__( 'Filter:', 'functionalities' ) . ' <code>functionalities_fonts_css</code> — ' . \esc_html__( 'modify generated CSS', 'functionalities' ) . '<br>';
+				echo \esc_html__( 'Action:', 'functionalities' ) . ' <code>functionalities_fonts_before_output</code>';
+				echo '</p>';
+				echo '</div>';
 			},
 			'functionalities_fonts'
 		);
@@ -823,7 +975,34 @@ class Admin {
 		\add_settings_section(
 			'functionalities_icons_section',
 			\__( 'Icon Replacement', 'functionalities' ),
-			function(){ echo '<p>' . \esc_html__( 'Replace Font Awesome elements with SVG <use> icons and optionally remove FA assets. Provide an SVG sprite and mappings as needed.', 'functionalities' ) . '</p>'; },
+			function() {
+				echo '<p>' . \esc_html__( 'Optimize icon delivery by replacing Font Awesome with lightweight SVG sprites.', 'functionalities' ) . '</p>';
+
+				echo '<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:12px 16px;margin:12px 0">';
+				echo '<h4 style="margin:0 0 8px">' . \esc_html__( 'What This Module Does', 'functionalities' ) . '</h4>';
+				echo '<ul style="margin:0;padding-left:20px">';
+				echo '<li>' . \esc_html__( 'Remove Font Awesome CSS and JavaScript files to reduce page weight', 'functionalities' ) . '</li>';
+				echo '<li>' . \esc_html__( 'Convert Font Awesome icon markup to SVG sprite references', 'functionalities' ) . '</li>';
+				echo '<li>' . \esc_html__( 'Works with fa, fas, far, and fab icon prefixes', 'functionalities' ) . '</li>';
+				echo '<li>' . \esc_html__( 'Significantly improves performance while maintaining icon compatibility', 'functionalities' ) . '</li>';
+				echo '</ul>';
+				echo '</div>';
+
+				echo '<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;padding:12px 16px;margin:12px 0">';
+				echo '<h4 style="margin:0 0 8px;color:#92400e">' . \esc_html__( 'Setup Required', 'functionalities' ) . '</h4>';
+				echo '<p style="margin:0;font-size:13px">' . \esc_html__( 'You need an SVG sprite file containing your icons. Point the sprite URL to your file and the module will convert &lt;i class="fa fa-icon"&gt; to &lt;svg&gt;&lt;use href="sprite.svg#fa-icon"&gt;&lt;/svg&gt;.', 'functionalities' ) . '</p>';
+				echo '</div>';
+
+				echo '<div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:6px;padding:12px 16px;margin:12px 0">';
+				echo '<h4 style="margin:0 0 8px;color:#1e40af">' . \esc_html__( 'For Developers', 'functionalities' ) . '</h4>';
+				echo '<p style="margin:0;font-size:13px;color:#1e3a8a">';
+				echo \esc_html__( 'Filter:', 'functionalities' ) . ' <code>functionalities_icons_remove_fa_enabled</code> — ' . \esc_html__( 'control asset removal', 'functionalities' ) . '<br>';
+				echo \esc_html__( 'Filter:', 'functionalities' ) . ' <code>functionalities_icons_convert_enabled</code> — ' . \esc_html__( 'control conversion', 'functionalities' ) . '<br>';
+				echo \esc_html__( 'Filter:', 'functionalities' ) . ' <code>functionalities_icons_sprite_url</code> — ' . \esc_html__( 'modify sprite URL', 'functionalities' ) . '<br>';
+				echo \esc_html__( 'Filter:', 'functionalities' ) . ' <code>functionalities_icons_fa_handles</code> — ' . \esc_html__( 'add/remove FA handles', 'functionalities' );
+				echo '</p>';
+				echo '</div>';
+			},
 			'functionalities_icons'
 		);
 		\add_settings_field(
@@ -1213,7 +1392,27 @@ class Admin {
 	 * @return void
 	 */
 	public static function section_link_management() : void {
-		echo '<p>' . \esc_html__( 'Control how external and internal links are handled.', 'functionalities' ) . '</p>';
+		echo '<p>' . \esc_html__( 'Control how external and internal links are handled across your site.', 'functionalities' ) . '</p>';
+
+		echo '<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:12px 16px;margin:12px 0">';
+		echo '<h4 style="margin:0 0 8px">' . \esc_html__( 'What This Module Does', 'functionalities' ) . '</h4>';
+		echo '<ul style="margin:0;padding-left:20px">';
+		echo '<li>' . \esc_html__( 'Automatically adds rel="nofollow" to external links in post content', 'functionalities' ) . '</li>';
+		echo '<li>' . \esc_html__( 'Opens external links in new tabs with proper security attributes', 'functionalities' ) . '</li>';
+		echo '<li>' . \esc_html__( 'Whitelist trusted domains that should not get nofollow', 'functionalities' ) . '</li>';
+		echo '<li>' . \esc_html__( 'Bulk update existing links in your database', 'functionalities' ) . '</li>';
+		echo '</ul>';
+		echo '</div>';
+
+		echo '<div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:6px;padding:12px 16px;margin:12px 0">';
+		echo '<h4 style="margin:0 0 8px;color:#1e40af">' . \esc_html__( 'For Developers', 'functionalities' ) . '</h4>';
+		echo '<p style="margin:0 0 8px;font-size:13px">' . \esc_html__( 'Use these filters to customize link handling:', 'functionalities' ) . '</p>';
+		echo '<ul style="margin:0;padding-left:20px;font-family:monospace;font-size:12px;color:#1e3a8a">';
+		echo '<li>functionalities_nofollow_exceptions</li>';
+		echo '<li>functionalities_link_attributes</li>';
+		echo '<li>functionalities_process_links</li>';
+		echo '</ul>';
+		echo '</div>';
 	}
 
 	/**
@@ -1348,7 +1547,33 @@ class Admin {
 	 * @return void
 	 */
 	public static function section_block_cleanup() : void {
-		echo '<p>' . \esc_html__( 'Strip block classes from frontend output.', 'functionalities' ) . '</p>';
+		echo '<p>' . \esc_html__( 'Remove Gutenberg block-specific CSS classes from your frontend HTML for cleaner markup.', 'functionalities' ) . '</p>';
+
+		echo '<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:12px 16px;margin:12px 0">';
+		echo '<h4 style="margin:0 0 8px">' . \esc_html__( 'Why Use This?', 'functionalities' ) . '</h4>';
+		echo '<ul style="margin:0;padding-left:20px">';
+		echo '<li>' . \esc_html__( 'Reduces HTML bloat by removing unnecessary block classes', 'functionalities' ) . '</li>';
+		echo '<li>' . \esc_html__( 'Useful when your theme provides custom styling for headings, lists, images', 'functionalities' ) . '</li>';
+		echo '<li>' . \esc_html__( 'Helps avoid style conflicts between block styles and theme styles', 'functionalities' ) . '</li>';
+		echo '</ul>';
+		echo '</div>';
+
+		echo '<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;padding:12px 16px;margin:12px 0">';
+		echo '<h4 style="margin:0 0 8px;color:#92400e">' . \esc_html__( 'Classes Removed', 'functionalities' ) . '</h4>';
+		echo '<ul style="margin:0;padding-left:20px;font-family:monospace;font-size:12px;color:#78350f">';
+		echo '<li>wp-block-heading → ' . \esc_html__( 'from h1-h6 elements', 'functionalities' ) . '</li>';
+		echo '<li>wp-block-list → ' . \esc_html__( 'from ul/ol elements', 'functionalities' ) . '</li>';
+		echo '<li>wp-block-image → ' . \esc_html__( 'from figure/div elements', 'functionalities' ) . '</li>';
+		echo '</ul>';
+		echo '</div>';
+
+		echo '<div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:6px;padding:12px 16px;margin:12px 0">';
+		echo '<h4 style="margin:0 0 8px;color:#1e40af">' . \esc_html__( 'For Developers', 'functionalities' ) . '</h4>';
+		echo '<p style="margin:0;font-size:13px;color:#1e3a8a">';
+		echo \esc_html__( 'Filter:', 'functionalities' ) . ' <code>functionalities_block_cleanup_enabled</code> — ' . \esc_html__( 'toggle cleanup per-page', 'functionalities' ) . '<br>';
+		echo \esc_html__( 'Filter:', 'functionalities' ) . ' <code>functionalities_block_cleanup_content</code> — ' . \esc_html__( 'modify cleaned content', 'functionalities' );
+		echo '</p>';
+		echo '</div>';
 	}
 
 	/**
