@@ -319,7 +319,36 @@ GPL-2.0-or-later
 
 ## Changelog
 
-### Version 0.9.0 (Current)
+### Version 0.9.1 (Current)
+
+#### Link Management Enhancements
+
+**JSON Preset File Path Improvements**
+- Added file picker button using WordPress Media Library
+- Added "Create JSON" button to create exception-urls.json directly in your theme
+- Support for external URLs (with security warnings)
+- Automatic detection of theme/child-theme exception-urls.json files
+- Priority order: Custom path → Developer filter → Child theme → Parent theme → Plugin default
+- Visual notifications when theme JSON files are detected
+- Security warning displayed for external URL usage
+
+**Developer Filters Code Snippets**
+- Added expandable code snippets section with ready-to-copy examples:
+  - Add Exception Domains
+  - Add Exception URLs
+  - Dynamic Exceptions (role-based, conditional)
+  - Custom JSON File Path
+  - Legacy GT Nofollow Manager Compatibility
+- One-click copy buttons for all code snippets
+
+**Technical Improvements**
+- New `get_json_content()` method supporting both local files and remote URLs
+- New `is_valid_json_source()` validation helper
+- AJAX handler for creating JSON files in theme directory
+- Improved JSON loading with `wp_remote_get()` for external URLs
+- JSON validation before file creation
+
+### Version 0.9.0
 
 #### New Modules
 

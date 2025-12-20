@@ -59,25 +59,60 @@ class Link_Management {
 	/**
 	 * Load JSON preset file for exceptions.
 	 *
+	 * Checks the following locations in order:
+	 * 1. User-provided custom URL/path (if set)
+	 * 2. Developer filter (functionalities_json_preset_path)
+	 * 3. Active child theme's exception-urls.json
+	 * 4. Parent theme's exception-urls.json
+	 * 5. Plugin's default exception-urls.json
+	 *
 	 * @return void
 	 */
 	public static function load_json_preset() : void {
-		$opts = self::get_options();
+		$opts      = self::get_options();
+		$json_path = '';
 
-		// Allow developers to filter the JSON file path.
-		$json_path = \apply_filters( 'functionalities_json_preset_path', FUNCTIONALITIES_DIR . 'exception-urls.json' );
-
-		// Also check if user provided a custom URL.
+		// Priority 1: User-provided custom URL/path.
 		if ( ! empty( $opts['json_preset_url'] ) ) {
 			$json_path = $opts['json_preset_url'];
+		} else {
+			// Priority 2: Developer filter.
+			$filtered_path = \apply_filters( 'functionalities_json_preset_path', '' );
+			if ( ! empty( $filtered_path ) && ( self::is_valid_json_source( $filtered_path ) ) ) {
+				$json_path = $filtered_path;
+			}
 		}
 
-		// Only load if file exists.
-		if ( ! file_exists( $json_path ) || ! is_readable( $json_path ) ) {
+		// Priority 3 & 4: Check theme directories if no custom path set.
+		if ( empty( $json_path ) ) {
+			// Check child theme first (get_stylesheet_directory).
+			$child_theme_json = \get_stylesheet_directory() . '/exception-urls.json';
+			if ( file_exists( $child_theme_json ) && is_readable( $child_theme_json ) ) {
+				$json_path = $child_theme_json;
+			} elseif ( \get_stylesheet_directory() !== \get_template_directory() ) {
+				// Check parent theme if using a child theme.
+				$parent_theme_json = \get_template_directory() . '/exception-urls.json';
+				if ( file_exists( $parent_theme_json ) && is_readable( $parent_theme_json ) ) {
+					$json_path = $parent_theme_json;
+				}
+			}
+		}
+
+		// Priority 5: Plugin's default exception-urls.json.
+		if ( empty( $json_path ) ) {
+			$plugin_json = FUNCTIONALITIES_DIR . 'exception-urls.json';
+			if ( file_exists( $plugin_json ) && is_readable( $plugin_json ) ) {
+				$json_path = $plugin_json;
+			}
+		}
+
+		// No valid JSON path found.
+		if ( empty( $json_path ) ) {
 			return;
 		}
 
-		$json_content = file_get_contents( $json_path );
+		// Load JSON content - handle both local files and URLs.
+		$json_content = self::get_json_content( $json_path );
 		if ( false === $json_content ) {
 			return;
 		}
@@ -94,6 +129,59 @@ class Link_Management {
 
 		// Update option temporarily (won't persist).
 		self::$cached_exceptions = $merged;
+	}
+
+	/**
+	 * Check if a JSON source is valid (file exists or is a valid URL).
+	 *
+	 * @param string $source The file path or URL to check.
+	 * @return bool True if valid source.
+	 */
+	private static function is_valid_json_source( string $source ) : bool {
+		// Check if it's a URL.
+		if ( filter_var( $source, FILTER_VALIDATE_URL ) ) {
+			return true;
+		}
+
+		// Check if it's a readable local file.
+		return file_exists( $source ) && is_readable( $source );
+	}
+
+	/**
+	 * Get JSON content from a file path or URL.
+	 *
+	 * @param string $source The file path or URL.
+	 * @return string|false JSON content or false on failure.
+	 */
+	private static function get_json_content( string $source ) {
+		// Handle URLs.
+		if ( filter_var( $source, FILTER_VALIDATE_URL ) ) {
+			$response = \wp_remote_get(
+				$source,
+				array(
+					'timeout'   => 10,
+					'sslverify' => true,
+				)
+			);
+
+			if ( \is_wp_error( $response ) ) {
+				return false;
+			}
+
+			$status_code = \wp_remote_retrieve_response_code( $response );
+			if ( 200 !== $status_code ) {
+				return false;
+			}
+
+			return \wp_remote_retrieve_body( $response );
+		}
+
+		// Handle local files.
+		if ( ! file_exists( $source ) || ! is_readable( $source ) ) {
+			return false;
+		}
+
+		return file_get_contents( $source );
 	}
 
 	/**
