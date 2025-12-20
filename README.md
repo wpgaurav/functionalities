@@ -90,6 +90,24 @@ A modular site-specific plugin to organize common features with simple toggles. 
 - Configurable class-to-symbol mappings
 - Navigate to: `?page=functionalities&module=icons`
 
+**Content Regression Detection** *(New in 0.9.0)*
+- Detect structural regressions when posts are updated
+- Internal link drop detection with configurable thresholds
+- Word count regression alerts for significant content reduction
+- Heading structure analysis for accessibility (H1, skipped levels)
+- Rolling snapshot storage for historical comparison
+- Block editor integration with pre-publish warnings
+- Navigate to: `?page=functionalities&module=content-regression`
+
+**Assumption Detection** *(New in 0.9.0)*
+- Monitor when technical assumptions stop being true
+- Schema collision detection (multiple JSON-LD sources)
+- Analytics duplication detection (GA4, GTM, Facebook Pixel)
+- Font redundancy detection (same font from multiple sources)
+- Inline CSS growth tracking (performance debt monitoring)
+- Dashboard UI with acknowledge/ignore actions
+- Navigate to: `?page=functionalities&module=assumption-detection`
+
 ## Installation
 
 1. Copy this folder `functionalities/` into your WordPress `wp-content/plugins/` directory.
@@ -119,27 +137,34 @@ All modules are accessed through a unified dashboard at `wp-admin/admin.php?page
 functionalities/
 ├── assets/
 │   ├── css/
-│   │   ├── admin.css      # Admin dashboard styles
-│   │   └── style.css       # Frontend styles
+│   │   ├── admin.css              # Admin dashboard styles
+│   │   ├── content-regression.css # Regression warning styles
+│   │   └── style.css              # Frontend styles
 │   └── js/
-│       ├── admin.js        # Admin dashboard scripts
-│       └── main.js         # Frontend scripts
+│       ├── admin.js               # Admin dashboard scripts
+│       ├── content-regression.js  # Block editor integration
+│       └── main.js                # Frontend scripts
 ├── includes/
 │   ├── admin/
-│   │   └── class-admin.php # Admin interface (refactored)
+│   │   ├── class-admin.php        # Admin interface
+│   │   ├── class-admin-ui.php     # Reusable UI helpers
+│   │   └── class-module-docs.php  # Centralized documentation
 │   ├── features/
-│   │   ├── class-link-management.php
+│   │   ├── class-assumption-detection.php
 │   │   ├── class-block-cleanup.php
-│   │   ├── class-editor-links.php
-│   │   ├── class-misc.php
-│   │   ├── class-snippets.php
-│   │   ├── class-schema.php
 │   │   ├── class-components.php
+│   │   ├── class-content-regression.php
+│   │   ├── class-editor-links.php
 │   │   ├── class-fonts.php
-│   │   └── class-icons.php
+│   │   ├── class-icons.php
+│   │   ├── class-link-management.php
+│   │   ├── class-meta.php
+│   │   ├── class-misc.php
+│   │   ├── class-schema.php
+│   │   └── class-snippets.php
 │   └── class-functionalities-loader.php
 ├── languages/
-└── functionalities.php     # Main plugin file
+└── functionalities.php            # Main plugin file
 ```
 
 ### Coding Standards
@@ -294,7 +319,118 @@ GPL-2.0-or-later
 
 ## Changelog
 
-### Version 0.8.1 (Current)
+### Version 0.9.0 (Current)
+
+#### New Modules
+
+**Content Regression Detection**
+- Detects structural regressions when posts are updated
+- Compares each post against its own historical baseline
+- **Internal Link Drop Detection**: Warns when internal links are accidentally removed
+  - Configurable percentage threshold (default: 30%)
+  - Configurable absolute threshold (default: 3 links)
+  - Option to exclude nofollow links from detection
+- **Word Count Regression**: Alerts when content is shortened significantly
+  - Configurable drop percentage threshold (default: 35%)
+  - Minimum content age requirement (default: 30 days)
+  - Option to compare against historical average
+  - Shortcode exclusion support
+- **Heading Structure Analysis**: Checks accessibility issues
+  - Missing H1 detection
+  - Multiple H1 detection
+  - Skipped heading level detection (e.g., H2 → H4)
+- Rolling snapshot storage (configurable, default: 5 snapshots)
+- Admin column showing regression status
+- Block editor integration with pre-publish warnings
+- REST API endpoint for editor integration
+- Navigate to: `?page=functionalities&module=content-regression`
+
+**Assumption Detection**
+- Monitors when technical assumptions stop being true
+- Philosophy: "This used to be true. Now it isn't." (Not optimization advice)
+- **Schema Collision Detection**: Notices when multiple JSON-LD sources appear
+  - Scans wp_head and wp_footer for JSON-LD scripts
+  - Identifies conflicting schema from plugins, themes, or manual additions
+  - Reports all detected sources for review
+- **Analytics Duplication Detection**: Finds duplicate tracking IDs
+  - Detects same GA4 Measurement ID from multiple sources
+  - Detects same GTM Container ID loaded multiple times
+  - Detects same Facebook Pixel ID from different plugins
+  - Reports which sources are loading each ID
+- **Font Redundancy Detection**: Notices same font from multiple sources
+  - Scans for @font-face declarations and Google Fonts links
+  - Identifies when same font family is loaded from different sources
+  - Helps eliminate redundant font loading
+- **Inline CSS Growth Tracking**: Monitors performance debt
+  - Establishes baseline inline CSS size
+  - Alerts when inline CSS exceeds threshold (configurable, default: 50KB)
+  - Tracks growth over time
+- Admin dashboard UI for reviewing detected assumptions
+- Acknowledge/Ignore actions for each detected issue
+- AJAX-powered interaction
+- Navigate to: `?page=functionalities&module=assumption-detection`
+
+#### Admin UI Improvements
+
+**Documentation Accordions**
+- Converted inline colored documentation boxes to accessible `<details>/<summary>` elements
+- WordPress-native styling with color-coded border accents:
+  - Green border: Feature descriptions ("What This Module Does")
+  - Yellow border: Usage tips and philosophy ("How to Use", "Philosophy")
+  - Red border: Warnings and cautions
+  - Blue border: Developer documentation ("Developer Hooks")
+- Collapsible by default to reduce visual clutter
+- Improved accessibility with semantic HTML
+
+**New Helper Classes**
+- `Admin_UI`: Reusable UI components for documentation rendering
+  - `render_docs_section()`: Renders consistent accordion sections
+  - Type parameter controls border accent color
+  - Open parameter controls initial state
+- `Module_Docs`: Centralized module documentation configuration
+  - All module features, usage info, and hooks in one place
+  - `get()`: Retrieve docs for specific module
+  - `get_all()`: Retrieve all module documentation
+  - Easier maintenance and consistency
+
+#### New Files
+- `includes/features/class-content-regression.php` - Content Regression Detection module
+- `includes/features/class-assumption-detection.php` - Assumption Detection module
+- `includes/admin/class-admin-ui.php` - Reusable UI helper class
+- `includes/admin/class-module-docs.php` - Centralized documentation configuration
+- `assets/js/content-regression.js` - Block editor integration for regression detection
+- `assets/css/content-regression.css` - Regression warning styles
+
+#### New Hooks and Filters
+
+**Content Regression Detection**
+- `functionalities_regression_enabled` - Toggle regression detection (filter)
+- `functionalities_regression_post_types` - Modify enabled post types (filter)
+- `functionalities_regression_warnings` - Modify detected warnings (filter)
+- `functionalities_regression_snapshot_saved` - Fires after snapshot is saved (action)
+- `functionalities_regression_link_threshold` - Customize link drop threshold (filter)
+- `functionalities_regression_word_threshold` - Customize word count threshold (filter)
+
+**Assumption Detection**
+- `functionalities_assumptions_enabled` - Toggle assumption detection (filter)
+- `functionalities_assumptions_detected` - Modify detected assumptions (filter)
+- `functionalities_assumption_ignored` - Fires when assumption is ignored (action)
+- `functionalities_assumption_acknowledged` - Fires when assumption is acknowledged (action)
+- `functionalities_schema_collision_sources` - Modify schema source detection (filter)
+- `functionalities_analytics_patterns` - Customize analytics detection patterns (filter)
+- `functionalities_font_detection_enabled` - Toggle font redundancy detection (filter)
+- `functionalities_inline_css_threshold` - Customize CSS size threshold (filter)
+
+#### Technical Improvements
+- Reduced inline styles in admin interface
+- Better separation of concerns with helper classes
+- Improved code organization
+- Enhanced accessibility with semantic HTML
+- Performance optimizations for detection algorithms
+
+---
+
+### Version 0.8.1
 - **NEW:** User-facing documentation in admin UI for all modules
 - Each module settings page now includes:
   - "What This Module Does" explanation boxes
