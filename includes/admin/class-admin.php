@@ -36,6 +36,9 @@ class Admin {
 
 		// AJAX handler for database update tool.
 		\add_action( 'wp_ajax_functionalities_update_database', array( __CLASS__, 'ajax_update_database' ) );
+
+		// AJAX handler for JSON file creation.
+		\add_action( 'wp_ajax_functionalities_create_json_file', array( __CLASS__, 'ajax_create_json_file' ) );
 	}
 
 	/**
@@ -65,6 +68,75 @@ class Admin {
 		} else {
 			\wp_send_json_error( $result );
 		}
+	}
+
+	/**
+	 * AJAX handler for creating JSON file in theme directory.
+	 *
+	 * @return void
+	 */
+	public static function ajax_create_json_file() : void {
+		// Verify nonce.
+		if ( ! isset( $_POST['nonce'] ) || ! \wp_verify_nonce( $_POST['nonce'], 'functionalities_create_json' ) ) {
+			\wp_send_json_error( array( 'message' => \__( 'Security check failed.', 'functionalities' ) ) );
+		}
+
+		// Check capabilities.
+		if ( ! \current_user_can( 'manage_options' ) ) {
+			\wp_send_json_error( array( 'message' => \__( 'Insufficient permissions.', 'functionalities' ) ) );
+		}
+
+		// Get content from request.
+		$content = isset( $_POST['content'] ) ? \wp_unslash( $_POST['content'] ) : '';
+
+		// Validate JSON.
+		$decoded = json_decode( $content, true );
+		if ( null === $decoded ) {
+			\wp_send_json_error( array( 'message' => \__( 'Invalid JSON format.', 'functionalities' ) ) );
+		}
+
+		// Validate structure.
+		if ( ! isset( $decoded['urls'] ) || ! is_array( $decoded['urls'] ) ) {
+			\wp_send_json_error( array( 'message' => \__( 'JSON must contain a "urls" array.', 'functionalities' ) ) );
+		}
+
+		// Get theme directory.
+		$theme_dir = \get_stylesheet_directory();
+		$file_path = $theme_dir . '/exception-urls.json';
+
+		// Check if theme directory is writable.
+		if ( ! is_writable( $theme_dir ) ) {
+			\wp_send_json_error(
+				array(
+					'message' => sprintf(
+						/* translators: %s: directory path */
+						\__( 'Theme directory is not writable: %s', 'functionalities' ),
+						$theme_dir
+					),
+				)
+			);
+		}
+
+		// Format JSON nicely.
+		$formatted_content = wp_json_encode( $decoded, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
+
+		// Write file.
+		$result = file_put_contents( $file_path, $formatted_content );
+
+		if ( false === $result ) {
+			\wp_send_json_error( array( 'message' => \__( 'Failed to write file.', 'functionalities' ) ) );
+		}
+
+		\wp_send_json_success(
+			array(
+				'message' => sprintf(
+					/* translators: %s: file path */
+					\__( 'JSON file created successfully: %s', 'functionalities' ),
+					$file_path
+				),
+				'path'    => $file_path,
+			)
+		);
 	}
 
 	/**
@@ -1922,9 +1994,214 @@ class Admin {
 	public static function field_json_preset_url() : void {
 		$opts = self::get_link_management_options();
 		$val  = isset( $opts['json_preset_url'] ) ? (string) $opts['json_preset_url'] : '';
-		echo '<input type="text" class="regular-text code" name="functionalities_link_management[json_preset_url]" value="' . \esc_attr( $val ) . '" placeholder="' . \esc_attr( FUNCTIONALITIES_DIR . 'exception-urls.json' ) . '" />';
-		echo '<p class="description">' . \esc_html__( 'Optional: Path to JSON file containing exception URLs. Format: {"urls": ["https://example.com"]}', 'functionalities' ) . '</p>';
-		echo '<p class="description">' . \esc_html__( 'Filter available: functionalities_json_preset_path', 'functionalities' ) . '</p>';
+
+		// Check for theme exception-urls.json.
+		$theme_json_path      = \get_stylesheet_directory() . '/exception-urls.json';
+		$theme_json_exists    = file_exists( $theme_json_path );
+		$parent_json_path     = \get_template_directory() . '/exception-urls.json';
+		$parent_json_exists   = \get_stylesheet_directory() !== \get_template_directory() && file_exists( $parent_json_path );
+		?>
+		<div class="functionalities-json-picker">
+			<div class="functionalities-json-picker-input">
+				<input type="text" id="functionalities_json_preset_url" class="regular-text code" name="functionalities_link_management[json_preset_url]" value="<?php echo \esc_attr( $val ); ?>" placeholder="<?php echo \esc_attr( FUNCTIONALITIES_DIR . 'exception-urls.json' ); ?>" />
+				<button type="button" id="functionalities_json_browse_btn" class="button button-secondary">
+					<?php echo \esc_html__( 'Browse...', 'functionalities' ); ?>
+				</button>
+				<button type="button" id="functionalities_json_create_btn" class="button button-secondary">
+					<?php echo \esc_html__( 'Create JSON', 'functionalities' ); ?>
+				</button>
+			</div>
+
+			<p class="description">
+				<?php echo \esc_html__( 'Enter a local file path or external URL to a JSON file containing exception URLs.', 'functionalities' ); ?>
+			</p>
+			<p class="description">
+				<?php echo \esc_html__( 'Format: {"urls": ["https://example.com", "https://another.com"]}', 'functionalities' ); ?>
+			</p>
+
+			<?php if ( $theme_json_exists || $parent_json_exists ) : ?>
+				<div class="notice notice-info inline" style="margin: 10px 0; padding: 10px;">
+					<strong><?php echo \esc_html__( 'Theme JSON Detected:', 'functionalities' ); ?></strong>
+					<?php if ( $theme_json_exists ) : ?>
+						<p style="margin: 5px 0;">
+							<?php
+							printf(
+								/* translators: %s: theme name */
+								\esc_html__( '✓ Your active theme (%s) has an exception-urls.json file. It will be loaded automatically if no custom path is set.', 'functionalities' ),
+								\esc_html( \wp_get_theme()->get( 'Name' ) )
+							);
+							?>
+							<br><code><?php echo \esc_html( $theme_json_path ); ?></code>
+						</p>
+					<?php endif; ?>
+					<?php if ( $parent_json_exists ) : ?>
+						<p style="margin: 5px 0;">
+							<?php
+							printf(
+								/* translators: %s: parent theme name */
+								\esc_html__( '✓ Parent theme (%s) has an exception-urls.json file.', 'functionalities' ),
+								\esc_html( \wp_get_theme( \get_template() )->get( 'Name' ) )
+							);
+							?>
+							<br><code><?php echo \esc_html( $parent_json_path ); ?></code>
+						</p>
+					<?php endif; ?>
+				</div>
+			<?php else : ?>
+				<p class="description" style="margin-top: 10px;">
+					<strong><?php echo \esc_html__( 'Tip:', 'functionalities' ); ?></strong>
+					<?php echo \esc_html__( 'You can place an exception-urls.json file in your active theme\'s root folder and it will be loaded automatically without entering a path here.', 'functionalities' ); ?>
+				</p>
+			<?php endif; ?>
+
+			<div class="notice notice-warning inline" style="margin: 10px 0; padding: 10px;">
+				<strong><?php echo \esc_html__( '⚠️ Security Warning:', 'functionalities' ); ?></strong>
+				<p style="margin: 5px 0;">
+					<?php echo \esc_html__( 'If using an external URL, ensure you trust the source completely. Malicious JSON files could add unwanted domains to your exception list, potentially allowing spam links to pass through without nofollow.', 'functionalities' ); ?>
+				</p>
+				<p style="margin: 5px 0;">
+					<?php echo \esc_html__( 'For security, prefer local JSON files within your WordPress installation over external URLs.', 'functionalities' ); ?>
+				</p>
+			</div>
+
+			<p class="description">
+				<?php echo \esc_html__( 'Filter available: functionalities_json_preset_path', 'functionalities' ); ?>
+			</p>
+		</div>
+
+		<!-- JSON Create Modal -->
+		<div id="functionalities-json-create-modal" style="display:none;">
+			<div class="functionalities-modal-overlay">
+				<div class="functionalities-modal-content">
+					<h3><?php echo \esc_html__( 'Create Exception URLs JSON File', 'functionalities' ); ?></h3>
+					<p class="description"><?php echo \esc_html__( 'This will create a new exception-urls.json file in your active theme directory.', 'functionalities' ); ?></p>
+					<textarea id="functionalities_json_create_content" rows="10" class="large-text code" placeholder='{"urls": ["https://trusted-domain.com", "https://another-trusted.com"]}'><?php echo \esc_textarea( "{\n\t\"urls\": [\n\t\t\"https://example.com\",\n\t\t\"https://another-trusted-site.com\"\n\t]\n}" ); ?></textarea>
+					<p class="description"><?php echo \esc_html__( 'Edit the JSON above, then click "Create File" to save it to your theme.', 'functionalities' ); ?></p>
+					<div style="margin-top: 15px;">
+						<button type="button" id="functionalities_json_create_save" class="button button-primary"><?php echo \esc_html__( 'Create File', 'functionalities' ); ?></button>
+						<button type="button" id="functionalities_json_create_cancel" class="button button-secondary"><?php echo \esc_html__( 'Cancel', 'functionalities' ); ?></button>
+					</div>
+					<div id="functionalities_json_create_result" style="margin-top: 10px;"></div>
+				</div>
+			</div>
+		</div>
+
+		<script>
+		jQuery(document).ready(function($) {
+			// Media Library Browser.
+			$('#functionalities_json_browse_btn').on('click', function(e) {
+				e.preventDefault();
+				var frame = wp.media({
+					title: '<?php echo \esc_js( \__( 'Select JSON File', 'functionalities' ) ); ?>',
+					button: { text: '<?php echo \esc_js( \__( 'Use this file', 'functionalities' ) ); ?>' },
+					multiple: false,
+					library: { type: 'application/json' }
+				});
+				frame.on('select', function() {
+					var attachment = frame.state().get('selection').first().toJSON();
+					$('#functionalities_json_preset_url').val(attachment.url);
+				});
+				frame.open();
+			});
+
+			// Create JSON Modal.
+			$('#functionalities_json_create_btn').on('click', function(e) {
+				e.preventDefault();
+				$('#functionalities-json-create-modal').show();
+			});
+			$('#functionalities_json_create_cancel').on('click', function() {
+				$('#functionalities-json-create-modal').hide();
+				$('#functionalities_json_create_result').html('');
+			});
+			$('.functionalities-modal-overlay').on('click', function(e) {
+				if (e.target === this) {
+					$('#functionalities-json-create-modal').hide();
+					$('#functionalities_json_create_result').html('');
+				}
+			});
+
+			// Create JSON File.
+			$('#functionalities_json_create_save').on('click', function() {
+				var content = $('#functionalities_json_create_content').val();
+				var $btn = $(this);
+				var $result = $('#functionalities_json_create_result');
+
+				// Validate JSON.
+				try {
+					JSON.parse(content);
+				} catch (e) {
+					$result.html('<div class="notice notice-error"><p><?php echo \esc_js( \__( 'Invalid JSON format. Please check your syntax.', 'functionalities' ) ); ?></p></div>');
+					return;
+				}
+
+				$btn.prop('disabled', true).text('<?php echo \esc_js( \__( 'Creating...', 'functionalities' ) ); ?>');
+
+				$.ajax({
+					url: ajaxurl,
+					type: 'POST',
+					data: {
+						action: 'functionalities_create_json_file',
+						content: content,
+						nonce: '<?php echo \wp_create_nonce( 'functionalities_create_json' ); ?>'
+					},
+					success: function(response) {
+						if (response.success) {
+							$result.html('<div class="notice notice-success"><p>' + response.data.message + '</p></div>');
+							if (response.data.path) {
+								$('#functionalities_json_preset_url').val(response.data.path);
+							}
+							setTimeout(function() {
+								$('#functionalities-json-create-modal').hide();
+								$result.html('');
+							}, 2000);
+						} else {
+							$result.html('<div class="notice notice-error"><p>' + response.data.message + '</p></div>');
+						}
+					},
+					error: function() {
+						$result.html('<div class="notice notice-error"><p><?php echo \esc_js( \__( 'An error occurred.', 'functionalities' ) ); ?></p></div>');
+					},
+					complete: function() {
+						$btn.prop('disabled', false).text('<?php echo \esc_js( \__( 'Create File', 'functionalities' ) ); ?>');
+					}
+				});
+			});
+		});
+		</script>
+		<style>
+		.functionalities-json-picker-input {
+			display: flex;
+			gap: 5px;
+			flex-wrap: wrap;
+			align-items: center;
+			margin-bottom: 10px;
+		}
+		.functionalities-modal-overlay {
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			background: rgba(0, 0, 0, 0.7);
+			z-index: 100000;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+		.functionalities-modal-content {
+			background: #fff;
+			padding: 20px;
+			border-radius: 4px;
+			max-width: 600px;
+			width: 90%;
+			max-height: 80vh;
+			overflow-y: auto;
+		}
+		.functionalities-modal-content h3 {
+			margin-top: 0;
+		}
+		</style>
+		<?php
 	}
 
 	/**
@@ -1935,9 +2212,192 @@ class Admin {
 	public static function field_enable_developer_filters() : void {
 		$opts    = self::get_link_management_options();
 		$checked = ! empty( $opts['enable_developer_filters'] ) ? 'checked' : '';
-		echo '<label><input type="checkbox" name="functionalities_link_management[enable_developer_filters]" value="1" ' . $checked . '> ';
-		echo \esc_html__( 'Enable developer filters for exception customization', 'functionalities' ) . '</label>';
-		echo '<p class="description">' . \esc_html__( 'Available filters: functionalities_exception_domains, functionalities_exception_urls, gtnf_exception_domains (legacy), gtnf_exception_urls (legacy)', 'functionalities' ) . '</p>';
+		?>
+		<label>
+			<input type="checkbox" name="functionalities_link_management[enable_developer_filters]" value="1" <?php echo $checked; ?>>
+			<?php echo \esc_html__( 'Enable developer filters for exception customization', 'functionalities' ); ?>
+		</label>
+		<p class="description">
+			<?php echo \esc_html__( 'Available filters: functionalities_exception_domains, functionalities_exception_urls, gtnf_exception_domains (legacy), gtnf_exception_urls (legacy)', 'functionalities' ); ?>
+		</p>
+
+		<div class="functionalities-code-snippets" style="margin-top: 15px; padding: 15px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 4px;">
+			<h4 style="margin-top: 0;"><?php echo \esc_html__( 'Code Snippets (copy to your theme\'s functions.php or a custom plugin)', 'functionalities' ); ?></h4>
+
+			<details style="margin-bottom: 15px;">
+				<summary style="cursor: pointer; font-weight: 600; padding: 8px 0;">
+					<?php echo \esc_html__( 'Add Exception Domains', 'functionalities' ); ?>
+				</summary>
+				<div style="margin-top: 10px;">
+					<p class="description"><?php echo \esc_html__( 'Add trusted domains that should never get nofollow:', 'functionalities' ); ?></p>
+					<pre class="functionalities-code-block" style="background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px; line-height: 1.5;"><code>&lt;?php
+/**
+ * Add trusted domains to nofollow exceptions.
+ * Links to these domains will NOT have nofollow added.
+ */
+add_filter( 'functionalities_exception_domains', function( $domains ) {
+    // Add your trusted domains here
+    $trusted_domains = array(
+        'trusted-partner.com',
+        'another-trusted-site.org',
+        'your-other-website.net',
+    );
+
+    return array_merge( $domains, $trusted_domains );
+} );</code></pre>
+					<button type="button" class="button button-small functionalities-copy-btn" data-target="exception-domains"><?php echo \esc_html__( 'Copy Code', 'functionalities' ); ?></button>
+				</div>
+			</details>
+
+			<details style="margin-bottom: 15px;">
+				<summary style="cursor: pointer; font-weight: 600; padding: 8px 0;">
+					<?php echo \esc_html__( 'Add Exception URLs', 'functionalities' ); ?>
+				</summary>
+				<div style="margin-top: 10px;">
+					<p class="description"><?php echo \esc_html__( 'Add specific URLs (with wildcards) that should never get nofollow:', 'functionalities' ); ?></p>
+					<pre class="functionalities-code-block" style="background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px; line-height: 1.5;"><code>&lt;?php
+/**
+ * Add specific URLs to nofollow exceptions.
+ * These specific URLs will NOT have nofollow added.
+ */
+add_filter( 'functionalities_exception_urls', function( $urls ) {
+    // Add specific URLs or patterns
+    $trusted_urls = array(
+        'https://example.com/specific-page',
+        'https://partner.com/affiliate/*',
+        'https://trusted.org/blog/*',
+    );
+
+    return array_merge( $urls, $trusted_urls );
+} );</code></pre>
+					<button type="button" class="button button-small functionalities-copy-btn" data-target="exception-urls"><?php echo \esc_html__( 'Copy Code', 'functionalities' ); ?></button>
+				</div>
+			</details>
+
+			<details style="margin-bottom: 15px;">
+				<summary style="cursor: pointer; font-weight: 600; padding: 8px 0;">
+					<?php echo \esc_html__( 'Dynamic Exceptions (e.g., based on user role)', 'functionalities' ); ?>
+				</summary>
+				<div style="margin-top: 10px;">
+					<p class="description"><?php echo \esc_html__( 'Add exceptions dynamically based on conditions:', 'functionalities' ); ?></p>
+					<pre class="functionalities-code-block" style="background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px; line-height: 1.5;"><code>&lt;?php
+/**
+ * Dynamically add exception domains based on conditions.
+ * Example: Trust all domains for administrators.
+ */
+add_filter( 'functionalities_exception_domains', function( $domains ) {
+    // Skip nofollow for administrators
+    if ( current_user_can( 'manage_options' ) ) {
+        // Return wildcard to match all domains
+        $domains[] = '*';
+    }
+
+    // Add domains from a custom option
+    $custom_domains = get_option( 'my_trusted_domains', array() );
+    if ( is_array( $custom_domains ) ) {
+        $domains = array_merge( $domains, $custom_domains );
+    }
+
+    // Add sponsor domains on specific post types
+    if ( is_singular( 'sponsored_post' ) ) {
+        $domains[] = 'sponsor-website.com';
+    }
+
+    return $domains;
+} );</code></pre>
+					<button type="button" class="button button-small functionalities-copy-btn" data-target="dynamic-exceptions"><?php echo \esc_html__( 'Copy Code', 'functionalities' ); ?></button>
+				</div>
+			</details>
+
+			<details style="margin-bottom: 15px;">
+				<summary style="cursor: pointer; font-weight: 600; padding: 8px 0;">
+					<?php echo \esc_html__( 'Custom JSON File Path', 'functionalities' ); ?>
+				</summary>
+				<div style="margin-top: 10px;">
+					<p class="description"><?php echo \esc_html__( 'Override the JSON file path programmatically:', 'functionalities' ); ?></p>
+					<pre class="functionalities-code-block" style="background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px; line-height: 1.5;"><code>&lt;?php
+/**
+ * Use a custom JSON file path for exception URLs.
+ */
+add_filter( 'functionalities_json_preset_path', function( $default_path ) {
+    // Use a JSON file from your theme
+    $theme_json = get_stylesheet_directory() . '/config/exceptions.json';
+
+    if ( file_exists( $theme_json ) ) {
+        return $theme_json;
+    }
+
+    // Or use an external URL (use with caution!)
+    // return 'https://your-cdn.com/exception-urls.json';
+
+    return $default_path;
+} );</code></pre>
+					<button type="button" class="button button-small functionalities-copy-btn" data-target="json-path"><?php echo \esc_html__( 'Copy Code', 'functionalities' ); ?></button>
+				</div>
+			</details>
+
+			<details style="margin-bottom: 15px;">
+				<summary style="cursor: pointer; font-weight: 600; padding: 8px 0;">
+					<?php echo \esc_html__( 'Legacy GT Nofollow Manager Compatibility', 'functionalities' ); ?>
+				</summary>
+				<div style="margin-top: 10px;">
+					<p class="description"><?php echo \esc_html__( 'If migrating from GT Nofollow Manager, your existing filter code will still work:', 'functionalities' ); ?></p>
+					<pre class="functionalities-code-block" style="background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px; line-height: 1.5;"><code>&lt;?php
+/**
+ * Legacy GT Nofollow Manager filters (still supported).
+ * These work identically to the new filters above.
+ */
+
+// Legacy domain filter
+add_filter( 'gtnf_exception_domains', function( $domains ) {
+    $domains[] = 'legacy-trusted-site.com';
+    return $domains;
+} );
+
+// Legacy URL filter
+add_filter( 'gtnf_exception_urls', function( $urls ) {
+    $urls[] = 'https://legacy-partner.com/page';
+    return $urls;
+} );</code></pre>
+					<button type="button" class="button button-small functionalities-copy-btn" data-target="legacy-filters"><?php echo \esc_html__( 'Copy Code', 'functionalities' ); ?></button>
+				</div>
+			</details>
+
+		</div>
+
+		<script>
+		jQuery(document).ready(function($) {
+			$('.functionalities-copy-btn').on('click', function() {
+				var $btn = $(this);
+				var $pre = $btn.prev('pre');
+				var code = $pre.find('code').text();
+
+				if (navigator.clipboard && navigator.clipboard.writeText) {
+					navigator.clipboard.writeText(code).then(function() {
+						var originalText = $btn.text();
+						$btn.text('<?php echo \esc_js( \__( 'Copied!', 'functionalities' ) ); ?>');
+						setTimeout(function() {
+							$btn.text(originalText);
+						}, 2000);
+					});
+				} else {
+					// Fallback for older browsers.
+					var textarea = document.createElement('textarea');
+					textarea.value = code;
+					document.body.appendChild(textarea);
+					textarea.select();
+					document.execCommand('copy');
+					document.body.removeChild(textarea);
+					var originalText = $btn.text();
+					$btn.text('<?php echo \esc_js( \__( 'Copied!', 'functionalities' ) ); ?>');
+					setTimeout(function() {
+						$btn.text(originalText);
+					}, 2000);
+				}
+			});
+		});
+		</script>
+		<?php
 	}
 
 	/**
