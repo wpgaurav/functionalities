@@ -44,6 +44,7 @@ require_once FUNCTIONALITIES_DIR . 'includes/features/class-components.php';
 require_once FUNCTIONALITIES_DIR . 'includes/features/class-fonts.php';
 require_once FUNCTIONALITIES_DIR . 'includes/features/class-icons.php';
 require_once FUNCTIONALITIES_DIR . 'includes/features/class-meta.php';
+require_once FUNCTIONALITIES_DIR . 'includes/features/class-content-regression.php';
 require_once FUNCTIONALITIES_DIR . 'includes/class-github-updater.php';
 
 // Initialize plugin.
@@ -61,6 +62,7 @@ require_once FUNCTIONALITIES_DIR . 'includes/class-github-updater.php';
 	\Functionalities\Features\Fonts::init();
 	\Functionalities\Features\Icons::init();
 	\Functionalities\Features\Meta::init();
+	\Functionalities\Features\Content_Regression::init();
 
 	// Initialize GitHub Updater if enabled.
 	$update_options = \Functionalities\Admin\Admin::get_updates_options();
