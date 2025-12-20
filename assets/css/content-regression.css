@@ -1,0 +1,248 @@
+/**
+ * Content Regression Detection - Editor Styles
+ *
+ * @package Functionalities
+ */
+
+/* Panel container */
+.functionalities-regression-panel {
+	font-size: 13px;
+	line-height: 1.5;
+}
+
+/* Warning items */
+.functionalities-regression-warning {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	padding: 12px;
+	background: #fff8e5;
+	border-left: 4px solid #dba617;
+	margin-bottom: 8px;
+	border-radius: 2px;
+}
+
+.functionalities-regression-warning.is-notice {
+	background: #f0f6fc;
+	border-left-color: #72aee6;
+}
+
+.functionalities-regression-warning .dashicons {
+	flex-shrink: 0;
+	margin-top: 2px;
+}
+
+.functionalities-regression-warning p {
+	margin: 0;
+}
+
+.functionalities-regression-warning p.meta {
+	font-size: 11px;
+	color: #8c8f94;
+	margin-top: 4px;
+}
+
+/* Success state */
+.functionalities-regression-success {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 12px;
+	background: #edfaef;
+	border-left: 4px solid #00a32a;
+	border-radius: 2px;
+}
+
+.functionalities-regression-success .dashicons {
+	color: #00a32a;
+}
+
+/* No baseline state */
+.functionalities-regression-no-baseline {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	padding: 12px;
+	background: #f0f0f1;
+	border-left: 4px solid #646970;
+	border-radius: 2px;
+}
+
+.functionalities-regression-no-baseline .dashicons {
+	color: #646970;
+	flex-shrink: 0;
+}
+
+/* Actions */
+.functionalities-regression-actions {
+	margin-top: 16px;
+}
+
+.functionalities-regression-actions .components-button {
+	margin-right: 8px;
+	margin-bottom: 8px;
+}
+
+/* Settings section */
+.functionalities-regression-settings {
+	margin-top: 20px;
+	padding-top: 16px;
+	border-top: 1px solid #e0e0e0;
+}
+
+.functionalities-regression-settings .components-toggle-control {
+	margin-bottom: 8px;
+}
+
+.functionalities-regression-settings .components-toggle-control__label {
+	font-size: 12px;
+}
+
+/* Pre-publish panel specific */
+.editor-post-publish-panel .functionalities-regression-panel {
+	padding: 0;
+}
+
+.editor-post-publish-panel .functionalities-regression-warning {
+	margin: 0 0 8px;
+}
+
+.editor-post-publish-panel .functionalities-regression-warning:last-child {
+	margin-bottom: 0;
+}
+
+/* Post list column */
+.column-functionalities_regression {
+	width: 40px;
+	text-align: center;
+}
+
+.column-functionalities_regression .dashicons {
+	font-size: 18px;
+	width: 18px;
+	height: 18px;
+}
+
+/* Loading state */
+.functionalities-regression-loading {
+	text-align: center;
+	padding: 20px;
+}
+
+.functionalities-regression-loading .components-spinner {
+	margin: 0 auto 10px;
+}
+
+.functionalities-regression-loading p {
+	color: #646970;
+	margin: 0;
+}
+
+/* Sidebar specific adjustments */
+.edit-post-sidebar .functionalities-regression-panel {
+	padding: 0;
+}
+
+.edit-post-sidebar .components-panel__body-title {
+	border-bottom: 1px solid #e0e0e0;
+}
+
+/* Comparison values */
+.functionalities-regression-comparison {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 12px;
+	color: #646970;
+	margin-top: 6px;
+}
+
+.functionalities-regression-comparison .before {
+	text-decoration: line-through;
+	color: #8c8f94;
+}
+
+.functionalities-regression-comparison .arrow {
+	color: #8c8f94;
+}
+
+.functionalities-regression-comparison .after {
+	font-weight: 600;
+	color: #d63638;
+}
+
+/* Timestamp */
+.functionalities-regression-timestamp {
+	font-size: 11px;
+	color: #8c8f94;
+	margin-top: 4px;
+}
+
+/* Icon colors */
+.functionalities-regression-icon-warning {
+	color: #dba617;
+}
+
+.functionalities-regression-icon-notice {
+	color: #72aee6;
+}
+
+.functionalities-regression-icon-success {
+	color: #00a32a;
+}
+
+.functionalities-regression-icon-error {
+	color: #d63638;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 782px) {
+	.functionalities-regression-warning {
+		padding: 10px;
+	}
+
+	.functionalities-regression-actions .components-button {
+		width: 100%;
+		margin-right: 0;
+		justify-content: center;
+	}
+}
+
+/* Admin column styling for post list */
+.wp-list-table .column-functionalities_regression {
+	width: 40px;
+}
+
+.wp-list-table .column-functionalities_regression .dashicons {
+	font-size: 18px;
+	width: 18px;
+	height: 18px;
+	vertical-align: middle;
+}
+
+.wp-list-table .column-functionalities_regression .dashicons-yes-alt {
+	color: #00a32a;
+}
+
+.wp-list-table .column-functionalities_regression .dashicons-warning {
+	color: #dba617;
+}
+
+/* Dark mode support (if theme supports it) */
+@media (prefers-color-scheme: dark) {
+	.functionalities-regression-warning {
+		background: rgba(219, 166, 23, 0.1);
+	}
+
+	.functionalities-regression-warning.is-notice {
+		background: rgba(114, 174, 230, 0.1);
+	}
+
+	.functionalities-regression-success {
+		background: rgba(0, 163, 42, 0.1);
+	}
+
+	.functionalities-regression-no-baseline {
+		background: rgba(100, 105, 112, 0.1);
+	}
+}

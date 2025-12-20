@@ -129,6 +129,11 @@ class Admin {
 				'description' => \__( 'Receive plugin updates directly from GitHub releases.', 'functionalities' ),
 				'icon'        => 'dashicons-update',
 			),
+			'content-regression' => array(
+				'title'       => \__( 'Content Integrity', 'functionalities' ),
+				'description' => \__( 'Detect structural regressions when posts are updated.', 'functionalities' ),
+				'icon'        => 'dashicons-shield',
+			),
 		);
 	}
 
@@ -1403,6 +1408,304 @@ class Admin {
 			array( __CLASS__, 'field_update_status' ),
 			'functionalities_updates',
 			'functionalities_updates_section'
+		);
+
+		// Content Regression Detection settings.
+		\register_setting(
+			'functionalities_content_regression',
+			'functionalities_content_regression',
+			array(
+				'sanitize_callback' => array( __CLASS__, 'sanitize_content_regression' ),
+				'default'           => array(
+					'enabled'                     => false,
+					'post_types'                  => array( 'post', 'page' ),
+					'link_drop_enabled'           => true,
+					'link_drop_percent'           => 30,
+					'link_drop_absolute'          => 3,
+					'exclude_nofollow_links'      => false,
+					'word_count_enabled'          => true,
+					'word_count_drop_percent'     => 35,
+					'word_count_min_age_days'     => 30,
+					'word_count_compare_average'  => false,
+					'exclude_shortcodes'          => false,
+					'heading_enabled'             => true,
+					'detect_missing_h1'           => true,
+					'detect_multiple_h1'          => true,
+					'detect_skipped_levels'       => true,
+					'snapshot_rolling_count'      => 5,
+					'show_post_column'            => true,
+				),
+			)
+		);
+
+		\add_settings_section(
+			'functionalities_content_regression_section',
+			\__( 'Content Integrity Settings', 'functionalities' ),
+			array( __CLASS__, 'section_content_regression' ),
+			'functionalities_content_regression'
+		);
+
+		// Enable module.
+		\add_settings_field(
+			'regression_enabled',
+			\__( 'Enable Content Integrity', 'functionalities' ),
+			function() {
+				$o = self::get_content_regression_options();
+				$checked = ! empty( $o['enabled'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_content_regression[enabled]" value="1" ' . $checked . '> ';
+				echo \esc_html__( 'Detect structural regressions when posts are updated', 'functionalities' ) . '</label>';
+			},
+			'functionalities_content_regression',
+			'functionalities_content_regression_section'
+		);
+
+		// Post types.
+		\add_settings_field(
+			'regression_post_types',
+			\__( 'Post Types', 'functionalities' ),
+			function() {
+				$o = self::get_content_regression_options();
+				$selected = isset( $o['post_types'] ) && is_array( $o['post_types'] ) ? $o['post_types'] : array( 'post', 'page' );
+				$pts = \get_post_types( array( 'public' => true ), 'objects' );
+				echo '<fieldset>';
+				foreach ( $pts as $name => $obj ) {
+					if ( 'attachment' === $name ) {
+						continue;
+					}
+					$is_checked = in_array( $name, $selected, true ) ? 'checked' : '';
+					$label = sprintf( '%s (%s)', $obj->labels->singular_name ?? $name, $name );
+					echo '<label style="display:block; margin:2px 0;"><input type="checkbox" name="functionalities_content_regression[post_types][]" value="' . \esc_attr( $name ) . '" ' . $is_checked . '> ' . \esc_html( $label ) . '</label>';
+				}
+				echo '</fieldset>';
+			},
+			'functionalities_content_regression',
+			'functionalities_content_regression_section'
+		);
+
+		// Link drop detection header.
+		\add_settings_field(
+			'link_drop_header',
+			'<strong>' . \__( 'Internal Link Detection', 'functionalities' ) . '</strong>',
+			function() {
+				echo '<p class="description" style="margin:0">' . \esc_html__( 'Detect when internal links are removed from content.', 'functionalities' ) . '</p>';
+			},
+			'functionalities_content_regression',
+			'functionalities_content_regression_section'
+		);
+
+		\add_settings_field(
+			'link_drop_enabled',
+			\__( 'Enable Link Detection', 'functionalities' ),
+			function() {
+				$o = self::get_content_regression_options();
+				$checked = ! empty( $o['link_drop_enabled'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_content_regression[link_drop_enabled]" value="1" ' . $checked . '> ';
+				echo \esc_html__( 'Warn when internal links drop significantly', 'functionalities' ) . '</label>';
+			},
+			'functionalities_content_regression',
+			'functionalities_content_regression_section'
+		);
+
+		\add_settings_field(
+			'link_drop_percent',
+			\__( 'Link Drop Threshold (%)', 'functionalities' ),
+			function() {
+				$o = self::get_content_regression_options();
+				$val = isset( $o['link_drop_percent'] ) ? (int) $o['link_drop_percent'] : 30;
+				echo '<input type="number" min="1" max="100" class="small-text" name="functionalities_content_regression[link_drop_percent]" value="' . \esc_attr( $val ) . '" /> %';
+				echo '<p class="description">' . \esc_html__( 'Warn if internal links drop by this percentage or more.', 'functionalities' ) . '</p>';
+			},
+			'functionalities_content_regression',
+			'functionalities_content_regression_section'
+		);
+
+		\add_settings_field(
+			'link_drop_absolute',
+			\__( 'Link Drop Absolute Threshold', 'functionalities' ),
+			function() {
+				$o = self::get_content_regression_options();
+				$val = isset( $o['link_drop_absolute'] ) ? (int) $o['link_drop_absolute'] : 3;
+				echo '<input type="number" min="1" max="100" class="small-text" name="functionalities_content_regression[link_drop_absolute]" value="' . \esc_attr( $val ) . '" /> ' . \esc_html__( 'links', 'functionalities' );
+				echo '<p class="description">' . \esc_html__( 'Also warn if this many links are removed (whichever triggers first).', 'functionalities' ) . '</p>';
+			},
+			'functionalities_content_regression',
+			'functionalities_content_regression_section'
+		);
+
+		\add_settings_field(
+			'exclude_nofollow_links',
+			\__( 'Exclude Nofollow Links', 'functionalities' ),
+			function() {
+				$o = self::get_content_regression_options();
+				$checked = ! empty( $o['exclude_nofollow_links'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_content_regression[exclude_nofollow_links]" value="1" ' . $checked . '> ';
+				echo \esc_html__( 'Do not count links with rel="nofollow"', 'functionalities' ) . '</label>';
+			},
+			'functionalities_content_regression',
+			'functionalities_content_regression_section'
+		);
+
+		// Word count detection header.
+		\add_settings_field(
+			'word_count_header',
+			'<strong>' . \__( 'Word Count Detection', 'functionalities' ) . '</strong>',
+			function() {
+				echo '<p class="description" style="margin:0">' . \esc_html__( 'Detect when content is shortened significantly.', 'functionalities' ) . '</p>';
+			},
+			'functionalities_content_regression',
+			'functionalities_content_regression_section'
+		);
+
+		\add_settings_field(
+			'word_count_enabled',
+			\__( 'Enable Word Count Detection', 'functionalities' ),
+			function() {
+				$o = self::get_content_regression_options();
+				$checked = ! empty( $o['word_count_enabled'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_content_regression[word_count_enabled]" value="1" ' . $checked . '> ';
+				echo \esc_html__( 'Warn when word count drops significantly', 'functionalities' ) . '</label>';
+			},
+			'functionalities_content_regression',
+			'functionalities_content_regression_section'
+		);
+
+		\add_settings_field(
+			'word_count_drop_percent',
+			\__( 'Word Count Drop Threshold (%)', 'functionalities' ),
+			function() {
+				$o = self::get_content_regression_options();
+				$val = isset( $o['word_count_drop_percent'] ) ? (int) $o['word_count_drop_percent'] : 35;
+				echo '<input type="number" min="1" max="100" class="small-text" name="functionalities_content_regression[word_count_drop_percent]" value="' . \esc_attr( $val ) . '" /> %';
+				echo '<p class="description">' . \esc_html__( 'Warn if word count drops by this percentage.', 'functionalities' ) . '</p>';
+			},
+			'functionalities_content_regression',
+			'functionalities_content_regression_section'
+		);
+
+		\add_settings_field(
+			'word_count_min_age_days',
+			\__( 'Minimum Post Age (days)', 'functionalities' ),
+			function() {
+				$o = self::get_content_regression_options();
+				$val = isset( $o['word_count_min_age_days'] ) ? (int) $o['word_count_min_age_days'] : 30;
+				echo '<input type="number" min="0" max="365" class="small-text" name="functionalities_content_regression[word_count_min_age_days]" value="' . \esc_attr( $val ) . '" /> ' . \esc_html__( 'days', 'functionalities' );
+				echo '<p class="description">' . \esc_html__( 'Only check word count for posts older than this (to avoid alerts on new posts).', 'functionalities' ) . '</p>';
+			},
+			'functionalities_content_regression',
+			'functionalities_content_regression_section'
+		);
+
+		\add_settings_field(
+			'exclude_shortcodes',
+			\__( 'Exclude Shortcodes', 'functionalities' ),
+			function() {
+				$o = self::get_content_regression_options();
+				$checked = ! empty( $o['exclude_shortcodes'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_content_regression[exclude_shortcodes]" value="1" ' . $checked . '> ';
+				echo \esc_html__( 'Remove shortcode content from word count', 'functionalities' ) . '</label>';
+			},
+			'functionalities_content_regression',
+			'functionalities_content_regression_section'
+		);
+
+		// Heading detection header.
+		\add_settings_field(
+			'heading_header',
+			'<strong>' . \__( 'Heading Structure Detection', 'functionalities' ) . '</strong>',
+			function() {
+				echo '<p class="description" style="margin:0">' . \esc_html__( 'Detect accessibility issues with heading hierarchy.', 'functionalities' ) . '</p>';
+			},
+			'functionalities_content_regression',
+			'functionalities_content_regression_section'
+		);
+
+		\add_settings_field(
+			'heading_enabled',
+			\__( 'Enable Heading Detection', 'functionalities' ),
+			function() {
+				$o = self::get_content_regression_options();
+				$checked = ! empty( $o['heading_enabled'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_content_regression[heading_enabled]" value="1" ' . $checked . '> ';
+				echo \esc_html__( 'Check heading structure for accessibility issues', 'functionalities' ) . '</label>';
+			},
+			'functionalities_content_regression',
+			'functionalities_content_regression_section'
+		);
+
+		\add_settings_field(
+			'detect_missing_h1',
+			\__( 'Detect Missing H1', 'functionalities' ),
+			function() {
+				$o = self::get_content_regression_options();
+				$checked = ! empty( $o['detect_missing_h1'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_content_regression[detect_missing_h1]" value="1" ' . $checked . '> ';
+				echo \esc_html__( 'Warn when no H1 heading is present', 'functionalities' ) . '</label>';
+			},
+			'functionalities_content_regression',
+			'functionalities_content_regression_section'
+		);
+
+		\add_settings_field(
+			'detect_multiple_h1',
+			\__( 'Detect Multiple H1s', 'functionalities' ),
+			function() {
+				$o = self::get_content_regression_options();
+				$checked = ! empty( $o['detect_multiple_h1'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_content_regression[detect_multiple_h1]" value="1" ' . $checked . '> ';
+				echo \esc_html__( 'Warn when multiple H1 headings exist', 'functionalities' ) . '</label>';
+			},
+			'functionalities_content_regression',
+			'functionalities_content_regression_section'
+		);
+
+		\add_settings_field(
+			'detect_skipped_levels',
+			\__( 'Detect Skipped Levels', 'functionalities' ),
+			function() {
+				$o = self::get_content_regression_options();
+				$checked = ! empty( $o['detect_skipped_levels'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_content_regression[detect_skipped_levels]" value="1" ' . $checked . '> ';
+				echo \esc_html__( 'Warn when heading levels are skipped (e.g., H2 to H4)', 'functionalities' ) . '</label>';
+			},
+			'functionalities_content_regression',
+			'functionalities_content_regression_section'
+		);
+
+		// Advanced settings header.
+		\add_settings_field(
+			'advanced_header',
+			'<strong>' . \__( 'Advanced Settings', 'functionalities' ) . '</strong>',
+			function() {
+				echo '<p class="description" style="margin:0">' . \esc_html__( 'Configure snapshot and display options.', 'functionalities' ) . '</p>';
+			},
+			'functionalities_content_regression',
+			'functionalities_content_regression_section'
+		);
+
+		\add_settings_field(
+			'snapshot_rolling_count',
+			\__( 'Snapshots to Keep', 'functionalities' ),
+			function() {
+				$o = self::get_content_regression_options();
+				$val = isset( $o['snapshot_rolling_count'] ) ? (int) $o['snapshot_rolling_count'] : 5;
+				echo '<input type="number" min="1" max="20" class="small-text" name="functionalities_content_regression[snapshot_rolling_count]" value="' . \esc_attr( $val ) . '" />';
+				echo '<p class="description">' . \esc_html__( 'Number of historical snapshots to retain per post.', 'functionalities' ) . '</p>';
+			},
+			'functionalities_content_regression',
+			'functionalities_content_regression_section'
+		);
+
+		\add_settings_field(
+			'show_post_column',
+			\__( 'Show Post List Column', 'functionalities' ),
+			function() {
+				$o = self::get_content_regression_options();
+				$checked = ! empty( $o['show_post_column'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_content_regression[show_post_column]" value="1" ' . $checked . '> ';
+				echo \esc_html__( 'Display integrity status icon in post list table', 'functionalities' ) . '</label>';
+			},
+			'functionalities_content_regression',
+			'functionalities_content_regression_section'
 		);
 	}
 
@@ -2940,6 +3243,130 @@ class Admin {
 			'cache_duration' => 21600,
 		);
 		$opts = (array) \get_option( 'functionalities_updates', $defaults );
+		return array_merge( $defaults, $opts );
+	}
+
+	/**
+	 * Render section description for content regression detection.
+	 *
+	 * @return void
+	 */
+	public static function section_content_regression() : void {
+		echo '<p>' . \esc_html__( 'Detect structural regressions when posts are updated. This module compares each post against its own historical baseline.', 'functionalities' ) . '</p>';
+
+		echo '<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:12px 16px;margin:12px 0">';
+		echo '<h4 style="margin:0 0 8px">' . \esc_html__( 'What This Module Does', 'functionalities' ) . '</h4>';
+		echo '<ul style="margin:0;padding-left:20px">';
+		echo '<li>' . \esc_html__( 'Detects when internal links are accidentally removed', 'functionalities' ) . '</li>';
+		echo '<li>' . \esc_html__( 'Warns when content is shortened significantly', 'functionalities' ) . '</li>';
+		echo '<li>' . \esc_html__( 'Checks heading structure for accessibility issues', 'functionalities' ) . '</li>';
+		echo '<li>' . \esc_html__( 'Stores snapshots to compare against historical baselines', 'functionalities' ) . '</li>';
+		echo '</ul>';
+		echo '</div>';
+
+		echo '<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;padding:12px 16px;margin:12px 0">';
+		echo '<h4 style="margin:0 0 8px;color:#92400e">' . \esc_html__( 'Philosophy', 'functionalities' ) . '</h4>';
+		echo '<p style="margin:0;font-size:13px">' . \esc_html__( 'This is content integrity, not SEO. The system answers: "Did this update accidentally damage something important?" It never scores content, never suggests fixes, and always compares a post to itself - not to external standards.', 'functionalities' ) . '</p>';
+		echo '</div>';
+
+		echo '<div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:6px;padding:12px 16px;margin:12px 0">';
+		echo '<h4 style="margin:0 0 8px;color:#1e40af">' . \esc_html__( 'For Developers', 'functionalities' ) . '</h4>';
+		echo '<p style="margin:0;font-size:13px;color:#1e3a8a">';
+		echo \esc_html__( 'Filter:', 'functionalities' ) . ' <code>functionalities_regression_enabled</code> — ' . \esc_html__( 'toggle detection', 'functionalities' ) . '<br>';
+		echo \esc_html__( 'Filter:', 'functionalities' ) . ' <code>functionalities_regression_post_types</code> — ' . \esc_html__( 'modify enabled post types', 'functionalities' ) . '<br>';
+		echo \esc_html__( 'Filter:', 'functionalities' ) . ' <code>functionalities_regression_warnings</code> — ' . \esc_html__( 'modify detected warnings', 'functionalities' ) . '<br>';
+		echo \esc_html__( 'Action:', 'functionalities' ) . ' <code>functionalities_regression_snapshot_saved</code> — ' . \esc_html__( 'fires after snapshot is saved', 'functionalities' );
+		echo '</p>';
+		echo '</div>';
+	}
+
+	/**
+	 * Sanitize content regression settings.
+	 *
+	 * @param array $input Raw input.
+	 * @return array Sanitized settings.
+	 */
+	public static function sanitize_content_regression( $input ) : array {
+		$out = array(
+			'enabled'                     => ! empty( $input['enabled'] ),
+			'post_types'                  => array( 'post', 'page' ),
+			'link_drop_enabled'           => ! empty( $input['link_drop_enabled'] ),
+			'link_drop_percent'           => 30,
+			'link_drop_absolute'          => 3,
+			'exclude_nofollow_links'      => ! empty( $input['exclude_nofollow_links'] ),
+			'word_count_enabled'          => ! empty( $input['word_count_enabled'] ),
+			'word_count_drop_percent'     => 35,
+			'word_count_min_age_days'     => 30,
+			'word_count_compare_average'  => ! empty( $input['word_count_compare_average'] ),
+			'exclude_shortcodes'          => ! empty( $input['exclude_shortcodes'] ),
+			'heading_enabled'             => ! empty( $input['heading_enabled'] ),
+			'detect_missing_h1'           => ! empty( $input['detect_missing_h1'] ),
+			'detect_multiple_h1'          => ! empty( $input['detect_multiple_h1'] ),
+			'detect_skipped_levels'       => ! empty( $input['detect_skipped_levels'] ),
+			'snapshot_rolling_count'      => 5,
+			'show_post_column'            => ! empty( $input['show_post_column'] ),
+		);
+
+		// Sanitize post types.
+		if ( isset( $input['post_types'] ) && is_array( $input['post_types'] ) ) {
+			$out['post_types'] = array_map( 'sanitize_key', $input['post_types'] );
+		}
+
+		// Sanitize numeric thresholds.
+		if ( isset( $input['link_drop_percent'] ) ) {
+			$val = (int) $input['link_drop_percent'];
+			$out['link_drop_percent'] = max( 1, min( 100, $val ) );
+		}
+
+		if ( isset( $input['link_drop_absolute'] ) ) {
+			$val = (int) $input['link_drop_absolute'];
+			$out['link_drop_absolute'] = max( 1, min( 100, $val ) );
+		}
+
+		if ( isset( $input['word_count_drop_percent'] ) ) {
+			$val = (int) $input['word_count_drop_percent'];
+			$out['word_count_drop_percent'] = max( 1, min( 100, $val ) );
+		}
+
+		if ( isset( $input['word_count_min_age_days'] ) ) {
+			$val = (int) $input['word_count_min_age_days'];
+			$out['word_count_min_age_days'] = max( 0, min( 365, $val ) );
+		}
+
+		if ( isset( $input['snapshot_rolling_count'] ) ) {
+			$val = (int) $input['snapshot_rolling_count'];
+			$out['snapshot_rolling_count'] = max( 1, min( 20, $val ) );
+		}
+
+		return $out;
+	}
+
+	/**
+	 * Get content regression detection options with defaults.
+	 *
+	 * @return array Content regression options.
+	 */
+	public static function get_content_regression_options() : array {
+		$defaults = array(
+			'enabled'                     => false,
+			'post_types'                  => array( 'post', 'page' ),
+			'link_drop_enabled'           => true,
+			'link_drop_percent'           => 30,
+			'link_drop_absolute'          => 3,
+			'exclude_nofollow_links'      => false,
+			'word_count_enabled'          => true,
+			'word_count_drop_percent'     => 35,
+			'word_count_min_age_days'     => 30,
+			'word_count_compare_average'  => false,
+			'exclude_shortcodes'          => false,
+			'heading_enabled'             => true,
+			'detect_missing_h1'           => true,
+			'detect_multiple_h1'          => true,
+			'detect_skipped_levels'       => true,
+			'snapshot_rolling_count'      => 5,
+			'show_post_column'            => true,
+		);
+		$opts = (array) \get_option( 'functionalities_content_regression', $defaults );
 		return array_merge( $defaults, $opts );
 	}
 }
