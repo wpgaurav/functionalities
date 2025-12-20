@@ -226,6 +226,44 @@ class Admin {
 					</div>
 				<?php endforeach; ?>
 			</div>
+
+			<div class="functionalities-help-section" style="margin-top: 30px; padding: 20px; background: #fff; border: 1px solid #c3c4c7; border-radius: 4px;">
+				<h2 style="margin-top: 0; display: flex; align-items: center; gap: 8px;">
+					<span class="dashicons dashicons-editor-help" style="font-size: 24px; width: 24px; height: 24px;"></span>
+					<?php echo \esc_html__( 'Help & Support', 'functionalities' ); ?>
+				</h2>
+				<p style="color: #646970; margin-bottom: 15px;">
+					<?php echo \esc_html__( 'Need help with Functionalities? Check out these resources:', 'functionalities' ); ?>
+				</p>
+				<div style="display: flex; flex-wrap: wrap; gap: 10px;">
+					<a href="https://functionalities.dev/docs" target="_blank" rel="noopener" class="button" style="display: inline-flex; align-items: center; gap: 5px;">
+						<span class="dashicons dashicons-book" style="font-size: 16px; width: 16px; height: 16px;"></span>
+						<?php echo \esc_html__( 'Documentation', 'functionalities' ); ?>
+					</a>
+					<a href="https://functionalities.dev/faq" target="_blank" rel="noopener" class="button" style="display: inline-flex; align-items: center; gap: 5px;">
+						<span class="dashicons dashicons-sos" style="font-size: 16px; width: 16px; height: 16px;"></span>
+						<?php echo \esc_html__( 'FAQ', 'functionalities' ); ?>
+					</a>
+					<a href="https://github.com/wpgaurav/functionalities/issues" target="_blank" rel="noopener" class="button" style="display: inline-flex; align-items: center; gap: 5px;">
+						<span class="dashicons dashicons-flag" style="font-size: 16px; width: 16px; height: 16px;"></span>
+						<?php echo \esc_html__( 'Report Issues', 'functionalities' ); ?>
+					</a>
+					<a href="https://gauravtiwari.org/contact/" target="_blank" rel="noopener" class="button" style="display: inline-flex; align-items: center; gap: 5px;">
+						<span class="dashicons dashicons-email" style="font-size: 16px; width: 16px; height: 16px;"></span>
+						<?php echo \esc_html__( 'Contact Developer', 'functionalities' ); ?>
+					</a>
+				</div>
+				<p style="color: #646970; margin-top: 15px; margin-bottom: 0; font-size: 12px;">
+					<?php
+					printf(
+						/* translators: %s: Plugin version number */
+						\esc_html__( 'Functionalities v%s | Visit %s for more information.', 'functionalities' ),
+						\esc_html( FUNCTIONALITIES_VERSION ),
+						'<a href="https://functionalities.dev" target="_blank" rel="noopener">functionalities.dev</a>'
+					);
+					?>
+				</p>
+			</div>
 		</div>
 		<?php
 	}
