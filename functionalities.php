@@ -91,6 +91,17 @@ require_once FUNCTIONALITIES_DIR . 'includes/class-github-updater.php';
 	return $links;
 } );
 
+// Add meta links on the Plugins screen (row meta).
+\add_filter( 'plugin_row_meta', function( array $links, string $file ) : array {
+	if ( \plugin_basename( __FILE__ ) === $file ) {
+		$links[] = '<a href="https://functionalities.dev/docs" target="_blank" rel="noopener">' . \esc_html__( 'Documentation', 'functionalities' ) . '</a>';
+		$links[] = '<a href="https://functionalities.dev/faq" target="_blank" rel="noopener">' . \esc_html__( 'FAQ', 'functionalities' ) . '</a>';
+		$links[] = '<a href="https://github.com/wpgaurav/functionalities/issues" target="_blank" rel="noopener">' . \esc_html__( 'Report Issues', 'functionalities' ) . '</a>';
+		$links[] = '<a href="https://gauravtiwari.org/contact/" target="_blank" rel="noopener">' . \esc_html__( 'Contact Developer', 'functionalities' ) . '</a>';
+	}
+	return $links;
+}, 10, 2 );
+
 \register_deactivation_hook( __FILE__, function () {
 	if ( function_exists( 'flush_rewrite_rules' ) ) {
 		\flush_rewrite_rules();
