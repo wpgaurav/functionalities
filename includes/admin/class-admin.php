@@ -134,6 +134,11 @@ class Admin {
 				'description' => \__( 'Detect structural regressions when posts are updated.', 'functionalities' ),
 				'icon'        => 'dashicons-shield',
 			),
+			'assumption-detection' => array(
+				'title'       => \__( 'Assumption Detection', 'functionalities' ),
+				'description' => \__( 'Notice when implicit site assumptions stop being true.', 'functionalities' ),
+				'icon'        => 'dashicons-visibility',
+			),
 		);
 	}
 
@@ -1707,6 +1712,116 @@ class Admin {
 			'functionalities_content_regression',
 			'functionalities_content_regression_section'
 		);
+
+		// Assumption Detection settings.
+		\register_setting(
+			'functionalities_assumption_detection',
+			'functionalities_assumption_detection',
+			array(
+				'sanitize_callback' => array( __CLASS__, 'sanitize_assumption_detection' ),
+				'default'           => array(
+					'enabled'                  => false,
+					'detect_schema_collision'  => true,
+					'detect_analytics_dupe'    => true,
+					'detect_font_redundancy'   => true,
+					'detect_inline_css_growth' => true,
+					'inline_css_threshold_kb'  => 50,
+				),
+			)
+		);
+
+		\add_settings_section(
+			'functionalities_assumption_detection_section',
+			\__( 'Assumption Detection Settings', 'functionalities' ),
+			array( __CLASS__, 'section_assumption_detection' ),
+			'functionalities_assumption_detection'
+		);
+
+		\add_settings_field(
+			'assumption_enabled',
+			\__( 'Enable Assumption Detection', 'functionalities' ),
+			function() {
+				$o = self::get_assumption_detection_options();
+				$checked = ! empty( $o['enabled'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_assumption_detection[enabled]" value="1" ' . $checked . '> ';
+				echo \esc_html__( 'Detect when implicit site assumptions stop being true', 'functionalities' ) . '</label>';
+			},
+			'functionalities_assumption_detection',
+			'functionalities_assumption_detection_section'
+		);
+
+		\add_settings_field(
+			'detect_schema_collision',
+			\__( 'Schema Collision Detection', 'functionalities' ),
+			function() {
+				$o = self::get_assumption_detection_options();
+				$checked = ! empty( $o['detect_schema_collision'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_assumption_detection[detect_schema_collision]" value="1" ' . $checked . '> ';
+				echo \esc_html__( 'Warn when multiple sources output the same schema type', 'functionalities' ) . '</label>';
+			},
+			'functionalities_assumption_detection',
+			'functionalities_assumption_detection_section'
+		);
+
+		\add_settings_field(
+			'detect_analytics_dupe',
+			\__( 'Analytics Duplication Detection', 'functionalities' ),
+			function() {
+				$o = self::get_assumption_detection_options();
+				$checked = ! empty( $o['detect_analytics_dupe'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_assumption_detection[detect_analytics_dupe]" value="1" ' . $checked . '> ';
+				echo \esc_html__( 'Warn when analytics scripts load multiple times', 'functionalities' ) . '</label>';
+			},
+			'functionalities_assumption_detection',
+			'functionalities_assumption_detection_section'
+		);
+
+		\add_settings_field(
+			'detect_font_redundancy',
+			\__( 'Font Redundancy Detection', 'functionalities' ),
+			function() {
+				$o = self::get_assumption_detection_options();
+				$checked = ! empty( $o['detect_font_redundancy'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_assumption_detection[detect_font_redundancy]" value="1" ' . $checked . '> ';
+				echo \esc_html__( 'Warn when fonts load from multiple sources', 'functionalities' ) . '</label>';
+			},
+			'functionalities_assumption_detection',
+			'functionalities_assumption_detection_section'
+		);
+
+		\add_settings_field(
+			'detect_inline_css_growth',
+			\__( 'Inline CSS Growth Detection', 'functionalities' ),
+			function() {
+				$o = self::get_assumption_detection_options();
+				$checked = ! empty( $o['detect_inline_css_growth'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_assumption_detection[detect_inline_css_growth]" value="1" ' . $checked . '> ';
+				echo \esc_html__( 'Track inline CSS size over time', 'functionalities' ) . '</label>';
+			},
+			'functionalities_assumption_detection',
+			'functionalities_assumption_detection_section'
+		);
+
+		\add_settings_field(
+			'inline_css_threshold_kb',
+			\__( 'Inline CSS Threshold (KB)', 'functionalities' ),
+			function() {
+				$o = self::get_assumption_detection_options();
+				$val = isset( $o['inline_css_threshold_kb'] ) ? (int) $o['inline_css_threshold_kb'] : 50;
+				echo '<input type="number" min="10" max="500" class="small-text" name="functionalities_assumption_detection[inline_css_threshold_kb]" value="' . \esc_attr( $val ) . '" /> KB';
+				echo '<p class="description">' . \esc_html__( 'Warn when inline CSS exceeds this size.', 'functionalities' ) . '</p>';
+			},
+			'functionalities_assumption_detection',
+			'functionalities_assumption_detection_section'
+		);
+
+		\add_settings_field(
+			'detected_assumptions',
+			\__( 'Detected Assumptions', 'functionalities' ),
+			array( __CLASS__, 'field_detected_assumptions' ),
+			'functionalities_assumption_detection',
+			'functionalities_assumption_detection_section'
+		);
 	}
 
 	public static function field_nofollow_external() : void {
@@ -1735,24 +1850,31 @@ class Admin {
 	public static function section_link_management() : void {
 		echo '<p>' . \esc_html__( 'Control how external and internal links are handled across your site.', 'functionalities' ) . '</p>';
 
-		echo '<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:12px 16px;margin:12px 0">';
-		echo '<h4 style="margin:0 0 8px">' . \esc_html__( 'What This Module Does', 'functionalities' ) . '</h4>';
-		echo '<ul style="margin:0;padding-left:20px">';
-		echo '<li>' . \esc_html__( 'Automatically adds rel="nofollow" to external links in post content', 'functionalities' ) . '</li>';
-		echo '<li>' . \esc_html__( 'Opens external links in new tabs with proper security attributes', 'functionalities' ) . '</li>';
-		echo '<li>' . \esc_html__( 'Whitelist trusted domains that should not get nofollow', 'functionalities' ) . '</li>';
-		echo '<li>' . \esc_html__( 'Bulk update existing links in your database', 'functionalities' ) . '</li>';
-		echo '</ul>';
-		echo '</div>';
+		// Get module docs.
+		$docs = Module_Docs::get( 'link-management' );
 
-		echo '<div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:6px;padding:12px 16px;margin:12px 0">';
-		echo '<h4 style="margin:0 0 8px;color:#1e40af">' . \esc_html__( 'For Developers', 'functionalities' ) . '</h4>';
-		echo '<p style="margin:0 0 8px;font-size:13px">' . \esc_html__( 'Use these filters to customize link handling:', 'functionalities' ) . '</p>';
-		echo '<ul style="margin:0;padding-left:20px;font-family:monospace;font-size:12px;color:#1e3a8a">';
-		echo '<li>functionalities_nofollow_exceptions</li>';
-		echo '<li>functionalities_link_attributes</li>';
-		echo '<li>functionalities_process_links</li>';
-		echo '</ul>';
+		// Render documentation accordions.
+		echo '<div class="functionalities-module-docs">';
+
+		if ( ! empty( $docs['features'] ) ) {
+			$list = '<ul>';
+			foreach ( $docs['features'] as $feature ) {
+				$list .= '<li>' . \esc_html( $feature ) . '</li>';
+			}
+			$list .= '</ul>';
+			Admin_UI::render_docs_section( \__( 'What This Module Does', 'functionalities' ), $list, 'info' );
+		}
+
+		if ( ! empty( $docs['hooks'] ) ) {
+			$hooks_html = '<dl class="functionalities-hooks-list">';
+			foreach ( $docs['hooks'] as $hook ) {
+				$hooks_html .= '<dt><code>' . \esc_html( $hook['name'] ) . '</code></dt>';
+				$hooks_html .= '<dd>' . \esc_html( $hook['description'] ) . '</dd>';
+			}
+			$hooks_html .= '</dl>';
+			Admin_UI::render_docs_section( \__( 'Developer Hooks', 'functionalities' ), $hooks_html, 'developer' );
+		}
+
 		echo '</div>';
 	}
 
@@ -1890,30 +2012,39 @@ class Admin {
 	public static function section_block_cleanup() : void {
 		echo '<p>' . \esc_html__( 'Remove Gutenberg block-specific CSS classes from your frontend HTML for cleaner markup.', 'functionalities' ) . '</p>';
 
-		echo '<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:12px 16px;margin:12px 0">';
-		echo '<h4 style="margin:0 0 8px">' . \esc_html__( 'Why Use This?', 'functionalities' ) . '</h4>';
-		echo '<ul style="margin:0;padding-left:20px">';
-		echo '<li>' . \esc_html__( 'Reduces HTML bloat by removing unnecessary block classes', 'functionalities' ) . '</li>';
-		echo '<li>' . \esc_html__( 'Useful when your theme provides custom styling for headings, lists, images', 'functionalities' ) . '</li>';
-		echo '<li>' . \esc_html__( 'Helps avoid style conflicts between block styles and theme styles', 'functionalities' ) . '</li>';
-		echo '</ul>';
-		echo '</div>';
+		// Get module docs.
+		$docs = Module_Docs::get( 'block-cleanup' );
 
-		echo '<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;padding:12px 16px;margin:12px 0">';
-		echo '<h4 style="margin:0 0 8px;color:#92400e">' . \esc_html__( 'Classes Removed', 'functionalities' ) . '</h4>';
-		echo '<ul style="margin:0;padding-left:20px;font-family:monospace;font-size:12px;color:#78350f">';
-		echo '<li>wp-block-heading → ' . \esc_html__( 'from h1-h6 elements', 'functionalities' ) . '</li>';
-		echo '<li>wp-block-list → ' . \esc_html__( 'from ul/ol elements', 'functionalities' ) . '</li>';
-		echo '<li>wp-block-image → ' . \esc_html__( 'from figure/div elements', 'functionalities' ) . '</li>';
-		echo '</ul>';
-		echo '</div>';
+		// Render documentation accordions.
+		echo '<div class="functionalities-module-docs">';
 
-		echo '<div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:6px;padding:12px 16px;margin:12px 0">';
-		echo '<h4 style="margin:0 0 8px;color:#1e40af">' . \esc_html__( 'For Developers', 'functionalities' ) . '</h4>';
-		echo '<p style="margin:0;font-size:13px;color:#1e3a8a">';
-		echo \esc_html__( 'Filter:', 'functionalities' ) . ' <code>functionalities_block_cleanup_enabled</code> — ' . \esc_html__( 'toggle cleanup per-page', 'functionalities' ) . '<br>';
-		echo \esc_html__( 'Filter:', 'functionalities' ) . ' <code>functionalities_block_cleanup_content</code> — ' . \esc_html__( 'modify cleaned content', 'functionalities' );
-		echo '</p>';
+		if ( ! empty( $docs['features'] ) ) {
+			$list = '<ul>';
+			foreach ( $docs['features'] as $feature ) {
+				$list .= '<li>' . \esc_html( $feature ) . '</li>';
+			}
+			$list .= '</ul>';
+			Admin_UI::render_docs_section( \__( 'What This Module Does', 'functionalities' ), $list, 'info' );
+		}
+
+		// Classes removed info.
+		$classes_html = '<ul style="font-family:monospace;font-size:12px">';
+		$classes_html .= '<li>wp-block-heading → ' . \esc_html__( 'from h1-h6 elements', 'functionalities' ) . '</li>';
+		$classes_html .= '<li>wp-block-list → ' . \esc_html__( 'from ul/ol elements', 'functionalities' ) . '</li>';
+		$classes_html .= '<li>wp-block-image → ' . \esc_html__( 'from figure/div elements', 'functionalities' ) . '</li>';
+		$classes_html .= '</ul>';
+		Admin_UI::render_docs_section( \__( 'Classes Removed', 'functionalities' ), $classes_html, 'usage' );
+
+		if ( ! empty( $docs['hooks'] ) ) {
+			$hooks_html = '<dl class="functionalities-hooks-list">';
+			foreach ( $docs['hooks'] as $hook ) {
+				$hooks_html .= '<dt><code>' . \esc_html( $hook['name'] ) . '</code></dt>';
+				$hooks_html .= '<dd>' . \esc_html( $hook['description'] ) . '</dd>';
+			}
+			$hooks_html .= '</dl>';
+			Admin_UI::render_docs_section( \__( 'Developer Hooks', 'functionalities' ), $hooks_html, 'developer' );
+		}
+
 		echo '</div>';
 	}
 
@@ -2962,42 +3093,61 @@ class Admin {
 	public static function section_meta() : void {
 		$detected = \Functionalities\Features\Meta::detect_seo_plugin();
 		echo '<p>' . \esc_html__( 'Add copyright metadata, Dublin Core (DCMI) tags, and per-post licensing options. Works standalone or integrates with major SEO plugins.', 'functionalities' ) . '</p>';
-		echo '<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:12px 16px;margin:12px 0">';
-		echo '<h4 style="margin:0 0 8px">' . \esc_html__( 'What This Module Does', 'functionalities' ) . '</h4>';
-		echo '<ul style="margin:0;padding-left:20px">';
-		echo '<li>' . \esc_html__( 'Outputs copyright and ownership meta tags in the HTML head', 'functionalities' ) . '</li>';
-		echo '<li>' . \esc_html__( 'Adds Dublin Core (DCMI) metadata for enhanced discoverability', 'functionalities' ) . '</li>';
-		echo '<li>' . \esc_html__( 'Provides a metabox in the post editor to select content license per-post', 'functionalities' ) . '</li>';
-		echo '<li>' . \esc_html__( 'Outputs Schema.org JSON-LD with copyright data (standalone or via SEO plugin)', 'functionalities' ) . '</li>';
-		echo '</ul>';
-		echo '</div>';
-		echo '<div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:6px;padding:12px 16px;margin:12px 0">';
-		echo '<h4 style="margin:0 0 8px">' . \esc_html__( 'Schema.org Support', 'functionalities' ) . '</h4>';
-		if ( $detected !== 'none' ) {
-			$plugin_names = array(
-				'rank-math'     => 'Rank Math',
-				'yoast'         => 'Yoast SEO',
-				'seo-framework' => 'The SEO Framework',
-				'seopress'      => 'SEOPress',
-				'aioseo'        => 'All in One SEO',
-			);
-			echo '<p style="margin:0 0 8px;color:#059669"><strong>✓ ' . \esc_html__( 'Detected:', 'functionalities' ) . '</strong> ' . \esc_html( $plugin_names[ $detected ] ?? $detected ) . '</p>';
-			echo '<p style="margin:0;font-size:13px;color:#1e3a8a">' . \esc_html__( 'Copyright data will be added to your SEO plugin\'s existing schema output.', 'functionalities' ) . '</p>';
-		} else {
-			echo '<p style="margin:0 0 8px;color:#059669"><strong>✓ ' . \esc_html__( 'Standalone Mode', 'functionalities' ) . '</strong></p>';
-			echo '<p style="margin:0;font-size:13px;color:#1e3a8a">' . \esc_html__( 'No SEO plugin detected. Complete Article schema with copyright will be output independently.', 'functionalities' ) . '</p>';
+
+		// Get module docs.
+		$docs = Module_Docs::get( 'meta' );
+
+		// Render documentation accordions.
+		echo '<div class="functionalities-module-docs">';
+
+		if ( ! empty( $docs['features'] ) ) {
+			$list = '<ul>';
+			foreach ( $docs['features'] as $feature ) {
+				$list .= '<li>' . \esc_html( $feature ) . '</li>';
+			}
+			$list .= '</ul>';
+			Admin_UI::render_docs_section( \__( 'What This Module Does', 'functionalities' ), $list, 'info' );
 		}
-		echo '</div>';
-		echo '<div style="background:#faf5ff;border:1px solid #d8b4fe;border-radius:6px;padding:12px 16px;margin:12px 0">';
-		echo '<h4 style="margin:0 0 8px;color:#6b21a8">' . \esc_html__( 'Compatible SEO Plugins', 'functionalities' ) . '</h4>';
-		echo '<ul style="margin:0;padding-left:20px;columns:2;color:#581c87">';
-		echo '<li>Rank Math</li>';
-		echo '<li>Yoast SEO</li>';
-		echo '<li>The SEO Framework</li>';
-		echo '<li>SEOPress</li>';
-		echo '<li>All in One SEO</li>';
-		echo '<li><em>' . \esc_html__( 'or Standalone', 'functionalities' ) . '</em></li>';
-		echo '</ul>';
+
+		// Schema.org Support (dynamic based on detected plugin).
+		$plugin_names = array(
+			'rank-math'     => 'Rank Math',
+			'yoast'         => 'Yoast SEO',
+			'seo-framework' => 'The SEO Framework',
+			'seopress'      => 'SEOPress',
+			'aioseo'        => 'All in One SEO',
+		);
+
+		if ( $detected !== 'none' ) {
+			$schema_content = '<p><strong>✓ ' . \esc_html__( 'Detected:', 'functionalities' ) . '</strong> ' . \esc_html( $plugin_names[ $detected ] ?? $detected ) . '</p>';
+			$schema_content .= '<p>' . \esc_html__( 'Copyright data will be added to your SEO plugin\'s existing schema output.', 'functionalities' ) . '</p>';
+		} else {
+			$schema_content = '<p><strong>✓ ' . \esc_html__( 'Standalone Mode', 'functionalities' ) . '</strong></p>';
+			$schema_content .= '<p>' . \esc_html__( 'No SEO plugin detected. Complete Article schema with copyright will be output independently.', 'functionalities' ) . '</p>';
+		}
+		Admin_UI::render_docs_section( \__( 'Schema.org Support', 'functionalities' ), $schema_content, 'developer', true );
+
+		// Compatible plugins.
+		$plugins_html = '<ul style="columns:2">';
+		$plugins_html .= '<li>Rank Math</li>';
+		$plugins_html .= '<li>Yoast SEO</li>';
+		$plugins_html .= '<li>The SEO Framework</li>';
+		$plugins_html .= '<li>SEOPress</li>';
+		$plugins_html .= '<li>All in One SEO</li>';
+		$plugins_html .= '<li><em>' . \esc_html__( 'or Standalone', 'functionalities' ) . '</em></li>';
+		$plugins_html .= '</ul>';
+		Admin_UI::render_docs_section( \__( 'Compatible SEO Plugins', 'functionalities' ), $plugins_html, 'usage' );
+
+		if ( ! empty( $docs['hooks'] ) ) {
+			$hooks_html = '<dl class="functionalities-hooks-list">';
+			foreach ( $docs['hooks'] as $hook ) {
+				$hooks_html .= '<dt><code>' . \esc_html( $hook['name'] ) . '</code></dt>';
+				$hooks_html .= '<dd>' . \esc_html( $hook['description'] ) . '</dd>';
+			}
+			$hooks_html .= '</dl>';
+			Admin_UI::render_docs_section( \__( 'Developer Hooks', 'functionalities' ), $hooks_html, 'developer' );
+		}
+
 		echo '</div>';
 	}
 
@@ -3113,22 +3263,43 @@ class Admin {
 	 */
 	public static function section_updates() : void {
 		echo '<p>' . \esc_html__( 'Receive plugin updates directly from GitHub releases. Configure your repository details below to enable automatic update checks.', 'functionalities' ) . '</p>';
-		echo '<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;padding:12px 16px;margin:12px 0">';
-		echo '<h4 style="margin:0 0 8px;color:#92400e">' . \esc_html__( 'How It Works', 'functionalities' ) . '</h4>';
-		echo '<ol style="margin:0;padding-left:20px;color:#78350f">';
-		echo '<li>' . \esc_html__( 'Create releases on GitHub with version tags (e.g., v0.5.0 or 0.5.0)', 'functionalities' ) . '</li>';
-		echo '<li>' . \esc_html__( 'WordPress will check GitHub for new releases based on your interval setting', 'functionalities' ) . '</li>';
-		echo '<li>' . \esc_html__( 'When a new version is found, update notification appears in your dashboard', 'functionalities' ) . '</li>';
-		echo '<li>' . \esc_html__( 'Click "Update Now" to install the new version with one click', 'functionalities' ) . '</li>';
-		echo '</ol>';
-		echo '</div>';
-		echo '<div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:6px;padding:12px 16px;margin:12px 0">';
-		echo '<h4 style="margin:0 0 8px;color:#1e40af">' . \esc_html__( 'Release Requirements', 'functionalities' ) . '</h4>';
-		echo '<ul style="margin:0;padding-left:20px;color:#1e3a8a">';
-		echo '<li>' . \esc_html__( 'Tag format: v1.0.0, 1.0.0, or any semver format', 'functionalities' ) . '</li>';
-		echo '<li>' . \esc_html__( 'Attach a .zip file to the release (recommended) OR use auto-generated zipball', 'functionalities' ) . '</li>';
-		echo '<li>' . \esc_html__( 'The zip should contain the plugin files in a folder matching the plugin directory name', 'functionalities' ) . '</li>';
-		echo '</ul>';
+
+		// Get module docs.
+		$docs = Module_Docs::get( 'updates' );
+
+		// Render documentation accordions.
+		echo '<div class="functionalities-module-docs">';
+
+		if ( ! empty( $docs['features'] ) ) {
+			$list = '<ul>';
+			foreach ( $docs['features'] as $feature ) {
+				$list .= '<li>' . \esc_html( $feature ) . '</li>';
+			}
+			$list .= '</ul>';
+			Admin_UI::render_docs_section( \__( 'What This Module Does', 'functionalities' ), $list, 'info' );
+		}
+
+		// How it works.
+		$how_html = '<ol>';
+		$how_html .= '<li>' . \esc_html__( 'Create releases on GitHub with version tags (e.g., v0.5.0 or 0.5.0)', 'functionalities' ) . '</li>';
+		$how_html .= '<li>' . \esc_html__( 'WordPress will check GitHub for new releases based on your interval setting', 'functionalities' ) . '</li>';
+		$how_html .= '<li>' . \esc_html__( 'When a new version is found, update notification appears in your dashboard', 'functionalities' ) . '</li>';
+		$how_html .= '<li>' . \esc_html__( 'Click "Update Now" to install the new version with one click', 'functionalities' ) . '</li>';
+		$how_html .= '</ol>';
+		Admin_UI::render_docs_section( \__( 'How It Works', 'functionalities' ), $how_html, 'usage' );
+
+		// Release requirements.
+		$req_html = '<ul>';
+		$req_html .= '<li>' . \esc_html__( 'Tag format: v1.0.0, 1.0.0, or any semver format', 'functionalities' ) . '</li>';
+		$req_html .= '<li>' . \esc_html__( 'Attach a .zip file to the release (recommended) OR use auto-generated zipball', 'functionalities' ) . '</li>';
+		$req_html .= '<li>' . \esc_html__( 'The zip should contain the plugin files in a folder matching the plugin directory name', 'functionalities' ) . '</li>';
+		$req_html .= '</ul>';
+		Admin_UI::render_docs_section( \__( 'Release Requirements', 'functionalities' ), $req_html, 'developer' );
+
+		if ( ! empty( $docs['usage'] ) ) {
+			Admin_UI::render_docs_section( \__( 'Usage Note', 'functionalities' ), '<p>' . \esc_html( $docs['usage'] ) . '</p>', 'caution' );
+		}
+
 		echo '</div>';
 	}
 
@@ -3254,29 +3425,35 @@ class Admin {
 	public static function section_content_regression() : void {
 		echo '<p>' . \esc_html__( 'Detect structural regressions when posts are updated. This module compares each post against its own historical baseline.', 'functionalities' ) . '</p>';
 
-		echo '<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:12px 16px;margin:12px 0">';
-		echo '<h4 style="margin:0 0 8px">' . \esc_html__( 'What This Module Does', 'functionalities' ) . '</h4>';
-		echo '<ul style="margin:0;padding-left:20px">';
-		echo '<li>' . \esc_html__( 'Detects when internal links are accidentally removed', 'functionalities' ) . '</li>';
-		echo '<li>' . \esc_html__( 'Warns when content is shortened significantly', 'functionalities' ) . '</li>';
-		echo '<li>' . \esc_html__( 'Checks heading structure for accessibility issues', 'functionalities' ) . '</li>';
-		echo '<li>' . \esc_html__( 'Stores snapshots to compare against historical baselines', 'functionalities' ) . '</li>';
-		echo '</ul>';
-		echo '</div>';
+		// Get module docs.
+		$docs = Module_Docs::get( 'content-regression' );
 
-		echo '<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;padding:12px 16px;margin:12px 0">';
-		echo '<h4 style="margin:0 0 8px;color:#92400e">' . \esc_html__( 'Philosophy', 'functionalities' ) . '</h4>';
-		echo '<p style="margin:0;font-size:13px">' . \esc_html__( 'This is content integrity, not SEO. The system answers: "Did this update accidentally damage something important?" It never scores content, never suggests fixes, and always compares a post to itself - not to external standards.', 'functionalities' ) . '</p>';
-		echo '</div>';
+		// Render documentation accordions.
+		echo '<div class="functionalities-module-docs">';
 
-		echo '<div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:6px;padding:12px 16px;margin:12px 0">';
-		echo '<h4 style="margin:0 0 8px;color:#1e40af">' . \esc_html__( 'For Developers', 'functionalities' ) . '</h4>';
-		echo '<p style="margin:0;font-size:13px;color:#1e3a8a">';
-		echo \esc_html__( 'Filter:', 'functionalities' ) . ' <code>functionalities_regression_enabled</code> — ' . \esc_html__( 'toggle detection', 'functionalities' ) . '<br>';
-		echo \esc_html__( 'Filter:', 'functionalities' ) . ' <code>functionalities_regression_post_types</code> — ' . \esc_html__( 'modify enabled post types', 'functionalities' ) . '<br>';
-		echo \esc_html__( 'Filter:', 'functionalities' ) . ' <code>functionalities_regression_warnings</code> — ' . \esc_html__( 'modify detected warnings', 'functionalities' ) . '<br>';
-		echo \esc_html__( 'Action:', 'functionalities' ) . ' <code>functionalities_regression_snapshot_saved</code> — ' . \esc_html__( 'fires after snapshot is saved', 'functionalities' );
-		echo '</p>';
+		if ( ! empty( $docs['features'] ) ) {
+			$list = '<ul>';
+			foreach ( $docs['features'] as $feature ) {
+				$list .= '<li>' . \esc_html( $feature ) . '</li>';
+			}
+			$list .= '</ul>';
+			Admin_UI::render_docs_section( \__( 'What This Module Does', 'functionalities' ), $list, 'info' );
+		}
+
+		if ( ! empty( $docs['usage'] ) ) {
+			Admin_UI::render_docs_section( \__( 'Philosophy', 'functionalities' ), '<p>' . \esc_html( $docs['usage'] ) . '</p>', 'usage' );
+		}
+
+		if ( ! empty( $docs['hooks'] ) ) {
+			$hooks_html = '<dl class="functionalities-hooks-list">';
+			foreach ( $docs['hooks'] as $hook ) {
+				$hooks_html .= '<dt><code>' . \esc_html( $hook['name'] ) . '</code></dt>';
+				$hooks_html .= '<dd>' . \esc_html( $hook['description'] ) . '</dd>';
+			}
+			$hooks_html .= '</dl>';
+			Admin_UI::render_docs_section( \__( 'Developer Hooks', 'functionalities' ), $hooks_html, 'developer' );
+		}
+
 		echo '</div>';
 	}
 
@@ -3367,6 +3544,177 @@ class Admin {
 			'show_post_column'            => true,
 		);
 		$opts = (array) \get_option( 'functionalities_content_regression', $defaults );
+		return array_merge( $defaults, $opts );
+	}
+
+	/**
+	 * Assumption detection section callback.
+	 *
+	 * @return void
+	 */
+	public static function section_assumption_detection() : void {
+		echo '<p>' . \esc_html__( 'Detects when technical assumptions stop being true. This module notices changes, not problems.', 'functionalities' ) . '</p>';
+
+		// Get module docs.
+		$docs = Module_Docs::get( 'assumption-detection' );
+
+		// Render documentation accordions.
+		if ( ! empty( $docs['features'] ) ) {
+			$list = '<ul>';
+			foreach ( $docs['features'] as $feature ) {
+				$list .= '<li>' . \esc_html( $feature ) . '</li>';
+			}
+			$list .= '</ul>';
+			Admin_UI::render_docs_section( \__( 'What This Module Does', 'functionalities' ), $list, 'info' );
+		}
+
+		if ( ! empty( $docs['usage'] ) ) {
+			Admin_UI::render_docs_section( \__( 'How to Use', 'functionalities' ), '<p>' . \esc_html( $docs['usage'] ) . '</p>', 'usage' );
+		}
+
+		if ( ! empty( $docs['hooks'] ) ) {
+			$hooks_html = '<dl class="functionalities-hooks-list">';
+			foreach ( $docs['hooks'] as $hook ) {
+				$hooks_html .= '<dt><code>' . \esc_html( $hook['name'] ) . '</code></dt>';
+				$hooks_html .= '<dd>' . \esc_html( $hook['description'] ) . '</dd>';
+			}
+			$hooks_html .= '</dl>';
+			Admin_UI::render_docs_section( \__( 'Developer Hooks', 'functionalities' ), $hooks_html, 'developer' );
+		}
+	}
+
+	/**
+	 * Detected assumptions field callback.
+	 *
+	 * @return void
+	 */
+	public static function field_detected_assumptions() : void {
+		$assumptions = \Functionalities\Features\Assumption_Detection::get_detected();
+		$ignored = \Functionalities\Features\Assumption_Detection::get_ignored();
+
+		if ( empty( $assumptions ) ) {
+			echo '<div class="functionalities-no-assumptions">';
+			echo '<span class="dashicons dashicons-yes-alt"></span>';
+			echo '<span>' . \esc_html__( 'No assumption changes detected. All monitored items are consistent.', 'functionalities' ) . '</span>';
+			echo '</div>';
+			return;
+		}
+
+		echo '<div class="functionalities-assumptions-list">';
+
+		foreach ( $assumptions as $key => $assumption ) {
+			// Skip ignored.
+			if ( isset( $ignored[ $key ] ) ) {
+				continue;
+			}
+
+			$type_class = ( $assumption['severity'] ?? 'notice' ) === 'warning' ? 'warning' : 'notice';
+			$icon = $type_class === 'warning' ? 'dashicons-warning' : 'dashicons-info';
+
+			echo '<div class="functionalities-assumption-item" data-key="' . \esc_attr( $key ) . '">';
+			echo '<div class="functionalities-assumption-header">';
+			echo '<span class="functionalities-assumption-icon ' . \esc_attr( $type_class ) . ' dashicons ' . \esc_attr( $icon ) . '"></span>';
+			echo '<div class="functionalities-assumption-content">';
+			echo '<p class="functionalities-assumption-message">' . \esc_html( $assumption['message'] ?? '' ) . '</p>';
+
+			if ( ! empty( $assumption['details'] ) ) {
+				echo '<p class="functionalities-assumption-details">' . \esc_html( $assumption['details'] ) . '</p>';
+			}
+
+			if ( ! empty( $assumption['detected'] ) ) {
+				$time_ago = \human_time_diff( $assumption['detected'], \time() );
+				/* translators: %s: human-readable time difference */
+				echo '<p class="functionalities-assumption-meta">' . \sprintf( \esc_html__( 'Detected %s ago', 'functionalities' ), $time_ago ) . '</p>';
+			}
+
+			echo '</div></div>';
+
+			// Actions.
+			echo '<div class="functionalities-assumption-actions">';
+			echo '<button type="button" class="button button-small functionalities-assumption-acknowledge" data-key="' . \esc_attr( $key ) . '">';
+			echo \esc_html__( 'Acknowledge', 'functionalities' );
+			echo '</button>';
+			echo '<button type="button" class="button button-small functionalities-assumption-ignore" data-key="' . \esc_attr( $key ) . '">';
+			echo \esc_html__( 'Ignore', 'functionalities' );
+			echo '</button>';
+			echo '</div>';
+
+			echo '</div>';
+		}
+
+		echo '</div>';
+
+		// Inline script for AJAX actions.
+		?>
+		<script>
+		jQuery(function($) {
+			$('.functionalities-assumption-acknowledge, .functionalities-assumption-ignore').on('click', function(e) {
+				e.preventDefault();
+				var $btn = $(this);
+				var $item = $btn.closest('.functionalities-assumption-item');
+				var key = $btn.data('key');
+				var action = $btn.hasClass('functionalities-assumption-ignore') ? 'ignore' : 'acknowledge';
+
+				$.post(ajaxurl, {
+					action: 'functionalities_assumption_action',
+					key: key,
+					assumption_action: action,
+					nonce: '<?php echo \esc_js( \wp_create_nonce( 'functionalities_assumption_action' ) ); ?>'
+				}, function(response) {
+					if (response.success) {
+						$item.fadeOut(300, function() {
+							$(this).remove();
+							if ($('.functionalities-assumption-item').length === 0) {
+								$('.functionalities-assumptions-list').html(
+									'<div class="functionalities-no-assumptions">' +
+									'<span class="dashicons dashicons-yes-alt"></span>' +
+									'<span><?php echo \esc_js( \__( 'No assumption changes detected. All monitored items are consistent.', 'functionalities' ) ); ?></span>' +
+									'</div>'
+								);
+							}
+						});
+					}
+				});
+			});
+		});
+		</script>
+		<?php
+	}
+
+	/**
+	 * Sanitize assumption detection settings.
+	 *
+	 * @param array $input Raw input.
+	 * @return array Sanitized settings.
+	 */
+	public static function sanitize_assumption_detection( $input ) : array {
+		return array(
+			'enabled'                  => ! empty( $input['enabled'] ),
+			'detect_schema_collision'  => ! empty( $input['detect_schema_collision'] ),
+			'detect_analytics_dupe'    => ! empty( $input['detect_analytics_dupe'] ),
+			'detect_font_redundancy'   => ! empty( $input['detect_font_redundancy'] ),
+			'detect_inline_css_growth' => ! empty( $input['detect_inline_css_growth'] ),
+			'inline_css_threshold_kb'  => isset( $input['inline_css_threshold_kb'] )
+				? max( 10, min( 500, (int) $input['inline_css_threshold_kb'] ) )
+				: 50,
+		);
+	}
+
+	/**
+	 * Get assumption detection options with defaults.
+	 *
+	 * @return array Assumption detection options.
+	 */
+	public static function get_assumption_detection_options() : array {
+		$defaults = array(
+			'enabled'                  => false,
+			'detect_schema_collision'  => true,
+			'detect_analytics_dupe'    => true,
+			'detect_font_redundancy'   => true,
+			'detect_inline_css_growth' => true,
+			'inline_css_threshold_kb'  => 50,
+		);
+		$opts = (array) \get_option( 'functionalities_assumption_detection', $defaults );
 		return array_merge( $defaults, $opts );
 	}
 }

@@ -33,6 +33,8 @@ if ( ! defined( 'FUNCTIONALITIES_URL' ) ) {
 
 // Autoload includes.
 require_once FUNCTIONALITIES_DIR . 'includes/class-functionalities-loader.php';
+require_once FUNCTIONALITIES_DIR . 'includes/admin/class-admin-ui.php';
+require_once FUNCTIONALITIES_DIR . 'includes/admin/class-module-docs.php';
 require_once FUNCTIONALITIES_DIR . 'includes/admin/class-admin.php';
 require_once FUNCTIONALITIES_DIR . 'includes/features/class-link-management.php';
 require_once FUNCTIONALITIES_DIR . 'includes/features/class-block-cleanup.php';
@@ -45,6 +47,7 @@ require_once FUNCTIONALITIES_DIR . 'includes/features/class-fonts.php';
 require_once FUNCTIONALITIES_DIR . 'includes/features/class-icons.php';
 require_once FUNCTIONALITIES_DIR . 'includes/features/class-meta.php';
 require_once FUNCTIONALITIES_DIR . 'includes/features/class-content-regression.php';
+require_once FUNCTIONALITIES_DIR . 'includes/features/class-assumption-detection.php';
 require_once FUNCTIONALITIES_DIR . 'includes/class-github-updater.php';
 
 // Initialize plugin.
@@ -63,6 +66,7 @@ require_once FUNCTIONALITIES_DIR . 'includes/class-github-updater.php';
 	\Functionalities\Features\Icons::init();
 	\Functionalities\Features\Meta::init();
 	\Functionalities\Features\Content_Regression::init();
+	\Functionalities\Features\Assumption_Detection::init();
 
 	// Initialize GitHub Updater if enabled.
 	$update_options = \Functionalities\Admin\Admin::get_updates_options();
