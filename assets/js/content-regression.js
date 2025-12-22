@@ -198,6 +198,83 @@
 	}
 
 	/**
+	 * Stats display component.
+	 *
+	 * @param {Object} props Component props.
+	 * @return {JSX.Element} Stats element.
+	 */
+	function StatsDisplay( { current, baseline } ) {
+		if ( ! current || ! baseline ) {
+			return null;
+		}
+
+		const items = [
+			{
+				label: 'Internal Links',
+				current: current.internal_link_count || 0,
+				baseline: baseline.internal_link_count || 0,
+			},
+			{
+				label: 'Word Count',
+				current: current.word_count || 0,
+				baseline: baseline.word_count || 0,
+			},
+			{
+				label: 'H1 Tags',
+				current: current.h1_count || 0,
+				baseline: baseline.h1_count || 0,
+			}
+		];
+
+		return wp.element.createElement(
+			'div',
+			{
+				style: {
+					marginTop: '12px',
+					padding: '12px',
+					background: '#f6f7f7',
+					borderRadius: '4px',
+					fontSize: '12px',
+				}
+			},
+			wp.element.createElement(
+				'div',
+				{ style: { fontWeight: '500', marginBottom: '8px', color: '#50575e' } },
+				'Content Statistics'
+			),
+			items.map( function( item, idx ) {
+				const diff = item.current - item.baseline;
+				const diffColor = diff < 0 ? '#d63638' : ( diff > 0 ? '#00a32a' : '#646970' );
+				const diffText = diff > 0 ? '+' + diff : diff.toString();
+
+				return wp.element.createElement(
+					'div',
+					{
+						key: idx,
+						style: {
+							display: 'flex',
+							justifyContent: 'space-between',
+							padding: '4px 0',
+							borderBottom: idx < items.length - 1 ? '1px solid #e0e0e0' : 'none',
+						}
+					},
+					wp.element.createElement( 'span', { style: { color: '#646970' } }, item.label ),
+					wp.element.createElement(
+						'span',
+						null,
+						wp.element.createElement( 'span', { style: { marginRight: '8px' } }, item.current ),
+						diff !== 0 && wp.element.createElement(
+							'span',
+							{ style: { color: diffColor, fontSize: '11px' } },
+							'(' + diffText + ')'
+						)
+					)
+				);
+			} )
+		);
+	}
+
+	/**
 	 * Main regression panel content component.
 	 *
 	 * @param {Object} props Component props.
@@ -332,7 +409,7 @@
 			return wp.element.createElement( NoBaseline );
 		}
 
-		const { warnings, has_baseline: hasBaseline, post_settings: postSettings } = status;
+		const { warnings, has_baseline: hasBaseline, post_settings: postSettings, current, baseline } = status;
 		const hasWarnings = warnings && warnings.length > 0;
 
 		return wp.element.createElement(
@@ -354,6 +431,12 @@
 						)
 					)
 					: wp.element.createElement( NoIssues ),
+
+			// Stats display.
+			hasBaseline && showActions && wp.element.createElement( StatsDisplay, {
+				current: current,
+				baseline: baseline
+			} ),
 
 			// Actions (only shown if there are warnings and showActions is true).
 			showActions && hasWarnings && ! ignoreWarnings && wp.element.createElement(

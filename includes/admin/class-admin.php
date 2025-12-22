@@ -4376,53 +4376,64 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 	 * @return void
 	 */
 	public static function field_detected_assumptions() : void {
-		$assumptions = \Functionalities\Features\Assumption_Detection::get_detected();
-		$ignored = \Functionalities\Features\Assumption_Detection::get_ignored();
+		$assumptions = \Functionalities\Features\Assumption_Detection::get_detected_assumptions();
+		$ignored = \Functionalities\Features\Assumption_Detection::get_ignored_assumptions();
 
-		if ( empty( $assumptions ) ) {
-			echo '<div class="functionalities-no-assumptions">';
-			echo '<span class="dashicons dashicons-yes-alt"></span>';
+		// Filter out expired ignored items and already-ignored assumptions.
+		$active_warnings = array();
+		foreach ( $assumptions as $assumption ) {
+			$hash = self::generate_warning_hash( $assumption );
+			// Skip if ignored and not expired.
+			if ( isset( $ignored[ $hash ] ) && $ignored[ $hash ]['expires'] > time() ) {
+				continue;
+			}
+			$assumption['_hash'] = $hash;
+			$active_warnings[] = $assumption;
+		}
+
+		if ( empty( $active_warnings ) ) {
+			echo '<div class="functionalities-no-assumptions" style="display:flex;align-items:center;gap:10px;padding:15px;background:#edfaef;border-left:4px solid #00a32a;border-radius:4px;">';
+			echo '<span class="dashicons dashicons-yes-alt" style="color:#00a32a;font-size:24px;width:24px;height:24px;"></span>';
 			echo '<span>' . \esc_html__( 'No assumption changes detected. All monitored items are consistent.', 'functionalities' ) . '</span>';
 			echo '</div>';
 			return;
 		}
 
-		echo '<div class="functionalities-assumptions-list">';
+		echo '<div class="functionalities-assumptions-list" style="max-height:400px;overflow-y:auto;">';
 
-		foreach ( $assumptions as $key => $assumption ) {
-			// Skip ignored.
-			if ( isset( $ignored[ $key ] ) ) {
-				continue;
-			}
+		foreach ( $active_warnings as $assumption ) {
+			$hash = $assumption['_hash'];
+			$warning_type = $assumption['type'] ?? 'unknown';
+			$type_class = 'warning';
+			$icon = 'dashicons-warning';
 
-			$type_class = ( $assumption['severity'] ?? 'notice' ) === 'warning' ? 'warning' : 'notice';
-			$icon = $type_class === 'warning' ? 'dashicons-warning' : 'dashicons-info';
+			echo '<div class="functionalities-assumption-item" data-hash="' . \esc_attr( $hash ) . '" style="background:#fff8e5;border-left:4px solid #dba617;padding:12px;margin-bottom:10px;border-radius:4px;">';
+			echo '<div class="functionalities-assumption-header" style="display:flex;align-items:flex-start;gap:10px;">';
+			echo '<span class="dashicons ' . \esc_attr( $icon ) . '" style="color:#dba617;flex-shrink:0;margin-top:2px;"></span>';
+			echo '<div class="functionalities-assumption-content" style="flex:1;">';
+			echo '<p class="functionalities-assumption-message" style="margin:0;font-weight:500;">' . \esc_html( $assumption['message'] ?? '' ) . '</p>';
 
-			echo '<div class="functionalities-assumption-item" data-key="' . \esc_attr( $key ) . '">';
-			echo '<div class="functionalities-assumption-header">';
-			echo '<span class="functionalities-assumption-icon ' . \esc_attr( $type_class ) . ' dashicons ' . \esc_attr( $icon ) . '"></span>';
-			echo '<div class="functionalities-assumption-content">';
-			echo '<p class="functionalities-assumption-message">' . \esc_html( $assumption['message'] ?? '' ) . '</p>';
-
-			if ( ! empty( $assumption['details'] ) ) {
-				echo '<p class="functionalities-assumption-details">' . \esc_html( $assumption['details'] ) . '</p>';
-			}
+			// Show type badge.
+			echo '<span style="display:inline-block;background:#f0f0f1;padding:2px 8px;border-radius:3px;font-size:11px;margin-top:6px;color:#50575e;">' . \esc_html( str_replace( '_', ' ', ucfirst( $warning_type ) ) ) . '</span>';
 
 			if ( ! empty( $assumption['detected'] ) ) {
 				$time_ago = \human_time_diff( $assumption['detected'], \time() );
 				/* translators: %s: human-readable time difference */
-				echo '<p class="functionalities-assumption-meta">' . \sprintf( \esc_html__( 'Detected %s ago', 'functionalities' ), $time_ago ) . '</p>';
+				echo '<p class="functionalities-assumption-meta" style="margin:6px 0 0;font-size:12px;color:#646970;">' . \sprintf( \esc_html__( 'Detected %s ago', 'functionalities' ), $time_ago ) . '</p>';
 			}
 
 			echo '</div></div>';
 
 			// Actions.
-			echo '<div class="functionalities-assumption-actions">';
-			echo '<button type="button" class="button button-small functionalities-assumption-acknowledge" data-key="' . \esc_attr( $key ) . '">';
-			echo \esc_html__( 'Acknowledge', 'functionalities' );
+			echo '<div class="functionalities-assumption-actions" style="margin-top:10px;padding-top:10px;border-top:1px solid #e0e0e0;display:flex;gap:8px;">';
+			echo '<button type="button" class="button button-small functionalities-assumption-acknowledge" data-hash="' . \esc_attr( $hash ) . '">';
+			echo \esc_html__( 'Dismiss', 'functionalities' );
 			echo '</button>';
-			echo '<button type="button" class="button button-small functionalities-assumption-ignore" data-key="' . \esc_attr( $key ) . '">';
-			echo \esc_html__( 'Ignore', 'functionalities' );
+			echo '<button type="button" class="button button-small functionalities-assumption-snooze" data-hash="' . \esc_attr( $hash ) . '">';
+			echo \esc_html__( 'Snooze 7 days', 'functionalities' );
+			echo '</button>';
+			echo '<button type="button" class="button button-small functionalities-assumption-ignore" data-hash="' . \esc_attr( $hash ) . '">';
+			echo \esc_html__( 'Ignore permanently', 'functionalities' );
 			echo '</button>';
 			echo '</div>';
 
@@ -4432,40 +4443,117 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 		echo '</div>';
 
 		// Inline script for AJAX actions.
+		$nonce = \wp_create_nonce( 'functionalities_assumptions' );
 		?>
 		<script>
 		jQuery(function($) {
-			$('.functionalities-assumption-acknowledge, .functionalities-assumption-ignore').on('click', function(e) {
+			var nonce = '<?php echo \esc_js( $nonce ); ?>';
+
+			$('.functionalities-assumption-acknowledge').on('click', function(e) {
 				e.preventDefault();
 				var $btn = $(this);
 				var $item = $btn.closest('.functionalities-assumption-item');
-				var key = $btn.data('key');
-				var action = $btn.hasClass('functionalities-assumption-ignore') ? 'ignore' : 'acknowledge';
+				var hash = $btn.data('hash');
 
+				$btn.prop('disabled', true);
 				$.post(ajaxurl, {
-					action: 'functionalities_assumption_action',
-					key: key,
-					assumption_action: action,
-					nonce: '<?php echo \esc_js( \wp_create_nonce( 'functionalities_assumption_action' ) ); ?>'
+					action: 'functionalities_acknowledge_assumption',
+					hash: hash,
+					nonce: nonce
 				}, function(response) {
 					if (response.success) {
 						$item.fadeOut(300, function() {
 							$(this).remove();
-							if ($('.functionalities-assumption-item').length === 0) {
-								$('.functionalities-assumptions-list').html(
-									'<div class="functionalities-no-assumptions">' +
-									'<span class="dashicons dashicons-yes-alt"></span>' +
-									'<span><?php echo \esc_js( \__( 'No assumption changes detected. All monitored items are consistent.', 'functionalities' ) ); ?></span>' +
-									'</div>'
-								);
-							}
+							checkEmptyList();
 						});
+					} else {
+						alert(response.data?.message || 'Action failed.');
+						$btn.prop('disabled', false);
 					}
+				}).fail(function() {
+					alert('Request failed.');
+					$btn.prop('disabled', false);
 				});
 			});
+
+			$('.functionalities-assumption-snooze').on('click', function(e) {
+				e.preventDefault();
+				var $btn = $(this);
+				var $item = $btn.closest('.functionalities-assumption-item');
+				var hash = $btn.data('hash');
+
+				$btn.prop('disabled', true);
+				$.post(ajaxurl, {
+					action: 'functionalities_snooze_assumption',
+					hash: hash,
+					days: 7,
+					nonce: nonce
+				}, function(response) {
+					if (response.success) {
+						$item.fadeOut(300, function() {
+							$(this).remove();
+							checkEmptyList();
+						});
+					} else {
+						alert(response.data?.message || 'Action failed.');
+						$btn.prop('disabled', false);
+					}
+				}).fail(function() {
+					alert('Request failed.');
+					$btn.prop('disabled', false);
+				});
+			});
+
+			$('.functionalities-assumption-ignore').on('click', function(e) {
+				e.preventDefault();
+				var $btn = $(this);
+				var $item = $btn.closest('.functionalities-assumption-item');
+				var hash = $btn.data('hash');
+
+				$btn.prop('disabled', true);
+				$.post(ajaxurl, {
+					action: 'functionalities_ignore_assumption',
+					hash: hash,
+					nonce: nonce
+				}, function(response) {
+					if (response.success) {
+						$item.fadeOut(300, function() {
+							$(this).remove();
+							checkEmptyList();
+						});
+					} else {
+						alert(response.data?.message || 'Action failed.');
+						$btn.prop('disabled', false);
+					}
+				}).fail(function() {
+					alert('Request failed.');
+					$btn.prop('disabled', false);
+				});
+			});
+
+			function checkEmptyList() {
+				if ($('.functionalities-assumption-item').length === 0) {
+					$('.functionalities-assumptions-list').html(
+						'<div class="functionalities-no-assumptions" style="display:flex;align-items:center;gap:10px;padding:15px;background:#edfaef;border-left:4px solid #00a32a;border-radius:4px;">' +
+						'<span class="dashicons dashicons-yes-alt" style="color:#00a32a;font-size:24px;width:24px;height:24px;"></span>' +
+						'<span><?php echo \esc_js( \__( 'No assumption changes detected. All monitored items are consistent.', 'functionalities' ) ); ?></span>' +
+						'</div>'
+					);
+				}
+			}
 		});
 		</script>
 		<?php
+	}
+
+	/**
+	 * Generate a warning hash using Assumption_Detection class method.
+	 *
+	 * @param array $warning Warning data.
+	 * @return string Hash.
+	 */
+	protected static function generate_warning_hash( array $warning ) : string {
+		return \Functionalities\Features\Assumption_Detection::get_warning_hash( $warning );
 	}
 
 	/**
