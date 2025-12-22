@@ -8,7 +8,7 @@
  * @package    Functionalities
  * @subpackage Features
  * @since      0.2.0
- * @version    0.8.0
+ * @version    0.9.2
  */
 
 namespace Functionalities\Features;
@@ -29,6 +29,16 @@ if ( ! defined( 'ABSPATH' ) ) {
  * - Remove `wp-block-heading` from h1-h6 elements
  * - Remove `wp-block-list` from ul/ol elements
  * - Remove `wp-block-image` from figure/div elements
+ * - Remove `wp-block-paragraph` from paragraph elements
+ * - Remove `wp-block-quote` from blockquote elements
+ * - Remove `wp-block-table` from table elements
+ * - Remove `wp-block-separator` from hr/separator elements
+ * - Remove `wp-block-group` from group containers
+ * - Remove `wp-block-columns` and `wp-block-column` from column layouts
+ * - Remove `wp-block-buttons` and `wp-block-button` from button elements
+ * - Remove `wp-block-cover` from cover blocks
+ * - Remove `wp-block-media-text` from media-text blocks
+ * - Custom class removal: specify your own classes to remove
  *
  * ## Filters
  *
@@ -83,6 +93,7 @@ class Block_Cleanup {
 	 * final output processing.
 	 *
 	 * @since 0.2.0
+	 * @since 0.9.2 Added support for additional block types and custom classes.
 	 *
 	 * @return void
 	 */
@@ -90,9 +101,21 @@ class Block_Cleanup {
 		$opts = self::get_options();
 
 		// Only add filter if at least one cleanup option is enabled.
-		if ( ! empty( $opts['remove_heading_block_class'] ) ||
-			 ! empty( $opts['remove_list_block_class'] ) ||
-			 ! empty( $opts['remove_image_block_class'] ) ) {
+		$has_enabled_option = ! empty( $opts['remove_heading_block_class'] ) ||
+			! empty( $opts['remove_list_block_class'] ) ||
+			! empty( $opts['remove_image_block_class'] ) ||
+			! empty( $opts['remove_paragraph_block_class'] ) ||
+			! empty( $opts['remove_quote_block_class'] ) ||
+			! empty( $opts['remove_table_block_class'] ) ||
+			! empty( $opts['remove_separator_block_class'] ) ||
+			! empty( $opts['remove_group_block_class'] ) ||
+			! empty( $opts['remove_columns_block_class'] ) ||
+			! empty( $opts['remove_button_block_class'] ) ||
+			! empty( $opts['remove_cover_block_class'] ) ||
+			! empty( $opts['remove_media_text_block_class'] ) ||
+			! empty( trim( $opts['custom_classes_to_remove'] ) );
+
+		if ( $has_enabled_option ) {
 			\add_filter( 'the_content', array( __CLASS__, 'filter_content_cleanup' ), 12 );
 		}
 	}
@@ -103,20 +126,41 @@ class Block_Cleanup {
 	 * Retrieves saved options from the database and merges with defaults.
 	 *
 	 * @since 0.2.0
+	 * @since 0.9.2 Added additional block types and custom class removal.
 	 *
 	 * @return array {
 	 *     Block cleanup options.
 	 *
-	 *     @type bool $remove_heading_block_class Remove wp-block-heading from headings.
-	 *     @type bool $remove_list_block_class    Remove wp-block-list from lists.
-	 *     @type bool $remove_image_block_class   Remove wp-block-image from images.
+	 *     @type bool   $remove_heading_block_class    Remove wp-block-heading from headings.
+	 *     @type bool   $remove_list_block_class       Remove wp-block-list from lists.
+	 *     @type bool   $remove_image_block_class      Remove wp-block-image from images.
+	 *     @type bool   $remove_paragraph_block_class  Remove wp-block-paragraph from paragraphs.
+	 *     @type bool   $remove_quote_block_class      Remove wp-block-quote from blockquotes.
+	 *     @type bool   $remove_table_block_class      Remove wp-block-table from tables.
+	 *     @type bool   $remove_separator_block_class  Remove wp-block-separator from separators.
+	 *     @type bool   $remove_group_block_class      Remove wp-block-group from groups.
+	 *     @type bool   $remove_columns_block_class    Remove wp-block-columns/column from columns.
+	 *     @type bool   $remove_button_block_class     Remove wp-block-button/buttons from buttons.
+	 *     @type bool   $remove_cover_block_class      Remove wp-block-cover from covers.
+	 *     @type bool   $remove_media_text_block_class Remove wp-block-media-text from media-text.
+	 *     @type string $custom_classes_to_remove      Custom classes to remove (one per line).
 	 * }
 	 */
 	protected static function get_options() : array {
 		$defaults = array(
-			'remove_heading_block_class' => false,
-			'remove_list_block_class'    => false,
-			'remove_image_block_class'   => false,
+			'remove_heading_block_class'    => false,
+			'remove_list_block_class'       => false,
+			'remove_image_block_class'      => false,
+			'remove_paragraph_block_class'  => false,
+			'remove_quote_block_class'      => false,
+			'remove_table_block_class'      => false,
+			'remove_separator_block_class'  => false,
+			'remove_group_block_class'      => false,
+			'remove_columns_block_class'    => false,
+			'remove_button_block_class'     => false,
+			'remove_cover_block_class'      => false,
+			'remove_media_text_block_class' => false,
+			'custom_classes_to_remove'      => '',
 		);
 		$opts = (array) \get_option( 'functionalities_block_cleanup', $defaults );
 		return array_merge( $defaults, $opts );
@@ -131,6 +175,7 @@ class Block_Cleanup {
 	 *
 	 * @since 0.2.0
 	 * @since 0.8.0 Added filters for extensibility.
+	 * @since 0.9.2 Added support for additional block types and custom classes.
 	 *
 	 * @param string $content The post content to filter.
 	 * @return string The filtered content with block classes removed.
@@ -160,12 +205,77 @@ class Block_Cleanup {
 			return $content;
 		}
 
-		$remove_heading = ! empty( $opts['remove_heading_block_class'] );
-		$remove_list    = ! empty( $opts['remove_list_block_class'] );
-		$remove_image   = ! empty( $opts['remove_image_block_class'] );
+		// Build list of classes to remove based on settings.
+		$classes_to_remove = array();
+
+		// Original block classes.
+		if ( ! empty( $opts['remove_heading_block_class'] ) ) {
+			$classes_to_remove[] = 'wp-block-heading';
+		}
+		if ( ! empty( $opts['remove_list_block_class'] ) ) {
+			$classes_to_remove[] = 'wp-block-list';
+		}
+		if ( ! empty( $opts['remove_image_block_class'] ) ) {
+			$classes_to_remove[] = 'wp-block-image';
+		}
+
+		// New block classes (v0.9.2).
+		if ( ! empty( $opts['remove_paragraph_block_class'] ) ) {
+			$classes_to_remove[] = 'wp-block-paragraph';
+		}
+		if ( ! empty( $opts['remove_quote_block_class'] ) ) {
+			$classes_to_remove[] = 'wp-block-quote';
+		}
+		if ( ! empty( $opts['remove_table_block_class'] ) ) {
+			$classes_to_remove[] = 'wp-block-table';
+		}
+		if ( ! empty( $opts['remove_separator_block_class'] ) ) {
+			$classes_to_remove[] = 'wp-block-separator';
+		}
+		if ( ! empty( $opts['remove_group_block_class'] ) ) {
+			$classes_to_remove[] = 'wp-block-group';
+		}
+		if ( ! empty( $opts['remove_columns_block_class'] ) ) {
+			$classes_to_remove[] = 'wp-block-columns';
+			$classes_to_remove[] = 'wp-block-column';
+		}
+		if ( ! empty( $opts['remove_button_block_class'] ) ) {
+			$classes_to_remove[] = 'wp-block-buttons';
+			$classes_to_remove[] = 'wp-block-button';
+			$classes_to_remove[] = 'wp-block-button__link';
+		}
+		if ( ! empty( $opts['remove_cover_block_class'] ) ) {
+			$classes_to_remove[] = 'wp-block-cover';
+			$classes_to_remove[] = 'wp-block-cover__inner-container';
+		}
+		if ( ! empty( $opts['remove_media_text_block_class'] ) ) {
+			$classes_to_remove[] = 'wp-block-media-text';
+			$classes_to_remove[] = 'wp-block-media-text__content';
+			$classes_to_remove[] = 'wp-block-media-text__media';
+		}
+
+		// Custom classes to remove.
+		if ( ! empty( $opts['custom_classes_to_remove'] ) ) {
+			$custom_classes = preg_split( '/[\r\n]+/', $opts['custom_classes_to_remove'] );
+			foreach ( $custom_classes as $class ) {
+				$class = trim( $class );
+				if ( $class !== '' ) {
+					$classes_to_remove[] = $class;
+				}
+			}
+		}
+
+		/**
+		 * Filters the list of block classes to remove.
+		 *
+		 * @since 0.8.0
+		 *
+		 * @param array $classes_to_remove Array of class names to strip.
+		 */
+		$classes_to_remove = \apply_filters( 'functionalities_block_cleanup_classes', $classes_to_remove );
 
 		// Early return if nothing to remove.
-		if ( ! $remove_heading && ! $remove_list && ! $remove_image ) {
+		if ( empty( $classes_to_remove ) ) {
 			return $content;
 		}
 
@@ -179,22 +289,17 @@ class Block_Cleanup {
 		$dom->loadHTML( '<?xml encoding="utf-8" ?>' . $html );
 		$xpath = new \DOMXPath( $dom );
 
-		// Remove heading block classes.
-		if ( $remove_heading ) {
-			$nodes = $xpath->query( '//h1|//h2|//h3|//h4|//h5|//h6' );
-			self::strip_class_from_nodes( $nodes, 'wp-block-heading' );
-		}
+		// Remove all specified classes from all elements.
+		foreach ( $classes_to_remove as $class ) {
+			$class = trim( $class );
+			if ( $class === '' ) {
+				continue;
+			}
 
-		// Remove list block classes.
-		if ( $remove_list ) {
-			$nodes = $xpath->query( '//ul|//ol' );
-			self::strip_class_from_nodes( $nodes, 'wp-block-list' );
-		}
-
-		// Remove image block classes.
-		if ( $remove_image ) {
-			$nodes = $xpath->query( '//*[contains(concat(" ", normalize-space(@class), " "), " wp-block-image ")]' );
-			self::strip_class_from_nodes( $nodes, 'wp-block-image' );
+			// Find all elements with this class.
+			$escaped_class = addcslashes( $class, '"' );
+			$nodes = $xpath->query( '//*[contains(concat(" ", normalize-space(@class), " "), " ' . $escaped_class . ' ")]' );
+			self::strip_class_from_nodes( $nodes, $class );
 		}
 
 		// Extract processed content.

@@ -11,8 +11,14 @@
  * - Analytics duplication (same tracking ID from multiple sources)
  * - Font redundancy (same font family from multiple sources)
  * - Inline CSS growth (performance debt accumulation)
+ * - jQuery version conflicts (multiple jQuery versions)
+ * - Meta tag duplication (duplicate viewport, robots, etc.)
+ * - REST API exposure (user enumeration)
+ * - Lazy loading conflicts (multiple implementations)
  *
  * @package Functionalities\Features
+ * @since 0.9.0
+ * @version 0.9.2
  */
 
 namespace Functionalities\Features;
@@ -82,12 +88,16 @@ class Assumption_Detection {
 	 */
 	public static function get_options() : array {
 		$defaults = array(
-			'enabled'                  => false,
-			'detect_schema_collision'  => true,
-			'detect_analytics_dupe'    => true,
-			'detect_font_redundancy'   => true,
-			'detect_inline_css_growth' => true,
-			'inline_css_threshold_kb'  => 50,
+			'enabled'                   => false,
+			'detect_schema_collision'   => true,
+			'detect_analytics_dupe'     => true,
+			'detect_font_redundancy'    => true,
+			'detect_inline_css_growth'  => true,
+			'inline_css_threshold_kb'   => 50,
+			'detect_jquery_conflicts'   => true,
+			'detect_meta_duplication'   => true,
+			'detect_rest_exposure'      => true,
+			'detect_lazy_load_conflict' => true,
 		);
 		$opts = (array) \get_option( 'functionalities_assumption_detection', $defaults );
 		return array_merge( $defaults, $opts );
@@ -144,6 +154,26 @@ class Assumption_Detection {
 		if ( ! empty( $opts['detect_inline_css_growth'] ) ) {
 			$css_warnings = self::detect_inline_css_growth( $opts );
 			$warnings = array_merge( $warnings, $css_warnings );
+		}
+
+		if ( ! empty( $opts['detect_jquery_conflicts'] ) ) {
+			$jquery_warnings = self::detect_jquery_conflicts();
+			$warnings = array_merge( $warnings, $jquery_warnings );
+		}
+
+		if ( ! empty( $opts['detect_meta_duplication'] ) ) {
+			$meta_warnings = self::detect_meta_duplication();
+			$warnings = array_merge( $warnings, $meta_warnings );
+		}
+
+		if ( ! empty( $opts['detect_rest_exposure'] ) ) {
+			$rest_warnings = self::detect_rest_exposure();
+			$warnings = array_merge( $warnings, $rest_warnings );
+		}
+
+		if ( ! empty( $opts['detect_lazy_load_conflict'] ) ) {
+			$lazy_warnings = self::detect_lazy_load_conflicts();
+			$warnings = array_merge( $warnings, $lazy_warnings );
 		}
 
 		// Filter out ignored warnings.
@@ -598,6 +628,347 @@ class Assumption_Detection {
 	}
 
 	/**
+	 * Detect jQuery version conflicts.
+	 *
+	 * Checks for multiple versions of jQuery or jQuery being loaded
+	 * from different sources (CDN vs local).
+	 *
+	 * @since 0.9.2
+	 * @return array Array of warnings.
+	 */
+	public static function detect_jquery_conflicts() : array {
+		$warnings = array();
+
+		// Check registered scripts.
+		global $wp_scripts;
+		if ( ! $wp_scripts instanceof \WP_Scripts ) {
+			return $warnings;
+		}
+
+		$jquery_scripts = array();
+		$jquery_sources = array();
+
+		foreach ( $wp_scripts->registered as $handle => $script ) {
+			if ( empty( $script->src ) ) {
+				continue;
+			}
+
+			$src = $script->src;
+
+			// Check for jQuery variants.
+			if ( preg_match( '/jquery(?:[-.](?:min|core|migrate|slim))?(?:[-.](\d+\.\d+(?:\.\d+)?))?\.(?:min\.)?js/i', $src, $matches ) ) {
+				$version = isset( $matches[1] ) ? $matches[1] : 'unknown';
+
+				// Determine source type.
+				if ( strpos( $src, 'ajax.googleapis.com' ) !== false ||
+					 strpos( $src, 'cdnjs.cloudflare.com' ) !== false ||
+					 strpos( $src, 'code.jquery.com' ) !== false ||
+					 strpos( $src, 'cdn.jsdelivr.net' ) !== false ) {
+					$source_type = 'CDN';
+				} elseif ( strpos( $src, 'wp-includes' ) !== false ) {
+					$source_type = 'WordPress Core';
+				} else {
+					$source_type = 'Plugin/Theme';
+				}
+
+				$jquery_scripts[ $handle ] = array(
+					'version' => $version,
+					'source'  => $source_type,
+					'src'     => $src,
+				);
+				$jquery_sources[] = $source_type;
+			}
+		}
+
+		// Check for conflicts.
+		if ( count( $jquery_scripts ) > 1 ) {
+			$versions = array_unique( array_column( $jquery_scripts, 'version' ) );
+			$sources  = array_unique( $jquery_sources );
+
+			if ( count( $versions ) > 1 || count( $sources ) > 1 ) {
+				$warnings[] = array(
+					'type'     => 'jquery_conflict',
+					'message'  => sprintf(
+						/* translators: 1: number of jQuery instances, 2: sources */
+						\__( 'Multiple jQuery instances detected (%1$d scripts from: %2$s).', 'functionalities' ),
+						count( $jquery_scripts ),
+						implode( ', ', $sources )
+					),
+					'details'  => array(
+						'scripts'  => $jquery_scripts,
+						'versions' => $versions,
+						'sources'  => $sources,
+					),
+					'detected' => time(),
+				);
+			}
+		}
+
+		return $warnings;
+	}
+
+	/**
+	 * Detect duplicate meta tags.
+	 *
+	 * Checks for duplicate viewport, robots, description, and OG meta tags
+	 * that might be output by multiple plugins.
+	 *
+	 * @since 0.9.2
+	 * @return array Array of warnings.
+	 */
+	public static function detect_meta_duplication() : array {
+		$warnings = array();
+
+		// Capture wp_head output.
+		ob_start();
+		\do_action( 'wp_head' );
+		$head_output = ob_get_clean();
+
+		// Meta tags to check for duplicates.
+		$meta_patterns = array(
+			'viewport' => array(
+				'pattern' => '/<meta[^>]*name=["\']viewport["\'][^>]*>/i',
+				'label'   => 'viewport',
+			),
+			'robots' => array(
+				'pattern' => '/<meta[^>]*name=["\']robots["\'][^>]*>/i',
+				'label'   => 'robots',
+			),
+			'description' => array(
+				'pattern' => '/<meta[^>]*name=["\']description["\'][^>]*>/i',
+				'label'   => 'description',
+			),
+			'og:title' => array(
+				'pattern' => '/<meta[^>]*property=["\']og:title["\'][^>]*>/i',
+				'label'   => 'og:title',
+			),
+			'og:description' => array(
+				'pattern' => '/<meta[^>]*property=["\']og:description["\'][^>]*>/i',
+				'label'   => 'og:description',
+			),
+			'og:image' => array(
+				'pattern' => '/<meta[^>]*property=["\']og:image["\'][^>]*>/i',
+				'label'   => 'og:image',
+			),
+			'twitter:card' => array(
+				'pattern' => '/<meta[^>]*name=["\']twitter:card["\'][^>]*>/i',
+				'label'   => 'twitter:card',
+			),
+		);
+
+		$duplicates = array();
+
+		foreach ( $meta_patterns as $key => $config ) {
+			preg_match_all( $config['pattern'], $head_output, $matches );
+
+			if ( ! empty( $matches[0] ) && count( $matches[0] ) > 1 ) {
+				$duplicates[ $config['label'] ] = count( $matches[0] );
+			}
+		}
+
+		if ( ! empty( $duplicates ) ) {
+			$dupe_list = array();
+			foreach ( $duplicates as $tag => $count ) {
+				$dupe_list[] = sprintf( '%s (%d)', $tag, $count );
+			}
+
+			$warnings[] = array(
+				'type'     => 'meta_duplication',
+				'message'  => sprintf(
+					/* translators: %s: list of duplicate meta tags */
+					\__( 'Duplicate meta tags detected: %s.', 'functionalities' ),
+					implode( ', ', $dupe_list )
+				),
+				'details'  => array(
+					'duplicates' => $duplicates,
+				),
+				'detected' => time(),
+			);
+		}
+
+		return $warnings;
+	}
+
+	/**
+	 * Detect REST API exposure risks.
+	 *
+	 * Checks if the REST API is exposing user information publicly.
+	 *
+	 * @since 0.9.2
+	 * @return array Array of warnings.
+	 */
+	public static function detect_rest_exposure() : array {
+		$warnings = array();
+
+		// Check if users endpoint is accessible.
+		$rest_url = \rest_url( 'wp/v2/users' );
+
+		// Make a HEAD request to check accessibility.
+		$response = \wp_remote_head( $rest_url, array(
+			'timeout'   => 5,
+			'sslverify' => false,
+		) );
+
+		if ( ! \is_wp_error( $response ) ) {
+			$status_code = \wp_remote_retrieve_response_code( $response );
+
+			// If users endpoint returns 200, it's publicly accessible.
+			if ( $status_code === 200 ) {
+				$warnings[] = array(
+					'type'     => 'rest_exposure',
+					'message'  => \__( 'REST API users endpoint is publicly accessible (user enumeration possible).', 'functionalities' ),
+					'details'  => array(
+						'endpoint' => $rest_url,
+						'status'   => $status_code,
+						'risk'     => 'User enumeration allows attackers to discover usernames for brute-force attacks.',
+					),
+					'detected' => time(),
+				);
+			}
+		}
+
+		// Check for exposed oEmbed data.
+		$home_url = \home_url();
+		$oembed_url = \rest_url( 'oembed/1.0/embed' ) . '?url=' . urlencode( $home_url );
+
+		$oembed_response = \wp_remote_get( $oembed_url, array(
+			'timeout'   => 5,
+			'sslverify' => false,
+		) );
+
+		if ( ! \is_wp_error( $oembed_response ) ) {
+			$body = \wp_remote_retrieve_body( $oembed_response );
+			$data = json_decode( $body, true );
+
+			if ( ! empty( $data['author_name'] ) ) {
+				$warnings[] = array(
+					'type'     => 'oembed_author_exposure',
+					'message'  => sprintf(
+						/* translators: %s: author name */
+						\__( 'oEmbed exposes author name publicly: %s.', 'functionalities' ),
+						$data['author_name']
+					),
+					'details'  => array(
+						'author_name' => $data['author_name'],
+						'endpoint'    => $oembed_url,
+					),
+					'detected' => time(),
+				);
+			}
+		}
+
+		return $warnings;
+	}
+
+	/**
+	 * Detect lazy loading conflicts.
+	 *
+	 * Checks for multiple lazy loading implementations that might conflict.
+	 *
+	 * @since 0.9.2
+	 * @return array Array of warnings.
+	 */
+	public static function detect_lazy_load_conflicts() : array {
+		$warnings = array();
+
+		// Capture wp_head and footer.
+		ob_start();
+		\do_action( 'wp_head' );
+		$head_output = ob_get_clean();
+
+		ob_start();
+		\do_action( 'wp_footer' );
+		$footer_output = ob_get_clean();
+
+		$full_output = $head_output . $footer_output;
+
+		// Known lazy loading libraries and patterns.
+		$lazy_patterns = array(
+			'native' => array(
+				'pattern' => '/loading=["\']lazy["\']/i',
+				'name'    => 'Native Browser Lazy Loading',
+			),
+			'lazysizes' => array(
+				'pattern' => '/lazysizes(?:\.min)?\.js/i',
+				'name'    => 'lazysizes.js',
+			),
+			'lozad' => array(
+				'pattern' => '/lozad(?:\.min)?\.js/i',
+				'name'    => 'lozad.js',
+			),
+			'lazyload_vanilla' => array(
+				'pattern' => '/vanilla-lazyload|lazyload(?:\.min)?\.js/i',
+				'name'    => 'vanilla-lazyload',
+			),
+			'wp_rocket' => array(
+				'pattern' => '/wp-rocket.*lazyload|rocket-lazyload/i',
+				'name'    => 'WP Rocket Lazy Load',
+			),
+			'jetpack' => array(
+				'pattern' => '/jetpack.*lazy|lazy-images/i',
+				'name'    => 'Jetpack Lazy Images',
+			),
+			'a3_lazy' => array(
+				'pattern' => '/a3-lazy-load/i',
+				'name'    => 'a3 Lazy Load',
+			),
+			'smush' => array(
+				'pattern' => '/smush.*lazy|wp-smush-lazy/i',
+				'name'    => 'Smush Lazy Load',
+			),
+			'perfmatters' => array(
+				'pattern' => '/perfmatters.*lazy/i',
+				'name'    => 'Perfmatters Lazy Load',
+			),
+		);
+
+		$detected_libs = array();
+
+		foreach ( $lazy_patterns as $key => $config ) {
+			if ( preg_match( $config['pattern'], $full_output ) ) {
+				$detected_libs[] = $config['name'];
+			}
+		}
+
+		// Also check registered scripts.
+		global $wp_scripts;
+		if ( $wp_scripts instanceof \WP_Scripts ) {
+			foreach ( $wp_scripts->registered as $handle => $script ) {
+				if ( empty( $script->src ) ) {
+					continue;
+				}
+				foreach ( $lazy_patterns as $key => $config ) {
+					if ( preg_match( $config['pattern'], $script->src ) ) {
+						if ( ! in_array( $config['name'], $detected_libs, true ) ) {
+							$detected_libs[] = $config['name'];
+						}
+					}
+				}
+			}
+		}
+
+		// If more than one lazy loading method detected.
+		if ( count( $detected_libs ) > 1 ) {
+			$warnings[] = array(
+				'type'     => 'lazy_load_conflict',
+				'message'  => sprintf(
+					/* translators: 1: count, 2: list of libraries */
+					\__( 'Multiple lazy loading implementations detected (%1$d): %2$s.', 'functionalities' ),
+					count( $detected_libs ),
+					implode( ', ', $detected_libs )
+				),
+				'details'  => array(
+					'implementations' => $detected_libs,
+					'count'           => count( $detected_libs ),
+				),
+				'detected' => time(),
+			);
+		}
+
+		return $warnings;
+	}
+
+	/**
 	 * Get all detected assumptions.
 	 *
 	 * @return array Detected assumptions.
@@ -632,6 +1003,16 @@ class Assumption_Detection {
 		}
 		if ( isset( $warning['details']['font_family'] ) ) {
 			$key_parts[] = $warning['details']['font_family'];
+		}
+		// New hash keys for v0.9.2 detectors.
+		if ( isset( $warning['details']['duplicates'] ) ) {
+			$key_parts[] = implode( ',', array_keys( $warning['details']['duplicates'] ) );
+		}
+		if ( isset( $warning['details']['endpoint'] ) ) {
+			$key_parts[] = $warning['details']['endpoint'];
+		}
+		if ( isset( $warning['details']['implementations'] ) ) {
+			$key_parts[] = implode( ',', $warning['details']['implementations'] );
 		}
 
 		return md5( implode( '|', $key_parts ) );

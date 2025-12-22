@@ -487,9 +487,19 @@ class Admin {
 			[
 				'sanitize_callback' => [ __CLASS__, 'sanitize_block_cleanup' ],
 				'default' => [
-					'remove_heading_block_class' => false,
-					'remove_list_block_class'    => false,
-					'remove_image_block_class'   => false,
+					'remove_heading_block_class'    => false,
+					'remove_list_block_class'       => false,
+					'remove_image_block_class'      => false,
+					'remove_paragraph_block_class'  => false,
+					'remove_quote_block_class'      => false,
+					'remove_table_block_class'      => false,
+					'remove_separator_block_class'  => false,
+					'remove_group_block_class'      => false,
+					'remove_columns_block_class'    => false,
+					'remove_button_block_class'     => false,
+					'remove_cover_block_class'      => false,
+					'remove_media_text_block_class' => false,
+					'custom_classes_to_remove'      => '',
 				],
 			]
 		);
@@ -503,22 +513,142 @@ class Admin {
 
 		\add_settings_field(
 			'remove_heading_block_class',
-			\__( 'Remove wp-block-heading on headings', 'functionalities' ),
+			\__( 'Headings', 'functionalities' ),
 			[ __CLASS__, 'field_bc_remove_heading' ],
 			'functionalities_block_cleanup',
 			'functionalities_block_cleanup_section'
 		);
 		\add_settings_field(
 			'remove_list_block_class',
-			\__( 'Remove wp-block-list on lists', 'functionalities' ),
+			\__( 'Lists', 'functionalities' ),
 			[ __CLASS__, 'field_bc_remove_list' ],
 			'functionalities_block_cleanup',
 			'functionalities_block_cleanup_section'
 		);
 		\add_settings_field(
 			'remove_image_block_class',
-			\__( 'Remove .wp-block-image', 'functionalities' ),
+			\__( 'Images', 'functionalities' ),
 			[ __CLASS__, 'field_bc_remove_image' ],
+			'functionalities_block_cleanup',
+			'functionalities_block_cleanup_section'
+		);
+		\add_settings_field(
+			'remove_paragraph_block_class',
+			\__( 'Paragraphs', 'functionalities' ),
+			function() {
+				$opts = self::get_block_cleanup_options();
+				$checked = ! empty( $opts['remove_paragraph_block_class'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_block_cleanup[remove_paragraph_block_class]" value="1" ' . $checked . '> ';
+				echo \esc_html__( 'Remove "wp-block-paragraph" from paragraph elements', 'functionalities' ) . '</label>';
+			},
+			'functionalities_block_cleanup',
+			'functionalities_block_cleanup_section'
+		);
+		\add_settings_field(
+			'remove_quote_block_class',
+			\__( 'Quotes', 'functionalities' ),
+			function() {
+				$opts = self::get_block_cleanup_options();
+				$checked = ! empty( $opts['remove_quote_block_class'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_block_cleanup[remove_quote_block_class]" value="1" ' . $checked . '> ';
+				echo \esc_html__( 'Remove "wp-block-quote" from blockquote elements', 'functionalities' ) . '</label>';
+			},
+			'functionalities_block_cleanup',
+			'functionalities_block_cleanup_section'
+		);
+		\add_settings_field(
+			'remove_table_block_class',
+			\__( 'Tables', 'functionalities' ),
+			function() {
+				$opts = self::get_block_cleanup_options();
+				$checked = ! empty( $opts['remove_table_block_class'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_block_cleanup[remove_table_block_class]" value="1" ' . $checked . '> ';
+				echo \esc_html__( 'Remove "wp-block-table" from table elements', 'functionalities' ) . '</label>';
+			},
+			'functionalities_block_cleanup',
+			'functionalities_block_cleanup_section'
+		);
+		\add_settings_field(
+			'remove_separator_block_class',
+			\__( 'Separators', 'functionalities' ),
+			function() {
+				$opts = self::get_block_cleanup_options();
+				$checked = ! empty( $opts['remove_separator_block_class'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_block_cleanup[remove_separator_block_class]" value="1" ' . $checked . '> ';
+				echo \esc_html__( 'Remove "wp-block-separator" from hr/separator elements', 'functionalities' ) . '</label>';
+			},
+			'functionalities_block_cleanup',
+			'functionalities_block_cleanup_section'
+		);
+		\add_settings_field(
+			'remove_group_block_class',
+			\__( 'Groups', 'functionalities' ),
+			function() {
+				$opts = self::get_block_cleanup_options();
+				$checked = ! empty( $opts['remove_group_block_class'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_block_cleanup[remove_group_block_class]" value="1" ' . $checked . '> ';
+				echo \esc_html__( 'Remove "wp-block-group" from group containers', 'functionalities' ) . '</label>';
+			},
+			'functionalities_block_cleanup',
+			'functionalities_block_cleanup_section'
+		);
+		\add_settings_field(
+			'remove_columns_block_class',
+			\__( 'Columns', 'functionalities' ),
+			function() {
+				$opts = self::get_block_cleanup_options();
+				$checked = ! empty( $opts['remove_columns_block_class'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_block_cleanup[remove_columns_block_class]" value="1" ' . $checked . '> ';
+				echo \esc_html__( 'Remove "wp-block-columns" and "wp-block-column" from column layouts', 'functionalities' ) . '</label>';
+			},
+			'functionalities_block_cleanup',
+			'functionalities_block_cleanup_section'
+		);
+		\add_settings_field(
+			'remove_button_block_class',
+			\__( 'Buttons', 'functionalities' ),
+			function() {
+				$opts = self::get_block_cleanup_options();
+				$checked = ! empty( $opts['remove_button_block_class'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_block_cleanup[remove_button_block_class]" value="1" ' . $checked . '> ';
+				echo \esc_html__( 'Remove "wp-block-button(s)" from button elements', 'functionalities' ) . '</label>';
+			},
+			'functionalities_block_cleanup',
+			'functionalities_block_cleanup_section'
+		);
+		\add_settings_field(
+			'remove_cover_block_class',
+			\__( 'Covers', 'functionalities' ),
+			function() {
+				$opts = self::get_block_cleanup_options();
+				$checked = ! empty( $opts['remove_cover_block_class'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_block_cleanup[remove_cover_block_class]" value="1" ' . $checked . '> ';
+				echo \esc_html__( 'Remove "wp-block-cover" from cover blocks', 'functionalities' ) . '</label>';
+			},
+			'functionalities_block_cleanup',
+			'functionalities_block_cleanup_section'
+		);
+		\add_settings_field(
+			'remove_media_text_block_class',
+			\__( 'Media & Text', 'functionalities' ),
+			function() {
+				$opts = self::get_block_cleanup_options();
+				$checked = ! empty( $opts['remove_media_text_block_class'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_block_cleanup[remove_media_text_block_class]" value="1" ' . $checked . '> ';
+				echo \esc_html__( 'Remove "wp-block-media-text" from media-text blocks', 'functionalities' ) . '</label>';
+			},
+			'functionalities_block_cleanup',
+			'functionalities_block_cleanup_section'
+		);
+		\add_settings_field(
+			'custom_classes_to_remove',
+			\__( 'Custom Classes', 'functionalities' ),
+			function() {
+				$opts = self::get_block_cleanup_options();
+				$val = isset( $opts['custom_classes_to_remove'] ) ? $opts['custom_classes_to_remove'] : '';
+				echo '<textarea name="functionalities_block_cleanup[custom_classes_to_remove]" rows="4" cols="40" class="large-text code">' . \esc_textarea( $val ) . '</textarea>';
+				echo '<p class="description">' . \esc_html__( 'Enter additional CSS classes to remove from content output (one per line). Example: my-plugin-class', 'functionalities' ) . '</p>';
+			},
 			'functionalities_block_cleanup',
 			'functionalities_block_cleanup_section'
 		);
@@ -1792,12 +1922,16 @@ class Admin {
 			array(
 				'sanitize_callback' => array( __CLASS__, 'sanitize_assumption_detection' ),
 				'default'           => array(
-					'enabled'                  => false,
-					'detect_schema_collision'  => true,
-					'detect_analytics_dupe'    => true,
-					'detect_font_redundancy'   => true,
-					'detect_inline_css_growth' => true,
-					'inline_css_threshold_kb'  => 50,
+					'enabled'                   => false,
+					'detect_schema_collision'   => true,
+					'detect_analytics_dupe'     => true,
+					'detect_font_redundancy'    => true,
+					'detect_inline_css_growth'  => true,
+					'inline_css_threshold_kb'   => 50,
+					'detect_jquery_conflicts'   => true,
+					'detect_meta_duplication'   => true,
+					'detect_rest_exposure'      => true,
+					'detect_lazy_load_conflict' => true,
 				),
 			)
 		);
@@ -1882,6 +2016,58 @@ class Admin {
 				$val = isset( $o['inline_css_threshold_kb'] ) ? (int) $o['inline_css_threshold_kb'] : 50;
 				echo '<input type="number" min="10" max="500" class="small-text" name="functionalities_assumption_detection[inline_css_threshold_kb]" value="' . \esc_attr( $val ) . '" /> KB';
 				echo '<p class="description">' . \esc_html__( 'Warn when inline CSS exceeds this size.', 'functionalities' ) . '</p>';
+			},
+			'functionalities_assumption_detection',
+			'functionalities_assumption_detection_section'
+		);
+
+		\add_settings_field(
+			'detect_jquery_conflicts',
+			\__( 'jQuery Conflict Detection', 'functionalities' ),
+			function() {
+				$o = self::get_assumption_detection_options();
+				$checked = ! empty( $o['detect_jquery_conflicts'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_assumption_detection[detect_jquery_conflicts]" value="1" ' . $checked . '> ';
+				echo \esc_html__( 'Warn when multiple jQuery versions or sources are loaded', 'functionalities' ) . '</label>';
+			},
+			'functionalities_assumption_detection',
+			'functionalities_assumption_detection_section'
+		);
+
+		\add_settings_field(
+			'detect_meta_duplication',
+			\__( 'Meta Tag Duplication Detection', 'functionalities' ),
+			function() {
+				$o = self::get_assumption_detection_options();
+				$checked = ! empty( $o['detect_meta_duplication'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_assumption_detection[detect_meta_duplication]" value="1" ' . $checked . '> ';
+				echo \esc_html__( 'Warn when duplicate meta tags are detected (viewport, robots, OG tags)', 'functionalities' ) . '</label>';
+			},
+			'functionalities_assumption_detection',
+			'functionalities_assumption_detection_section'
+		);
+
+		\add_settings_field(
+			'detect_rest_exposure',
+			\__( 'REST API Exposure Detection', 'functionalities' ),
+			function() {
+				$o = self::get_assumption_detection_options();
+				$checked = ! empty( $o['detect_rest_exposure'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_assumption_detection[detect_rest_exposure]" value="1" ' . $checked . '> ';
+				echo \esc_html__( 'Warn when REST API exposes user information publicly', 'functionalities' ) . '</label>';
+			},
+			'functionalities_assumption_detection',
+			'functionalities_assumption_detection_section'
+		);
+
+		\add_settings_field(
+			'detect_lazy_load_conflict',
+			\__( 'Lazy Loading Conflict Detection', 'functionalities' ),
+			function() {
+				$o = self::get_assumption_detection_options();
+				$checked = ! empty( $o['detect_lazy_load_conflict'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_assumption_detection[detect_lazy_load_conflict]" value="1" ' . $checked . '> ';
+				echo \esc_html__( 'Warn when multiple lazy loading implementations are detected', 'functionalities' ) . '</label>';
 			},
 			'functionalities_assumption_detection',
 			'functionalities_assumption_detection_section'
@@ -2597,16 +2783,38 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 	}
 	public static function sanitize_block_cleanup( $input ) : array {
 		return [
-			'remove_heading_block_class' => ! empty( $input['remove_heading_block_class'] ),
-			'remove_list_block_class'    => ! empty( $input['remove_list_block_class'] ),
-			'remove_image_block_class'   => ! empty( $input['remove_image_block_class'] ),
+			'remove_heading_block_class'    => ! empty( $input['remove_heading_block_class'] ),
+			'remove_list_block_class'       => ! empty( $input['remove_list_block_class'] ),
+			'remove_image_block_class'      => ! empty( $input['remove_image_block_class'] ),
+			'remove_paragraph_block_class'  => ! empty( $input['remove_paragraph_block_class'] ),
+			'remove_quote_block_class'      => ! empty( $input['remove_quote_block_class'] ),
+			'remove_table_block_class'      => ! empty( $input['remove_table_block_class'] ),
+			'remove_separator_block_class'  => ! empty( $input['remove_separator_block_class'] ),
+			'remove_group_block_class'      => ! empty( $input['remove_group_block_class'] ),
+			'remove_columns_block_class'    => ! empty( $input['remove_columns_block_class'] ),
+			'remove_button_block_class'     => ! empty( $input['remove_button_block_class'] ),
+			'remove_cover_block_class'      => ! empty( $input['remove_cover_block_class'] ),
+			'remove_media_text_block_class' => ! empty( $input['remove_media_text_block_class'] ),
+			'custom_classes_to_remove'      => isset( $input['custom_classes_to_remove'] )
+				? \sanitize_textarea_field( $input['custom_classes_to_remove'] )
+				: '',
 		];
 	}
 	public static function get_block_cleanup_options() : array {
 		$defaults = [
-			'remove_heading_block_class' => false,
-			'remove_list_block_class'    => false,
-			'remove_image_block_class'   => false,
+			'remove_heading_block_class'    => false,
+			'remove_list_block_class'       => false,
+			'remove_image_block_class'      => false,
+			'remove_paragraph_block_class'  => false,
+			'remove_quote_block_class'      => false,
+			'remove_table_block_class'      => false,
+			'remove_separator_block_class'  => false,
+			'remove_group_block_class'      => false,
+			'remove_columns_block_class'    => false,
+			'remove_button_block_class'     => false,
+			'remove_cover_block_class'      => false,
+			'remove_media_text_block_class' => false,
+			'custom_classes_to_remove'      => '',
 		];
 		$opts = (array) \get_option( 'functionalities_block_cleanup', $defaults );
 		return array_merge( $defaults, $opts );
@@ -4149,14 +4357,18 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 	 */
 	public static function sanitize_assumption_detection( $input ) : array {
 		return array(
-			'enabled'                  => ! empty( $input['enabled'] ),
-			'detect_schema_collision'  => ! empty( $input['detect_schema_collision'] ),
-			'detect_analytics_dupe'    => ! empty( $input['detect_analytics_dupe'] ),
-			'detect_font_redundancy'   => ! empty( $input['detect_font_redundancy'] ),
-			'detect_inline_css_growth' => ! empty( $input['detect_inline_css_growth'] ),
-			'inline_css_threshold_kb'  => isset( $input['inline_css_threshold_kb'] )
+			'enabled'                   => ! empty( $input['enabled'] ),
+			'detect_schema_collision'   => ! empty( $input['detect_schema_collision'] ),
+			'detect_analytics_dupe'     => ! empty( $input['detect_analytics_dupe'] ),
+			'detect_font_redundancy'    => ! empty( $input['detect_font_redundancy'] ),
+			'detect_inline_css_growth'  => ! empty( $input['detect_inline_css_growth'] ),
+			'inline_css_threshold_kb'   => isset( $input['inline_css_threshold_kb'] )
 				? max( 10, min( 500, (int) $input['inline_css_threshold_kb'] ) )
 				: 50,
+			'detect_jquery_conflicts'   => ! empty( $input['detect_jquery_conflicts'] ),
+			'detect_meta_duplication'   => ! empty( $input['detect_meta_duplication'] ),
+			'detect_rest_exposure'      => ! empty( $input['detect_rest_exposure'] ),
+			'detect_lazy_load_conflict' => ! empty( $input['detect_lazy_load_conflict'] ),
 		);
 	}
 
@@ -4167,12 +4379,16 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 	 */
 	public static function get_assumption_detection_options() : array {
 		$defaults = array(
-			'enabled'                  => false,
-			'detect_schema_collision'  => true,
-			'detect_analytics_dupe'    => true,
-			'detect_font_redundancy'   => true,
-			'detect_inline_css_growth' => true,
-			'inline_css_threshold_kb'  => 50,
+			'enabled'                   => false,
+			'detect_schema_collision'   => true,
+			'detect_analytics_dupe'     => true,
+			'detect_font_redundancy'    => true,
+			'detect_inline_css_growth'  => true,
+			'inline_css_threshold_kb'   => 50,
+			'detect_jquery_conflicts'   => true,
+			'detect_meta_duplication'   => true,
+			'detect_rest_exposure'      => true,
+			'detect_lazy_load_conflict' => true,
 		);
 		$opts = (array) \get_option( 'functionalities_assumption_detection', $defaults );
 		return array_merge( $defaults, $opts );
