@@ -1084,7 +1084,7 @@ class Content_Regression {
 
 		\wp_localize_script( 'functionalities-content-regression', 'functionalitiesRegressionData', array(
 			'postId'   => $post->ID,
-			'restBase' => \rest_url( 'functionalities/v1/regression/' ),
+			'restBase' => '/functionalities/v1/regression/',
 			'nonce'    => \wp_create_nonce( 'wp_rest' ),
 			'i18n'     => array(
 				'panelTitle'        => \__( 'Content Integrity', 'functionalities' ),
