@@ -39,6 +39,9 @@ class Admin {
 
 		// AJAX handler for JSON file creation.
 		\add_action( 'wp_ajax_functionalities_create_json_file', array( __CLASS__, 'ajax_create_json_file' ) );
+
+		// AJAX handler for running assumption detection.
+		\add_action( 'wp_ajax_functionalities_run_detection', array( __CLASS__, 'ajax_run_detection' ) );
 	}
 
 	/**
@@ -135,6 +138,37 @@ class Admin {
 					$file_path
 				),
 				'path'    => $file_path,
+			)
+		);
+	}
+
+	/**
+	 * AJAX handler for running assumption detection.
+	 *
+	 * @return void
+	 */
+	public static function ajax_run_detection() : void {
+		// Verify nonce.
+		if ( ! isset( $_POST['nonce'] ) || ! \wp_verify_nonce( $_POST['nonce'], 'functionalities_run_detection' ) ) {
+			\wp_send_json_error( array( 'message' => \__( 'Security check failed.', 'functionalities' ) ) );
+		}
+
+		// Check capabilities.
+		if ( ! \current_user_can( 'manage_options' ) ) {
+			\wp_send_json_error( array( 'message' => \__( 'Insufficient permissions.', 'functionalities' ) ) );
+		}
+
+		// Run detection.
+		$warnings = \Functionalities\Features\Assumption_Detection::force_run_detection();
+
+		\wp_send_json_success(
+			array(
+				'message' => sprintf(
+					/* translators: %d: number of warnings */
+					\__( 'Detection complete. Found %d issue(s).', 'functionalities' ),
+					count( $warnings )
+				),
+				'count'   => count( $warnings ),
 			)
 		);
 	}
@@ -255,6 +289,18 @@ class Admin {
 			array( 'jquery' ),
 			FUNCTIONALITIES_VERSION,
 			true
+		);
+
+		// Localize script with AJAX data.
+		\wp_localize_script(
+			'functionalities-admin',
+			'functionalitiesAdmin',
+			array(
+				'ajaxUrl'            => \admin_url( 'admin-ajax.php' ),
+				'runDetectionNonce'  => \wp_create_nonce( 'functionalities_run_detection' ),
+				'runningText'        => \__( 'Running...', 'functionalities' ),
+				'runDetectionText'   => \__( 'Run Detection Now', 'functionalities' ),
+			)
 		);
 	}
 
