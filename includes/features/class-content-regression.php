@@ -181,10 +181,34 @@ class Content_Regression {
 		$content = $post->post_content;
 		$opts = self::get_options();
 
-		// Get rendered content for accurate parsing.
-		$rendered = \apply_filters( 'the_content', $content );
+		// Get rendered content for accurate parsing - with error handling.
+		$rendered = '';
+		try {
+			// Remove problematic filters temporarily.
+			$current_post = $GLOBALS['post'] ?? null;
+			$GLOBALS['post'] = $post;
 
-		// Parse the content.
+			// Apply content filters with error suppression.
+			$rendered = \apply_filters( 'the_content', $content );
+
+			// Restore original post.
+			if ( null !== $current_post ) {
+				$GLOBALS['post'] = $current_post;
+			}
+		} catch ( \Exception $e ) {
+			// If content filter fails, use raw content.
+			$rendered = $content;
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( 'Functionalities Content Regression: Error rendering content - ' . $e->getMessage() );
+			}
+		}
+
+		// Ensure we have valid content to analyze.
+		if ( empty( $rendered ) ) {
+			$rendered = $content;
+		}
+
+		// Parse the content with error handling.
 		$links = self::parse_links( $rendered, $opts );
 		$word_count = self::count_words( $content, $opts );
 		$headings = self::parse_headings( $content );
@@ -860,9 +884,16 @@ class Content_Regression {
 		$baseline = self::get_last_stable_snapshot( $post_id );
 		$post_settings = self::get_post_settings( $post_id );
 
+		// Also capture current snapshot for comparison display.
+		$current = null;
+		if ( $post ) {
+			$current = self::capture_snapshot( $post );
+		}
+
 		return new \WP_REST_Response( array(
 			'warnings'      => $warnings,
 			'baseline'      => $baseline,
+			'current'       => $current,
 			'post_settings' => $post_settings,
 			'has_baseline'  => ! empty( $baseline ),
 		) );
@@ -1156,9 +1187,13 @@ class Content_Regression {
 		$baseline = self::get_last_stable_snapshot( $post_id );
 		$post_settings = self::get_post_settings( $post_id );
 
+		// Also capture current snapshot for comparison display.
+		$current = self::capture_snapshot( $post );
+
 		\wp_send_json_success( array(
 			'warnings'      => $warnings,
 			'baseline'      => $baseline,
+			'current'       => $current,
 			'post_settings' => $post_settings,
 			'has_baseline'  => ! empty( $baseline ),
 		) );

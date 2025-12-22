@@ -18,7 +18,7 @@
  *
  * @package Functionalities\Features
  * @since 0.9.0
- * @version 0.9.2
+ * @version 0.9.5
  */
 
 namespace Functionalities\Features;
@@ -52,6 +52,13 @@ class Assumption_Detection {
 	 * @var string
 	 */
 	const CSS_BASELINE_KEY = 'functionalities_inline_css_baseline';
+
+	/**
+	 * Cached frontend output to avoid multiple calls to wp_head/wp_footer.
+	 *
+	 * @var array|null
+	 */
+	private static $frontend_output_cache = null;
 
 	/**
 	 * Initialize assumption detection.
@@ -219,17 +226,9 @@ class Assumption_Detection {
 	public static function detect_schema_collisions() : array {
 		$warnings = array();
 
-		// Capture wp_head output.
-		ob_start();
-		\do_action( 'wp_head' );
-		$head_output = ob_get_clean();
-
-		// Capture wp_footer output.
-		ob_start();
-		\do_action( 'wp_footer' );
-		$footer_output = ob_get_clean();
-
-		$full_output = $head_output . $footer_output;
+		// Use cached frontend output.
+		$output = self::get_frontend_output();
+		$full_output = $output['full'];
 
 		// Find all JSON-LD scripts.
 		preg_match_all(
@@ -344,17 +343,9 @@ class Assumption_Detection {
 	public static function detect_analytics_duplication() : array {
 		$warnings = array();
 
-		// Capture wp_head output.
-		ob_start();
-		\do_action( 'wp_head' );
-		$head_output = ob_get_clean();
-
-		// Capture wp_footer output.
-		ob_start();
-		\do_action( 'wp_footer' );
-		$footer_output = ob_get_clean();
-
-		$full_output = $head_output . $footer_output;
+		// Use cached frontend output.
+		$output = self::get_frontend_output();
+		$full_output = $output['full'];
 
 		// Also check enqueued scripts.
 		global $wp_scripts;
@@ -461,10 +452,9 @@ class Assumption_Detection {
 	public static function detect_font_redundancy() : array {
 		$warnings = array();
 
-		// Capture wp_head output.
-		ob_start();
-		\do_action( 'wp_head' );
-		$head_output = ob_get_clean();
+		// Use cached frontend output.
+		$output = self::get_frontend_output();
+		$head_output = $output['head'];
 
 		// Check enqueued styles.
 		global $wp_styles;
@@ -553,10 +543,9 @@ class Assumption_Detection {
 	public static function detect_inline_css_growth( array $opts ) : array {
 		$warnings = array();
 
-		// Capture wp_head output.
-		ob_start();
-		\do_action( 'wp_head' );
-		$head_output = ob_get_clean();
+		// Use cached frontend output.
+		$output = self::get_frontend_output();
+		$head_output = $output['head'];
 
 		// Find all inline styles.
 		preg_match_all(
@@ -743,10 +732,9 @@ class Assumption_Detection {
 	public static function detect_meta_duplication() : array {
 		$warnings = array();
 
-		// Capture wp_head output.
-		ob_start();
-		\do_action( 'wp_head' );
-		$head_output = ob_get_clean();
+		// Use cached frontend output.
+		$output = self::get_frontend_output();
+		$head_output = $output['head'];
 
 		// Meta tags to check for duplicates.
 		$meta_patterns = array(
@@ -895,16 +883,9 @@ class Assumption_Detection {
 	public static function detect_lazy_load_conflicts() : array {
 		$warnings = array();
 
-		// Capture wp_head and footer.
-		ob_start();
-		\do_action( 'wp_head' );
-		$head_output = ob_get_clean();
-
-		ob_start();
-		\do_action( 'wp_footer' );
-		$footer_output = ob_get_clean();
-
-		$full_output = $head_output . $footer_output;
+		// Use cached frontend output.
+		$output = self::get_frontend_output();
+		$full_output = $output['full'];
 
 		// Known lazy loading libraries and patterns.
 		$lazy_patterns = array(
@@ -1006,10 +987,9 @@ class Assumption_Detection {
 			return $warnings;
 		}
 
-		// Capture wp_head output.
-		ob_start();
-		\do_action( 'wp_head' );
-		$head_output = ob_get_clean();
+		// Use cached frontend output.
+		$output = self::get_frontend_output();
+		$head_output = $output['head'];
 
 		$http_resources = array();
 
@@ -1238,7 +1218,7 @@ class Assumption_Detection {
 	 * @param array $warning Warning data.
 	 * @return string Hash.
 	 */
-	protected static function get_warning_hash( array $warning ) : string {
+	public static function get_warning_hash( array $warning ) : string {
 		$key_parts = array( $warning['type'] );
 
 		if ( isset( $warning['details']['schema_type'] ) ) {
@@ -1372,9 +1352,76 @@ class Assumption_Detection {
 	 * @return array Detected warnings.
 	 */
 	public static function force_run_detection() : array {
+		// Clear the cache to ensure fresh detection.
+		self::$frontend_output_cache = null;
+
 		\set_transient( 'functionalities_run_assumption_detection', true, HOUR_IN_SECONDS );
 		\delete_option( 'functionalities_assumptions_last_run' );
 		self::run_detection();
 		return self::get_detected_assumptions();
+	}
+
+	/**
+	 * Safely capture frontend output (wp_head and wp_footer).
+	 *
+	 * This method caches the output to avoid multiple expensive calls
+	 * to wp_head and wp_footer during a single detection run.
+	 *
+	 * @return array Array with 'head' and 'footer' keys.
+	 */
+	protected static function get_frontend_output() : array {
+		if ( null !== self::$frontend_output_cache ) {
+			return self::$frontend_output_cache;
+		}
+
+		$head_output = '';
+		$footer_output = '';
+
+		// Suppress any output during capture.
+		try {
+			// Capture wp_head output.
+			ob_start();
+			\do_action( 'wp_head' );
+			$head_output = ob_get_clean();
+
+			if ( false === $head_output ) {
+				$head_output = '';
+			}
+
+			// Capture wp_footer output.
+			ob_start();
+			\do_action( 'wp_footer' );
+			$footer_output = ob_get_clean();
+
+			if ( false === $footer_output ) {
+				$footer_output = '';
+			}
+		} catch ( \Exception $e ) {
+			// Log but don't fail.
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( 'Functionalities Assumption Detection error: ' . $e->getMessage() );
+			}
+			// Clean any remaining output buffers.
+			while ( ob_get_level() > 0 ) {
+				ob_end_clean();
+			}
+		}
+
+		self::$frontend_output_cache = array(
+			'head'   => $head_output,
+			'footer' => $footer_output,
+			'full'   => $head_output . $footer_output,
+		);
+
+		return self::$frontend_output_cache;
+	}
+
+	/**
+	 * Clear the frontend output cache.
+	 *
+	 * @return void
+	 */
+	public static function clear_cache() : void {
+		self::$frontend_output_cache = null;
 	}
 }
