@@ -93,6 +93,9 @@ class Content_Regression {
 			'detect_missing_h1'           => true,
 			'detect_multiple_h1'          => true,
 			'detect_skipped_levels'       => true,
+			'title_is_h1'                 => true, // Consider post title as H1 (themes render it as H1).
+			// Image detection.
+			'detect_missing_alt'          => true,
 			// Snapshot settings.
 			'snapshot_rolling_count'      => 5,
 			// UI settings.
@@ -621,8 +624,16 @@ class Content_Regression {
 
 		// Check heading structure.
 		if ( ! empty( $opts['heading_enabled'] ) ) {
-			$heading_warnings = self::check_heading_structure( $current, $opts );
+			$heading_warnings = self::check_heading_structure( $current, $opts, $post );
 			$warnings = array_merge( $warnings, $heading_warnings );
+		}
+
+		// Check for images missing alt text.
+		if ( ! empty( $opts['detect_missing_alt'] ) ) {
+			$alt_warning = self::check_missing_alt_text( $post );
+			if ( $alt_warning ) {
+				$warnings[] = $alt_warning;
+			}
 		}
 
 		return $warnings;
@@ -732,17 +743,28 @@ class Content_Regression {
 	/**
 	 * Check heading structure for issues.
 	 *
-	 * @param array $current Current snapshot.
-	 * @param array $opts    Module options.
+	 * @param array    $current Current snapshot.
+	 * @param array    $opts    Module options.
+	 * @param \WP_Post $post    Post object.
 	 * @return array Array of warnings.
 	 */
-	protected static function check_heading_structure( array $current, array $opts ) : array {
+	protected static function check_heading_structure( array $current, array $opts, \WP_Post $post ) : array {
 		$warnings = array();
 		$heading_map = $current['heading_map'] ?? array();
-		$h1_count = $current['h1_count'] ?? 0;
+		$h1_count_in_content = $current['h1_count'] ?? 0;
 
-		// Check for missing H1.
-		if ( ! empty( $opts['detect_missing_h1'] ) && 0 === $h1_count && ! empty( $heading_map ) ) {
+		// Check if post title should count as H1 (most themes render title as H1).
+		$title_is_h1 = ! empty( $opts['title_is_h1'] );
+		$has_title = ! empty( $post->post_title );
+
+		// Effective H1 count includes title if enabled.
+		$effective_h1_count = $h1_count_in_content;
+		if ( $title_is_h1 && $has_title ) {
+			++$effective_h1_count;
+		}
+
+		// Check for missing H1 - only if no title and no H1 in content.
+		if ( ! empty( $opts['detect_missing_h1'] ) && 0 === $effective_h1_count && ! empty( $heading_map ) ) {
 			$warnings[] = array(
 				'type'     => 'heading_missing_h1',
 				'severity' => 'notice',
@@ -750,45 +772,138 @@ class Content_Regression {
 			);
 		}
 
-		// Check for multiple H1s.
-		if ( ! empty( $opts['detect_multiple_h1'] ) && $h1_count > 1 ) {
-			$warnings[] = array(
-				'type'     => 'heading_multiple_h1',
-				'severity' => 'warning',
-				'message'  => sprintf(
-					/* translators: %d: number of H1 headings found */
-					\__( 'Multiple H1 headings detected (%d found).', 'functionalities' ),
-					$h1_count
-				),
-				'count'    => $h1_count,
-			);
+		// Check for multiple H1s (including title as H1 if enabled).
+		if ( ! empty( $opts['detect_multiple_h1'] ) && $effective_h1_count > 1 ) {
+			// If title counts as H1 and there's an H1 in content, that's multiple H1s.
+			if ( $title_is_h1 && $has_title && $h1_count_in_content > 0 ) {
+				$warnings[] = array(
+					'type'     => 'heading_multiple_h1',
+					'severity' => 'warning',
+					'message'  => sprintf(
+						/* translators: %d: number of H1 headings in content */
+						\_n(
+							'Post title serves as H1, but %d additional H1 heading found in content.',
+							'Post title serves as H1, but %d additional H1 headings found in content.',
+							$h1_count_in_content,
+							'functionalities'
+						),
+						$h1_count_in_content
+					),
+					'count'    => $effective_h1_count,
+				);
+			} elseif ( $h1_count_in_content > 1 ) {
+				// Multiple H1s in content itself.
+				$warnings[] = array(
+					'type'     => 'heading_multiple_h1',
+					'severity' => 'warning',
+					'message'  => sprintf(
+						/* translators: %d: number of H1 headings found */
+						\__( 'Multiple H1 headings detected (%d found in content).', 'functionalities' ),
+						$h1_count_in_content
+					),
+					'count'    => $h1_count_in_content,
+				);
+			}
 		}
 
 		// Check for skipped heading levels.
 		if ( ! empty( $opts['detect_skipped_levels'] ) && ! empty( $heading_map ) ) {
-			$prev_level = 0;
-			foreach ( $heading_map as $level ) {
-				// Only flag if jumping more than one level deeper.
-				if ( $prev_level > 0 && $level > $prev_level + 1 ) {
-					$warnings[] = array(
-						'type'     => 'heading_skipped_level',
-						'severity' => 'notice',
-						'message'  => sprintf(
-							/* translators: 1: previous heading level, 2: current heading level */
-							\__( 'Heading level skipped: H%1$d followed by H%2$d.', 'functionalities' ),
-							$prev_level,
-							$level
+			// If title is H1, content should start with H2.
+			$expected_start = ( $title_is_h1 && $has_title ) ? 2 : 1;
+			$first_heading = reset( $heading_map );
+
+			// Check if first heading skips from title (H1) or start.
+			if ( $first_heading > $expected_start ) {
+				$warnings[] = array(
+					'type'     => 'heading_skipped_level',
+					'severity' => 'notice',
+					'message'  => ( $title_is_h1 && $has_title )
+						? sprintf(
+							/* translators: %d: first heading level in content */
+							\__( 'Content should start with H2 after title, but starts with H%d.', 'functionalities' ),
+							$first_heading
+						)
+						: sprintf(
+							/* translators: %d: first heading level */
+							\__( 'Content starts with H%d instead of H1.', 'functionalities' ),
+							$first_heading
 						),
-						'from'     => $prev_level,
-						'to'       => $level,
-					);
-					break; // Only report first issue.
+					'from'     => $expected_start - 1,
+					'to'       => $first_heading,
+				);
+			} else {
+				// Check for skipped levels in content.
+				$prev_level = $first_heading;
+				$rest = array_slice( $heading_map, 1 );
+				foreach ( $rest as $level ) {
+					if ( $level > $prev_level + 1 ) {
+						$warnings[] = array(
+							'type'     => 'heading_skipped_level',
+							'severity' => 'notice',
+							'message'  => sprintf(
+								/* translators: 1: previous heading level, 2: current heading level */
+								\__( 'Heading level skipped: H%1$d followed by H%2$d.', 'functionalities' ),
+								$prev_level,
+								$level
+							),
+							'from'     => $prev_level,
+							'to'       => $level,
+						);
+						break; // Only report first issue.
+					}
+					$prev_level = $level;
 				}
-				$prev_level = $level;
 			}
 		}
 
 		return $warnings;
+	}
+
+	/**
+	 * Check for images missing alt text.
+	 *
+	 * @param \WP_Post $post Post object.
+	 * @return array|null Warning data or null.
+	 */
+	protected static function check_missing_alt_text( \WP_Post $post ) : ?array {
+		$content = $post->post_content;
+
+		// Find all img tags.
+		if ( ! preg_match_all( '/<img[^>]*>/i', $content, $matches ) ) {
+			return null;
+		}
+
+		$missing_alt = 0;
+		$total_images = count( $matches[0] );
+
+		foreach ( $matches[0] as $img ) {
+			// Check if alt attribute is missing or empty.
+			if ( ! preg_match( '/\balt\s*=\s*["\'][^"\']+["\']/i', $img ) ) {
+				++$missing_alt;
+			}
+		}
+
+		if ( $missing_alt > 0 ) {
+			return array(
+				'type'     => 'missing_alt_text',
+				'severity' => 'notice',
+				'message'  => sprintf(
+					/* translators: 1: number of images missing alt, 2: total images */
+					\_n(
+						'%1$d of %2$d image is missing alt text.',
+						'%1$d of %2$d images are missing alt text.',
+						$missing_alt,
+						'functionalities'
+					),
+					$missing_alt,
+					$total_images
+				),
+				'missing'  => $missing_alt,
+				'total'    => $total_images,
+			);
+		}
+
+		return null;
 	}
 
 	/**
@@ -1008,8 +1123,18 @@ class Content_Regression {
 		$enabled_types = (array) $opts['post_types'];
 
 		foreach ( $enabled_types as $post_type ) {
-			\add_filter( "manage_{$post_type}_posts_columns", array( __CLASS__, 'add_column' ) );
-			\add_action( "manage_{$post_type}_posts_custom_column", array( __CLASS__, 'render_column' ), 10, 2 );
+			// WordPress uses different hook names for built-in post types.
+			if ( 'post' === $post_type ) {
+				\add_filter( 'manage_posts_columns', array( __CLASS__, 'add_column' ) );
+				\add_action( 'manage_posts_custom_column', array( __CLASS__, 'render_column' ), 10, 2 );
+			} elseif ( 'page' === $post_type ) {
+				\add_filter( 'manage_pages_columns', array( __CLASS__, 'add_column' ) );
+				\add_action( 'manage_pages_custom_column', array( __CLASS__, 'render_column' ), 10, 2 );
+			} else {
+				// Custom post types use the standard format.
+				\add_filter( "manage_{$post_type}_posts_columns", array( __CLASS__, 'add_column' ) );
+				\add_action( "manage_{$post_type}_posts_custom_column", array( __CLASS__, 'render_column' ), 10, 2 );
+			}
 		}
 	}
 
