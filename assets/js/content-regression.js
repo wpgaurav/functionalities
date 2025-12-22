@@ -50,6 +50,8 @@
 			case 'heading_multiple_h1':
 			case 'heading_skipped_level':
 				return 'heading';
+			case 'missing_alt_text':
+				return 'format-image';
 			default:
 				return 'warning';
 		}
