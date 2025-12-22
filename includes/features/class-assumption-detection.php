@@ -88,16 +88,20 @@ class Assumption_Detection {
 	 */
 	public static function get_options() : array {
 		$defaults = array(
-			'enabled'                   => false,
-			'detect_schema_collision'   => true,
-			'detect_analytics_dupe'     => true,
-			'detect_font_redundancy'    => true,
-			'detect_inline_css_growth'  => true,
-			'inline_css_threshold_kb'   => 50,
-			'detect_jquery_conflicts'   => true,
-			'detect_meta_duplication'   => true,
-			'detect_rest_exposure'      => true,
-			'detect_lazy_load_conflict' => true,
+			'enabled'                       => false,
+			'detect_schema_collision'       => true,
+			'detect_analytics_dupe'         => true,
+			'detect_font_redundancy'        => true,
+			'detect_inline_css_growth'      => true,
+			'inline_css_threshold_kb'       => 50,
+			'detect_jquery_conflicts'       => true,
+			'detect_meta_duplication'       => true,
+			'detect_rest_exposure'          => true,
+			'detect_lazy_load_conflict'     => true,
+			'detect_mixed_content'          => true,
+			'detect_missing_security_headers' => true,
+			'detect_debug_exposure'         => true,
+			'detect_cron_issues'            => true,
 		);
 		$opts = (array) \get_option( 'functionalities_assumption_detection', $defaults );
 		return array_merge( $defaults, $opts );
@@ -174,6 +178,26 @@ class Assumption_Detection {
 		if ( ! empty( $opts['detect_lazy_load_conflict'] ) ) {
 			$lazy_warnings = self::detect_lazy_load_conflicts();
 			$warnings = array_merge( $warnings, $lazy_warnings );
+		}
+
+		if ( ! empty( $opts['detect_mixed_content'] ) ) {
+			$mixed_warnings = self::detect_mixed_content();
+			$warnings = array_merge( $warnings, $mixed_warnings );
+		}
+
+		if ( ! empty( $opts['detect_missing_security_headers'] ) ) {
+			$header_warnings = self::detect_missing_security_headers();
+			$warnings = array_merge( $warnings, $header_warnings );
+		}
+
+		if ( ! empty( $opts['detect_debug_exposure'] ) ) {
+			$debug_warnings = self::detect_debug_exposure();
+			$warnings = array_merge( $warnings, $debug_warnings );
+		}
+
+		if ( ! empty( $opts['detect_cron_issues'] ) ) {
+			$cron_warnings = self::detect_cron_issues();
+			$warnings = array_merge( $warnings, $cron_warnings );
 		}
 
 		// Filter out ignored warnings.
@@ -960,6 +984,228 @@ class Assumption_Detection {
 				'details'  => array(
 					'implementations' => $detected_libs,
 					'count'           => count( $detected_libs ),
+				),
+				'detected' => time(),
+			);
+		}
+
+		return $warnings;
+	}
+
+	/**
+	 * Detect mixed content (HTTP resources on HTTPS pages).
+	 *
+	 * @since 0.9.2
+	 * @return array Array of warnings.
+	 */
+	public static function detect_mixed_content() : array {
+		$warnings = array();
+
+		// Only check if site is HTTPS.
+		if ( ! \is_ssl() && strpos( \home_url(), 'https://' ) === false ) {
+			return $warnings;
+		}
+
+		// Capture wp_head output.
+		ob_start();
+		\do_action( 'wp_head' );
+		$head_output = ob_get_clean();
+
+		$http_resources = array();
+
+		// Check for HTTP resources in stylesheets.
+		if ( preg_match_all( '/href=["\']http:\/\/[^"\']+["\']/', $head_output, $matches ) ) {
+			foreach ( $matches[0] as $match ) {
+				$http_resources[] = 'stylesheet: ' . substr( $match, 6, -1 );
+			}
+		}
+
+		// Check for HTTP resources in scripts.
+		if ( preg_match_all( '/src=["\']http:\/\/[^"\']+["\']/', $head_output, $matches ) ) {
+			foreach ( $matches[0] as $match ) {
+				$http_resources[] = 'script: ' . substr( $match, 5, -1 );
+			}
+		}
+
+		if ( ! empty( $http_resources ) ) {
+			$warnings[] = array(
+				'type'     => 'mixed_content',
+				'message'  => sprintf(
+					/* translators: %d: number of HTTP resources */
+					\__( 'Mixed content detected: %d HTTP resource(s) on HTTPS site.', 'functionalities' ),
+					count( $http_resources )
+				),
+				'details'  => array(
+					'resources' => array_slice( $http_resources, 0, 5 ),
+					'count'     => count( $http_resources ),
+				),
+				'detected' => time(),
+			);
+		}
+
+		return $warnings;
+	}
+
+	/**
+	 * Detect missing security headers.
+	 *
+	 * @since 0.9.2
+	 * @return array Array of warnings.
+	 */
+	public static function detect_missing_security_headers() : array {
+		$warnings = array();
+
+		// Make a request to the home URL to check headers.
+		$response = \wp_remote_head( \home_url(), array(
+			'timeout'   => 5,
+			'sslverify' => false,
+		) );
+
+		if ( \is_wp_error( $response ) ) {
+			return $warnings;
+		}
+
+		$headers = \wp_remote_retrieve_headers( $response );
+		$headers_array = $headers instanceof \Requests_Utility_CaseInsensitiveDictionary
+			? $headers->getAll()
+			: (array) $headers;
+		$headers_lower = array_change_key_case( $headers_array, CASE_LOWER );
+
+		$missing_headers = array();
+
+		// Check for critical security headers.
+		$security_headers = array(
+			'x-content-type-options'  => 'X-Content-Type-Options',
+			'x-frame-options'         => 'X-Frame-Options',
+			'x-xss-protection'        => 'X-XSS-Protection',
+			'strict-transport-security' => 'Strict-Transport-Security (HSTS)',
+		);
+
+		foreach ( $security_headers as $key => $name ) {
+			if ( ! isset( $headers_lower[ $key ] ) ) {
+				$missing_headers[] = $name;
+			}
+		}
+
+		if ( ! empty( $missing_headers ) ) {
+			$warnings[] = array(
+				'type'     => 'missing_security_headers',
+				'message'  => sprintf(
+					/* translators: %s: list of missing headers */
+					\__( 'Missing security headers: %s.', 'functionalities' ),
+					implode( ', ', $missing_headers )
+				),
+				'details'  => array(
+					'missing' => $missing_headers,
+				),
+				'detected' => time(),
+			);
+		}
+
+		return $warnings;
+	}
+
+	/**
+	 * Detect debug mode exposure.
+	 *
+	 * @since 0.9.2
+	 * @return array Array of warnings.
+	 */
+	public static function detect_debug_exposure() : array {
+		$warnings = array();
+		$issues = array();
+
+		// Check WP_DEBUG.
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			$issues[] = 'WP_DEBUG is enabled';
+		}
+
+		// Check WP_DEBUG_DISPLAY.
+		if ( defined( 'WP_DEBUG_DISPLAY' ) && WP_DEBUG_DISPLAY ) {
+			$issues[] = 'WP_DEBUG_DISPLAY is enabled';
+		}
+
+		// Check display_errors.
+		if ( ini_get( 'display_errors' ) ) {
+			$issues[] = 'PHP display_errors is enabled';
+		}
+
+		// Check SCRIPT_DEBUG.
+		if ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) {
+			$issues[] = 'SCRIPT_DEBUG is enabled';
+		}
+
+		if ( ! empty( $issues ) ) {
+			$warnings[] = array(
+				'type'     => 'debug_exposure',
+				'message'  => sprintf(
+					/* translators: %s: list of debug issues */
+					\__( 'Debug mode exposure: %s.', 'functionalities' ),
+					implode( ', ', $issues )
+				),
+				'details'  => array(
+					'issues' => $issues,
+				),
+				'detected' => time(),
+			);
+		}
+
+		return $warnings;
+	}
+
+	/**
+	 * Detect cron issues.
+	 *
+	 * @since 0.9.2
+	 * @return array Array of warnings.
+	 */
+	public static function detect_cron_issues() : array {
+		$warnings = array();
+		$issues = array();
+
+		// Check if WP-Cron is disabled.
+		if ( defined( 'DISABLE_WP_CRON' ) && DISABLE_WP_CRON ) {
+			$issues[] = 'WP-Cron is disabled (DISABLE_WP_CRON)';
+		}
+
+		// Check for stuck cron jobs (jobs more than 1 hour overdue).
+		$crons = \_get_cron_array();
+		$current_time = time();
+		$stuck_jobs = 0;
+
+		if ( is_array( $crons ) ) {
+			foreach ( $crons as $timestamp => $cron ) {
+				if ( $timestamp < ( $current_time - HOUR_IN_SECONDS ) ) {
+					$stuck_jobs += count( $cron );
+				}
+			}
+		}
+
+		if ( $stuck_jobs > 0 ) {
+			$issues[] = sprintf(
+				/* translators: %d: number of stuck jobs */
+				\__( '%d cron job(s) are overdue', 'functionalities' ),
+				$stuck_jobs
+			);
+		}
+
+		// Check cron lock age.
+		$cron_lock = \get_transient( 'doing_cron' );
+		if ( $cron_lock && ( $current_time - $cron_lock ) > 600 ) {
+			$issues[] = 'Cron lock is stale (may indicate stuck process)';
+		}
+
+		if ( ! empty( $issues ) ) {
+			$warnings[] = array(
+				'type'     => 'cron_issues',
+				'message'  => sprintf(
+					/* translators: %s: list of cron issues */
+					\__( 'Cron issues detected: %s.', 'functionalities' ),
+					implode( '; ', $issues )
+				),
+				'details'  => array(
+					'issues'     => $issues,
+					'stuck_jobs' => $stuck_jobs,
 				),
 				'detected' => time(),
 			);

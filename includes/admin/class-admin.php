@@ -1922,16 +1922,20 @@ class Admin {
 			array(
 				'sanitize_callback' => array( __CLASS__, 'sanitize_assumption_detection' ),
 				'default'           => array(
-					'enabled'                   => false,
-					'detect_schema_collision'   => true,
-					'detect_analytics_dupe'     => true,
-					'detect_font_redundancy'    => true,
-					'detect_inline_css_growth'  => true,
-					'inline_css_threshold_kb'   => 50,
-					'detect_jquery_conflicts'   => true,
-					'detect_meta_duplication'   => true,
-					'detect_rest_exposure'      => true,
-					'detect_lazy_load_conflict' => true,
+					'enabled'                       => false,
+					'detect_schema_collision'       => true,
+					'detect_analytics_dupe'         => true,
+					'detect_font_redundancy'        => true,
+					'detect_inline_css_growth'      => true,
+					'inline_css_threshold_kb'       => 50,
+					'detect_jquery_conflicts'       => true,
+					'detect_meta_duplication'       => true,
+					'detect_rest_exposure'          => true,
+					'detect_lazy_load_conflict'     => true,
+					'detect_mixed_content'          => true,
+					'detect_missing_security_headers' => true,
+					'detect_debug_exposure'         => true,
+					'detect_cron_issues'            => true,
 				),
 			)
 		);
@@ -2068,6 +2072,75 @@ class Admin {
 				$checked = ! empty( $o['detect_lazy_load_conflict'] ) ? 'checked' : '';
 				echo '<label><input type="checkbox" name="functionalities_assumption_detection[detect_lazy_load_conflict]" value="1" ' . $checked . '> ';
 				echo \esc_html__( 'Warn when multiple lazy loading implementations are detected', 'functionalities' ) . '</label>';
+			},
+			'functionalities_assumption_detection',
+			'functionalities_assumption_detection_section'
+		);
+
+		\add_settings_field(
+			'detect_mixed_content',
+			\__( 'Mixed Content Detection', 'functionalities' ),
+			function() {
+				$o = self::get_assumption_detection_options();
+				$checked = ! empty( $o['detect_mixed_content'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_assumption_detection[detect_mixed_content]" value="1" ' . $checked . '> ';
+				echo \esc_html__( 'Warn when HTTP resources are loaded on HTTPS pages', 'functionalities' ) . '</label>';
+			},
+			'functionalities_assumption_detection',
+			'functionalities_assumption_detection_section'
+		);
+
+		\add_settings_field(
+			'detect_missing_security_headers',
+			\__( 'Security Headers Detection', 'functionalities' ),
+			function() {
+				$o = self::get_assumption_detection_options();
+				$checked = ! empty( $o['detect_missing_security_headers'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_assumption_detection[detect_missing_security_headers]" value="1" ' . $checked . '> ';
+				echo \esc_html__( 'Warn when critical security headers are missing', 'functionalities' ) . '</label>';
+			},
+			'functionalities_assumption_detection',
+			'functionalities_assumption_detection_section'
+		);
+
+		\add_settings_field(
+			'detect_debug_exposure',
+			\__( 'Debug Mode Exposure', 'functionalities' ),
+			function() {
+				$o = self::get_assumption_detection_options();
+				$checked = ! empty( $o['detect_debug_exposure'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_assumption_detection[detect_debug_exposure]" value="1" ' . $checked . '> ';
+				echo \esc_html__( 'Warn when WP_DEBUG or error display is enabled in production', 'functionalities' ) . '</label>';
+			},
+			'functionalities_assumption_detection',
+			'functionalities_assumption_detection_section'
+		);
+
+		\add_settings_field(
+			'detect_cron_issues',
+			\__( 'Cron Issues Detection', 'functionalities' ),
+			function() {
+				$o = self::get_assumption_detection_options();
+				$checked = ! empty( $o['detect_cron_issues'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_assumption_detection[detect_cron_issues]" value="1" ' . $checked . '> ';
+				echo \esc_html__( 'Warn when WP-Cron is disabled or has stuck jobs', 'functionalities' ) . '</label>';
+			},
+			'functionalities_assumption_detection',
+			'functionalities_assumption_detection_section'
+		);
+
+		// Explicit save button field - ensures visibility.
+		\add_settings_field(
+			'assumption_save_settings',
+			'',
+			function() {
+				echo '<div class="functionalities-settings-actions" style="padding: 15px 0; border-top: 1px solid #c3c4c7; margin-top: 10px;">';
+				\submit_button( \__( 'Save Settings', 'functionalities' ), 'primary', 'submit', false );
+				echo ' ';
+				echo '<button type="button" class="button button-secondary" id="functionalities-run-detection" style="margin-left: 10px;">';
+				echo \esc_html__( 'Run Detection Now', 'functionalities' );
+				echo '</button>';
+				echo '</div>';
 			},
 			'functionalities_assumption_detection',
 			'functionalities_assumption_detection_section'
@@ -4357,18 +4430,22 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 	 */
 	public static function sanitize_assumption_detection( $input ) : array {
 		return array(
-			'enabled'                   => ! empty( $input['enabled'] ),
-			'detect_schema_collision'   => ! empty( $input['detect_schema_collision'] ),
-			'detect_analytics_dupe'     => ! empty( $input['detect_analytics_dupe'] ),
-			'detect_font_redundancy'    => ! empty( $input['detect_font_redundancy'] ),
-			'detect_inline_css_growth'  => ! empty( $input['detect_inline_css_growth'] ),
-			'inline_css_threshold_kb'   => isset( $input['inline_css_threshold_kb'] )
+			'enabled'                       => ! empty( $input['enabled'] ),
+			'detect_schema_collision'       => ! empty( $input['detect_schema_collision'] ),
+			'detect_analytics_dupe'         => ! empty( $input['detect_analytics_dupe'] ),
+			'detect_font_redundancy'        => ! empty( $input['detect_font_redundancy'] ),
+			'detect_inline_css_growth'      => ! empty( $input['detect_inline_css_growth'] ),
+			'inline_css_threshold_kb'       => isset( $input['inline_css_threshold_kb'] )
 				? max( 10, min( 500, (int) $input['inline_css_threshold_kb'] ) )
 				: 50,
-			'detect_jquery_conflicts'   => ! empty( $input['detect_jquery_conflicts'] ),
-			'detect_meta_duplication'   => ! empty( $input['detect_meta_duplication'] ),
-			'detect_rest_exposure'      => ! empty( $input['detect_rest_exposure'] ),
-			'detect_lazy_load_conflict' => ! empty( $input['detect_lazy_load_conflict'] ),
+			'detect_jquery_conflicts'       => ! empty( $input['detect_jquery_conflicts'] ),
+			'detect_meta_duplication'       => ! empty( $input['detect_meta_duplication'] ),
+			'detect_rest_exposure'          => ! empty( $input['detect_rest_exposure'] ),
+			'detect_lazy_load_conflict'     => ! empty( $input['detect_lazy_load_conflict'] ),
+			'detect_mixed_content'          => ! empty( $input['detect_mixed_content'] ),
+			'detect_missing_security_headers' => ! empty( $input['detect_missing_security_headers'] ),
+			'detect_debug_exposure'         => ! empty( $input['detect_debug_exposure'] ),
+			'detect_cron_issues'            => ! empty( $input['detect_cron_issues'] ),
 		);
 	}
 
@@ -4379,16 +4456,20 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 	 */
 	public static function get_assumption_detection_options() : array {
 		$defaults = array(
-			'enabled'                   => false,
-			'detect_schema_collision'   => true,
-			'detect_analytics_dupe'     => true,
-			'detect_font_redundancy'    => true,
-			'detect_inline_css_growth'  => true,
-			'inline_css_threshold_kb'   => 50,
-			'detect_jquery_conflicts'   => true,
-			'detect_meta_duplication'   => true,
-			'detect_rest_exposure'      => true,
-			'detect_lazy_load_conflict' => true,
+			'enabled'                       => false,
+			'detect_schema_collision'       => true,
+			'detect_analytics_dupe'         => true,
+			'detect_font_redundancy'        => true,
+			'detect_inline_css_growth'      => true,
+			'inline_css_threshold_kb'       => 50,
+			'detect_jquery_conflicts'       => true,
+			'detect_meta_duplication'       => true,
+			'detect_rest_exposure'          => true,
+			'detect_lazy_load_conflict'     => true,
+			'detect_mixed_content'          => true,
+			'detect_missing_security_headers' => true,
+			'detect_debug_exposure'         => true,
+			'detect_cron_issues'            => true,
 		);
 		$opts = (array) \get_option( 'functionalities_assumption_detection', $defaults );
 		return array_merge( $defaults, $opts );
