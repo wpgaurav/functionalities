@@ -15,7 +15,7 @@
 	Otherwise, create the project structure manually using available file creation tools.
 	-->
 
-	- Summary: Created plugin files: `functionalities.php`, `includes/class-functionalities-loader.php`, assets (`assets/css/style.css`, `assets/js/main.js`), `languages/`, and `README.md`.
+	- Summary: Created plugin files: `functionalities.php`, `languages/`, and `README.md`. Frontend asset files removed in v0.9.8.
 
 - [x] Customize the Project
 	<!--

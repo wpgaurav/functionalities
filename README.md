@@ -6,7 +6,6 @@ A modular site-specific plugin to organize common features with simple toggles. 
 
 ### Core
 - Safe plugin bootstrap with constants
-- Asset enqueues for CSS/JS
 - **NEW:** Module-based admin interface with dashboard cards
 - **NEW:** URL parameter navigation (no more separate submenu pages)
 - **NEW:** Improved WordPress Coding Standards compliance
@@ -138,12 +137,12 @@ functionalities/
 ├── assets/
 │   ├── css/
 │   │   ├── admin.css              # Admin dashboard styles
-│   │   ├── content-regression.css # Regression warning styles
-│   │   └── style.css              # Frontend styles
+│   │   ├── admin-ui.css           # Admin UI component styles
+│   │   └── content-regression.css # Regression warning styles
 │   └── js/
 │       ├── admin.js               # Admin dashboard scripts
-│       ├── content-regression.js  # Block editor integration
-│       └── main.js                # Frontend scripts
+│       ├── admin-ui.js            # Admin UI scripts
+│       └── content-regression.js  # Block editor integration
 ├── includes/
 │   ├── admin/
 │   │   ├── class-admin.php        # Admin interface
@@ -162,7 +161,7 @@ functionalities/
 │   │   ├── class-misc.php
 │   │   ├── class-schema.php
 │   │   └── class-snippets.php
-│   └── class-functionalities-loader.php
+│   └── class-github-updater.php
 ├── languages/
 └── functionalities.php            # Main plugin file
 ```
@@ -319,7 +318,13 @@ GPL-2.0-or-later
 
 ## Changelog
 
-### Version 0.9.1 (Current)
+### Version 0.9.8 (Current)
+- **REMOVED:** Unused frontend assets (assets/js/main.js and assets/css/style.css)
+- **REMOVED:** Loader class that enqueued unused frontend assets
+- Reduced plugin footprint - no frontend CSS/JS loaded by default
+- Performance improvement: eliminated unnecessary asset loading on frontend
+
+### Version 0.9.1
 
 #### Link Management Enhancements
 
