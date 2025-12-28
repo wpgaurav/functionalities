@@ -3,7 +3,7 @@
  * Plugin Name: Functionalities
  * Plugin URI: https://functionalities.dev
  * Description: Modular site-specific plugin with modern dashboard, complete GT Nofollow Manager integration, and WordPress coding standards compliance.
- * Version: 0.9.8
+ * Version: 0.9.9
  * Author: Gaurav Tiwari
  * Author URI: https://gauravtiwari.org
  * License: GPL-2.0-or-later
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Define constants.
 if ( ! defined( 'FUNCTIONALITIES_VERSION' ) ) {
-	define( 'FUNCTIONALITIES_VERSION', '0.9.8' );
+	define( 'FUNCTIONALITIES_VERSION', '0.9.9' );
 }
 if ( ! defined( 'FUNCTIONALITIES_FILE' ) ) {
 	define( 'FUNCTIONALITIES_FILE', __FILE__ );
@@ -47,11 +47,16 @@ require_once FUNCTIONALITIES_DIR . 'includes/features/class-icons.php';
 require_once FUNCTIONALITIES_DIR . 'includes/features/class-meta.php';
 require_once FUNCTIONALITIES_DIR . 'includes/features/class-content-regression.php';
 require_once FUNCTIONALITIES_DIR . 'includes/features/class-assumption-detection.php';
+require_once FUNCTIONALITIES_DIR . 'includes/features/class-task-manager.php';
 require_once FUNCTIONALITIES_DIR . 'includes/class-github-updater.php';
+
+// Load translations at init to avoid _load_textdomain_just_in_time warning.
+\add_action( 'init', function() {
+	\load_plugin_textdomain( 'functionalities', false, dirname( \plugin_basename( FUNCTIONALITIES_FILE ) ) . '/languages' );
+}, 1 );
 
 // Initialize plugin.
 \add_action( 'plugins_loaded', function() {
-	\load_plugin_textdomain( 'functionalities', false, dirname( \plugin_basename( __FILE__ ) ) . '/languages' );
 	\Functionalities\Admin\Admin::init();
 	\Functionalities\Features\Link_Management::init();
 	\Functionalities\Features\Block_Cleanup::init();
@@ -65,6 +70,7 @@ require_once FUNCTIONALITIES_DIR . 'includes/class-github-updater.php';
 	\Functionalities\Features\Meta::init();
 	\Functionalities\Features\Content_Regression::init();
 	\Functionalities\Features\Assumption_Detection::init();
+	\Functionalities\Features\Task_Manager::init();
 
 	// Initialize GitHub Updater if enabled.
 	$update_options = \Functionalities\Admin\Admin::get_updates_options();

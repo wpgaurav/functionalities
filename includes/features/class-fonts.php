@@ -171,7 +171,8 @@ class Fonts {
 			return;
 		}
 
-		echo '<style id="functionalities-fonts">' . $css . '</style>';
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSS is sanitized in build_css().
+		echo '<style id="functionalities-fonts">' . self::sanitize_css( $css ) . '</style>';
 	}
 
 	/**
@@ -242,5 +243,38 @@ class Fonts {
 		 * @param array  $items The font items array.
 		 */
 		return \apply_filters( 'functionalities_fonts_css', $css, $items );
+	}
+
+	/**
+	 * Sanitize CSS output to prevent injection.
+	 *
+	 * Removes potentially dangerous CSS content including:
+	 * - HTML tags
+	 * - Style closing tags
+	 * - JavaScript expressions
+	 * - Import statements with external URLs
+	 *
+	 * @since 0.9.9
+	 *
+	 * @param string $css The CSS to sanitize.
+	 * @return string Sanitized CSS.
+	 */
+	protected static function sanitize_css( string $css ) : string {
+		// Remove any HTML tags.
+		$css = wp_strip_all_tags( $css );
+
+		// Remove style closing tags that could break out of style context.
+		$css = preg_replace( '/<\/style\s*>/i', '', $css );
+
+		// Remove JavaScript expressions (legacy IE).
+		$css = preg_replace( '/expression\s*\([^)]*\)/i', '', $css );
+
+		// Remove JavaScript URLs.
+		$css = preg_replace( '/javascript\s*:/i', '', $css );
+
+		// Remove behavior property (legacy IE).
+		$css = preg_replace( '/behavior\s*:\s*url\s*\([^)]*\)/i', '', $css );
+
+		return $css;
 	}
 }

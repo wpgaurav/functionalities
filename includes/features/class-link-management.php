@@ -332,14 +332,27 @@ class Link_Management {
 			);
 		}
 
-		// Query posts containing the target URL.
+		/**
+		 * Maximum number of posts to process in a single request.
+		 * Prevents timeout on large sites.
+		 *
+		 * @since 0.9.9
+		 *
+		 * @param int $limit Maximum posts to process.
+		 */
+		$batch_limit = \apply_filters( 'functionalities_link_update_batch_limit', 100 );
+
+		// Query posts containing the target URL with limit for performance.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Direct query needed for bulk operation.
 		$posts = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT ID, post_content FROM {$wpdb->posts}
 				WHERE post_content LIKE %s
 				AND post_status IN ('publish', 'draft', 'pending', 'future', 'private')
-				AND post_type NOT IN ('revision', 'nav_menu_item')",
-				'%' . $wpdb->esc_like( $target_url ) . '%'
+				AND post_type NOT IN ('revision', 'nav_menu_item')
+				LIMIT %d",
+				'%' . $wpdb->esc_like( $target_url ) . '%',
+				$batch_limit
 			)
 		);
 
@@ -352,12 +365,16 @@ class Link_Management {
 		}
 
 		$updated_count = 0;
+		$processed     = 0;
 
 		foreach ( $posts as $post ) {
+			$processed++;
+
 			// Process links in content.
 			$new_content = self::add_nofollow_to_url_in_content( $post->post_content, $target_url );
 
 			if ( $new_content !== $post->post_content ) {
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Direct query needed for bulk update.
 				$wpdb->update(
 					$wpdb->posts,
 					array( 'post_content' => $new_content ),
@@ -368,15 +385,29 @@ class Link_Management {
 				\clean_post_cache( $post->ID );
 				$updated_count++;
 			}
+
+			// Prevent timeout on large batches.
+			if ( $processed >= $batch_limit ) {
+				break;
+			}
+		}
+
+		$message = sprintf(
+			\__( 'Successfully updated %d post(s).', 'functionalities' ),
+			$updated_count
+		);
+
+		// Indicate if there may be more posts to process.
+		if ( count( $posts ) >= $batch_limit ) {
+			$message .= ' ' . \__( 'There may be more posts - run again to continue.', 'functionalities' );
 		}
 
 		return array(
-			'success' => true,
-			'count'   => $updated_count,
-			'message' => sprintf(
-				\__( 'Successfully updated %d post(s).', 'functionalities' ),
-				$updated_count
-			),
+			'success'   => true,
+			'count'     => $updated_count,
+			'processed' => $processed,
+			'has_more'  => count( $posts ) >= $batch_limit,
+			'message'   => $message,
 		);
 	}
 

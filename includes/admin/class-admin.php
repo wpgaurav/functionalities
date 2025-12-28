@@ -53,11 +53,13 @@ class Admin {
 		// Verify nonce.
 		if ( ! isset( $_POST['nonce'] ) || ! \wp_verify_nonce( $_POST['nonce'], 'functionalities_db_update' ) ) {
 			\wp_send_json_error( array( 'message' => \__( 'Security check failed.', 'functionalities' ) ) );
+			return; // Explicit return for clarity.
 		}
 
 		// Check capabilities.
 		if ( ! \current_user_can( 'manage_options' ) ) {
 			\wp_send_json_error( array( 'message' => \__( 'Insufficient permissions.', 'functionalities' ) ) );
+			return; // Explicit return for clarity.
 		}
 
 		// Get URL from request.
@@ -82,25 +84,29 @@ class Admin {
 		// Verify nonce.
 		if ( ! isset( $_POST['nonce'] ) || ! \wp_verify_nonce( $_POST['nonce'], 'functionalities_create_json' ) ) {
 			\wp_send_json_error( array( 'message' => \__( 'Security check failed.', 'functionalities' ) ) );
+			return; // Explicit return for clarity.
 		}
 
 		// Check capabilities.
 		if ( ! \current_user_can( 'manage_options' ) ) {
 			\wp_send_json_error( array( 'message' => \__( 'Insufficient permissions.', 'functionalities' ) ) );
+			return; // Explicit return for clarity.
 		}
 
 		// Get content from request.
 		$content = isset( $_POST['content'] ) ? \wp_unslash( $_POST['content'] ) : '';
 
-		// Validate JSON.
+		// Validate JSON with proper error handling.
 		$decoded = json_decode( $content, true );
-		if ( null === $decoded ) {
-			\wp_send_json_error( array( 'message' => \__( 'Invalid JSON format.', 'functionalities' ) ) );
+		if ( null === $decoded && json_last_error() !== JSON_ERROR_NONE ) {
+			\wp_send_json_error( array( 'message' => \__( 'Invalid JSON format.', 'functionalities' ) . ' ' . json_last_error_msg() ) );
+			return; // Explicit return for clarity.
 		}
 
 		// Validate structure.
 		if ( ! isset( $decoded['urls'] ) || ! is_array( $decoded['urls'] ) ) {
 			\wp_send_json_error( array( 'message' => \__( 'JSON must contain a "urls" array.', 'functionalities' ) ) );
+			return; // Explicit return for clarity.
 		}
 
 		// Get theme directory.
@@ -151,11 +157,13 @@ class Admin {
 		// Verify nonce.
 		if ( ! isset( $_POST['nonce'] ) || ! \wp_verify_nonce( $_POST['nonce'], 'functionalities_run_detection' ) ) {
 			\wp_send_json_error( array( 'message' => \__( 'Security check failed.', 'functionalities' ) ) );
+			return; // Explicit return for clarity.
 		}
 
 		// Check capabilities.
 		if ( ! \current_user_can( 'manage_options' ) ) {
 			\wp_send_json_error( array( 'message' => \__( 'Insufficient permissions.', 'functionalities' ) ) );
+			return; // Explicit return for clarity.
 		}
 
 		// Run detection.
@@ -244,6 +252,12 @@ class Admin {
 				'title'       => \__( 'Assumption Detection', 'functionalities' ),
 				'description' => \__( 'Notice when implicit site assumptions stop being true.', 'functionalities' ),
 				'icon'        => 'dashicons-visibility',
+			),
+			'task-manager' => array(
+				'title'       => \__( 'Task Manager', 'functionalities' ),
+				'description' => \__( 'File-based project task management with JSON storage.', 'functionalities' ),
+				'icon'        => 'dashicons-yes-alt',
+				'custom_page' => true,
 			),
 		);
 	}
@@ -404,6 +418,16 @@ class Admin {
 	 */
 	private static function render_module( $module_slug ) : void {
 		$module = self::$modules[ $module_slug ];
+
+		// Handle custom page modules.
+		if ( ! empty( $module['custom_page'] ) ) {
+			$method = 'render_module_' . str_replace( '-', '_', $module_slug );
+			if ( method_exists( __CLASS__, $method ) ) {
+				call_user_func( array( __CLASS__, $method ), $module );
+				return;
+			}
+		}
+
 		?>
 		<div class="wrap functionalities-module">
 			<h1>
@@ -4607,5 +4631,946 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 		);
 		$opts = (array) \get_option( 'functionalities_assumption_detection', $defaults );
 		return array_merge( $defaults, $opts );
+	}
+
+	/**
+	 * Render Task Manager module page.
+	 *
+	 * @param array $module Module configuration.
+	 * @return void
+	 */
+	private static function render_module_task_manager( array $module ) : void {
+		$current_project = isset( $_GET['project'] ) ? \sanitize_key( $_GET['project'] ) : '';
+		$projects        = \Functionalities\Features\Task_Manager::get_projects();
+		$project_data    = null;
+
+		if ( $current_project && isset( $projects[ $current_project ] ) ) {
+			$project_data = $projects[ $current_project ];
+		}
+
+		$nonce = \wp_create_nonce( 'functionalities_task_manager' );
+		?>
+		<div class="wrap functionalities-module functionalities-task-manager">
+			<h1>
+				<span class="dashicons <?php echo \esc_attr( $module['icon'] ); ?>"></span>
+				<?php echo \esc_html( $module['title'] ); ?>
+			</h1>
+
+			<nav class="functionalities-breadcrumb">
+				<a href="<?php echo \esc_url( \admin_url( 'admin.php?page=functionalities' ) ); ?>">
+					<?php echo \esc_html__( 'Functionalities', 'functionalities' ); ?>
+				</a>
+				<span class="separator">›</span>
+				<?php if ( $project_data ) : ?>
+					<a href="<?php echo \esc_url( \admin_url( 'admin.php?page=functionalities&module=task-manager' ) ); ?>">
+						<?php echo \esc_html( $module['title'] ); ?>
+					</a>
+					<span class="separator">›</span>
+					<span class="current"><?php echo \esc_html( $project_data['name'] ); ?></span>
+				<?php else : ?>
+					<span class="current"><?php echo \esc_html( $module['title'] ); ?></span>
+				<?php endif; ?>
+			</nav>
+
+			<?php if ( ! $project_data ) : ?>
+				<?php self::render_task_manager_overview( $projects, $nonce ); ?>
+			<?php else : ?>
+				<?php self::render_task_manager_project( $project_data, $nonce ); ?>
+			<?php endif; ?>
+		</div>
+
+		<style>
+		.functionalities-task-manager .projects-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+			gap: 20px;
+			margin-top: 20px;
+		}
+		.functionalities-task-manager .project-card {
+			background: #fff;
+			border: 1px solid #c3c4c7;
+			border-radius: 4px;
+			padding: 20px;
+		}
+		.functionalities-task-manager .project-card h3 {
+			margin: 0 0 10px;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+		}
+		.functionalities-task-manager .project-stats {
+			color: #646970;
+			font-size: 13px;
+			margin-bottom: 15px;
+		}
+		.functionalities-task-manager .progress-bar {
+			background: #dcdcde;
+			border-radius: 3px;
+			height: 8px;
+			margin: 10px 0;
+			overflow: hidden;
+		}
+		.functionalities-task-manager .progress-bar-fill {
+			background: #2271b1;
+			height: 100%;
+			transition: width 0.3s;
+		}
+		.functionalities-task-manager .project-actions {
+			display: flex;
+			gap: 8px;
+			flex-wrap: wrap;
+		}
+		.functionalities-task-manager .new-project-form {
+			background: #fff;
+			border: 1px solid #c3c4c7;
+			border-radius: 4px;
+			padding: 20px;
+			margin-bottom: 20px;
+			display: flex;
+			gap: 10px;
+			align-items: flex-end;
+		}
+		.functionalities-task-manager .new-project-form label {
+			flex: 1;
+		}
+		.functionalities-task-manager .task-list {
+			background: #fff;
+			border: 1px solid #c3c4c7;
+			border-radius: 4px;
+			margin-top: 20px;
+		}
+		.functionalities-task-manager .task-item {
+			display: flex;
+			align-items: flex-start;
+			padding: 12px 15px;
+			border-bottom: 1px solid #f0f0f1;
+			gap: 10px;
+		}
+		.functionalities-task-manager .task-item:last-child {
+			border-bottom: none;
+		}
+		.functionalities-task-manager .task-item.completed .task-text {
+			text-decoration: line-through;
+			color: #646970;
+		}
+		.functionalities-task-manager .task-checkbox {
+			flex-shrink: 0;
+			cursor: pointer;
+		}
+		.functionalities-task-manager .task-content {
+			flex: 1;
+			min-width: 0;
+		}
+		.functionalities-task-manager .task-text {
+			margin: 0 0 4px;
+			word-break: break-word;
+		}
+		.functionalities-task-manager .task-meta {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 8px;
+			font-size: 12px;
+		}
+		.functionalities-task-manager .task-tag {
+			background: #f0f0f1;
+			color: #2271b1;
+			padding: 2px 8px;
+			border-radius: 3px;
+		}
+		.functionalities-task-manager .task-priority {
+			font-weight: bold;
+			padding: 2px 8px;
+			border-radius: 3px;
+		}
+		.functionalities-task-manager .task-priority.p1 { background: #fcf0f1; color: #d63638; }
+		.functionalities-task-manager .task-priority.p2 { background: #fcf9e8; color: #996800; }
+		.functionalities-task-manager .task-priority.p3 { background: #f0f6fc; color: #2271b1; }
+		.functionalities-task-manager .task-notes {
+			color: #646970;
+			font-size: 12px;
+			margin-top: 4px;
+			font-style: italic;
+		}
+		.functionalities-task-manager .task-actions {
+			flex-shrink: 0;
+			display: flex;
+			gap: 5px;
+		}
+		.functionalities-task-manager .task-actions button {
+			padding: 2px 8px;
+			font-size: 12px;
+		}
+		.functionalities-task-manager .add-task-form {
+			padding: 15px;
+			background: #f6f7f7;
+			border-bottom: 1px solid #c3c4c7;
+		}
+		.functionalities-task-manager .add-task-form input[type="text"] {
+			width: 100%;
+			margin-bottom: 8px;
+		}
+		.functionalities-task-manager .add-task-form textarea {
+			width: 100%;
+			height: 60px;
+			margin-bottom: 8px;
+		}
+		.functionalities-task-manager .add-task-hint {
+			color: #646970;
+			font-size: 12px;
+			margin-bottom: 10px;
+		}
+		.functionalities-task-manager .project-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			flex-wrap: wrap;
+			gap: 15px;
+			margin-bottom: 20px;
+		}
+		.functionalities-task-manager .project-toolbar {
+			display: flex;
+			gap: 10px;
+			flex-wrap: wrap;
+		}
+		.functionalities-task-manager .feature-info {
+			background: #fff;
+			border: 1px solid #c3c4c7;
+			border-radius: 4px;
+			padding: 20px;
+			margin-bottom: 20px;
+		}
+		.functionalities-task-manager .feature-list {
+			display: grid;
+			grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+			gap: 15px;
+			margin-top: 15px;
+		}
+		.functionalities-task-manager .feature-item {
+			display: flex;
+			gap: 10px;
+			align-items: flex-start;
+		}
+		.functionalities-task-manager .feature-item .dashicons {
+			color: #2271b1;
+			flex-shrink: 0;
+		}
+		.functionalities-task-manager .empty-state {
+			padding: 40px 20px;
+			text-align: center;
+			color: #646970;
+		}
+		.functionalities-task-manager .modal-overlay {
+			display: none;
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			background: rgba(0,0,0,0.5);
+			z-index: 100000;
+			align-items: center;
+			justify-content: center;
+		}
+		.functionalities-task-manager .modal-overlay.active {
+			display: flex;
+		}
+		.functionalities-task-manager .modal-content {
+			background: #fff;
+			border-radius: 4px;
+			padding: 20px;
+			max-width: 500px;
+			width: 90%;
+			max-height: 80vh;
+			overflow-y: auto;
+		}
+		.functionalities-task-manager .modal-content h3 {
+			margin-top: 0;
+		}
+		.functionalities-task-manager .import-area {
+			width: 100%;
+			height: 200px;
+			font-family: monospace;
+			font-size: 12px;
+		}
+		</style>
+		<?php
+	}
+
+	/**
+	 * Render Task Manager overview (project list).
+	 *
+	 * @param array  $projects List of projects.
+	 * @param string $nonce    Security nonce.
+	 * @return void
+	 */
+	private static function render_task_manager_overview( array $projects, string $nonce ) : void {
+		?>
+		<div class="feature-info">
+			<h2 style="margin-top: 0; display: flex; align-items: center; gap: 8px;">
+				<span class="dashicons dashicons-info-outline"></span>
+				<?php \esc_html_e( 'About Task Manager', 'functionalities' ); ?>
+			</h2>
+			<p><?php \esc_html_e( 'A lightweight, file-based task management system with zero frontend footprint. Tasks are stored as JSON files in your wp-content directory.', 'functionalities' ); ?></p>
+			<div class="feature-list">
+				<div class="feature-item">
+					<span class="dashicons dashicons-yes"></span>
+					<div>
+						<strong><?php \esc_html_e( 'Check/Uncheck Tasks', 'functionalities' ); ?></strong>
+						<p style="margin: 4px 0 0; color: #646970; font-size: 13px;"><?php \esc_html_e( 'Click the checkbox to mark tasks complete or pending.', 'functionalities' ); ?></p>
+					</div>
+				</div>
+				<div class="feature-item">
+					<span class="dashicons dashicons-tag"></span>
+					<div>
+						<strong><?php \esc_html_e( 'Tags with #hashtags', 'functionalities' ); ?></strong>
+						<p style="margin: 4px 0 0; color: #646970; font-size: 13px;"><?php \esc_html_e( 'Add #tag to tasks for categorization. Example: "Review code #urgent #frontend"', 'functionalities' ); ?></p>
+					</div>
+				</div>
+				<div class="feature-item">
+					<span class="dashicons dashicons-flag"></span>
+					<div>
+						<strong><?php \esc_html_e( 'Priority Levels (!1, !2, !3)', 'functionalities' ); ?></strong>
+						<p style="margin: 4px 0 0; color: #646970; font-size: 13px;"><?php \esc_html_e( 'Add !1 (high), !2 (medium), or !3 (low) priority. Example: "Fix bug !1"', 'functionalities' ); ?></p>
+					</div>
+				</div>
+				<div class="feature-item">
+					<span class="dashicons dashicons-edit"></span>
+					<div>
+						<strong><?php \esc_html_e( 'Notes for Each Task', 'functionalities' ); ?></strong>
+						<p style="margin: 4px 0 0; color: #646970; font-size: 13px;"><?php \esc_html_e( 'Add detailed notes and context to any task.', 'functionalities' ); ?></p>
+					</div>
+				</div>
+				<div class="feature-item">
+					<span class="dashicons dashicons-download"></span>
+					<div>
+						<strong><?php \esc_html_e( 'Export & Import', 'functionalities' ); ?></strong>
+						<p style="margin: 4px 0 0; color: #646970; font-size: 13px;"><?php \esc_html_e( 'Export projects as JSON for backup or sharing. Import projects from JSON.', 'functionalities' ); ?></p>
+					</div>
+				</div>
+				<div class="feature-item">
+					<span class="dashicons dashicons-dashboard"></span>
+					<div>
+						<strong><?php \esc_html_e( 'Dashboard Widget', 'functionalities' ); ?></strong>
+						<p style="margin: 4px 0 0; color: #646970; font-size: 13px;"><?php \esc_html_e( 'Show any project as a dashboard widget for quick access.', 'functionalities' ); ?></p>
+					</div>
+				</div>
+			</div>
+			<p style="margin-bottom: 0; padding-top: 15px; border-top: 1px solid #f0f0f1; color: #646970; font-size: 13px;">
+				<span class="dashicons dashicons-portfolio" style="font-size: 16px; width: 16px; height: 16px; vertical-align: text-bottom;"></span>
+				<?php
+				printf(
+					/* translators: %s: directory path */
+					\esc_html__( 'Tasks are stored in: %s', 'functionalities' ),
+					'<code>' . \esc_html( WP_CONTENT_DIR . '/functionalities/tasks/' ) . '</code>'
+				);
+				?>
+			</p>
+		</div>
+
+		<div class="new-project-form">
+			<label>
+				<strong><?php \esc_html_e( 'New Project', 'functionalities' ); ?></strong><br>
+				<input type="text" id="new-project-name" placeholder="<?php \esc_attr_e( 'Enter project name...', 'functionalities' ); ?>" style="margin-top: 5px; width: 300px;">
+			</label>
+			<button type="button" id="create-project-btn" class="button button-primary">
+				<?php \esc_html_e( 'Create Project', 'functionalities' ); ?>
+			</button>
+			<button type="button" id="import-project-btn" class="button">
+				<span class="dashicons dashicons-upload" style="font-size: 16px; width: 16px; height: 16px; vertical-align: text-bottom; margin-right: 3px;"></span>
+				<?php \esc_html_e( 'Import JSON', 'functionalities' ); ?>
+			</button>
+		</div>
+
+		<?php if ( empty( $projects ) ) : ?>
+			<div class="project-card">
+				<div class="empty-state">
+					<span class="dashicons dashicons-welcome-add-page" style="font-size: 48px; width: 48px; height: 48px; color: #c3c4c7;"></span>
+					<h3><?php \esc_html_e( 'No Projects Yet', 'functionalities' ); ?></h3>
+					<p><?php \esc_html_e( 'Create your first project to start managing tasks.', 'functionalities' ); ?></p>
+				</div>
+			</div>
+		<?php else : ?>
+			<div class="projects-grid">
+				<?php foreach ( $projects as $slug => $project ) :
+					$stats = \Functionalities\Features\Task_Manager::get_stats( $project );
+					?>
+					<div class="project-card" data-project="<?php echo \esc_attr( $slug ); ?>">
+						<h3>
+							<span class="dashicons dashicons-portfolio"></span>
+							<?php echo \esc_html( $project['name'] ); ?>
+						</h3>
+						<div class="project-stats">
+							<?php
+							printf(
+								/* translators: 1: completed count, 2: total count */
+								\esc_html__( '%1$d of %2$d tasks completed', 'functionalities' ),
+								$stats['completed'],
+								$stats['total']
+							);
+							?>
+						</div>
+						<div class="progress-bar">
+							<div class="progress-bar-fill" style="width: <?php echo \esc_attr( $stats['percent'] ); ?>%;"></div>
+						</div>
+						<div class="project-actions">
+							<a href="<?php echo \esc_url( \admin_url( 'admin.php?page=functionalities&module=task-manager&project=' . $slug ) ); ?>" class="button button-primary">
+								<?php \esc_html_e( 'Open', 'functionalities' ); ?>
+							</a>
+							<button type="button" class="button export-project-btn" data-project="<?php echo \esc_attr( $slug ); ?>">
+								<?php \esc_html_e( 'Export', 'functionalities' ); ?>
+							</button>
+							<button type="button" class="button delete-project-btn" data-project="<?php echo \esc_attr( $slug ); ?>" data-name="<?php echo \esc_attr( $project['name'] ); ?>">
+								<?php \esc_html_e( 'Delete', 'functionalities' ); ?>
+							</button>
+						</div>
+						<?php if ( ! empty( $project['show_widget'] ) ) : ?>
+							<p style="margin: 10px 0 0; font-size: 12px; color: #2271b1;">
+								<span class="dashicons dashicons-dashboard" style="font-size: 14px; width: 14px; height: 14px;"></span>
+								<?php \esc_html_e( 'Shown on Dashboard', 'functionalities' ); ?>
+							</p>
+						<?php endif; ?>
+					</div>
+				<?php endforeach; ?>
+			</div>
+		<?php endif; ?>
+
+		<!-- Import Modal -->
+		<div class="modal-overlay" id="import-modal">
+			<div class="modal-content">
+				<h3><?php \esc_html_e( 'Import Project', 'functionalities' ); ?></h3>
+				<p><?php \esc_html_e( 'Paste the JSON content exported from another project:', 'functionalities' ); ?></p>
+				<textarea class="import-area" id="import-json-content" placeholder='{"name": "My Project", "tasks": [...]}'></textarea>
+				<div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px;">
+					<button type="button" class="button" id="cancel-import-btn"><?php \esc_html_e( 'Cancel', 'functionalities' ); ?></button>
+					<button type="button" class="button button-primary" id="confirm-import-btn"><?php \esc_html_e( 'Import', 'functionalities' ); ?></button>
+				</div>
+			</div>
+		</div>
+
+		<!-- Export Modal -->
+		<div class="modal-overlay" id="export-modal">
+			<div class="modal-content">
+				<h3><?php \esc_html_e( 'Export Project', 'functionalities' ); ?></h3>
+				<p><?php \esc_html_e( 'Copy this JSON to save or share your project:', 'functionalities' ); ?></p>
+				<textarea class="import-area" id="export-json-content" readonly></textarea>
+				<div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px;">
+					<button type="button" class="button" id="close-export-btn"><?php \esc_html_e( 'Close', 'functionalities' ); ?></button>
+					<button type="button" class="button button-primary" id="copy-export-btn"><?php \esc_html_e( 'Copy to Clipboard', 'functionalities' ); ?></button>
+				</div>
+			</div>
+		</div>
+
+		<script>
+		jQuery(document).ready(function($) {
+			var nonce = '<?php echo \esc_js( $nonce ); ?>';
+			var ajaxUrl = '<?php echo \esc_js( \admin_url( 'admin-ajax.php' ) ); ?>';
+
+			// Create project
+			$('#create-project-btn').on('click', function() {
+				var name = $('#new-project-name').val().trim();
+				if (!name) {
+					alert('<?php echo \esc_js( \__( 'Please enter a project name.', 'functionalities' ) ); ?>');
+					return;
+				}
+
+				var $btn = $(this);
+				$btn.prop('disabled', true).text('<?php echo \esc_js( \__( 'Creating...', 'functionalities' ) ); ?>');
+
+				$.post(ajaxUrl, {
+					action: 'functionalities_task_create_project',
+					nonce: nonce,
+					name: name
+				}, function(response) {
+					if (response.success) {
+						window.location.href = '<?php echo \esc_js( \admin_url( 'admin.php?page=functionalities&module=task-manager&project=' ) ); ?>' + response.data.project.slug;
+					} else {
+						alert(response.data?.message || '<?php echo \esc_js( \__( 'Failed to create project.', 'functionalities' ) ); ?>');
+						$btn.prop('disabled', false).text('<?php echo \esc_js( \__( 'Create Project', 'functionalities' ) ); ?>');
+					}
+				}).fail(function() {
+					alert('<?php echo \esc_js( \__( 'Request failed.', 'functionalities' ) ); ?>');
+					$btn.prop('disabled', false).text('<?php echo \esc_js( \__( 'Create Project', 'functionalities' ) ); ?>');
+				});
+			});
+
+			// Delete project
+			$('.delete-project-btn').on('click', function() {
+				var project = $(this).data('project');
+				var name = $(this).data('name');
+				if (!confirm('<?php echo \esc_js( \__( 'Are you sure you want to delete the project:', 'functionalities' ) ); ?> "' + name + '"?')) {
+					return;
+				}
+
+				$.post(ajaxUrl, {
+					action: 'functionalities_task_delete_project',
+					nonce: nonce,
+					project: project
+				}, function(response) {
+					if (response.success) {
+						location.reload();
+					} else {
+						alert(response.data?.message || '<?php echo \esc_js( \__( 'Failed to delete project.', 'functionalities' ) ); ?>');
+					}
+				});
+			});
+
+			// Export project
+			$('.export-project-btn').on('click', function() {
+				var project = $(this).data('project');
+				$.post(ajaxUrl, {
+					action: 'functionalities_task_export',
+					nonce: nonce,
+					project: project
+				}, function(response) {
+					if (response.success) {
+						$('#export-json-content').val(response.data.json);
+						$('#export-modal').addClass('active');
+					} else {
+						alert(response.data?.message || '<?php echo \esc_js( \__( 'Failed to export project.', 'functionalities' ) ); ?>');
+					}
+				});
+			});
+
+			$('#close-export-btn').on('click', function() {
+				$('#export-modal').removeClass('active');
+			});
+
+			$('#copy-export-btn').on('click', function() {
+				$('#export-json-content').select();
+				document.execCommand('copy');
+				$(this).text('<?php echo \esc_js( \__( 'Copied!', 'functionalities' ) ); ?>');
+				setTimeout(function() {
+					$('#copy-export-btn').text('<?php echo \esc_js( \__( 'Copy to Clipboard', 'functionalities' ) ); ?>');
+				}, 2000);
+			});
+
+			// Import project
+			$('#import-project-btn').on('click', function() {
+				$('#import-json-content').val('');
+				$('#import-modal').addClass('active');
+			});
+
+			$('#cancel-import-btn').on('click', function() {
+				$('#import-modal').removeClass('active');
+			});
+
+			$('#confirm-import-btn').on('click', function() {
+				var json = $('#import-json-content').val().trim();
+				if (!json) {
+					alert('<?php echo \esc_js( \__( 'Please paste JSON content.', 'functionalities' ) ); ?>');
+					return;
+				}
+
+				var $btn = $(this);
+				$btn.prop('disabled', true).text('<?php echo \esc_js( \__( 'Importing...', 'functionalities' ) ); ?>');
+
+				$.post(ajaxUrl, {
+					action: 'functionalities_task_import',
+					nonce: nonce,
+					json: json
+				}, function(response) {
+					if (response.success) {
+						window.location.href = '<?php echo \esc_js( \admin_url( 'admin.php?page=functionalities&module=task-manager&project=' ) ); ?>' + response.data.project.slug;
+					} else {
+						alert(response.data?.message || '<?php echo \esc_js( \__( 'Failed to import project.', 'functionalities' ) ); ?>');
+						$btn.prop('disabled', false).text('<?php echo \esc_js( \__( 'Import', 'functionalities' ) ); ?>');
+					}
+				}).fail(function() {
+					alert('<?php echo \esc_js( \__( 'Request failed.', 'functionalities' ) ); ?>');
+					$btn.prop('disabled', false).text('<?php echo \esc_js( \__( 'Import', 'functionalities' ) ); ?>');
+				});
+			});
+
+			// Close modals on overlay click
+			$('.modal-overlay').on('click', function(e) {
+				if (e.target === this) {
+					$(this).removeClass('active');
+				}
+			});
+
+			// Enter key to create project
+			$('#new-project-name').on('keypress', function(e) {
+				if (e.which === 13) {
+					$('#create-project-btn').click();
+				}
+			});
+		});
+		</script>
+		<?php
+	}
+
+	/**
+	 * Render Task Manager project view.
+	 *
+	 * @param array  $project Project data.
+	 * @param string $nonce   Security nonce.
+	 * @return void
+	 */
+	private static function render_task_manager_project( array $project, string $nonce ) : void {
+		$stats = \Functionalities\Features\Task_Manager::get_stats( $project );
+		?>
+		<div class="project-header">
+			<div>
+				<h2 style="margin: 0;">
+					<?php echo \esc_html( $project['name'] ); ?>
+					<span style="font-weight: normal; color: #646970; font-size: 14px;">
+						(<?php printf( '%d/%d', $stats['completed'], $stats['total'] ); ?>)
+					</span>
+				</h2>
+				<div class="progress-bar" style="width: 200px; margin-top: 8px;">
+					<div class="progress-bar-fill" id="project-progress" style="width: <?php echo \esc_attr( $stats['percent'] ); ?>%;"></div>
+				</div>
+			</div>
+			<div class="project-toolbar">
+				<label style="display: flex; align-items: center; gap: 5px;">
+					<input type="checkbox" id="show-widget-toggle" <?php checked( ! empty( $project['show_widget'] ) ); ?>>
+					<?php \esc_html_e( 'Show on Dashboard', 'functionalities' ); ?>
+				</label>
+				<button type="button" class="button" id="export-this-project-btn">
+					<span class="dashicons dashicons-download" style="font-size: 16px; width: 16px; height: 16px; vertical-align: text-bottom;"></span>
+					<?php \esc_html_e( 'Export', 'functionalities' ); ?>
+				</button>
+			</div>
+		</div>
+
+		<div class="task-list">
+			<div class="add-task-form">
+				<input type="text" id="new-task-text" placeholder="<?php \esc_attr_e( 'Add a new task... (use #tag for tags, !1/!2/!3 for priority)', 'functionalities' ); ?>">
+				<div class="add-task-hint">
+					<?php \esc_html_e( 'Examples: "Review PR #urgent !1" or "Update documentation #docs !3"', 'functionalities' ); ?>
+				</div>
+				<textarea id="new-task-notes" placeholder="<?php \esc_attr_e( 'Optional notes...', 'functionalities' ); ?>"></textarea>
+				<button type="button" id="add-task-btn" class="button button-primary">
+					<?php \esc_html_e( 'Add Task', 'functionalities' ); ?>
+				</button>
+			</div>
+
+			<div id="tasks-container">
+				<?php if ( empty( $project['tasks'] ) ) : ?>
+					<div class="empty-state">
+						<p><?php \esc_html_e( 'No tasks yet. Add your first task above.', 'functionalities' ); ?></p>
+					</div>
+				<?php else : ?>
+					<?php foreach ( $project['tasks'] as $task ) :
+						$completed_class = ! empty( $task['completed'] ) ? ' completed' : '';
+						?>
+						<div class="task-item<?php echo $completed_class; ?>" data-task-id="<?php echo \esc_attr( $task['id'] ); ?>">
+							<input type="checkbox" class="task-checkbox" <?php checked( ! empty( $task['completed'] ) ); ?>>
+							<div class="task-content">
+								<p class="task-text"><?php echo \esc_html( $task['text'] ); ?></p>
+								<div class="task-meta">
+									<?php if ( ! empty( $task['priority'] ) ) : ?>
+										<span class="task-priority p<?php echo \esc_attr( $task['priority'] ); ?>">
+											!<?php echo \esc_html( $task['priority'] ); ?>
+										</span>
+									<?php endif; ?>
+									<?php if ( ! empty( $task['tags'] ) ) :
+										foreach ( $task['tags'] as $tag ) : ?>
+											<span class="task-tag">#<?php echo \esc_html( $tag ); ?></span>
+										<?php endforeach;
+									endif; ?>
+								</div>
+								<?php if ( ! empty( $task['notes'] ) ) : ?>
+									<div class="task-notes"><?php echo \esc_html( $task['notes'] ); ?></div>
+								<?php endif; ?>
+							</div>
+							<div class="task-actions">
+								<button type="button" class="button edit-task-btn" title="<?php \esc_attr_e( 'Edit', 'functionalities' ); ?>">
+									<span class="dashicons dashicons-edit" style="font-size: 14px; width: 14px; height: 14px; vertical-align: middle;"></span>
+								</button>
+								<button type="button" class="button delete-task-btn" title="<?php \esc_attr_e( 'Delete', 'functionalities' ); ?>">
+									<span class="dashicons dashicons-trash" style="font-size: 14px; width: 14px; height: 14px; vertical-align: middle;"></span>
+								</button>
+							</div>
+						</div>
+					<?php endforeach; ?>
+				<?php endif; ?>
+			</div>
+		</div>
+
+		<!-- Edit Task Modal -->
+		<div class="modal-overlay" id="edit-task-modal">
+			<div class="modal-content">
+				<h3><?php \esc_html_e( 'Edit Task', 'functionalities' ); ?></h3>
+				<input type="hidden" id="edit-task-id">
+				<p>
+					<label><strong><?php \esc_html_e( 'Task', 'functionalities' ); ?></strong></label><br>
+					<input type="text" id="edit-task-text" style="width: 100%;">
+				</p>
+				<p>
+					<label><strong><?php \esc_html_e( 'Notes', 'functionalities' ); ?></strong></label><br>
+					<textarea id="edit-task-notes" style="width: 100%; height: 80px;"></textarea>
+				</p>
+				<p>
+					<label><strong><?php \esc_html_e( 'Priority', 'functionalities' ); ?></strong></label><br>
+					<select id="edit-task-priority">
+						<option value="0"><?php \esc_html_e( 'No priority', 'functionalities' ); ?></option>
+						<option value="1"><?php \esc_html_e( '!1 - High', 'functionalities' ); ?></option>
+						<option value="2"><?php \esc_html_e( '!2 - Medium', 'functionalities' ); ?></option>
+						<option value="3"><?php \esc_html_e( '!3 - Low', 'functionalities' ); ?></option>
+					</select>
+				</p>
+				<p>
+					<label><strong><?php \esc_html_e( 'Tags', 'functionalities' ); ?></strong></label><br>
+					<input type="text" id="edit-task-tags" style="width: 100%;" placeholder="<?php \esc_attr_e( 'Comma-separated: urgent, frontend, bug', 'functionalities' ); ?>">
+				</p>
+				<div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px;">
+					<button type="button" class="button" id="cancel-edit-btn"><?php \esc_html_e( 'Cancel', 'functionalities' ); ?></button>
+					<button type="button" class="button button-primary" id="save-edit-btn"><?php \esc_html_e( 'Save', 'functionalities' ); ?></button>
+				</div>
+			</div>
+		</div>
+
+		<!-- Export Modal -->
+		<div class="modal-overlay" id="export-modal">
+			<div class="modal-content">
+				<h3><?php \esc_html_e( 'Export Project', 'functionalities' ); ?></h3>
+				<p><?php \esc_html_e( 'Copy this JSON to save or share your project:', 'functionalities' ); ?></p>
+				<textarea class="import-area" id="export-json-content" readonly></textarea>
+				<div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px;">
+					<button type="button" class="button" id="close-export-btn"><?php \esc_html_e( 'Close', 'functionalities' ); ?></button>
+					<button type="button" class="button button-primary" id="copy-export-btn"><?php \esc_html_e( 'Copy to Clipboard', 'functionalities' ); ?></button>
+				</div>
+			</div>
+		</div>
+
+		<script>
+		jQuery(document).ready(function($) {
+			var nonce = '<?php echo \esc_js( $nonce ); ?>';
+			var ajaxUrl = '<?php echo \esc_js( \admin_url( 'admin-ajax.php' ) ); ?>';
+			var projectSlug = '<?php echo \esc_js( $project['slug'] ); ?>';
+			var totalTasks = <?php echo count( $project['tasks'] ); ?>;
+			var completedTasks = <?php echo $stats['completed']; ?>;
+
+			function updateProgress() {
+				var percent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+				$('#project-progress').css('width', percent + '%');
+			}
+
+			// Add task
+			$('#add-task-btn').on('click', function() {
+				var text = $('#new-task-text').val().trim();
+				var notes = $('#new-task-notes').val().trim();
+				if (!text) {
+					alert('<?php echo \esc_js( \__( 'Please enter task text.', 'functionalities' ) ); ?>');
+					return;
+				}
+
+				var $btn = $(this);
+				$btn.prop('disabled', true);
+
+				$.post(ajaxUrl, {
+					action: 'functionalities_task_add',
+					nonce: nonce,
+					project: projectSlug,
+					text: text,
+					notes: notes
+				}, function(response) {
+					if (response.success) {
+						$('#new-task-text').val('');
+						$('#new-task-notes').val('');
+						totalTasks++;
+						updateProgress();
+						// Reload to show new task (simple approach)
+						location.reload();
+					} else {
+						alert(response.data?.message || '<?php echo \esc_js( \__( 'Failed to add task.', 'functionalities' ) ); ?>');
+					}
+					$btn.prop('disabled', false);
+				}).fail(function() {
+					alert('<?php echo \esc_js( \__( 'Request failed.', 'functionalities' ) ); ?>');
+					$btn.prop('disabled', false);
+				});
+			});
+
+			// Enter key to add task
+			$('#new-task-text').on('keypress', function(e) {
+				if (e.which === 13) {
+					$('#add-task-btn').click();
+				}
+			});
+
+			// Toggle task
+			$(document).on('change', '.task-checkbox', function() {
+				var $checkbox = $(this);
+				var $item = $checkbox.closest('.task-item');
+				var taskId = $item.data('task-id');
+
+				$.post(ajaxUrl, {
+					action: 'functionalities_task_toggle',
+					nonce: nonce,
+					project: projectSlug,
+					task_id: taskId
+				}, function(response) {
+					if (response.success) {
+						if (response.data.completed) {
+							$item.addClass('completed');
+							completedTasks++;
+						} else {
+							$item.removeClass('completed');
+							completedTasks--;
+						}
+						updateProgress();
+					} else {
+						$checkbox.prop('checked', !$checkbox.prop('checked'));
+						alert(response.data?.message || '<?php echo \esc_js( \__( 'Failed to update task.', 'functionalities' ) ); ?>');
+					}
+				}).fail(function() {
+					$checkbox.prop('checked', !$checkbox.prop('checked'));
+					alert('<?php echo \esc_js( \__( 'Request failed.', 'functionalities' ) ); ?>');
+				});
+			});
+
+			// Delete task
+			$(document).on('click', '.delete-task-btn', function() {
+				if (!confirm('<?php echo \esc_js( \__( 'Delete this task?', 'functionalities' ) ); ?>')) {
+					return;
+				}
+
+				var $item = $(this).closest('.task-item');
+				var taskId = $item.data('task-id');
+				var wasCompleted = $item.hasClass('completed');
+
+				$.post(ajaxUrl, {
+					action: 'functionalities_task_delete',
+					nonce: nonce,
+					project: projectSlug,
+					task_id: taskId
+				}, function(response) {
+					if (response.success) {
+						$item.fadeOut(300, function() {
+							$(this).remove();
+							totalTasks--;
+							if (wasCompleted) completedTasks--;
+							updateProgress();
+							if ($('.task-item').length === 0) {
+								$('#tasks-container').html('<div class="empty-state"><p><?php echo \esc_js( \__( 'No tasks yet. Add your first task above.', 'functionalities' ) ); ?></p></div>');
+							}
+						});
+					} else {
+						alert(response.data?.message || '<?php echo \esc_js( \__( 'Failed to delete task.', 'functionalities' ) ); ?>');
+					}
+				});
+			});
+
+			// Edit task - open modal
+			$(document).on('click', '.edit-task-btn', function() {
+				var $item = $(this).closest('.task-item');
+				var taskId = $item.data('task-id');
+				var text = $item.find('.task-text').text();
+				var notes = $item.find('.task-notes').text() || '';
+				var priority = 0;
+				var $priority = $item.find('.task-priority');
+				if ($priority.length) {
+					priority = parseInt($priority.text().replace('!', ''), 10);
+				}
+				var tags = [];
+				$item.find('.task-tag').each(function() {
+					tags.push($(this).text().replace('#', ''));
+				});
+
+				$('#edit-task-id').val(taskId);
+				$('#edit-task-text').val(text);
+				$('#edit-task-notes').val(notes);
+				$('#edit-task-priority').val(priority);
+				$('#edit-task-tags').val(tags.join(', '));
+				$('#edit-task-modal').addClass('active');
+			});
+
+			$('#cancel-edit-btn').on('click', function() {
+				$('#edit-task-modal').removeClass('active');
+			});
+
+			$('#save-edit-btn').on('click', function() {
+				var taskId = $('#edit-task-id').val();
+				var text = $('#edit-task-text').val().trim();
+				var notes = $('#edit-task-notes').val().trim();
+				var priority = parseInt($('#edit-task-priority').val(), 10);
+				var tags = $('#edit-task-tags').val().split(',').map(function(t) { return t.trim(); }).filter(function(t) { return t; });
+
+				if (!text) {
+					alert('<?php echo \esc_js( \__( 'Task text is required.', 'functionalities' ) ); ?>');
+					return;
+				}
+
+				var $btn = $(this);
+				$btn.prop('disabled', true);
+
+				$.post(ajaxUrl, {
+					action: 'functionalities_task_update',
+					nonce: nonce,
+					project: projectSlug,
+					task_id: taskId,
+					text: text,
+					notes: notes,
+					priority: priority,
+					tags: tags
+				}, function(response) {
+					if (response.success) {
+						location.reload();
+					} else {
+						alert(response.data?.message || '<?php echo \esc_js( \__( 'Failed to update task.', 'functionalities' ) ); ?>');
+						$btn.prop('disabled', false);
+					}
+				}).fail(function() {
+					alert('<?php echo \esc_js( \__( 'Request failed.', 'functionalities' ) ); ?>');
+					$btn.prop('disabled', false);
+				});
+			});
+
+			// Show widget toggle
+			$('#show-widget-toggle').on('change', function() {
+				var showWidget = $(this).prop('checked');
+				$.post(ajaxUrl, {
+					action: 'functionalities_task_update_widget_setting',
+					nonce: nonce,
+					project: projectSlug,
+					show_widget: showWidget ? 'true' : 'false'
+				}, function(response) {
+					if (!response.success) {
+						alert(response.data?.message || '<?php echo \esc_js( \__( 'Failed to update setting.', 'functionalities' ) ); ?>');
+						$('#show-widget-toggle').prop('checked', !showWidget);
+					}
+				});
+			});
+
+			// Export this project
+			$('#export-this-project-btn').on('click', function() {
+				$.post(ajaxUrl, {
+					action: 'functionalities_task_export',
+					nonce: nonce,
+					project: projectSlug
+				}, function(response) {
+					if (response.success) {
+						$('#export-json-content').val(response.data.json);
+						$('#export-modal').addClass('active');
+					} else {
+						alert(response.data?.message || '<?php echo \esc_js( \__( 'Failed to export project.', 'functionalities' ) ); ?>');
+					}
+				});
+			});
+
+			$('#close-export-btn').on('click', function() {
+				$('#export-modal').removeClass('active');
+			});
+
+			$('#copy-export-btn').on('click', function() {
+				$('#export-json-content').select();
+				document.execCommand('copy');
+				$(this).text('<?php echo \esc_js( \__( 'Copied!', 'functionalities' ) ); ?>');
+				setTimeout(function() {
+					$('#copy-export-btn').text('<?php echo \esc_js( \__( 'Copy to Clipboard', 'functionalities' ) ); ?>');
+				}, 2000);
+			});
+
+			// Close modals on overlay click
+			$('.modal-overlay').on('click', function(e) {
+				if (e.target === this) {
+					$(this).removeClass('active');
+				}
+			});
+		});
+		</script>
+		<?php
 	}
 }
