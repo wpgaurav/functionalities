@@ -67,9 +67,31 @@ class Task_Manager {
 				return false;
 			}
 			// Add index.php for security.
-			file_put_contents( self::$tasks_dir . 'index.php', '<?php // Silence is golden.' );
+			$index_file = self::$tasks_dir . 'index.php';
+			if ( ! file_exists( $index_file ) ) {
+				$result = file_put_contents( $index_file, '<?php // Silence is golden.' );
+				if ( false === $result && defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+					error_log( 'Functionalities: Failed to create index.php in tasks directory.' );
+				}
+			}
+			// Add .htaccess for Apache servers.
+			$htaccess_file = self::$tasks_dir . '.htaccess';
+			if ( ! file_exists( $htaccess_file ) ) {
+				file_put_contents( $htaccess_file, "Order deny,allow\nDeny from all" );
+			}
 		}
 		return self::$tasks_dir;
+	}
+
+	/**
+	 * Validate slug format for security.
+	 *
+	 * @param string $slug The slug to validate.
+	 * @return bool True if valid.
+	 */
+	private static function is_valid_slug( string $slug ) : bool {
+		// Only allow alphanumeric, hyphens, and underscores.
+		return (bool) preg_match( '/^[a-z0-9_-]+$/i', $slug );
 	}
 
 	/**
@@ -122,16 +144,36 @@ class Task_Manager {
 			return null;
 		}
 
-		$file = $dir . sanitize_file_name( $slug ) . '.json';
-		if ( ! file_exists( $file ) ) {
+		// Validate slug format.
+		if ( ! self::is_valid_slug( $slug ) ) {
 			return null;
 		}
 
+		$safe_slug = sanitize_file_name( $slug );
+		$file      = $dir . $safe_slug . '.json';
+
+		// Verify file is within tasks directory (prevent path traversal).
+		$real_path = realpath( $file );
+		$real_dir  = realpath( $dir );
+		if ( false === $real_path || false === $real_dir || 0 !== strpos( $real_path, $real_dir ) ) {
+			// File doesn't exist or is outside tasks directory.
+			if ( ! file_exists( $file ) ) {
+				return null;
+			}
+		}
+
 		$content = file_get_contents( $file );
-		$data    = json_decode( $content, true );
+		if ( false === $content ) {
+			return null;
+		}
+
+		$data = json_decode( $content, true );
+		if ( json_last_error() !== JSON_ERROR_NONE ) {
+			return null;
+		}
 
 		if ( $data && isset( $data['name'] ) ) {
-			$data['slug']      = $slug;
+			$data['slug']      = $safe_slug;
 			$data['file_path'] = $file;
 			return $data;
 		}

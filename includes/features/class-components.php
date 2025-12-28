@@ -199,8 +199,9 @@ class Components {
 			return;
 		}
 
-		// Fallback to inline styles.
-		echo '<style id="functionalities-components-inline">' . $css . '</style>';
+		// Fallback to inline styles with CSS sanitization.
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSS is sanitized.
+		echo '<style id="functionalities-components-inline">' . self::sanitize_css( $css ) . '</style>';
 	}
 
 	/**
@@ -293,10 +294,29 @@ class Components {
 
 		// Only write if content has changed.
 		if ( $hash !== $existing_hash ) {
-			$bytes = @file_put_contents( $file, $css );
+			// Sanitize CSS before writing to file.
+			$sanitized_css = self::sanitize_css( $css );
 
-			if ( false === $bytes ) {
-				return null;
+			// Use WP_Filesystem for safer file operations.
+			if ( ! function_exists( 'WP_Filesystem' ) ) {
+				require_once ABSPATH . 'wp-admin/includes/file.php';
+			}
+
+			global $wp_filesystem;
+			if ( ! WP_Filesystem() ) {
+				// Fallback to direct file write with proper error handling.
+				$bytes = file_put_contents( $file, $sanitized_css );
+				if ( false === $bytes ) {
+					// Log error for debugging (admin only).
+					if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+						error_log( 'Functionalities: Failed to write CSS file: ' . $file );
+					}
+					return null;
+				}
+			} else {
+				if ( ! $wp_filesystem->put_contents( $file, $sanitized_css, FS_CHMOD_FILE ) ) {
+					return null;
+				}
 			}
 
 			/**
@@ -340,5 +360,37 @@ class Components {
 
 		$css = self::build_css( $opts['items'] );
 		self::ensure_css_file( $css );
+	}
+
+	/**
+	 * Sanitize CSS output to prevent injection.
+	 *
+	 * Removes potentially dangerous CSS content including:
+	 * - HTML tags
+	 * - Style closing tags
+	 * - JavaScript expressions
+	 *
+	 * @since 0.9.9
+	 *
+	 * @param string $css The CSS to sanitize.
+	 * @return string Sanitized CSS.
+	 */
+	protected static function sanitize_css( string $css ) : string {
+		// Remove any HTML tags.
+		$css = wp_strip_all_tags( $css );
+
+		// Remove style closing tags that could break out of style context.
+		$css = preg_replace( '/<\/style\s*>/i', '', $css );
+
+		// Remove JavaScript expressions (legacy IE).
+		$css = preg_replace( '/expression\s*\([^)]*\)/i', '', $css );
+
+		// Remove JavaScript URLs.
+		$css = preg_replace( '/javascript\s*:/i', '', $css );
+
+		// Remove behavior property (legacy IE).
+		$css = preg_replace( '/behavior\s*:\s*url\s*\([^)]*\)/i', '', $css );
+
+		return $css;
 	}
 }

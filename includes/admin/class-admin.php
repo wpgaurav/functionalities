@@ -53,11 +53,13 @@ class Admin {
 		// Verify nonce.
 		if ( ! isset( $_POST['nonce'] ) || ! \wp_verify_nonce( $_POST['nonce'], 'functionalities_db_update' ) ) {
 			\wp_send_json_error( array( 'message' => \__( 'Security check failed.', 'functionalities' ) ) );
+			return; // Explicit return for clarity.
 		}
 
 		// Check capabilities.
 		if ( ! \current_user_can( 'manage_options' ) ) {
 			\wp_send_json_error( array( 'message' => \__( 'Insufficient permissions.', 'functionalities' ) ) );
+			return; // Explicit return for clarity.
 		}
 
 		// Get URL from request.
@@ -82,25 +84,29 @@ class Admin {
 		// Verify nonce.
 		if ( ! isset( $_POST['nonce'] ) || ! \wp_verify_nonce( $_POST['nonce'], 'functionalities_create_json' ) ) {
 			\wp_send_json_error( array( 'message' => \__( 'Security check failed.', 'functionalities' ) ) );
+			return; // Explicit return for clarity.
 		}
 
 		// Check capabilities.
 		if ( ! \current_user_can( 'manage_options' ) ) {
 			\wp_send_json_error( array( 'message' => \__( 'Insufficient permissions.', 'functionalities' ) ) );
+			return; // Explicit return for clarity.
 		}
 
 		// Get content from request.
 		$content = isset( $_POST['content'] ) ? \wp_unslash( $_POST['content'] ) : '';
 
-		// Validate JSON.
+		// Validate JSON with proper error handling.
 		$decoded = json_decode( $content, true );
-		if ( null === $decoded ) {
-			\wp_send_json_error( array( 'message' => \__( 'Invalid JSON format.', 'functionalities' ) ) );
+		if ( null === $decoded && json_last_error() !== JSON_ERROR_NONE ) {
+			\wp_send_json_error( array( 'message' => \__( 'Invalid JSON format.', 'functionalities' ) . ' ' . json_last_error_msg() ) );
+			return; // Explicit return for clarity.
 		}
 
 		// Validate structure.
 		if ( ! isset( $decoded['urls'] ) || ! is_array( $decoded['urls'] ) ) {
 			\wp_send_json_error( array( 'message' => \__( 'JSON must contain a "urls" array.', 'functionalities' ) ) );
+			return; // Explicit return for clarity.
 		}
 
 		// Get theme directory.
@@ -151,11 +157,13 @@ class Admin {
 		// Verify nonce.
 		if ( ! isset( $_POST['nonce'] ) || ! \wp_verify_nonce( $_POST['nonce'], 'functionalities_run_detection' ) ) {
 			\wp_send_json_error( array( 'message' => \__( 'Security check failed.', 'functionalities' ) ) );
+			return; // Explicit return for clarity.
 		}
 
 		// Check capabilities.
 		if ( ! \current_user_can( 'manage_options' ) ) {
 			\wp_send_json_error( array( 'message' => \__( 'Insufficient permissions.', 'functionalities' ) ) );
+			return; // Explicit return for clarity.
 		}
 
 		// Run detection.
