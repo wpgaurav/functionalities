@@ -280,6 +280,12 @@ class Assumption_Detection {
 							$type,
 							implode( ' + ', $unique_sources )
 						),
+						'location'  => sprintf(
+							/* translators: %s: source list */
+							\__( 'Found in page &lt;head&gt; output from: %s', 'functionalities' ),
+							implode( ', ', $unique_sources )
+						),
+						'reason'    => \__( 'Multiple schema sources cause duplicate structured data in search results, potentially confusing search engines and diluting SEO benefits. Only one source should output each schema type.', 'functionalities' ),
 						'details'   => array(
 							'schema_type' => $type,
 							'sources'     => $sources,
@@ -400,6 +406,14 @@ class Assumption_Detection {
 								$id,
 								$count
 							),
+							'location'  => ! empty( $locations )
+								? sprintf(
+									/* translators: %s: location list */
+									\__( 'Detected in: %s', 'functionalities' ),
+									implode( ', ', $locations )
+								)
+								: \__( 'Found in page HTML output', 'functionalities' ),
+							'reason'    => \__( 'Duplicate tracking codes cause inflated pageview counts, skewed session data, and can slow page load. Each analytics property should only be initialized once per page.', 'functionalities' ),
 							'details'   => array(
 								'analytics_type' => $config['name'],
 								'tracking_id'    => $id,
@@ -521,6 +535,12 @@ class Assumption_Detection {
 						$family,
 						count( $sources )
 					),
+					'location'  => sprintf(
+						/* translators: %s: source list */
+						\__( 'Loaded via: %s', 'functionalities' ),
+						implode( ', ', array_unique( $sources ) )
+					),
+					'reason'    => \__( 'Loading the same font from multiple sources wastes bandwidth and increases page load time. Consolidate font loading to a single source.', 'functionalities' ),
 					'details'   => array(
 						'font_family' => $family,
 						'sources'     => $sources,
@@ -600,6 +620,12 @@ class Assumption_Detection {
 
 		// Check thresholds.
 		if ( $size_kb > $threshold_kb ) {
+			// Build sources location string.
+			$sources_list = array();
+			foreach ( $sources as $source => $bytes ) {
+				$sources_list[] = sprintf( '%s (%s KB)', $source, round( $bytes / 1024, 1 ) );
+			}
+
 			$warnings[] = array(
 				'type'      => 'inline_css_growth',
 				'message'   => sprintf(
@@ -608,6 +634,14 @@ class Assumption_Detection {
 					$size_kb,
 					$threshold_kb
 				),
+				'location'  => ! empty( $sources_list )
+					? sprintf(
+						/* translators: %s: source breakdown */
+						\__( 'Breakdown: %s', 'functionalities' ),
+						implode( ', ', $sources_list )
+					)
+					: \__( 'In page &lt;head&gt; section', 'functionalities' ),
+				'reason'    => \__( 'Large inline CSS blocks the initial page render and cannot be cached by browsers. Consider moving styles to external stylesheets or reducing unused CSS.', 'functionalities' ),
 				'details'   => array(
 					'current_size_kb'  => $size_kb,
 					'threshold_kb'     => $threshold_kb,
@@ -620,6 +654,7 @@ class Assumption_Detection {
 
 		// Check for sharp increase.
 		if ( count( $sizes ) > 5 && $size_kb > $avg_kb * 1.5 ) {
+			$increase_percent = round( ( $size_kb / $avg_kb - 1 ) * 100 );
 			$warnings[] = array(
 				'type'      => 'inline_css_spike',
 				'message'   => sprintf(
@@ -628,10 +663,16 @@ class Assumption_Detection {
 					$avg_kb,
 					$size_kb
 				),
+				'location'  => \__( 'In page &lt;head&gt; section &lt;style&gt; tags', 'functionalities' ),
+				'reason'    => sprintf(
+					/* translators: %d: percentage increase */
+					\__( 'A %d%% spike in inline CSS suggests a plugin, theme update, or content change added significant styles. This may indicate CSS bloat from unused features.', 'functionalities' ),
+					$increase_percent
+				),
 				'details'   => array(
 					'current_size_kb' => $size_kb,
 					'average_size_kb' => $avg_kb,
-					'increase_percent' => round( ( $size_kb / $avg_kb - 1 ) * 100 ),
+					'increase_percent' => $increase_percent,
 				),
 				'detected'  => time(),
 			);
@@ -699,6 +740,9 @@ class Assumption_Detection {
 			$sources  = array_unique( $jquery_sources );
 
 			if ( count( $versions ) > 1 || count( $sources ) > 1 ) {
+				// Build handle list for location.
+				$handle_list = array_keys( $jquery_scripts );
+
 				$warnings[] = array(
 					'type'     => 'jquery_conflict',
 					'message'  => sprintf(
@@ -707,6 +751,12 @@ class Assumption_Detection {
 						count( $jquery_scripts ),
 						implode( ', ', $sources )
 					),
+					'location' => sprintf(
+						/* translators: %s: script handle list */
+						\__( 'Registered script handles: %s', 'functionalities' ),
+						implode( ', ', $handle_list )
+					),
+					'reason'   => \__( 'Multiple jQuery versions cause JavaScript errors, plugin conflicts, and wasted bandwidth. Only WordPress Core jQuery should be loaded; plugins/themes should use wp_enqueue_script dependencies.', 'functionalities' ),
 					'details'  => array(
 						'scripts'  => $jquery_scripts,
 						'versions' => $versions,
@@ -791,6 +841,8 @@ class Assumption_Detection {
 					\__( 'Duplicate meta tags detected: %s.', 'functionalities' ),
 					implode( ', ', $dupe_list )
 				),
+				'location' => \__( 'In page &lt;head&gt; section &lt;meta&gt; tags', 'functionalities' ),
+				'reason'   => \__( 'Duplicate meta tags confuse search engines and social platforms about which value to use. Common causes: multiple SEO plugins, theme meta output, or manual code additions.', 'functionalities' ),
 				'details'  => array(
 					'duplicates' => $duplicates,
 				),
@@ -829,6 +881,12 @@ class Assumption_Detection {
 				$warnings[] = array(
 					'type'     => 'rest_exposure',
 					'message'  => \__( 'REST API users endpoint is publicly accessible (user enumeration possible).', 'functionalities' ),
+					'location' => sprintf(
+						/* translators: %s: REST API URL */
+						\__( 'Endpoint: %s', 'functionalities' ),
+						$rest_url
+					),
+					'reason'   => \__( 'Publicly accessible user endpoints allow attackers to enumerate usernames for targeted brute-force or social engineering attacks. Consider restricting REST API access to authenticated users.', 'functionalities' ),
 					'details'  => array(
 						'endpoint' => $rest_url,
 						'status'   => $status_code,
@@ -860,6 +918,8 @@ class Assumption_Detection {
 						\__( 'oEmbed exposes author name publicly: %s.', 'functionalities' ),
 						$data['author_name']
 					),
+					'location' => \__( 'oEmbed REST endpoint response', 'functionalities' ),
+					'reason'   => \__( 'oEmbed data is fetched when your content is embedded elsewhere. Exposing author names can reveal admin usernames to potential attackers.', 'functionalities' ),
 					'details'  => array(
 						'author_name' => $data['author_name'],
 						'endpoint'    => $oembed_url,
@@ -962,6 +1022,8 @@ class Assumption_Detection {
 					count( $detected_libs ),
 					implode( ', ', $detected_libs )
 				),
+				'location' => \__( 'In page scripts and image attributes', 'functionalities' ),
+				'reason'   => \__( 'Multiple lazy loading implementations can cause images to not load, flash of invisible content, or JavaScript errors. Disable all but one lazy loading method.', 'functionalities' ),
 				'details'  => array(
 					'implementations' => $detected_libs,
 					'count'           => count( $detected_libs ),
@@ -1015,6 +1077,12 @@ class Assumption_Detection {
 					\__( 'Mixed content detected: %d HTTP resource(s) on HTTPS site.', 'functionalities' ),
 					count( $http_resources )
 				),
+				'location' => sprintf(
+					/* translators: %s: list of resources */
+					\__( 'Resources: %s', 'functionalities' ),
+					implode( '; ', array_slice( $http_resources, 0, 3 ) )
+				),
+				'reason'   => \__( 'HTTP resources on HTTPS pages cause browser security warnings, may be blocked entirely, and break the secure padlock indicator. Update all resource URLs to HTTPS.', 'functionalities' ),
 				'details'  => array(
 					'resources' => array_slice( $http_resources, 0, 5 ),
 					'count'     => count( $http_resources ),
@@ -1075,6 +1143,8 @@ class Assumption_Detection {
 					\__( 'Missing security headers: %s.', 'functionalities' ),
 					implode( ', ', $missing_headers )
 				),
+				'location' => \__( 'HTTP response headers from server', 'functionalities' ),
+				'reason'   => \__( 'Security headers protect against clickjacking, XSS attacks, and MIME-type sniffing. These are typically configured in .htaccess, nginx config, or via a security plugin.', 'functionalities' ),
 				'details'  => array(
 					'missing' => $missing_headers,
 				),
@@ -1123,6 +1193,8 @@ class Assumption_Detection {
 					\__( 'Debug mode exposure: %s.', 'functionalities' ),
 					implode( ', ', $issues )
 				),
+				'location' => \__( 'wp-config.php constants and PHP ini settings', 'functionalities' ),
+				'reason'   => \__( 'Debug settings expose sensitive error messages, file paths, and database queries to visitors. These should be disabled on production sites.', 'functionalities' ),
 				'details'  => array(
 					'issues' => $issues,
 				),
@@ -1183,6 +1255,8 @@ class Assumption_Detection {
 					\__( 'Cron issues detected: %s.', 'functionalities' ),
 					implode( '; ', $issues )
 				),
+				'location' => \__( 'WordPress scheduled tasks (wp-cron.php)', 'functionalities' ),
+				'reason'   => \__( 'Cron issues prevent scheduled tasks like publishing posts, sending emails, or running backups. Check if a server-level cron is configured or if WP-Cron needs to be re-enabled.', 'functionalities' ),
 				'details'  => array(
 					'issues'     => $issues,
 					'stuck_jobs' => $stuck_jobs,

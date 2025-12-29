@@ -187,61 +187,38 @@ class Admin {
 	 * @return void
 	 */
 	private static function define_modules() : void {
+		// Ordered by typical usage frequency - most used first.
 		self::$modules = array(
-			'link-management' => array(
-				'title'       => \__( 'Link Management', 'functionalities' ),
-				'description' => \__( 'Control how external and internal links are handled.', 'functionalities' ),
-				'icon'        => 'dashicons-admin-links',
-			),
-			'block-cleanup'   => array(
-				'title'       => \__( 'Block Cleanup', 'functionalities' ),
-				'description' => \__( 'Strip block classes from frontend output.', 'functionalities' ),
-				'icon'        => 'dashicons-block-default',
-			),
-			'editor-links'    => array(
-				'title'       => \__( 'Editor Link Suggestions', 'functionalities' ),
-				'description' => \__( 'Limit link suggestions to selected post types.', 'functionalities' ),
-				'icon'        => 'dashicons-editor-unlink',
-			),
 			'misc'            => array(
-				'title'       => \__( 'Miscellaneous', 'functionalities' ),
-				'description' => \__( 'Bloat control and performance tweaks.', 'functionalities' ),
-				'icon'        => 'dashicons-admin-tools',
+				'title'       => \__( 'Performance & Cleanup', 'functionalities' ),
+				'description' => \__( 'Disable bloat, emojis, embeds, heartbeat, and more.', 'functionalities' ),
+				'icon'        => 'dashicons-performance',
 			),
 			'snippets'        => array(
 				'title'       => \__( 'Header & Footer', 'functionalities' ),
 				'description' => \__( 'Add GA4, custom header and footer code.', 'functionalities' ),
 				'icon'        => 'dashicons-editor-code',
 			),
+			'link-management' => array(
+				'title'       => \__( 'Link Management', 'functionalities' ),
+				'description' => \__( 'Control nofollow, new tabs, and link behavior.', 'functionalities' ),
+				'icon'        => 'dashicons-admin-links',
+			),
+			'redirect-manager' => array(
+				'title'       => \__( 'Redirect Manager', 'functionalities' ),
+				'description' => \__( 'Create and manage 301/302 URL redirects.', 'functionalities' ),
+				'icon'        => 'dashicons-randomize',
+				'custom_page' => true,
+			),
+			'block-cleanup'   => array(
+				'title'       => \__( 'Block Cleanup', 'functionalities' ),
+				'description' => \__( 'Strip block classes from frontend output.', 'functionalities' ),
+				'icon'        => 'dashicons-block-default',
+			),
 			'schema'          => array(
 				'title'       => \__( 'Schema Settings', 'functionalities' ),
 				'description' => \__( 'Add microdata to key areas and content.', 'functionalities' ),
 				'icon'        => 'dashicons-networking',
-			),
-			'components'      => array(
-				'title'       => \__( 'Components', 'functionalities' ),
-				'description' => \__( 'Define reusable CSS components.', 'functionalities' ),
-				'icon'        => 'dashicons-layout',
-			),
-			'fonts'           => array(
-				'title'       => \__( 'Fonts', 'functionalities' ),
-				'description' => \__( 'Register custom font families.', 'functionalities' ),
-				'icon'        => 'dashicons-editor-textcolor',
-			),
-			'icons'           => array(
-				'title'       => \__( 'Icons', 'functionalities' ),
-				'description' => \__( 'Replace Font Awesome with SVG icons.', 'functionalities' ),
-				'icon'        => 'dashicons-star-filled',
-			),
-			'meta'            => array(
-				'title'       => \__( 'Meta & Copyright', 'functionalities' ),
-				'description' => \__( 'Copyright, Dublin Core, licensing, and SEO plugin integration.', 'functionalities' ),
-				'icon'        => 'dashicons-shield',
-			),
-			'updates'         => array(
-				'title'       => \__( 'GitHub Updates', 'functionalities' ),
-				'description' => \__( 'Receive plugin updates directly from GitHub releases.', 'functionalities' ),
-				'icon'        => 'dashicons-update',
 			),
 			'content-regression' => array(
 				'title'       => \__( 'Content Integrity', 'functionalities' ),
@@ -258,6 +235,36 @@ class Admin {
 				'description' => \__( 'File-based project task management with JSON storage.', 'functionalities' ),
 				'icon'        => 'dashicons-yes-alt',
 				'custom_page' => true,
+			),
+			'login-security' => array(
+				'title'       => \__( 'Login Security', 'functionalities' ),
+				'description' => \__( 'Limit login attempts, customize login page, block XML-RPC.', 'functionalities' ),
+				'icon'        => 'dashicons-lock',
+			),
+			'meta'            => array(
+				'title'       => \__( 'Meta & Copyright', 'functionalities' ),
+				'description' => \__( 'Copyright, Dublin Core, licensing, and SEO plugin integration.', 'functionalities' ),
+				'icon'        => 'dashicons-media-text',
+			),
+			'components'      => array(
+				'title'       => \__( 'Components', 'functionalities' ),
+				'description' => \__( 'Define reusable CSS components.', 'functionalities' ),
+				'icon'        => 'dashicons-layout',
+			),
+			'fonts'           => array(
+				'title'       => \__( 'Fonts', 'functionalities' ),
+				'description' => \__( 'Register custom font families.', 'functionalities' ),
+				'icon'        => 'dashicons-editor-textcolor',
+			),
+			'editor-links'    => array(
+				'title'       => \__( 'Editor Link Suggestions', 'functionalities' ),
+				'description' => \__( 'Limit link suggestions to selected post types.', 'functionalities' ),
+				'icon'        => 'dashicons-editor-unlink',
+			),
+			'updates'         => array(
+				'title'       => \__( 'GitHub Updates', 'functionalities' ),
+				'description' => \__( 'Receive plugin updates directly from GitHub releases.', 'functionalities' ),
+				'icon'        => 'dashicons-update',
 			),
 		);
 	}
@@ -1278,81 +1285,90 @@ class Admin {
 			'functionalities_fonts_section'
 		);
 
-		// Icons settings
+		// Login Security settings.
 		\register_setting(
-			'functionalities_icons',
-			'functionalities_icons',
-			[
-				'sanitize_callback' => [ __CLASS__, 'sanitize_icons' ],
-				'default' => [
-					'remove_fontawesome_assets' => false,
-					'convert_fa_to_svg'        => false,
-					'svg_sprite_url'           => '',
-					'mappings'                 => '',
-				],
-			]
+			'functionalities_login_security',
+			'functionalities_login_security',
+			array(
+				'sanitize_callback' => array( __CLASS__, 'sanitize_login_security' ),
+				'default'           => array(
+					'enabled'                       => false,
+					'limit_login_attempts'          => true,
+					'max_attempts'                  => 5,
+					'lockout_duration'              => 15,
+					'disable_xmlrpc_auth'           => true,
+					'disable_application_passwords' => false,
+					'hide_login_errors'             => true,
+					'custom_logo_url'               => '',
+					'custom_background_color'       => '',
+					'custom_form_background'        => '',
+				),
+			)
 		);
 		\add_settings_section(
-			'functionalities_icons_section',
-			\__( 'Icon Replacement', 'functionalities' ),
+			'functionalities_login_security_section',
+			\__( 'Login Security Settings', 'functionalities' ),
 			function() {
-				echo '<p>' . \esc_html__( 'Optimize icon delivery by replacing Font Awesome with lightweight SVG sprites.', 'functionalities' ) . '</p>';
-
+				echo '<p>' . \esc_html__( 'Protect your login page and customize its appearance.', 'functionalities' ) . '</p>';
 				echo '<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:12px 16px;margin:12px 0">';
-				echo '<h4 style="margin:0 0 8px">' . \esc_html__( 'What This Module Does', 'functionalities' ) . '</h4>';
+				echo '<h4 style="margin:0 0 8px">' . \esc_html__( 'Security Features', 'functionalities' ) . '</h4>';
 				echo '<ul style="margin:0;padding-left:20px">';
-				echo '<li>' . \esc_html__( 'Remove Font Awesome CSS and JavaScript files to reduce page weight', 'functionalities' ) . '</li>';
-				echo '<li>' . \esc_html__( 'Convert Font Awesome icon markup to SVG sprite references', 'functionalities' ) . '</li>';
-				echo '<li>' . \esc_html__( 'Works with fa, fas, far, and fab icon prefixes', 'functionalities' ) . '</li>';
-				echo '<li>' . \esc_html__( 'Significantly improves performance while maintaining icon compatibility', 'functionalities' ) . '</li>';
+				echo '<li>' . \esc_html__( 'Limit failed login attempts to prevent brute force attacks', 'functionalities' ) . '</li>';
+				echo '<li>' . \esc_html__( 'Disable XML-RPC authentication to block remote login attacks', 'functionalities' ) . '</li>';
+				echo '<li>' . \esc_html__( 'Hide specific login errors to prevent username enumeration', 'functionalities' ) . '</li>';
+				echo '<li>' . \esc_html__( 'Customize the login page with your logo and colors', 'functionalities' ) . '</li>';
 				echo '</ul>';
 				echo '</div>';
-
-				echo '<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;padding:12px 16px;margin:12px 0">';
-				echo '<h4 style="margin:0 0 8px;color:#92400e">' . \esc_html__( 'Setup Required', 'functionalities' ) . '</h4>';
-				echo '<p style="margin:0;font-size:13px">' . \esc_html__( 'You need an SVG sprite file containing your icons. Point the sprite URL to your file and the module will convert &lt;i class="fa fa-icon"&gt; to &lt;svg&gt;&lt;use href="sprite.svg#fa-icon"&gt;&lt;/svg&gt;.', 'functionalities' ) . '</p>';
-				echo '</div>';
-
-				echo '<div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:6px;padding:12px 16px;margin:12px 0">';
-				echo '<h4 style="margin:0 0 8px;color:#1e40af">' . \esc_html__( 'For Developers', 'functionalities' ) . '</h4>';
-				echo '<p style="margin:0;font-size:13px;color:#1e3a8a">';
-				echo \esc_html__( 'Filter:', 'functionalities' ) . ' <code>functionalities_icons_remove_fa_enabled</code> — ' . \esc_html__( 'control asset removal', 'functionalities' ) . '<br>';
-				echo \esc_html__( 'Filter:', 'functionalities' ) . ' <code>functionalities_icons_convert_enabled</code> — ' . \esc_html__( 'control conversion', 'functionalities' ) . '<br>';
-				echo \esc_html__( 'Filter:', 'functionalities' ) . ' <code>functionalities_icons_sprite_url</code> — ' . \esc_html__( 'modify sprite URL', 'functionalities' ) . '<br>';
-				echo \esc_html__( 'Filter:', 'functionalities' ) . ' <code>functionalities_icons_fa_handles</code> — ' . \esc_html__( 'add/remove FA handles', 'functionalities' );
-				echo '</p>';
-				echo '</div>';
+				$logs = \Functionalities\Features\Login_Security::get_lockout_log( 5 );
+				if ( ! empty( $logs ) ) {
+					echo '<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;padding:12px 16px;margin:12px 0">';
+					echo '<h4 style="margin:0 0 8px;color:#92400e">' . \esc_html__( 'Recent Lockouts', 'functionalities' ) . '</h4>';
+					echo '<ul style="margin:0;padding-left:20px;font-size:13px">';
+					foreach ( $logs as $log ) {
+						echo '<li><strong>' . \esc_html( $log['ip'] ) . '</strong> — ' . \esc_html( $log['username'] ) . ' (' . \esc_html( $log['time'] ) . ')</li>';
+					}
+					echo '</ul>';
+					echo '</div>';
+				}
 			},
-			'functionalities_icons'
+			'functionalities_login_security'
 		);
-		\add_settings_field(
-			'convert_fa_to_svg',
-			\__( 'Enable FA → SVG replacement', 'functionalities' ),
-			function(){ $o=self::get_icons_options(); $c=!empty($o['convert_fa_to_svg'])?'checked':''; echo '<label><input type="checkbox" name="functionalities_icons[convert_fa_to_svg]" value="1" '.$c.'> ' . \esc_html__( 'Convert <i class="fa ..."> to <svg><use> where possible', 'functionalities' ) . '</label>'; },
-			'functionalities_icons',
-			'functionalities_icons_section'
-		);
-		\add_settings_field(
-			'remove_fontawesome_assets',
-			\__( 'Remove Font Awesome assets', 'functionalities' ),
-			function(){ $o=self::get_icons_options(); $c=!empty($o['remove_fontawesome_assets'])?'checked':''; echo '<label><input type="checkbox" name="functionalities_icons[remove_fontawesome_assets]" value="1" '.$c.'> ' . \esc_html__( 'Dequeue common FA styles/scripts', 'functionalities' ) . '</label>'; },
-			'functionalities_icons',
-			'functionalities_icons_section'
-		);
-		\add_settings_field(
-			'svg_sprite_url',
-			\__( 'SVG sprite URL', 'functionalities' ),
-			function(){ $o=self::get_icons_options(); $v=isset($o['svg_sprite_url'])?(string)$o['svg_sprite_url']:''; echo '<input type="url" class="regular-text" name="functionalities_icons[svg_sprite_url]" value="'.\esc_attr($v).'" placeholder="/path/to/sprite.svg" />'; },
-			'functionalities_icons',
-			'functionalities_icons_section'
-		);
-		\add_settings_field(
-			'mappings',
-			\__( 'Class → Symbol mappings', 'functionalities' ),
-			function(){ $o=self::get_icons_options(); $v=isset($o['mappings'])?(string)$o['mappings']:''; echo '<textarea name="functionalities_icons[mappings]" rows="6" cols="60" class="large-text code">'.\esc_textarea($v).'</textarea><p class="description">'.\esc_html__('Format: fa-user = user; fa-bars = bars','functionalities').'</p>'; },
-			'functionalities_icons',
-			'functionalities_icons_section'
-		);
+		\add_settings_field( 'login_enabled', \__( 'Enable Login Security', 'functionalities' ), function() {
+			$o = self::get_login_security_options();
+			echo '<label><input type="checkbox" name="functionalities_login_security[enabled]" value="1" ' . checked( ! empty( $o['enabled'] ), true, false ) . '> ' . \esc_html__( 'Enable login security features', 'functionalities' ) . '</label>';
+		}, 'functionalities_login_security', 'functionalities_login_security_section' );
+		\add_settings_field( 'limit_login_attempts', \__( 'Limit Login Attempts', 'functionalities' ), function() {
+			$o = self::get_login_security_options();
+			echo '<label><input type="checkbox" name="functionalities_login_security[limit_login_attempts]" value="1" ' . checked( ! empty( $o['limit_login_attempts'] ), true, false ) . '> ' . \esc_html__( 'Block IPs after too many failed attempts', 'functionalities' ) . '</label>';
+		}, 'functionalities_login_security', 'functionalities_login_security_section' );
+		\add_settings_field( 'max_attempts', \__( 'Max Attempts', 'functionalities' ), function() {
+			$o = self::get_login_security_options();
+			echo '<input type="number" name="functionalities_login_security[max_attempts]" value="' . \esc_attr( $o['max_attempts'] ?? 5 ) . '" min="1" max="20" class="small-text"> ' . \esc_html__( 'failed attempts before lockout', 'functionalities' );
+		}, 'functionalities_login_security', 'functionalities_login_security_section' );
+		\add_settings_field( 'lockout_duration', \__( 'Lockout Duration', 'functionalities' ), function() {
+			$o = self::get_login_security_options();
+			echo '<input type="number" name="functionalities_login_security[lockout_duration]" value="' . \esc_attr( $o['lockout_duration'] ?? 15 ) . '" min="1" max="1440" class="small-text"> ' . \esc_html__( 'minutes', 'functionalities' );
+		}, 'functionalities_login_security', 'functionalities_login_security_section' );
+		\add_settings_field( 'disable_xmlrpc_auth', \__( 'Disable XML-RPC', 'functionalities' ), function() {
+			$o = self::get_login_security_options();
+			echo '<label><input type="checkbox" name="functionalities_login_security[disable_xmlrpc_auth]" value="1" ' . checked( ! empty( $o['disable_xmlrpc_auth'] ), true, false ) . '> ' . \esc_html__( 'Disable XML-RPC authentication (recommended)', 'functionalities' ) . '</label>';
+		}, 'functionalities_login_security', 'functionalities_login_security_section' );
+		\add_settings_field( 'disable_application_passwords', \__( 'Disable App Passwords', 'functionalities' ), function() {
+			$o = self::get_login_security_options();
+			echo '<label><input type="checkbox" name="functionalities_login_security[disable_application_passwords]" value="1" ' . checked( ! empty( $o['disable_application_passwords'] ), true, false ) . '> ' . \esc_html__( 'Disable WordPress Application Passwords', 'functionalities' ) . '</label>';
+		}, 'functionalities_login_security', 'functionalities_login_security_section' );
+		\add_settings_field( 'hide_login_errors', \__( 'Hide Login Errors', 'functionalities' ), function() {
+			$o = self::get_login_security_options();
+			echo '<label><input type="checkbox" name="functionalities_login_security[hide_login_errors]" value="1" ' . checked( ! empty( $o['hide_login_errors'] ), true, false ) . '> ' . \esc_html__( 'Show generic error instead of specific username/password errors', 'functionalities' ) . '</label>';
+		}, 'functionalities_login_security', 'functionalities_login_security_section' );
+		\add_settings_field( 'custom_logo_url', \__( 'Custom Logo URL', 'functionalities' ), function() {
+			$o = self::get_login_security_options();
+			echo '<input type="url" name="functionalities_login_security[custom_logo_url]" value="' . \esc_attr( $o['custom_logo_url'] ?? '' ) . '" class="regular-text" placeholder="https://example.com/logo.png">';
+		}, 'functionalities_login_security', 'functionalities_login_security_section' );
+		\add_settings_field( 'custom_background_color', \__( 'Background Color', 'functionalities' ), function() {
+			$o = self::get_login_security_options();
+			echo '<input type="text" name="functionalities_login_security[custom_background_color]" value="' . \esc_attr( $o['custom_background_color'] ?? '' ) . '" class="small-text" placeholder="#f0f0f1">';
+		}, 'functionalities_login_security', 'functionalities_login_security_section' );
 
 		// Meta & Copyright settings.
 		\register_setting(
@@ -3881,21 +3897,6 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 		echo '</div>';
 	}
 
-	// Icons helpers
-	public static function get_icons_options() : array {
-		$defaults = [ 'enable_fa_replacement' => false, 'remove_fa_assets' => true, 'sprite_url' => '', 'mappings' => '' ];
-		$opts = (array) \get_option( 'functionalities_icons', $defaults );
-		return array_merge( $defaults, $opts );
-	}
-	public static function sanitize_icons( $input ) : array {
-		return [
-			'enable_fa_replacement' => ! empty( $input['enable_fa_replacement'] ),
-			'remove_fa_assets'      => ! empty( $input['remove_fa_assets'] ),
-			'sprite_url'            => isset( $input['sprite_url'] ) ? \esc_url_raw( (string) $input['sprite_url'] ) : '',
-			'mappings'              => isset( $input['mappings'] ) ? \sanitize_textarea_field( (string) $input['mappings'] ) : '',
-		];
-	}
-
 	/**
 	 * Render section description for Meta & Copyright.
 	 *
@@ -4437,13 +4438,29 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 			echo '<div class="functionalities-assumption-content" style="flex:1;">';
 			echo '<p class="functionalities-assumption-message" style="margin:0;font-weight:500;">' . \esc_html( $assumption['message'] ?? '' ) . '</p>';
 
+			// Show location (where) if available.
+			if ( ! empty( $assumption['location'] ) ) {
+				echo '<p class="functionalities-assumption-location" style="margin:6px 0 0;font-size:12px;color:#1e1e1e;">';
+				echo '<strong>' . \esc_html__( 'Where:', 'functionalities' ) . '</strong> ';
+				echo wp_kses( $assumption['location'], array( 'code' => array(), 'strong' => array() ) );
+				echo '</p>';
+			}
+
+			// Show reason (why) if available.
+			if ( ! empty( $assumption['reason'] ) ) {
+				echo '<p class="functionalities-assumption-reason" style="margin:6px 0 0;font-size:12px;color:#646970;font-style:italic;">';
+				echo '<strong style="font-style:normal;">' . \esc_html__( 'Why it matters:', 'functionalities' ) . '</strong> ';
+				echo \esc_html( $assumption['reason'] );
+				echo '</p>';
+			}
+
 			// Show type badge.
-			echo '<span style="display:inline-block;background:#f0f0f1;padding:2px 8px;border-radius:3px;font-size:11px;margin-top:6px;color:#50575e;">' . \esc_html( str_replace( '_', ' ', ucfirst( $warning_type ) ) ) . '</span>';
+			echo '<span style="display:inline-block;background:#f0f0f1;padding:2px 8px;border-radius:3px;font-size:11px;margin-top:8px;color:#50575e;">' . \esc_html( str_replace( '_', ' ', ucfirst( $warning_type ) ) ) . '</span>';
 
 			if ( ! empty( $assumption['detected'] ) ) {
 				$time_ago = \human_time_diff( $assumption['detected'], \time() );
 				/* translators: %s: human-readable time difference */
-				echo '<p class="functionalities-assumption-meta" style="margin:6px 0 0;font-size:12px;color:#646970;">' . \sprintf( \esc_html__( 'Detected %s ago', 'functionalities' ), $time_ago ) . '</p>';
+				echo '<span style="display:inline-block;font-size:11px;margin-left:10px;color:#646970;">' . \sprintf( \esc_html__( 'Detected %s ago', 'functionalities' ), $time_ago ) . '</span>';
 			}
 
 			echo '</div></div>';
@@ -5572,5 +5589,206 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 		});
 		</script>
 		<?php
+	}
+
+	/**
+	 * Render Redirect Manager module page.
+	 *
+	 * @param array $module Module configuration.
+	 * @return void
+	 */
+	private static function render_module_redirect_manager( array $module ) : void {
+		$redirects = \Functionalities\Features\Redirect_Manager::get_redirects();
+		$stats     = \Functionalities\Features\Redirect_Manager::get_stats();
+		$nonce     = \wp_create_nonce( 'functionalities_redirect_manager' );
+		?>
+		<div class="wrap functionalities-module functionalities-redirect-manager">
+			<h1>
+				<span class="dashicons <?php echo \esc_attr( $module['icon'] ); ?>"></span>
+				<?php echo \esc_html( $module['title'] ); ?>
+			</h1>
+
+			<nav class="functionalities-breadcrumb">
+				<a href="<?php echo \esc_url( \admin_url( 'admin.php?page=functionalities' ) ); ?>">
+					<?php echo \esc_html__( 'Functionalities', 'functionalities' ); ?>
+				</a>
+				<span class="separator">›</span>
+				<span class="current"><?php echo \esc_html( $module['title'] ); ?></span>
+			</nav>
+
+			<div class="feature-info" style="background:#fff;border:1px solid #c3c4c7;padding:20px;margin:20px 0;border-radius:4px;">
+				<h2 style="margin-top:0;"><?php \esc_html_e( 'URL Redirects', 'functionalities' ); ?></h2>
+				<p><?php \esc_html_e( 'Manage 301 (permanent) and 302 (temporary) redirects. Redirects are stored in a JSON file with zero database overhead.', 'functionalities' ); ?></p>
+				<div style="display:flex;gap:20px;margin-top:15px;">
+					<div style="background:#f0f6fc;padding:10px 15px;border-radius:4px;text-align:center;">
+						<strong style="font-size:24px;color:#2271b1;"><?php echo $stats['total']; ?></strong>
+						<div style="font-size:12px;color:#646970;"><?php \esc_html_e( 'Total', 'functionalities' ); ?></div>
+					</div>
+					<div style="background:#f0fdf4;padding:10px 15px;border-radius:4px;text-align:center;">
+						<strong style="font-size:24px;color:#16a34a;"><?php echo $stats['enabled']; ?></strong>
+						<div style="font-size:12px;color:#646970;"><?php \esc_html_e( 'Active', 'functionalities' ); ?></div>
+					</div>
+					<div style="background:#fef3c7;padding:10px 15px;border-radius:4px;text-align:center;">
+						<strong style="font-size:24px;color:#d97706;"><?php echo $stats['hits']; ?></strong>
+						<div style="font-size:12px;color:#646970;"><?php \esc_html_e( 'Total Hits', 'functionalities' ); ?></div>
+					</div>
+				</div>
+			</div>
+
+			<div style="background:#fff;border:1px solid #c3c4c7;padding:20px;margin-bottom:20px;border-radius:4px;">
+				<h3 style="margin-top:0;"><?php \esc_html_e( 'Add New Redirect', 'functionalities' ); ?></h3>
+				<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+					<label style="flex:1;min-width:200px;">
+						<span style="display:block;font-weight:600;margin-bottom:5px;"><?php \esc_html_e( 'From URL', 'functionalities' ); ?></span>
+						<input type="text" id="redirect-from" placeholder="/old-page" style="width:100%;">
+					</label>
+					<label style="flex:1;min-width:200px;">
+						<span style="display:block;font-weight:600;margin-bottom:5px;"><?php \esc_html_e( 'To URL', 'functionalities' ); ?></span>
+						<input type="text" id="redirect-to" placeholder="https://example.com/new-page" style="width:100%;">
+					</label>
+					<label style="width:100px;">
+						<span style="display:block;font-weight:600;margin-bottom:5px;"><?php \esc_html_e( 'Type', 'functionalities' ); ?></span>
+						<select id="redirect-type" style="width:100%;">
+							<option value="301">301</option>
+							<option value="302">302</option>
+							<option value="307">307</option>
+						</select>
+					</label>
+					<button type="button" id="add-redirect-btn" class="button button-primary"><?php \esc_html_e( 'Add Redirect', 'functionalities' ); ?></button>
+				</div>
+				<p class="description" style="margin-top:10px;"><?php \esc_html_e( 'Use * at the end for wildcard matching (e.g., /old-section/*)', 'functionalities' ); ?></p>
+			</div>
+
+			<div style="background:#fff;border:1px solid #c3c4c7;border-radius:4px;">
+				<table class="wp-list-table widefat fixed striped">
+					<thead>
+						<tr>
+							<th style="width:30px;"><?php \esc_html_e( 'On', 'functionalities' ); ?></th>
+							<th><?php \esc_html_e( 'From', 'functionalities' ); ?></th>
+							<th><?php \esc_html_e( 'To', 'functionalities' ); ?></th>
+							<th style="width:60px;"><?php \esc_html_e( 'Type', 'functionalities' ); ?></th>
+							<th style="width:60px;"><?php \esc_html_e( 'Hits', 'functionalities' ); ?></th>
+							<th style="width:100px;"><?php \esc_html_e( 'Actions', 'functionalities' ); ?></th>
+						</tr>
+					</thead>
+					<tbody id="redirects-list">
+						<?php if ( empty( $redirects ) ) : ?>
+							<tr class="no-items"><td colspan="6" style="text-align:center;padding:20px;color:#646970;"><?php \esc_html_e( 'No redirects yet. Add one above.', 'functionalities' ); ?></td></tr>
+						<?php else : ?>
+							<?php foreach ( $redirects as $r ) : ?>
+								<tr data-id="<?php echo \esc_attr( $r['id'] ); ?>">
+									<td><input type="checkbox" class="toggle-redirect" <?php checked( ! empty( $r['enabled'] ) ); ?>></td>
+									<td><code><?php echo \esc_html( $r['from'] ); ?></code></td>
+									<td style="word-break:break-all;"><?php echo \esc_html( $r['to'] ); ?></td>
+									<td><?php echo \esc_html( $r['type'] ); ?></td>
+									<td><?php echo \esc_html( $r['hits'] ?? 0 ); ?></td>
+									<td>
+										<button type="button" class="button button-small delete-redirect"><?php \esc_html_e( 'Delete', 'functionalities' ); ?></button>
+									</td>
+								</tr>
+							<?php endforeach; ?>
+						<?php endif; ?>
+					</tbody>
+				</table>
+			</div>
+
+			<div style="margin-top:20px;display:flex;gap:10px;">
+				<button type="button" id="export-redirects-btn" class="button"><?php \esc_html_e( 'Export JSON', 'functionalities' ); ?></button>
+				<button type="button" id="import-redirects-btn" class="button"><?php \esc_html_e( 'Import JSON', 'functionalities' ); ?></button>
+			</div>
+
+			<div class="modal-overlay" id="import-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:100000;align-items:center;justify-content:center;">
+				<div style="background:#fff;padding:20px;border-radius:4px;max-width:500px;width:90%;">
+					<h3 style="margin-top:0;"><?php \esc_html_e( 'Import Redirects', 'functionalities' ); ?></h3>
+					<textarea id="import-json" style="width:100%;height:200px;font-family:monospace;" placeholder='[{"from": "/old", "to": "/new", "type": 301}]'></textarea>
+					<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:15px;">
+						<button type="button" class="button" id="cancel-import"><?php \esc_html_e( 'Cancel', 'functionalities' ); ?></button>
+						<button type="button" class="button button-primary" id="confirm-import"><?php \esc_html_e( 'Import', 'functionalities' ); ?></button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<script>
+		jQuery(document).ready(function($) {
+			var nonce = '<?php echo \esc_js( $nonce ); ?>';
+			var ajaxUrl = '<?php echo \esc_js( \admin_url( 'admin-ajax.php' ) ); ?>';
+
+			$('#add-redirect-btn').on('click', function() {
+				var from = $('#redirect-from').val().trim();
+				var to = $('#redirect-to').val().trim();
+				var type = $('#redirect-type').val();
+				if (!from || !to) { alert('<?php echo \esc_js( \__( 'Both URLs are required.', 'functionalities' ) ); ?>'); return; }
+				$.post(ajaxUrl, { action: 'functionalities_redirect_add', nonce: nonce, from: from, to: to, type: type }, function(r) {
+					if (r.success) { location.reload(); } else { alert(r.data?.message || 'Error'); }
+				});
+			});
+
+			$(document).on('change', '.toggle-redirect', function() {
+				var id = $(this).closest('tr').data('id');
+				$.post(ajaxUrl, { action: 'functionalities_redirect_toggle', nonce: nonce, id: id });
+			});
+
+			$(document).on('click', '.delete-redirect', function() {
+				if (!confirm('<?php echo \esc_js( \__( 'Delete this redirect?', 'functionalities' ) ); ?>')) return;
+				var $row = $(this).closest('tr');
+				$.post(ajaxUrl, { action: 'functionalities_redirect_delete', nonce: nonce, id: $row.data('id') }, function(r) {
+					if (r.success) { $row.fadeOut(function() { $(this).remove(); }); }
+				});
+			});
+
+			$('#export-redirects-btn').on('click', function() {
+				$.post(ajaxUrl, { action: 'functionalities_redirect_export', nonce: nonce }, function(r) {
+					if (r.success) {
+						var blob = new Blob([r.data.json], {type: 'application/json'});
+						var a = document.createElement('a');
+						a.href = URL.createObjectURL(blob);
+						a.download = 'redirects.json';
+						a.click();
+					}
+				});
+			});
+
+			$('#import-redirects-btn').on('click', function() { $('#import-modal').css('display','flex'); });
+			$('#cancel-import').on('click', function() { $('#import-modal').hide(); });
+			$('#confirm-import').on('click', function() {
+				var json = $('#import-json').val();
+				$.post(ajaxUrl, { action: 'functionalities_redirect_import', nonce: nonce, json: json }, function(r) {
+					if (r.success) { location.reload(); } else { alert(r.data?.message || 'Error'); }
+				});
+			});
+		});
+		</script>
+		<?php
+	}
+
+	/**
+	 * Get Login Security options with defaults.
+	 *
+	 * @return array Options.
+	 */
+	public static function get_login_security_options() : array {
+		return \Functionalities\Features\Login_Security::get_options();
+	}
+
+	/**
+	 * Sanitize Login Security settings.
+	 *
+	 * @param array $input Raw input.
+	 * @return array Sanitized output.
+	 */
+	public static function sanitize_login_security( $input ) : array {
+		return array(
+			'enabled'                       => ! empty( $input['enabled'] ),
+			'limit_login_attempts'          => ! empty( $input['limit_login_attempts'] ),
+			'max_attempts'                  => max( 1, min( 20, (int) ( $input['max_attempts'] ?? 5 ) ) ),
+			'lockout_duration'              => max( 1, min( 1440, (int) ( $input['lockout_duration'] ?? 15 ) ) ),
+			'disable_xmlrpc_auth'           => ! empty( $input['disable_xmlrpc_auth'] ),
+			'disable_application_passwords' => ! empty( $input['disable_application_passwords'] ),
+			'hide_login_errors'             => ! empty( $input['hide_login_errors'] ),
+			'custom_logo_url'               => \esc_url_raw( $input['custom_logo_url'] ?? '' ),
+			'custom_background_color'       => \sanitize_hex_color( $input['custom_background_color'] ?? '' ) ?: '',
+			'custom_form_background'        => \sanitize_hex_color( $input['custom_form_background'] ?? '' ) ?: '',
+		);
 	}
 }
