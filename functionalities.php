@@ -3,7 +3,7 @@
  * Plugin Name: Functionalities
  * Plugin URI: https://functionalities.dev
  * Description: Modular site-specific plugin with modern dashboard, complete GT Nofollow Manager integration, and WordPress coding standards compliance.
- * Version: 0.9.9
+ * Version: 0.10.0
  * Author: Gaurav Tiwari
  * Author URI: https://gauravtiwari.org
  * License: GPL-2.0-or-later
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Define constants.
 if ( ! defined( 'FUNCTIONALITIES_VERSION' ) ) {
-	define( 'FUNCTIONALITIES_VERSION', '0.9.9' );
+	define( 'FUNCTIONALITIES_VERSION', '0.10.0' );
 }
 if ( ! defined( 'FUNCTIONALITIES_FILE' ) ) {
 	define( 'FUNCTIONALITIES_FILE', __FILE__ );
@@ -43,11 +43,12 @@ require_once FUNCTIONALITIES_DIR . 'includes/features/class-snippets.php';
 require_once FUNCTIONALITIES_DIR . 'includes/features/class-schema.php';
 require_once FUNCTIONALITIES_DIR . 'includes/features/class-components.php';
 require_once FUNCTIONALITIES_DIR . 'includes/features/class-fonts.php';
-require_once FUNCTIONALITIES_DIR . 'includes/features/class-icons.php';
 require_once FUNCTIONALITIES_DIR . 'includes/features/class-meta.php';
 require_once FUNCTIONALITIES_DIR . 'includes/features/class-content-regression.php';
 require_once FUNCTIONALITIES_DIR . 'includes/features/class-assumption-detection.php';
 require_once FUNCTIONALITIES_DIR . 'includes/features/class-task-manager.php';
+require_once FUNCTIONALITIES_DIR . 'includes/features/class-redirect-manager.php';
+require_once FUNCTIONALITIES_DIR . 'includes/features/class-login-security.php';
 require_once FUNCTIONALITIES_DIR . 'includes/class-github-updater.php';
 
 // Load translations at init to avoid _load_textdomain_just_in_time warning.
@@ -66,11 +67,12 @@ require_once FUNCTIONALITIES_DIR . 'includes/class-github-updater.php';
 	\Functionalities\Features\Schema::init();
 	\Functionalities\Features\Components::init();
 	\Functionalities\Features\Fonts::init();
-	\Functionalities\Features\Icons::init();
 	\Functionalities\Features\Meta::init();
 	\Functionalities\Features\Content_Regression::init();
 	\Functionalities\Features\Assumption_Detection::init();
 	\Functionalities\Features\Task_Manager::init();
+	\Functionalities\Features\Redirect_Manager::init();
+	\Functionalities\Features\Login_Security::init();
 
 	// Initialize GitHub Updater if enabled.
 	$update_options = \Functionalities\Admin\Admin::get_updates_options();
