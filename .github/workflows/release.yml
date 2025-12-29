@@ -1,0 +1,89 @@
+name: Build Plugin Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    name: Build and Upload Plugin Zip
+    runs-on: ubuntu-latest
+
+    # Only run for version tags without 'v' prefix (e.g., 0.10.0, 1.0.0)
+    if: ${{ !startsWith(github.event.release.tag_name, 'v') }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get plugin info
+        id: plugin_info
+        run: |
+          VERSION="${{ github.event.release.tag_name }}"
+          PLUGIN_SLUG="functionalities"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "slug=${PLUGIN_SLUG}" >> $GITHUB_OUTPUT
+          echo "filename=${PLUGIN_SLUG}-${VERSION}.zip" >> $GITHUB_OUTPUT
+
+      - name: Verify version matches
+        run: |
+          FILE_VERSION=$(grep -oP "Version:\s*\K[0-9]+\.[0-9]+\.[0-9]+" functionalities.php | head -1)
+          TAG_VERSION="${{ steps.plugin_info.outputs.version }}"
+          if [ "$FILE_VERSION" != "$TAG_VERSION" ]; then
+            echo "::warning::Version mismatch - File: $FILE_VERSION, Tag: $TAG_VERSION"
+          fi
+
+      - name: Build plugin zip
+        run: |
+          # Create build directory
+          mkdir -p build/${{ steps.plugin_info.outputs.slug }}
+
+          # Copy plugin files (exclude dev files)
+          rsync -av --progress ./ build/${{ steps.plugin_info.outputs.slug }}/ \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='.gitignore' \
+            --exclude='.gitattributes' \
+            --exclude='node_modules' \
+            --exclude='vendor' \
+            --exclude='tests' \
+            --exclude='phpunit.xml' \
+            --exclude='phpcs.xml' \
+            --exclude='composer.json' \
+            --exclude='composer.lock' \
+            --exclude='package.json' \
+            --exclude='package-lock.json' \
+            --exclude='webpack.config.js' \
+            --exclude='build' \
+            --exclude='.editorconfig' \
+            --exclude='.eslintrc' \
+            --exclude='.prettierrc' \
+            --exclude='*.md' \
+            --exclude='Makefile' \
+            --exclude='Gruntfile.js' \
+            --exclude='gulpfile.js'
+
+          # Create zip
+          cd build
+          zip -r ../${{ steps.plugin_info.outputs.filename }} ${{ steps.plugin_info.outputs.slug }}
+          cd ..
+
+          # Show zip contents for verification
+          echo "=== Zip Contents ==="
+          unzip -l ${{ steps.plugin_info.outputs.filename }} | head -50
+
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ steps.plugin_info.outputs.filename }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Summary
+        run: |
+          echo "## Release Build Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ steps.plugin_info.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "**File:** ${{ steps.plugin_info.outputs.filename }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "The plugin zip has been uploaded to the release assets." >> $GITHUB_STEP_SUMMARY
