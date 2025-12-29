@@ -189,6 +189,12 @@ class Admin {
 	private static function define_modules() : void {
 		// Ordered by typical usage frequency - most used first.
 		self::$modules = array(
+			'task-manager' => array(
+				'title'       => \__( 'Task Manager', 'functionalities' ),
+				'description' => \__( 'File-based project task management with JSON storage.', 'functionalities' ),
+				'icon'        => 'dashicons-yes-alt',
+				'custom_page' => true,
+			),
 			'misc'            => array(
 				'title'       => \__( 'Performance & Cleanup', 'functionalities' ),
 				'description' => \__( 'Disable bloat, emojis, embeds, heartbeat, and more.', 'functionalities' ),
@@ -229,12 +235,6 @@ class Admin {
 				'title'       => \__( 'Assumption Detection', 'functionalities' ),
 				'description' => \__( 'Notice when implicit site assumptions stop being true.', 'functionalities' ),
 				'icon'        => 'dashicons-visibility',
-			),
-			'task-manager' => array(
-				'title'       => \__( 'Task Manager', 'functionalities' ),
-				'description' => \__( 'File-based project task management with JSON storage.', 'functionalities' ),
-				'icon'        => 'dashicons-yes-alt',
-				'custom_page' => true,
 			),
 			'login-security' => array(
 				'title'       => \__( 'Login Security', 'functionalities' ),
