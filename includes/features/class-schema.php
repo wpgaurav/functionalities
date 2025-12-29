@@ -355,16 +355,7 @@ class Schema {
 			}
 		}
 
-		if ( ! $target ) {
-			foreach ( $wrap->childNodes as $child ) {
-				if ( $child instanceof \DOMElement ) {
-					$target = $child;
-					break;
-				}
-			}
-		}
-
-		// Add article schema attributes.
+		// Add article schema attributes only if <article> tag exists.
 		if ( $target instanceof \DOMElement ) {
 			$target->setAttribute( 'itemscope', '' );
 			$target->setAttribute( 'itemtype', 'https://schema.org/' . $type );
