@@ -76,11 +76,12 @@ jobs:
           unzip -l ${{ steps.plugin_info.outputs.filename }} | head -50
 
       - name: Upload release asset
-        uses: softprops/action-gh-release@v1
-        with:
-          files: ${{ steps.plugin_info.outputs.filename }}
+        run: |
+          gh release upload "${{ github.event.release.tag_name }}" \
+            "${{ steps.plugin_info.outputs.filename }}" \
+            --clobber
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
 
       - name: Summary
         run: |
