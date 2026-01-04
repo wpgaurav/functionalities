@@ -3,7 +3,7 @@
  * Plugin Name: Functionalities
  * Plugin URI: https://functionalities.dev
  * Description: Modular site-specific plugin with modern dashboard, complete GT Nofollow Manager integration, and WordPress coding standards compliance.
- * Version: 0.10.3
+ * Version: 0.10.4
  * Author: Gaurav Tiwari
  * Author URI: https://gauravtiwari.org
  * License: GPL-2.0-or-later
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Define constants.
 if ( ! defined( 'FUNCTIONALITIES_VERSION' ) ) {
-	define( 'FUNCTIONALITIES_VERSION', '0.10.3' );
+	define( 'FUNCTIONALITIES_VERSION', '0.10.4' );
 }
 if ( ! defined( 'FUNCTIONALITIES_FILE' ) ) {
 	define( 'FUNCTIONALITIES_FILE', __FILE__ );
@@ -51,13 +51,13 @@ require_once FUNCTIONALITIES_DIR . 'includes/features/class-redirect-manager.php
 require_once FUNCTIONALITIES_DIR . 'includes/features/class-login-security.php';
 require_once FUNCTIONALITIES_DIR . 'includes/class-github-updater.php';
 
-// Load translations at init to avoid _load_textdomain_just_in_time warning.
+// Initialize plugin at init to ensure translations are loaded first.
+// Using priority 0 for textdomain, priority 10 for plugin initialization.
 \add_action( 'init', function() {
 	\load_plugin_textdomain( 'functionalities', false, dirname( \plugin_basename( FUNCTIONALITIES_FILE ) ) . '/languages' );
-}, 1 );
+}, 0 );
 
-// Initialize plugin.
-\add_action( 'plugins_loaded', function() {
+\add_action( 'init', function() {
 	\Functionalities\Admin\Admin::init();
 	\Functionalities\Features\Link_Management::init();
 	\Functionalities\Features\Block_Cleanup::init();
