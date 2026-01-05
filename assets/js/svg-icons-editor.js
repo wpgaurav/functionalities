@@ -131,9 +131,10 @@
 			// Clean and prepare SVG for insertion
 			var svgCode = icon.svg
 				.replace(/<!--[\s\S]*?-->/g, '') // Remove HTML/XML comments
-				.replace(/<svg/, '<svg class="func-icon" style="width:1em;height:1em;vertical-align:-0.125em;fill:currentColor"')
+				.replace(/<svg/, '<svg class="func-icon" style="display:inline-block;width:1em;height:1em;vertical-align:-0.125em;fill:currentColor"')
 				.replace(/\s*(width|height)="[^"]*"/g, ''); // Remove width/height attributes
-			var iconHTML = '<span class="func-icon-wrapper">' + svgCode + '</span>';
+			// Add inline styles to wrapper for editor iframe compatibility
+			var iconHTML = '<span class="func-icon-wrapper" style="display:inline-flex;align-items:center;line-height:0">' + svgCode + '</span>';
 			onChange(insert(value, create({ html: iconHTML })));
 			setIsOpen(false);
 			setSearchTerm('');

@@ -252,6 +252,28 @@ class SVG_Icons
 			array(),
 			FUNCTIONALITIES_VERSION
 		);
+
+		// Add inline styles for editor content area (iframe)
+		$inline_styles = '
+			.func-icon-wrapper {
+				display: inline-flex !important;
+				align-items: center;
+				line-height: 0;
+			}
+			.func-icon-wrapper .func-icon,
+			svg.func-icon,
+			.func-icon {
+				display: inline-block !important;
+				width: 1em !important;
+				height: 1em !important;
+				vertical-align: -0.125em;
+				fill: currentColor;
+			}
+			.func-icon path {
+				fill: inherit;
+			}
+		';
+		\wp_add_inline_style('functionalities-svg-icons-editor', $inline_styles);
 	}
 
 	/**
