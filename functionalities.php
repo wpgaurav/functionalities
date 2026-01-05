@@ -3,7 +3,7 @@
  * Plugin Name: Functionalities
  * Plugin URI: https://functionalities.dev
  * Description: Modular site-specific plugin with modern dashboard, complete GT Nofollow Manager integration, and WordPress coding standards compliance.
- * Version: 0.10.4
+ * Version: 0.11.0
  * Author: Gaurav Tiwari
  * Author URI: https://gauravtiwari.org
  * License: GPL-2.0-or-later
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Define constants.
 if ( ! defined( 'FUNCTIONALITIES_VERSION' ) ) {
-	define( 'FUNCTIONALITIES_VERSION', '0.10.4' );
+	define( 'FUNCTIONALITIES_VERSION', '0.11.0' );
 }
 if ( ! defined( 'FUNCTIONALITIES_FILE' ) ) {
 	define( 'FUNCTIONALITIES_FILE', __FILE__ );
@@ -49,6 +49,7 @@ require_once FUNCTIONALITIES_DIR . 'includes/features/class-assumption-detection
 require_once FUNCTIONALITIES_DIR . 'includes/features/class-task-manager.php';
 require_once FUNCTIONALITIES_DIR . 'includes/features/class-redirect-manager.php';
 require_once FUNCTIONALITIES_DIR . 'includes/features/class-login-security.php';
+require_once FUNCTIONALITIES_DIR . 'includes/features/class-svg-icons.php';
 require_once FUNCTIONALITIES_DIR . 'includes/class-github-updater.php';
 
 // Initialize plugin at init to ensure translations are loaded first.
@@ -73,6 +74,7 @@ require_once FUNCTIONALITIES_DIR . 'includes/class-github-updater.php';
 	\Functionalities\Features\Task_Manager::init();
 	\Functionalities\Features\Redirect_Manager::init();
 	\Functionalities\Features\Login_Security::init();
+	\Functionalities\Features\SVG_Icons::init();
 
 	// Initialize GitHub Updater if enabled.
 	$update_options = \Functionalities\Admin\Admin::get_updates_options();

@@ -139,19 +139,20 @@ class Module_Docs {
 				),
 			),
 
-			'icons' => array(
+			'svg-icons' => array(
 				'features' => array(
-					\__( 'Remove Font Awesome CSS and JavaScript files to reduce page weight', 'functionalities' ),
-					\__( 'Convert Font Awesome icon markup to SVG sprite references', 'functionalities' ),
-					\__( 'Works with fa, fas, far, and fab icon prefixes', 'functionalities' ),
-					\__( 'Significantly improves performance while maintaining icon compatibility', 'functionalities' ),
+					\__( 'Upload or paste custom SVG icons with unique namespaces', 'functionalities' ),
+					\__( 'Insert icons inline in the block editor via RichText toolbar', 'functionalities' ),
+					\__( 'Icons automatically inherit the font size of surrounding text', 'functionalities' ),
+					\__( 'Secure SVG sanitization prevents XSS and malicious content', 'functionalities' ),
+					\__( 'Zero frontend footprint - icons only render where used', 'functionalities' ),
+					\__( 'Also available via shortcode: [func_icon name="icon-slug"]', 'functionalities' ),
 				),
-				'usage' => \__( 'You need an SVG sprite file containing your icons. Point the sprite URL to your file and the module will convert <i class="fa fa-icon"> to <svg><use href="sprite.svg#fa-icon"></use></svg>.', 'functionalities' ),
+				'usage' => \__( 'Add icons by pasting SVG code in the admin. Each icon gets a unique slug. In the block editor, use the icon button in the toolbar to insert icons inline. Icons will scale with the surrounding text.', 'functionalities' ),
 				'hooks' => array(
-					array( 'name' => 'functionalities_icons_remove_fa_enabled', 'description' => \__( 'Control asset removal', 'functionalities' ) ),
-					array( 'name' => 'functionalities_icons_convert_enabled', 'description' => \__( 'Control conversion', 'functionalities' ) ),
-					array( 'name' => 'functionalities_icons_sprite_url', 'description' => \__( 'Modify sprite URL', 'functionalities' ) ),
-					array( 'name' => 'functionalities_icons_fa_handles', 'description' => \__( 'Add/remove FA handles', 'functionalities' ) ),
+					array( 'name' => 'functionalities_svg_icons_enabled', 'description' => \__( 'Toggle feature on/off', 'functionalities' ) ),
+					array( 'name' => 'functionalities_svg_icons_list', 'description' => \__( 'Filter available icons', 'functionalities' ) ),
+					array( 'name' => 'functionalities_svg_icons_sanitize', 'description' => \__( 'Modify SVG before saving', 'functionalities' ) ),
 				),
 			),
 
