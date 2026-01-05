@@ -7,9 +7,7 @@
 
 /* Icon placeholder in editor */
 .func-icon {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
+	display: inline;
 	vertical-align: middle;
 }
 
@@ -18,6 +16,7 @@
 	height: 1em;
 	fill: currentColor;
 	vertical-align: -0.125em;
+	display: inline-block;
 }
 
 /* Popover styles */
@@ -25,196 +24,86 @@
 	z-index: 100001;
 }
 
+.func-svg-icon-popover .components-popover__content {
+	padding: 0;
+}
+
 .func-svg-icon-picker {
-	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+	padding: 12px;
+	min-width: 280px;
+	max-width: 340px;
 }
 
-/* Icon grid */
-.func-svg-icon-grid {
-	scrollbar-width: thin;
-	scrollbar-color: #c3c4c7 transparent;
+.func-icon-search {
+	margin-bottom: 12px !important;
 }
 
-.func-svg-icon-grid::-webkit-scrollbar {
+.func-icon-search input {
+	width: 100%;
+}
+
+/* Icon grid in popover */
+.func-icon-grid {
+	display: grid;
+	grid-template-columns: repeat(6, 1fr);
+	gap: 6px;
+	max-height: 240px;
+	overflow-y: auto;
+	padding: 4px;
+}
+
+.func-icon-grid::-webkit-scrollbar {
 	width: 6px;
 }
 
-.func-svg-icon-grid::-webkit-scrollbar-track {
-	background: transparent;
+.func-icon-grid::-webkit-scrollbar-track {
+	background: #f0f0f0;
+	border-radius: 3px;
 }
 
-.func-svg-icon-grid::-webkit-scrollbar-thumb {
-	background-color: #c3c4c7;
+.func-icon-grid::-webkit-scrollbar-thumb {
+	background: #c0c0c0;
 	border-radius: 3px;
 }
 
 /* Icon button in grid */
-.func-svg-icon-button svg {
-	width: 20px;
-	height: 20px;
-	fill: currentColor;
-	color: #1e1e1e;
+.func-icon-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	padding: 8px;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	background: #fff;
+	cursor: pointer;
+	transition: all 0.15s ease;
 }
 
-.func-svg-icon-button:focus {
+.func-icon-btn:hover {
+	border-color: #007cba;
+	background: #f0f6fc;
+	transform: scale(1.05);
+}
+
+.func-icon-btn:focus {
 	outline: 2px solid #007cba;
 	outline-offset: -2px;
 	box-shadow: none;
 }
 
-/* Admin icon management styles */
-.func-svg-icons-admin {
-	max-width: 800px;
-}
-
-.func-svg-icons-list {
-	margin-top: 20px;
-}
-
-.func-svg-icon-item {
-	display: flex;
-	align-items: center;
-	gap: 16px;
-	padding: 12px 16px;
-	background: #fff;
-	border: 1px solid #c3c4c7;
-	border-radius: 4px;
-	margin-bottom: 8px;
-}
-
-.func-svg-icon-item:hover {
-	border-color: #2271b1;
-}
-
-.func-svg-icon-preview {
-	width: 32px;
-	height: 32px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	background: #f6f7f7;
-	border-radius: 4px;
-	flex-shrink: 0;
-}
-
-.func-svg-icon-preview svg {
-	width: 24px;
-	height: 24px;
+.func-icon-btn svg {
+	width: 22px;
+	height: 22px;
 	fill: currentColor;
-	color: #1d2327;
+	color: #1e1e1e;
 }
 
-.func-svg-icon-info {
-	flex: 1;
-	min-width: 0;
-}
-
-.func-svg-icon-name {
-	font-weight: 600;
-	font-size: 14px;
-	color: #1d2327;
-	margin: 0 0 2px;
-}
-
-.func-svg-icon-slug {
-	font-size: 12px;
-	color: #646970;
-	font-family: monospace;
-	margin: 0;
-}
-
-.func-svg-icon-actions {
-	display: flex;
-	gap: 8px;
-	flex-shrink: 0;
-}
-
-/* Add icon form */
-.func-svg-add-form {
-	background: #f6f7f7;
-	border: 1px solid #c3c4c7;
-	border-radius: 4px;
-	padding: 20px;
-	margin-bottom: 20px;
-}
-
-.func-svg-add-form h3 {
-	margin-top: 0;
-	margin-bottom: 16px;
-}
-
-.func-svg-form-row {
-	margin-bottom: 16px;
-}
-
-.func-svg-form-row:last-child {
-	margin-bottom: 0;
-}
-
-.func-svg-form-row label {
-	display: block;
-	font-weight: 600;
-	margin-bottom: 6px;
-	font-size: 13px;
-}
-
-.func-svg-form-row input[type="text"],
-.func-svg-form-row textarea {
+/* Make SVGs inside icon buttons scale properly */
+.func-icon-btn svg[viewBox] {
 	width: 100%;
-	max-width: 400px;
-}
-
-.func-svg-form-row textarea {
-	min-height: 150px;
-	font-family: monospace;
-	font-size: 12px;
-}
-
-.func-svg-preview-area {
-	display: flex;
-	align-items: center;
-	gap: 16px;
-	padding: 16px;
-	background: #fff;
-	border: 1px solid #c3c4c7;
-	border-radius: 4px;
-	margin-top: 12px;
-}
-
-.func-svg-preview-box {
-	width: 48px;
-	height: 48px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	background: #f6f7f7;
-	border-radius: 4px;
-}
-
-.func-svg-preview-box svg {
-	max-width: 32px;
-	max-height: 32px;
-}
-
-/* Empty state */
-.func-svg-empty {
-	text-align: center;
-	padding: 40px 20px;
-	background: #f6f7f7;
-	border: 1px dashed #c3c4c7;
-	border-radius: 4px;
-	color: #646970;
-}
-
-.func-svg-empty .dashicons {
-	font-size: 48px;
-	width: 48px;
-	height: 48px;
-	color: #c3c4c7;
-	margin-bottom: 12px;
-}
-
-.func-svg-empty p {
-	margin: 0;
-	font-size: 14px;
+	height: 100%;
+	max-width: 22px;
+	max-height: 22px;
 }

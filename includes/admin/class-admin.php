@@ -5915,9 +5915,9 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 					<p><?php echo \esc_html__( 'No icons yet. Add your first icon above.', 'functionalities' ); ?></p>
 				</div>
 			<?php else : ?>
-				<div class="func-svg-icons-list" id="icons-list">
+				<div class="func-svg-icons-grid" id="icons-list">
 					<?php foreach ( $icons as $slug => $icon ) : ?>
-						<div class="func-svg-icon-item" data-slug="<?php echo \esc_attr( $slug ); ?>">
+						<div class="func-svg-icon-card" data-slug="<?php echo \esc_attr( $slug ); ?>">
 							<div class="func-svg-icon-preview">
 								<?php echo $icon['svg']; ?>
 							</div>
@@ -5926,11 +5926,11 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 								<p class="func-svg-icon-slug"><?php echo \esc_html( $slug ); ?></p>
 							</div>
 							<div class="func-svg-icon-actions">
-								<button type="button" class="button copy-shortcode" data-slug="<?php echo \esc_attr( $slug ); ?>" title="<?php echo \esc_attr__( 'Copy shortcode', 'functionalities' ); ?>">
-									<span class="dashicons dashicons-clipboard" style="vertical-align:text-bottom;"></span>
+								<button type="button" class="button button-small copy-shortcode" data-slug="<?php echo \esc_attr( $slug ); ?>" title="<?php echo \esc_attr__( 'Copy shortcode', 'functionalities' ); ?>">
+									<span class="dashicons dashicons-clipboard"></span>
 								</button>
-								<button type="button" class="button delete-icon" data-slug="<?php echo \esc_attr( $slug ); ?>" title="<?php echo \esc_attr__( 'Delete', 'functionalities' ); ?>">
-									<span class="dashicons dashicons-trash" style="vertical-align:text-bottom;"></span>
+								<button type="button" class="button button-small delete-icon" data-slug="<?php echo \esc_attr( $slug ); ?>" title="<?php echo \esc_attr__( 'Delete', 'functionalities' ); ?>">
+									<span class="dashicons dashicons-trash"></span>
 								</button>
 							</div>
 						</div>
@@ -5949,15 +5949,17 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 		.func-svg-icons-admin .func-svg-preview-area { display: flex; align-items: center; gap: 16px; padding: 16px; background: #fff; border: 1px solid #c3c4c7; border-radius: 4px; }
 		.func-svg-icons-admin .func-svg-preview-box { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; background: #f6f7f7; border-radius: 4px; }
 		.func-svg-icons-admin .func-svg-preview-box svg { max-width: 32px; max-height: 32px; }
-		.func-svg-icons-admin .func-svg-icons-list { margin-top: 12px; }
-		.func-svg-icons-admin .func-svg-icon-item { display: flex; align-items: center; gap: 16px; padding: 12px 16px; background: #fff; border: 1px solid #c3c4c7; border-radius: 4px; margin-bottom: 8px; }
-		.func-svg-icons-admin .func-svg-icon-item:hover { border-color: #2271b1; }
-		.func-svg-icons-admin .func-svg-icon-preview { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: #f6f7f7; border-radius: 4px; flex-shrink: 0; }
-		.func-svg-icons-admin .func-svg-icon-preview svg { width: 24px; height: 24px; fill: currentColor; color: #1d2327; }
-		.func-svg-icons-admin .func-svg-icon-info { flex: 1; min-width: 0; }
-		.func-svg-icons-admin .func-svg-icon-name { font-weight: 600; font-size: 14px; color: #1d2327; margin: 0 0 2px; }
-		.func-svg-icons-admin .func-svg-icon-slug { font-size: 12px; color: #646970; font-family: monospace; margin: 0; }
-		.func-svg-icons-admin .func-svg-icon-actions { display: flex; gap: 8px; flex-shrink: 0; }
+		/* Icons Grid */
+		.func-svg-icons-admin .func-svg-icons-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; margin-top: 16px; }
+		.func-svg-icons-admin .func-svg-icon-card { background: #fff; border: 1px solid #c3c4c7; border-radius: 8px; padding: 16px; text-align: center; transition: all 0.2s ease; }
+		.func-svg-icons-admin .func-svg-icon-card:hover { border-color: #2271b1; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transform: translateY(-2px); }
+		.func-svg-icons-admin .func-svg-icon-preview { width: 64px; height: 64px; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; background: #f6f7f7; border-radius: 8px; }
+		.func-svg-icons-admin .func-svg-icon-preview svg { width: 40px; height: 40px; fill: currentColor; color: #1d2327; }
+		.func-svg-icons-admin .func-svg-icon-info { margin-bottom: 12px; }
+		.func-svg-icons-admin .func-svg-icon-name { font-weight: 600; font-size: 14px; color: #1d2327; margin: 0 0 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+		.func-svg-icons-admin .func-svg-icon-slug { font-size: 11px; color: #646970; font-family: monospace; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+		.func-svg-icons-admin .func-svg-icon-actions { display: flex; justify-content: center; gap: 8px; }
+		.func-svg-icons-admin .func-svg-icon-actions .button .dashicons { font-size: 16px; width: 16px; height: 16px; vertical-align: text-bottom; }
 		.func-svg-icons-admin .func-svg-empty { text-align: center; padding: 40px 20px; background: #f6f7f7; border: 1px dashed #c3c4c7; border-radius: 4px; color: #646970; }
 		.func-svg-icons-admin .func-svg-empty .dashicons { font-size: 48px; width: 48px; height: 48px; color: #c3c4c7; margin-bottom: 12px; display: block; }
 		</style>
@@ -6035,7 +6037,7 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 					slug: slug
 				}, function(response) {
 					if (response.success) {
-						$('.func-svg-icon-item[data-slug="' + slug + '"]').fadeOut(function() { $(this).remove(); });
+						$('.func-svg-icon-card[data-slug="' + slug + '"]').fadeOut(function() { $(this).remove(); });
 					} else {
 						alert(response.data?.message || '<?php echo \esc_js( \__( 'Error deleting icon.', 'functionalities' ) ); ?>');
 					}

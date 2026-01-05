@@ -81,6 +81,7 @@ class SVG_Icons {
 
 	/**
 	 * Allowed SVG attributes for sanitization.
+	 * Note: All attributes are lowercase for case-insensitive comparison.
 	 *
 	 * @var array
 	 */
@@ -90,7 +91,7 @@ class SVG_Icons {
 		'style',
 		'xmlns',
 		'xmlns:xlink',
-		'viewBox',
+		'viewbox',
 		'width',
 		'height',
 		'fill',
@@ -123,13 +124,16 @@ class SVG_Icons {
 		'mask',
 		'xlink:href',
 		'href',
-		'gradientUnits',
-		'gradientTransform',
-		'spreadMethod',
+		'gradientunits',
+		'gradienttransform',
+		'spreadmethod',
 		'offset',
 		'stop-color',
 		'stop-opacity',
-		'preserveAspectRatio',
+		'preserveaspectratio',
+		'version',
+		'xml:space',
+		'enable-background',
 	);
 
 	/**
@@ -215,7 +219,7 @@ class SVG_Icons {
 		\wp_enqueue_script(
 			'functionalities-svg-icons-editor',
 			FUNCTIONALITIES_URL . 'assets/js/svg-icons-editor.js',
-			array( 'wp-rich-text', 'wp-element', 'wp-editor', 'wp-components', 'wp-i18n', 'wp-data' ),
+			array( 'wp-rich-text', 'wp-element', 'wp-block-editor', 'wp-components', 'wp-i18n', 'wp-dom-ready' ),
 			FUNCTIONALITIES_VERSION,
 			true
 		);
