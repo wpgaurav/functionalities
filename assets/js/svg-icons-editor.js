@@ -125,20 +125,55 @@
 			});
 		}
 
-		// Handle icon insertion - insert actual SVG code
+		// Handle icon insertion - use placeholder that PHP will replace on frontend
 		var onInsertIcon = useCallback(function (icon) {
 			log('Inserting icon', icon.slug);
-			// Clean and prepare SVG for insertion
-			var svgCode = icon.svg
-				.replace(/<!--[\s\S]*?-->/g, '') // Remove HTML/XML comments
-				.replace(/<svg/, '<svg class="func-icon" style="display:inline-block;width:1em;height:1em;vertical-align:-0.125em;fill:currentColor"')
-				.replace(/\s*(width|height)="[^"]*"/g, ''); // Remove width/height attributes
-			// Add inline styles to wrapper for editor iframe compatibility
-			var iconHTML = '<span class="func-icon-wrapper" style="display:inline-flex;align-items:center;line-height:0">' + svgCode + '</span>';
+
+			// Insert placeholder span (PHP will replace with SVG on frontend)
+			var iconHTML = '<span data-icon="' + icon.slug + '" class="func-icon"></span>';
 			onChange(insert(value, create({ html: iconHTML })));
+
+			// Inject CSS to display icon in editor using pseudo-element
+			injectIconStyle(icon);
+
 			setIsOpen(false);
 			setSearchTerm('');
 		}, [value, onChange]);
+
+		// Helper to inject CSS for an icon
+		var injectIconStyle = function (icon) {
+			var styleId = 'func-icon-style-' + icon.slug;
+			if (document.getElementById(styleId)) return;
+
+			// Clean SVG for CSS background
+			var svgCode = icon.svg
+				.replace(/<!--[\s\S]*?-->/g, '')
+				.replace(/"/g, "'")
+				.replace(/#/g, '%23')
+				.replace(/\n/g, ' ')
+				.trim();
+
+			var style = document.createElement('style');
+			style.id = styleId;
+			style.textContent = '.func-icon[data-icon="' + icon.slug + '"]::before { ' +
+				'content: ""; ' +
+				'display: inline-block; ' +
+				'width: 1em; ' +
+				'height: 1em; ' +
+				'vertical-align: -0.125em; ' +
+				'background-image: url("data:image/svg+xml,' + encodeURIComponent(svgCode) + '"); ' +
+				'background-size: contain; ' +
+				'background-repeat: no-repeat; ' +
+				'background-position: center; ' +
+				'}';
+			document.head.appendChild(style);
+			log('Injected style for icon:', icon.slug);
+		};
+
+		// Inject styles for all icons on mount (for existing content)
+		wp.element.useEffect(function () {
+			allIcons.forEach(injectIconStyle);
+		}, []);
 
 		// Handle toggle
 		var onToggle = useCallback(function () {

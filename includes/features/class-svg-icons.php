@@ -170,8 +170,10 @@ class SVG_Icons
 		// Add shortcode for icon rendering (backward compatibility).
 		\add_shortcode('func_icon', array(__CLASS__, 'render_shortcode'));
 
-		// Note: the_content filter removed - SVG is now inserted directly by the editor
-		// Legacy data-icon spans will still work if render_icons_in_content is called
+		// Filter content to replace icon placeholders with actual SVG on frontend.
+		if (!\is_admin()) {
+			\add_filter('the_content', array(__CLASS__, 'render_icons_in_content'), 20);
+		}
 	}
 
 	/**
@@ -519,10 +521,13 @@ class SVG_Icons
 
 		$svg = $icons[$slug]['svg'];
 
+		// Remove any HTML/XML comments.
+		$svg = preg_replace('/<!--[\s\S]*?-->/', '', $svg);
+
 		// Add inline styles for size inheritance and proper alignment.
 		$svg = preg_replace(
 			'/<svg\b/',
-			'<svg class="func-svg-icon' . ($extra_class ? ' ' . \esc_attr($extra_class) : '') . '" style="width:1em;height:1em;vertical-align:-0.125em;fill:currentColor" aria-hidden="true"',
+			'<svg class="func-svg-icon' . ($extra_class ? ' ' . \esc_attr($extra_class) : '') . '" style="display:inline-block;width:1em;height:1em;vertical-align:-0.125em;fill:currentColor" aria-hidden="true"',
 			$svg,
 			1
 		);
@@ -544,13 +549,16 @@ class SVG_Icons
 	 */
 	public static function render_icons_in_content(string $content): string
 	{
-		// Match icon placeholders.
-		$pattern = '/<span\s+class="func-icon"\s+data-icon="([^"]+)"[^>]*><\/span>/i';
+		// Match icon placeholders (handles both attribute orderings).
+		// Pattern 1: data-icon="..." class="func-icon"
+		// Pattern 2: class="func-icon" data-icon="..."
+		$pattern = '/<span\s+(?:data-icon="([^"]+)"\s+class="func-icon"|class="func-icon"\s+data-icon="([^"]+)")[^>]*><\/span>/i';
 
 		return preg_replace_callback(
 			$pattern,
 			function ($matches) {
-				$slug = \sanitize_key($matches[1]);
+				// Get slug from whichever capture group matched
+				$slug = \sanitize_key(!empty($matches[1]) ? $matches[1] : $matches[2]);
 				return self::render_icon($slug);
 			},
 			$content
