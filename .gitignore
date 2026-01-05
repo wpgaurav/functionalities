@@ -25,3 +25,4 @@ yarn-error.log*
 # Build files
 /build/
 /dist/
+assets/.DS_Store
