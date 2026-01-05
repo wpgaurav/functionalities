@@ -8,10 +8,39 @@
 ( function( wp ) {
 	'use strict';
 
+	// Debug logging helper
+	var DEBUG = true;
+	var log = function( message, data ) {
+		if ( DEBUG && console && console.log ) {
+			if ( data !== undefined ) {
+				console.log( '[Functionalities SVG Icons] ' + message, data );
+			} else {
+				console.log( '[Functionalities SVG Icons] ' + message );
+			}
+		}
+	};
+
+	log( 'Script loaded' );
+
 	// Exit if wp is not available
-	if ( typeof wp === 'undefined' || typeof wp.richText === 'undefined' ) {
+	if ( typeof wp === 'undefined' ) {
+		log( 'ERROR: wp object is undefined - WordPress not loaded properly' );
 		return;
 	}
+
+	if ( typeof wp.richText === 'undefined' ) {
+		log( 'ERROR: wp.richText is undefined - rich text module not available' );
+		return;
+	}
+
+	log( 'WordPress dependencies available', {
+		'wp.element': typeof wp.element,
+		'wp.richText': typeof wp.richText,
+		'wp.blockEditor': typeof wp.blockEditor,
+		'wp.components': typeof wp.components,
+		'wp.i18n': typeof wp.i18n,
+		'wp.domReady': typeof wp.domReady
+	} );
 
 	var el = wp.element.createElement;
 	var Fragment = wp.element.Fragment;
@@ -25,10 +54,24 @@
 	var Button = wp.components.Button;
 	var __ = wp.i18n.__;
 
+	// Verify critical components
+	if ( ! RichTextToolbarButton ) {
+		log( 'ERROR: RichTextToolbarButton is not available from wp.blockEditor' );
+		return;
+	}
+
+	log( 'All critical components loaded successfully' );
+
 	// Get icons data
 	var iconsData = window.functionalitiesSvgIcons || {};
 	var allIcons = iconsData.icons || [];
 	var i18n = iconsData.i18n || {};
+
+	log( 'Icons data loaded', {
+		iconCount: allIcons.length,
+		hasI18n: Object.keys( i18n ).length > 0,
+		rawData: iconsData
+	} );
 
 	// SVG icon for the toolbar button
 	var toolbarIcon = el( 'svg', {
@@ -68,6 +111,7 @@
 
 		// Handle icon insertion
 		var onInsertIcon = function( icon ) {
+			log( 'Inserting icon', icon.slug );
 			var iconHTML = '<span class="func-icon" data-icon="' + icon.slug + '"></span>';
 			onChange( insert( value, create( { html: iconHTML } ) ) );
 			setIsOpen( false );
@@ -76,6 +120,7 @@
 
 		// Handle toggle
 		var onToggle = function() {
+			log( 'Toggling icon picker', { wasOpen: isOpen, willBeOpen: !isOpen } );
 			setIsOpen( ! isOpen );
 			if ( isOpen ) {
 				setSearchTerm( '' );
@@ -84,6 +129,7 @@
 
 		// Handle close
 		var onClose = function() {
+			log( 'Closing icon picker' );
 			setIsOpen( false );
 			setSearchTerm( '' );
 		};
@@ -149,12 +195,19 @@
 
 	// Register format type on DOM ready
 	wp.domReady( function() {
-		registerFormatType( 'functionalities/svg-icon', {
-			title: i18n.insertIcon || __( 'Insert Icon', 'functionalities' ),
-			tagName: 'span',
-			className: 'func-icon',
-			edit: IconPickerEdit
-		} );
+		log( 'DOM ready - registering format type' );
+		
+		try {
+			registerFormatType( 'functionalities/svg-icon', {
+				title: i18n.insertIcon || __( 'Insert Icon', 'functionalities' ),
+				tagName: 'span',
+				className: 'func-icon',
+				edit: IconPickerEdit
+			} );
+			log( 'Format type registered successfully: functionalities/svg-icon' );
+		} catch ( error ) {
+			log( 'ERROR registering format type', error );
+		}
 	} );
 
 } )( window.wp );
