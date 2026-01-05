@@ -107,6 +107,23 @@ A modular site-specific plugin to organize common features with simple toggles. 
 - Dashboard UI with acknowledge/ignore actions
 - Navigate to: `?page=functionalities&module=assumption-detection`
 
+**Task Manager** *(New in 0.9.9)*
+- Simple task tracking for content and development workflows
+- Organize and prioritize tasks within WordPress admin
+- Navigate to: `?page=functionalities&module=task-manager`
+
+**Redirect Manager** *(New in 0.10.0)*
+- Manage URL redirects directly from WordPress admin
+- Support for 301 and 302 redirects
+- Easy-to-use interface for redirect management
+- Navigate to: `?page=functionalities&module=redirect-manager`
+
+**Login Security** *(New in 0.10.0)*
+- Enhanced login protection features
+- Limit login attempts
+- Additional security measures for WordPress login
+- Navigate to: `?page=functionalities&module=login-security`
+
 ## Installation
 
 1. Copy this folder `functionalities/` into your WordPress `wp-content/plugins/` directory.
@@ -157,10 +174,13 @@ functionalities/
 │   │   ├── class-fonts.php
 │   │   ├── class-icons.php
 │   │   ├── class-link-management.php
+│   │   ├── class-login-security.php
 │   │   ├── class-meta.php
 │   │   ├── class-misc.php
+│   │   ├── class-redirect-manager.php
 │   │   ├── class-schema.php
-│   │   └── class-snippets.php
+│   │   ├── class-snippets.php
+│   │   └── class-task-manager.php
 │   └── class-github-updater.php
 ├── languages/
 └── functionalities.php            # Main plugin file
@@ -318,7 +338,30 @@ GPL-2.0-or-later
 
 ## Changelog
 
-### Version 0.9.8 (Current)
+### Version 0.10.4 (Current)
+- **FIX:** Translation loading triggered too early warning (WordPress 6.7+)
+- Improved compatibility with latest WordPress standards
+
+### Version 0.10.3
+- **IMPROVED:** Article schema only added to `<article>` tag, skip fallback
+- Better semantic schema markup
+
+### Version 0.10.2
+- Reordered Task Manager to top of admin menu
+- Minor UI improvements
+
+### Version 0.10.0
+- **NEW:** Redirect Manager module for managing URL redirects
+- **NEW:** Login Security module for enhanced login protection
+- **IMPROVED:** Assumption Detection module enhancements
+- **NEW:** GitHub Actions workflow for automated release zip builds
+- Security and performance improvements across all modules
+
+### Version 0.9.9
+- **NEW:** Task Manager module for task tracking
+- **FIX:** Translation loading improvements
+
+### Version 0.9.8
 - **REMOVED:** Unused frontend assets (assets/js/main.js and assets/css/style.css)
 - **REMOVED:** Loader class that enqueued unused frontend assets
 - Reduced plugin footprint - no frontend CSS/JS loaded by default
