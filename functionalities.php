@@ -2,8 +2,8 @@
 /**
  * Plugin Name: Functionalities
  * Plugin URI: https://functionalities.dev
- * Description: Modular site-specific plugin with modern dashboard, complete GT Nofollow Manager integration, and WordPress coding standards compliance.
- * Version: 0.11.3
+ * Description: Modular site-specific plugin with modern dashboard and features.
+ * Version: 0.11.4
  * Author: Gaurav Tiwari
  * Author URI: https://gauravtiwari.org
  * License: GPL-2.0-or-later
@@ -19,7 +19,7 @@ if (!defined('ABSPATH')) {
 
 // Define constants.
 if (!defined('FUNCTIONALITIES_VERSION')) {
-	define('FUNCTIONALITIES_VERSION', '0.11.3');
+	define('FUNCTIONALITIES_VERSION', '0.11.4');
 }
 if (!defined('FUNCTIONALITIES_FILE')) {
 	define('FUNCTIONALITIES_FILE', __FILE__);

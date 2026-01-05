@@ -264,14 +264,17 @@ class SVG_Icons
 	public static function sanitize_svg(string $svg): string
 	{
 		// Remove any PHP tags.
-		$svg = preg_replace('/<\?.*?\?>/s', '', $svg);
+		$svg = preg_replace('/\<\?.*?\?\>/s', '', $svg);
 
 		// Remove scripts.
-		$svg = preg_replace('/<script\b[^>]*>.*?<\/script>/is', '', $svg);
+		$svg = preg_replace('/\<script\b[^\>]*\>.*?\<\/script\>/is', '', $svg);
+
+		// Remove HTML/XML comments (including Font Awesome attribution, etc.).
+		$svg = preg_replace('/\<!--.*?--\>/s', '', $svg);
 
 		// Remove event handlers (onclick, onload, etc.).
 		$svg = preg_replace('/\bon\w+\s*=\s*["\'][^"\']*["\']/i', '', $svg);
-		$svg = preg_replace('/\bon\w+\s*=\s*[^\s>]*/i', '', $svg);
+		$svg = preg_replace('/\bon\w+\s*=\s*[^\s\>]*/i', '', $svg);
 
 		// Remove javascript: URLs.
 		$svg = preg_replace('/javascript\s*:/i', '', $svg);
