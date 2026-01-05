@@ -5,18 +5,18 @@
  * @since 0.11.0
  */
 
-/* Icon placeholder in editor */
-.func-icon {
+/* Icon in content (inline SVG) */
+.func-icon-wrapper {
 	display: inline;
-	vertical-align: middle;
 }
 
-.func-icon svg {
+.func-icon-wrapper .func-icon,
+.func-icon {
+	display: inline;
 	width: 1em;
 	height: 1em;
-	fill: currentColor;
 	vertical-align: -0.125em;
-	display: inline-block;
+	fill: currentColor;
 }
 
 /* Popover styles */

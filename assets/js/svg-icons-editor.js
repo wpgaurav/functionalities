@@ -125,10 +125,14 @@
 			});
 		}
 
-		// Handle icon insertion
+		// Handle icon insertion - insert actual SVG code
 		var onInsertIcon = useCallback(function (icon) {
 			log('Inserting icon', icon.slug);
-			var iconHTML = '<span class="func-icon" data-icon="' + icon.slug + '"></span>';
+			// Wrap SVG in a span with inline styles for proper sizing
+			var svgCode = icon.svg
+				.replace(/<svg/, '<svg class="func-icon" style="width:1em;height:1em;vertical-align:-0.125em;fill:currentColor"')
+				.replace(/\s*(width|height)="[^"]*"/g, ''); // Remove width/height attributes
+			var iconHTML = '<span class="func-icon-wrapper">' + svgCode + '</span>';
 			onChange(insert(value, create({ html: iconHTML })));
 			setIsOpen(false);
 			setSearchTerm('');

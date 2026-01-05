@@ -167,11 +167,11 @@ class SVG_Icons
 		\add_action('wp_ajax_functionalities_svg_icon_save', array(__CLASS__, 'ajax_save_icon'));
 		\add_action('wp_ajax_functionalities_svg_icon_delete', array(__CLASS__, 'ajax_delete_icon'));
 
-		// Add shortcode for icon rendering (fallback for non-JS).
+		// Add shortcode for icon rendering (backward compatibility).
 		\add_shortcode('func_icon', array(__CLASS__, 'render_shortcode'));
 
-		// Filter content to render inline SVG icons.
-		\add_filter('the_content', array(__CLASS__, 'render_icons_in_content'), 20);
+		// Note: the_content filter removed - SVG is now inserted directly by the editor
+		// Legacy data-icon spans will still work if render_icons_in_content is called
 	}
 
 	/**
