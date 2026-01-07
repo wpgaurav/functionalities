@@ -17,6 +17,7 @@ A modular site-specific plugin that organizes common WordPress features with sim
 
 All modules are accessed through a unified dashboard at `wp-admin/admin.php?page=functionalities`. Click any module card to configure its settings.
 
+Learn more on [Functionalities Site](https://functionalities.dev)
 ---
 
 ## Performance & Footprint
