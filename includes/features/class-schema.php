@@ -113,6 +113,9 @@ class Schema {
 
 		// Add article schema to content.
 		\add_filter( 'the_content', array( __CLASS__, 'filter_article' ), 14 );
+
+		// Add breadcrumbs JSON-LD.
+		\add_action( 'wp_footer', array( __CLASS__, 'output_breadcrumbs' ) );
 	}
 
 	/**
@@ -144,6 +147,7 @@ class Schema {
 			'add_headline'        => true,
 			'add_dates'           => true,
 			'add_author'          => true,
+			'enable_breadcrumbs'  => false,
 		);
 		$opts = (array) \get_option( 'functionalities_schema', $defaults );
 		self::$options = array_merge( $defaults, $opts );
@@ -395,5 +399,78 @@ class Schema {
 		 * @param string $original The original content.
 		 */
 		return \apply_filters( 'functionalities_schema_article_content', $result, $original );
+	}
+
+	/**
+	 * Output BreadcrumbList JSON-LD.
+	 *
+	 * @since 0.13.0
+	 * @return void
+	 */
+	public static function output_breadcrumbs() : void {
+		if ( ! \is_singular() || \is_front_page() ) {
+			return;
+		}
+
+		$opts = self::get_options();
+		if ( empty( $opts['enable_breadcrumbs'] ) ) {
+			return;
+		}
+
+		$items = array();
+
+		// Home.
+		$items[] = array(
+			'@type'    => 'ListItem',
+			'position' => 1,
+			'name'     => \__( 'Home', 'functionalities' ),
+			'item'     => \home_url( '/' ),
+		);
+
+		// Post type specific hierarchy.
+		if ( \is_singular( 'post' ) ) {
+			$categories = \get_the_category();
+			if ( ! empty( $categories ) ) {
+				$cat     = $categories[0];
+				$items[] = array(
+					'@type'    => 'ListItem',
+					'position' => 2,
+					'name'     => $cat->name,
+					'item'     => \get_category_link( $cat->term_id ),
+				);
+			}
+		} elseif ( \is_page() ) {
+			$ancestors = \get_post_ancestors( \get_the_ID() );
+			if ( ! empty( $ancestors ) ) {
+				$ancestors = array_reverse( $ancestors );
+				$pos       = 2;
+				foreach ( $ancestors as $ancestor_id ) {
+					$items[] = array(
+						'@type'    => 'ListItem',
+						'position' => $pos ++,
+						'name'     => \get_the_title( $ancestor_id ),
+						'item'     => \get_permalink( $ancestor_id ),
+					);
+				}
+			}
+		}
+
+		// Current page.
+		$items[] = array(
+			'@type'    => 'ListItem',
+			'position' => count( $items ) + 1,
+			'name'     => \get_the_title(),
+			'item'     => \get_permalink(),
+		);
+
+		$schema = array(
+			'@context'        => 'https://schema.org',
+			'@type'           => 'BreadcrumbList',
+			'itemListElement' => $items,
+		);
+
+		echo "\n<!-- Functionalities Breadcrumb Schema -->\n";
+		echo '<script type="application/ld+json">' . \wp_json_encode( $schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . '</script>';
+		echo "\n";
 	}
 }

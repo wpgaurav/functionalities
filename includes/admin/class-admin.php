@@ -281,15 +281,44 @@ class Admin {
 	 * @return void
 	 */
 	public static function register_menu() : void {
+		$parent_slug = 'functionalities';
 		\add_menu_page(
 			\__( 'Functionalities', 'functionalities' ),
 			\__( 'Functionalities', 'functionalities' ),
 			'manage_options',
-			'functionalities',
+			$parent_slug,
 			array( __CLASS__, 'render_main_page' ),
 			'dashicons-admin-generic',
 			65
 		);
+
+		// Add Dashboard as the first submenu.
+		\add_submenu_page(
+			$parent_slug,
+			\__( 'Dashboard', 'functionalities' ),
+			\__( 'Dashboard', 'functionalities' ),
+			'manage_options',
+			$parent_slug,
+			array( __CLASS__, 'render_main_page' )
+		);
+
+		// Add submenus for top modules.
+		$skip_submenus = array( 'misc', 'updates', 'assumption-detection', 'login-security', 'block-cleanup' );
+
+		foreach ( self::$modules as $slug => $module ) {
+			if ( in_array( $slug, $skip_submenus, true ) ) {
+				continue;
+			}
+
+			\add_submenu_page(
+				$parent_slug,
+				$module['title'] . ' ‹ ' . \__( 'Functionalities', 'functionalities' ),
+				$module['title'],
+				'manage_options',
+				'functionalities-' . $slug,
+				array( __CLASS__, 'render_main_page' )
+			);
+		}
 	}
 
 	/**
@@ -299,8 +328,16 @@ class Admin {
 	 * @return void
 	 */
 	public static function enqueue_admin_assets( $hook ) : void {
-		if ( 'toplevel_page_functionalities' !== $hook ) {
+		if ( strpos( $hook, 'functionalities' ) === false ) {
 			return;
+		}
+
+		$deps = array( 'jquery' );
+		$page = isset( $_GET['page'] ) ? \sanitize_key( $_GET['page'] ) : '';
+		$module = isset( $_GET['module'] ) ? \sanitize_key( $_GET['module'] ) : '';
+		
+		if ( 'task-manager' === $module || 'functionalities-task-manager' === $page ) {
+			$deps[] = 'jquery-ui-sortable';
 		}
 
 		\wp_enqueue_style(
@@ -313,7 +350,7 @@ class Admin {
 		\wp_enqueue_script(
 			'functionalities-admin',
 			FUNCTIONALITIES_URL . 'assets/js/admin.js',
-			array( 'jquery' ),
+			$deps,
 			FUNCTIONALITIES_VERSION,
 			true
 		);
@@ -341,8 +378,13 @@ class Admin {
 			\wp_die( \esc_html__( 'Insufficient permissions', 'functionalities' ) );
 		}
 
-		// Get current module from URL parameter.
+		// Get current module from URL parameter or page slug.
 		$current_module = isset( $_GET['module'] ) ? \sanitize_key( $_GET['module'] ) : '';
+		$page = isset( $_GET['page'] ) ? \sanitize_key( $_GET['page'] ) : '';
+
+		if ( empty( $current_module ) && strpos( $page, 'functionalities-' ) === 0 ) {
+			$current_module = str_replace( 'functionalities-', '', $page );
+		}
 
 		// If no module or invalid module, show dashboard.
 		if ( empty( $current_module ) || ! isset( self::$modules[ $current_module ] ) ) {
@@ -802,12 +844,14 @@ class Admin {
 			[
 				'sanitize_callback' => [ __CLASS__, 'sanitize_snippets' ],
 				'default' => [
-					'enable_header' => false,
-					'header_code'   => '',
-					'enable_footer' => false,
-					'footer_code'   => '',
-					'enable_ga4'    => false,
-					'ga4_id'        => '',
+					'enable_header'    => false,
+					'header_code'      => '',
+					'enable_body_open' => false,
+					'body_open_code'   => '',
+					'enable_footer'    => false,
+					'footer_code'      => '',
+					'enable_ga4'       => false,
+					'ga4_id'           => '',
 				],
 			]
 		);
@@ -894,6 +938,29 @@ class Admin {
 			'functionalities_snippets',
 			'functionalities_snippets_section'
 		);
+		\add_settings_field(
+			'enable_body_open',
+			\__( 'Enable custom body open code', 'functionalities' ),
+			function() {
+				$o = self::get_snippets_options();
+				$checked = ! empty( $o['enable_body_open'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_snippets[enable_body_open]" value="1" ' . $checked . '> ' . \esc_html__( 'Output below in wp_body_open', 'functionalities' ) . '</label>';
+			},
+			'functionalities_snippets',
+			'functionalities_snippets_section'
+		);
+		\add_settings_field(
+			'body_open_code',
+			\__( 'Body open code', 'functionalities' ),
+			function() {
+				$o = self::get_snippets_options();
+				$val = isset( $o['body_open_code'] ) ? (string) $o['body_open_code'] : '';
+				echo '<textarea name="functionalities_snippets[body_open_code]" rows="6" cols="60" class="large-text code">' . \esc_textarea( $val ) . '</textarea>';
+				echo '<p class="description">' . \esc_html__( 'Allowed: script, style, div, span, noscript. Useful for GTM noscript tags.', 'functionalities' ) . '</p>';
+			},
+			'functionalities_snippets',
+			'functionalities_snippets_section'
+		);
 
 		// Schema settings
 		\register_setting(
@@ -911,6 +978,7 @@ class Admin {
 					'add_headline'        => true,
 					'add_dates'           => true,
 					'add_author'          => true,
+					'enable_breadcrumbs'  => false,
 				],
 			]
 		);
@@ -1063,6 +1131,17 @@ class Admin {
 			'functionalities_schema',
 			'functionalities_schema_section'
 		);
+		\add_settings_field(
+			'enable_breadcrumbs',
+			\__( 'Enable BreadcrumbList', 'functionalities' ),
+			function() {
+				$o = self::get_schema_options();
+				$checked = ! empty( $o['enable_breadcrumbs'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_schema[enable_breadcrumbs]" value="1" ' . $checked . '> ' . \esc_html__( 'Add BreadcrumbList JSON-LD to singular pages', 'functionalities' ) . '</label>';
+			},
+			'functionalities_schema',
+			'functionalities_schema_section'
+		);
 
 		// Components settings
 		\register_setting(
@@ -1167,7 +1246,14 @@ class Admin {
 					'remove_rsd_wlw_shortlink'         => false,
 					'remove_generator_meta'            => false,
 					'disable_xmlrpc'                   => false,
+					'disable_xmlrpc_pingbacks'         => false,
 					'disable_feeds'                    => false,
+					'disable_gravatars'                => false,
+					'disable_self_pingbacks'           => false,
+					'remove_query_strings'             => false,
+					'remove_dns_prefetch'              => false,
+					'remove_recent_comments_css'       => false,
+					'limit_revisions'                  => false,
 					'disable_dashicons_for_guests'     => false,
 					'disable_heartbeat'                => false,
 					'disable_admin_bar_front'          => false,
@@ -1218,8 +1304,15 @@ class Admin {
 		self::add_misc_field( 'remove_rest_api_links_head', \__( 'Remove REST API and oEmbed discovery links from <head>', 'functionalities' ) );
 		self::add_misc_field( 'remove_rsd_wlw_shortlink', \__( 'Remove RSD, WLWManifest, and shortlink tags', 'functionalities' ) );
 		self::add_misc_field( 'remove_generator_meta', \__( 'Remove WordPress version meta (generator)', 'functionalities' ) );
-		self::add_misc_field( 'disable_xmlrpc', \__( 'Disable XML-RPC', 'functionalities' ) );
+		self::add_misc_field( 'disable_xmlrpc', \__( 'Disable XML-RPC (complete)', 'functionalities' ) );
+		self::add_misc_field( 'disable_xmlrpc_pingbacks', \__( 'Disable only XML-RPC Pingbacks', 'functionalities' ) );
 		self::add_misc_field( 'disable_feeds', \__( 'Disable RSS/Atom feeds (redirect to homepage)', 'functionalities' ) );
+		self::add_misc_field( 'disable_gravatars', \__( 'Disable Gravatars (site-wide)', 'functionalities' ) );
+		self::add_misc_field( 'disable_self_pingbacks', \__( 'Disable self-pingbacks (pings to own site)', 'functionalities' ) );
+		self::add_misc_field( 'remove_query_strings', \__( 'Remove query strings from static resources (?ver=)', 'functionalities' ) );
+		self::add_misc_field( 'remove_dns_prefetch', \__( 'Remove DNS prefetch links from <head>', 'functionalities' ) );
+		self::add_misc_field( 'remove_recent_comments_css', \__( 'Remove Recent Comments inline CSS', 'functionalities' ) );
+		self::add_misc_field( 'limit_revisions', \__( 'Limit post revisions to 10', 'functionalities' ) );
 		self::add_misc_field( 'disable_dashicons_for_guests', \__( 'Disable Dashicons on frontend for non-logged-in users', 'functionalities' ) );
 		self::add_misc_field( 'disable_heartbeat', \__( 'Disable Heartbeat API', 'functionalities' ) );
 		self::add_misc_field( 'disable_admin_bar_front', \__( 'Disable admin bar on the frontend', 'functionalities' ) );
@@ -3037,12 +3130,14 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 
 	public static function sanitize_snippets( $input ) : array {
 		$out = [
-			'enable_header' => ! empty( $input['enable_header'] ),
-			'header_code'   => '',
-			'enable_footer' => ! empty( $input['enable_footer'] ),
-			'footer_code'   => '',
-			'enable_ga4'    => ! empty( $input['enable_ga4'] ),
-			'ga4_id'        => '',
+			'enable_header'    => ! empty( $input['enable_header'] ),
+			'header_code'      => '',
+			'enable_body_open' => ! empty( $input['enable_body_open'] ),
+			'body_open_code'   => '',
+			'enable_footer'    => ! empty( $input['enable_footer'] ),
+			'footer_code'      => '',
+			'enable_ga4'       => ! empty( $input['enable_ga4'] ),
+			'ga4_id'           => '',
 		];
 
 		$ga4 = isset( $input['ga4_id'] ) ? (string) $input['ga4_id'] : '';
@@ -3062,28 +3157,33 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 			'span'     => [ 'id' => true, 'class' => true, 'style' => true ],
 		];
 
-		$raw_header = isset( $input['header_code'] ) ? (string) $input['header_code'] : '';
-		$raw_footer = isset( $input['footer_code'] ) ? (string) $input['footer_code'] : '';
+		$raw_header    = isset( $input['header_code'] ) ? (string) $input['header_code'] : '';
+		$raw_body_open = isset( $input['body_open_code'] ) ? (string) $input['body_open_code'] : '';
+		$raw_footer    = isset( $input['footer_code'] ) ? (string) $input['footer_code'] : '';
 
 		if ( \current_user_can( 'unfiltered_html' ) ) {
 			// Store as-is for trusted admins.
-			$out['header_code'] = $raw_header;
-			$out['footer_code'] = $raw_footer;
+			$out['header_code']    = $raw_header;
+			$out['body_open_code'] = $raw_body_open;
+			$out['footer_code']    = $raw_footer;
 		} else {
-			$out['header_code'] = \wp_kses( $raw_header, $allowed_tags );
-			$out['footer_code'] = \wp_kses( $raw_footer, $allowed_tags );
+			$out['header_code']    = \wp_kses( $raw_header, $allowed_tags );
+			$out['body_open_code'] = \wp_kses( $raw_body_open, $allowed_tags );
+			$out['footer_code']    = \wp_kses( $raw_footer, $allowed_tags );
 		}
 		return $out;
 	}
 
 	public static function get_snippets_options() : array {
 		$defaults = [
-			'enable_header' => false,
-			'header_code'   => '',
-			'enable_footer' => false,
-			'footer_code'   => '',
-			'enable_ga4'    => false,
-			'ga4_id'        => '',
+			'enable_header'    => false,
+			'header_code'      => '',
+			'enable_body_open' => false,
+			'body_open_code'   => '',
+			'enable_footer'    => false,
+			'footer_code'      => '',
+			'enable_ga4'       => false,
+			'ga4_id'           => '',
 		];
 		$opts = (array) \get_option( 'functionalities_snippets', $defaults );
 		return array_merge( $defaults, $opts );
@@ -3101,6 +3201,7 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 			'add_headline'       => ! empty( $input['add_headline'] ),
 			'add_dates'          => ! empty( $input['add_dates'] ),
 			'add_author'         => ! empty( $input['add_author'] ),
+			'enable_breadcrumbs' => ! empty( $input['enable_breadcrumbs'] ),
 		];
 	}
 	public static function get_schema_options() : array {
@@ -3114,6 +3215,7 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 			'add_headline'        => true,
 			'add_dates'           => true,
 			'add_author'          => true,
+			'enable_breadcrumbs'  => false,
 		];
 		$opts = (array) \get_option( 'functionalities_schema', $defaults );
 		return array_merge( $defaults, $opts );
@@ -3793,7 +3895,14 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 			'remove_rsd_wlw_shortlink',
 			'remove_generator_meta',
 			'disable_xmlrpc',
+			'disable_xmlrpc_pingbacks',
 			'disable_feeds',
+			'disable_gravatars',
+			'disable_self_pingbacks',
+			'remove_query_strings',
+			'remove_dns_prefetch',
+			'remove_recent_comments_css',
+			'limit_revisions',
 			'disable_dashicons_for_guests',
 			'disable_heartbeat',
 			'disable_admin_bar_front',
@@ -3817,7 +3926,14 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 			'remove_rsd_wlw_shortlink'         => false,
 			'remove_generator_meta'            => false,
 			'disable_xmlrpc'                   => false,
+			'disable_xmlrpc_pingbacks'         => false,
 			'disable_feeds'                    => false,
+			'disable_gravatars'                => false,
+			'disable_self_pingbacks'           => false,
+			'remove_query_strings'             => false,
+			'remove_dns_prefetch'              => false,
+			'remove_recent_comments_css'       => false,
+			'limit_revisions'                  => false,
 			'disable_dashicons_for_guests'     => false,
 			'disable_heartbeat'                => false,
 			'disable_admin_bar_front'          => false,
@@ -3845,6 +3961,7 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 				$weight = isset( $it['weight'] ) ? trim( (string) $it['weight'] ) : '';
 				$weight_range = isset( $it['weight_range'] ) ? trim( (string) $it['weight_range'] ) : '';
 				$is_variable = ! empty( $it['is_variable'] );
+				$preload = ! empty( $it['preload'] );
 				$woff2 = isset( $it['woff2_url'] ) ? trim( (string) $it['woff2_url'] ) : '';
 				$woff  = isset( $it['woff_url'] ) ? trim( (string) $it['woff_url'] ) : '';
 				if ( $family === '' || $woff2 === '' ) { continue; }
@@ -3855,6 +3972,7 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 					'weight' => preg_replace( '/[^0-9]/', '', $weight ),
 					'weight_range' => preg_replace( '/[^0-9\s]/', '', $weight_range ),
 					'is_variable' => (bool) $is_variable,
+					'preload' => (bool) $preload,
 					'woff2_url' => \esc_url_raw( $woff2 ),
 					'woff_url'  => \esc_url_raw( $woff ),
 				];
@@ -3874,6 +3992,7 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 			$weight = \esc_attr( $it['weight'] ?? '' );
 			$weight_range = \esc_attr( $it['weight_range'] ?? '' );
 			$isv = ! empty( $it['is_variable'] ) ? 'checked' : '';
+			$ispr = ! empty( $it['preload'] ) ? 'checked' : '';
 			$woff2 = \esc_attr( $it['woff2_url'] ?? '' );
 			$woff  = \esc_attr( $it['woff_url'] ?? '' );
 			echo '<fieldset style="border:1px solid #e5e7eb;padding:10px;margin:8px 0;border-radius:6px">';
@@ -3883,6 +4002,7 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 			echo '<label style="display:block;margin:.25rem 0;font-weight:600">' . \esc_html__( 'Static weight', 'functionalities' ) . '</label><input class="small-text" type="text" name="functionalities_fonts[items]['.$i.'][weight]" value="'.$weight.'" />';
 			echo '<label style="display:block;margin:.25rem 0;font-weight:600">' . \esc_html__( 'Variable weight range', 'functionalities' ) . '</label><input class="small-text" type="text" name="functionalities_fonts[items]['.$i.'][weight_range]" value="'.$weight_range.'" />';
 			echo '<label style="display:block;margin:.25rem 0"><input type="checkbox" name="functionalities_fonts[items]['.$i.'][is_variable]" value="1" ' . $isv . ' /> ' . \esc_html__( 'Variable font', 'functionalities' ) . '</label>';
+			echo '<label style="display:block;margin:.25rem 0"><input type="checkbox" name="functionalities_fonts[items]['.$i.'][preload]" value="1" ' . $ispr . ' /> ' . \esc_html__( 'Preload this font', 'functionalities' ) . '</label>';
 			echo '<label style="display:block;margin:.25rem 0;font-weight:600">' . \esc_html__( 'WOFF2 URL', 'functionalities' ) . '</label><input class="regular-text code" type="url" name="functionalities_fonts[items]['.$i.'][woff2_url]" value="'.$woff2.'" />';
 			echo '<label style="display:block;margin:.25rem 0;font-weight:600">' . \esc_html__( 'WOFF URL (fallback)', 'functionalities' ) . '</label><input class="regular-text code" type="url" name="functionalities_fonts[items]['.$i.'][woff_url]" value="'.$woff.'" />';
 			echo '</fieldset>';
@@ -4762,21 +4882,43 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 			border-radius: 4px;
 			margin-top: 20px;
 		}
+		.functionalities-task-manager .project-filters select {
+			min-width: 150px;
+		}
 		.functionalities-task-manager .task-item {
 			display: flex;
 			align-items: flex-start;
 			padding: 12px 15px;
 			border-bottom: 1px solid #f0f0f1;
-			gap: 10px;
+			gap: 12px;
+			transition: background-color 0.2s;
+		}
+		.functionalities-task-manager .task-item:hover {
+			background-color: #f6f7f7;
+		}
+		.functionalities-task-manager .task-item.ui-sortable-helper {
+			background: #fff;
+			box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+			border: 1px solid #c3c4c7;
 		}
 		.functionalities-task-manager .task-item:last-child {
 			border-bottom: none;
+		}
+		.functionalities-task-manager .task-drag-handle {
+			color: #c3c4c7;
+			cursor: move;
+			padding-top: 2px;
+			display: flex;
+		}
+		.functionalities-task-manager .task-item:hover .task-drag-handle {
+			color: #646970;
 		}
 		.functionalities-task-manager .task-item.completed .task-text {
 			text-decoration: line-through;
 			color: #646970;
 		}
 		.functionalities-task-manager .task-checkbox {
+			margin-top: 3px !important;
 			flex-shrink: 0;
 			cursor: pointer;
 		}
@@ -4795,10 +4937,15 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 			font-size: 12px;
 		}
 		.functionalities-task-manager .task-tag {
-			background: #f0f0f1;
+			background: #f0f6fc;
 			color: #2271b1;
 			padding: 2px 8px;
 			border-radius: 3px;
+			cursor: pointer;
+		}
+		.functionalities-task-manager .task-tag:hover {
+			background: #2271b1;
+			color: #fff;
 		}
 		.functionalities-task-manager .task-priority {
 			font-weight: bold;
@@ -5257,6 +5404,28 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 		</div>
 
 		<div class="task-list">
+			<div class="project-filters" style="padding: 15px; border-bottom: 1px solid #c3c4c7; background: #fff; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+				<div style="flex: 1; min-width: 200px; position: relative;">
+					<span class="dashicons dashicons-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #646970;"></span>
+					<input type="text" id="task-search" placeholder="<?php \esc_attr_e( 'Search tasks...', 'functionalities' ); ?>" style="width: 100%; padding-left: 35px;">
+				</div>
+				<select id="filter-priority">
+					<option value="all"><?php \esc_html_e( 'All Priorities', 'functionalities' ); ?></option>
+					<option value="1"><?php \esc_html_e( 'High Priority (!1)', 'functionalities' ); ?></option>
+					<option value="2"><?php \esc_html_e( 'Medium Priority (!2)', 'functionalities' ); ?></option>
+					<option value="3"><?php \esc_html_e( 'Low Priority (!3)', 'functionalities' ); ?></option>
+				</select>
+				<select id="filter-status">
+					<option value="all"><?php \esc_html_e( 'All Status', 'functionalities' ); ?></option>
+					<option value="pending"><?php \esc_html_e( 'Pending', 'functionalities' ); ?></option>
+					<option value="completed"><?php \esc_html_e( 'Completed', 'functionalities' ); ?></option>
+				</select>
+				<button type="button" class="button" id="clear-completed-btn" style="color: #d63638;">
+					<span class="dashicons dashicons-dismiss" style="font-size: 16px; width: 16px; height: 16px; vertical-align: text-bottom;"></span>
+					<?php \esc_html_e( 'Clear Completed', 'functionalities' ); ?>
+				</button>
+			</div>
+
 			<div class="add-task-form">
 				<input type="text" id="new-task-text" placeholder="<?php \esc_attr_e( 'Add a new task... (use #tag for tags, !1/!2/!3 for priority)', 'functionalities' ); ?>">
 				<div class="add-task-hint">
@@ -5278,6 +5447,9 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 						$completed_class = ! empty( $task['completed'] ) ? ' completed' : '';
 						?>
 						<div class="task-item<?php echo $completed_class; ?>" data-task-id="<?php echo \esc_attr( $task['id'] ); ?>">
+							<div class="task-drag-handle" title="<?php \esc_attr_e( 'Drag to reorder', 'functionalities' ); ?>">
+								<span class="dashicons dashicons-menu"></span>
+							</div>
 							<input type="checkbox" class="task-checkbox" <?php checked( ! empty( $task['completed'] ) ); ?>>
 							<div class="task-content">
 								<p class="task-text"><?php echo \esc_html( $task['text'] ); ?></p>
@@ -5365,6 +5537,119 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 			var totalTasks = <?php echo count( $project['tasks'] ); ?>;
 			var completedTasks = <?php echo $stats['completed']; ?>;
 
+			// Focus new task input
+			$('#new-task-text').focus();
+
+			// Filtering logic
+			function applyFilters() {
+				var searchTerm = $('#task-search').val().toLowerCase();
+				var priorityFilter = $('#filter-priority').val();
+				var statusFilter = $('#filter-status').val();
+
+				$('.task-item').each(function() {
+					var $item = $(this);
+					var text = $item.find('.task-text').text().toLowerCase();
+					var notes = $item.find('.task-notes').text().toLowerCase();
+					var tags = '';
+					$item.find('.task-tag').each(function() {
+						tags += $(this).text().toLowerCase() + ' ';
+					});
+					
+					var priority = '0';
+					var priorityClasses = $item.find('.task-priority').attr('class');
+					if (priorityClasses) {
+						var match = priorityClasses.match(/p(\d)/);
+						if (match) priority = match[1];
+					}
+
+					var isCompleted = $item.hasClass('completed');
+
+					var matchesSearch = text.indexOf(searchTerm) !== -1 || notes.indexOf(searchTerm) !== -1 || tags.indexOf(searchTerm) !== -1;
+					var matchesPriority = priorityFilter === 'all' || priority === priorityFilter;
+					var matchesStatus = statusFilter === 'all' || 
+						(statusFilter === 'completed' && isCompleted) || 
+						(statusFilter === 'pending' && !isCompleted);
+
+					if (matchesSearch && matchesPriority && matchesStatus) {
+						$item.show();
+					} else {
+						$item.hide();
+					}
+				});
+			}
+
+			$('#task-search').on('input', applyFilters);
+			$('#filter-priority, #filter-status').on('change', applyFilters);
+
+			// Tag click filtering
+			$(document).on('click', '.task-tag', function(e) {
+				e.preventDefault();
+				var tag = $(this).text().replace('#', '').trim();
+				$('#task-search').val(tag).trigger('input');
+			});
+
+			// Clear completed
+			$('#clear-completed-btn').on('click', function() {
+				var completedIds = [];
+				$('.task-item.completed').each(function() {
+					completedIds.push($(this).data('task-id'));
+				});
+
+				if (completedIds.length === 0) {
+					alert('<?php echo \esc_js( \__( 'No completed tasks to clear.', 'functionalities' ) ); ?>');
+					return;
+				}
+
+				if (!confirm('<?php echo \esc_js( \__( 'Are you sure you want to delete all completed tasks?', 'functionalities' ) ); ?>')) {
+					return;
+				}
+
+				var deletedCount = 0;
+				var totalToDelete = completedIds.length;
+
+				completedIds.forEach(function(id) {
+					$.post(ajaxUrl, {
+						action: 'functionalities_task_delete',
+						nonce: nonce,
+						project: projectSlug,
+						task_id: id
+					}, function(response) {
+						if (response.success) {
+							deletedCount++;
+							if (deletedCount === totalToDelete) {
+								location.reload();
+							}
+						}
+					});
+				});
+			});
+
+			// Drag and drop reordering
+			if ($.fn.sortable) {
+				$('#tasks-container').sortable({
+					items: '.task-item',
+					axis: 'y',
+					handle: '.task-drag-handle',
+					placeholder: 'ui-state-highlight',
+					update: function() {
+						var taskIds = [];
+						$('.task-item').each(function() {
+							taskIds.push($(this).data('task-id'));
+						});
+
+						$.post(ajaxUrl, {
+							action: 'functionalities_task_reorder',
+							nonce: nonce,
+							project: projectSlug,
+							task_ids: taskIds
+						});
+					}
+				});
+				
+				// CSS for placeholder
+				$('<style>.ui-state-highlight { background: #f0f6fc; border: 1px dashed #2271b1; height: 50px; margin-bottom: 0; }</style>').appendTo('head');
+			}
+
 			function updateProgress() {
 				var percent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 				$('#project-progress').css('width', percent + '%');
@@ -5406,9 +5691,16 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 				});
 			});
 
-			// Enter key to add task
+			// Keyboard shortcuts for adding task
+			$('#new-task-text, #new-task-notes').on('keydown', function(e) {
+				if ((e.ctrlKey || e.metaKey) && e.which === 13) {
+					$('#add-task-btn').click();
+				}
+			});
+
+			// Enter key to add task (simple enter on title)
 			$('#new-task-text').on('keypress', function(e) {
-				if (e.which === 13) {
+				if (e.which === 13 && !e.ctrlKey && !e.metaKey) {
 					$('#add-task-btn').click();
 				}
 			});
@@ -5498,6 +5790,13 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 				$('#edit-task-priority').val(priority);
 				$('#edit-task-tags').val(tags.join(', '));
 				$('#edit-task-modal').addClass('active');
+				$('#edit-task-text').focus();
+			});
+
+			$('#edit-task-text, #edit-task-notes, #edit-task-tags, #edit-task-priority').on('keydown', function(e) {
+				if ((e.ctrlKey || e.metaKey) && e.which === 13) {
+					$('#save-edit-btn').click();
+				}
 			});
 
 			$('#cancel-edit-btn').on('click', function() {
@@ -5666,6 +5965,12 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 			</div>
 
 			<div style="background:#fff;border:1px solid #c3c4c7;border-radius:4px;">
+				<div style="padding:15px;border-bottom:1px solid #f0f0f1;display:flex;justify-content:flex-end;">
+					<div style="position:relative;">
+						<span class="dashicons dashicons-search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#646970;"></span>
+						<input type="text" id="redirect-search" placeholder="<?php \esc_attr_e( 'Search redirects...', 'functionalities' ); ?>" style="padding-left:35px;width:250px;">
+					</div>
+				</div>
 				<table class="wp-list-table widefat fixed striped">
 					<thead>
 						<tr>
@@ -5719,6 +6024,20 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 		jQuery(document).ready(function($) {
 			var nonce = '<?php echo \esc_js( $nonce ); ?>';
 			var ajaxUrl = '<?php echo \esc_js( \admin_url( 'admin-ajax.php' ) ); ?>';
+
+			// Search functionality.
+			$('#redirect-search').on('input', function() {
+				var term = $(this).val().toLowerCase();
+				$('#redirects-list tr:not(.no-items)').each(function() {
+					var from = $(this).find('td:eq(1)').text().toLowerCase();
+					var to = $(this).find('td:eq(2)').text().toLowerCase();
+					if (from.indexOf(term) !== -1 || to.indexOf(term) !== -1) {
+						$(this).show();
+					} else {
+						$(this).hide();
+					}
+				});
+			});
 
 			$('#add-redirect-btn').on('click', function() {
 				var from = $('#redirect-from').val().trim();
@@ -6048,9 +6367,33 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 			$(document).on('click', '.copy-shortcode', function() {
 				var slug = $(this).data('slug');
 				var shortcode = '[func_icon name="' + slug + '"]';
-				navigator.clipboard.writeText(shortcode).then(function() {
-					alert('<?php echo \esc_js( \__( 'Shortcode copied:', 'functionalities' ) ); ?> ' + shortcode);
-				});
+				var $btn = $(this);
+				var $icon = $btn.find('.dashicons');
+				
+				if (navigator.clipboard && navigator.clipboard.writeText) {
+					navigator.clipboard.writeText(shortcode).then(function() {
+						$icon.removeClass('dashicons-clipboard').addClass('dashicons-yes');
+						$btn.css('color', '#00a32a');
+						setTimeout(function() {
+							$icon.removeClass('dashicons-yes').addClass('dashicons-clipboard');
+							$btn.css('color', '');
+						}, 2000);
+					});
+				} else {
+					// Fallback for older browsers.
+					var textArea = document.createElement("textarea");
+					textArea.value = shortcode;
+					document.body.appendChild(textArea);
+					textArea.select();
+					document.execCommand("copy");
+					document.body.removeChild(textArea);
+					$icon.removeClass('dashicons-clipboard').addClass('dashicons-yes');
+					$btn.css('color', '#00a32a');
+					setTimeout(function() {
+						$icon.removeClass('dashicons-yes').addClass('dashicons-clipboard');
+						$btn.css('color', '');
+					}, 2000);
+				}
 			});
 		});
 		</script>
