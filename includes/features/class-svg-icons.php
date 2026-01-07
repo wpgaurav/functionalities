@@ -700,13 +700,13 @@ class SVG_Icons
 			return $content;
 		}
 
-		// Regex to find unclosed icon tags (<i> or <span>): <tag...func-icon...data-icon="..."...> not followed by </tag>
-		// This uses a negative lookahead to find tags that don't have a closing tag.
 		$tags = array('i', 'span');
 
 		foreach ($tags as $tag) {
-			$pattern = '/<' . $tag . '([^>]*class="[^"]*func-icon[^"]*"[^>]*data-icon="([^"]+)"[^>]*)>(?!<\/' . $tag . '>)/i';
-			$pattern2 = '/<' . $tag . '([^>]*data-icon="([^"]+)"[^>]*class="[^"]*func-icon[^"]*"[^>]*)>(?!<\/' . $tag . '>)/i';
+			// Regex to find unclosed icon tags (<i> or <span>): <tag...func-icon...data-icon="..."...> 
+			// not followed by a closing tag before the next opening tag or end of content.
+			$pattern = '/<' . $tag . '([^>]*class="[^"]*func-icon[^"]*"[^>]*data-icon="([^"]+)"[^>]*)>(?![^<]*<\/' . $tag . '>)/i';
+			$pattern2 = '/<' . $tag . '([^>]*data-icon="([^"]+)"[^>]*class="[^"]*func-icon[^"]*"[^>]*)>(?![^<]*<\/' . $tag . '>)/i';
 
 			// Replace unclosed tags with properly closed ones.
 			$content = preg_replace($pattern, '<' . $tag . '$1></' . $tag . '>', $content);

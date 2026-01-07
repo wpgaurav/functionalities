@@ -137,9 +137,7 @@
 
 			// Insert placeholder i tag (PHP will replace with SVG on frontend)
 			// Using <i> tag as it's standard for icons.
-			// We add a bullet character inside to prevent Gutenberg from stripping the closing tag.
-			// CSS hides the bullet in the editor, PHP strips it on frontend render.
-			var iconHTML = '<i data-icon="' + icon.slug + '" class="func-icon">•</i> ';
+			var iconHTML = '<i data-icon="' + icon.slug + '" class="func-icon"></i>';
 
 			// Create rich text value from HTML and insert at current position
 			var iconValue = create({ html: iconHTML });
