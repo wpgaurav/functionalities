@@ -133,7 +133,7 @@ class Components {
 		}
 
 		$defaults = array(
-			'enabled' => true,
+			'enabled' => false,
 			'items'   => array(),
 			'css_ver' => '',
 		);

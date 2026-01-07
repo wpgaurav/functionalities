@@ -26,3 +26,6 @@ yarn-error.log*
 /build/
 /dist/
 assets/.DS_Store
+
+# AI assistant guidelines (keep local)
+CLAUDE.md

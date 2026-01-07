@@ -2,7 +2,7 @@
 
 A modular site-specific plugin that organizes common WordPress features with simple toggles. Built with modern WordPress coding standards and a clean module-based dashboard. Optimized for performance with lazy-loading, static property caching, and intelligent transients.
 
-**Version:** 0.13.0  
+**Version:** 0.14.0  
 **License:** GPL-2.0-or-later  
 **Text Domain:** `functionalities`
 
@@ -444,7 +444,16 @@ Example module definition:
 
 ## Changelog
 
-### 0.13.0 (Current)
+### 0.14.0 (Current)
+- **Fonts Module UI Overhaul**: Completely rebuilt the Fonts management interface with a modern card-based design.
+  - Dynamic add/remove functionality for unlimited custom fonts
+  - WordPress Media Uploader integration for WOFF2/WOFF file uploads
+  - Expandable cards with Edit/Delete actions and live preview badges
+  - Real-time card title and badge updates as you configure each font
+  - Empty state with helpful instructions for new users
+- Changed: Components module now defaults to disabled on new installations.
+
+### 0.13.0
 - Added new features to **Performance & Cleanup** module:
   - Disable Gravatars site-wide
   - Disable self-pingbacks

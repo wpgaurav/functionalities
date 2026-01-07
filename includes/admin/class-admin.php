@@ -1150,7 +1150,7 @@ class Admin {
 			[
 				'sanitize_callback' => [ __CLASS__, 'sanitize_components' ],
 				'default' => [
-					'enabled' => true,
+					'enabled' => false,
 					'items'   => self::default_components(),
 				],
 			]
@@ -3239,7 +3239,7 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 		return $out;
 	}
 	public static function get_components_options() : array {
-		$defaults = [ 'enabled' => true, 'items' => self::default_components() ];
+		$defaults = [ 'enabled' => false, 'items' => self::default_components() ];
 		$opts = (array) \get_option( 'functionalities_components', $defaults );
 		if ( empty( $opts['items'] ) ) { $opts['items'] = self::default_components(); }
 		return array_merge( $defaults, $opts );
@@ -3983,44 +3983,641 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 	public static function field_fonts_items() : void {
 		$o = self::get_fonts_options();
 		$items = isset( $o['items'] ) && is_array( $o['items'] ) ? $o['items'] : [];
-		echo '<div id="ff-items">';
-		$i = 0;
-		foreach ( $items as $it ) {
-			$family = \esc_attr( $it['family'] ?? '' );
-			$style  = \esc_attr( $it['style'] ?? 'normal' );
-			$display= \esc_attr( $it['display'] ?? 'swap' );
-			$weight = \esc_attr( $it['weight'] ?? '' );
-			$weight_range = \esc_attr( $it['weight_range'] ?? '' );
-			$isv = ! empty( $it['is_variable'] ) ? 'checked' : '';
-			$ispr = ! empty( $it['preload'] ) ? 'checked' : '';
-			$woff2 = \esc_attr( $it['woff2_url'] ?? '' );
-			$woff  = \esc_attr( $it['woff_url'] ?? '' );
-			echo '<fieldset style="border:1px solid #e5e7eb;padding:10px;margin:8px 0;border-radius:6px">';
-			echo '<label style="display:block;margin:.25rem 0;font-weight:600">' . \esc_html__( 'Family', 'functionalities' ) . '</label><input class="regular-text" type="text" name="functionalities_fonts[items]['.$i.'][family]" value="'.$family.'" />';
-			echo '<label style="display:block;margin:.25rem 0;font-weight:600">' . \esc_html__( 'Style', 'functionalities' ) . '</label><select name="functionalities_fonts[items]['.$i.'][style]"><option value="normal" ' . selected( $style, 'normal', false ) . '>normal</option><option value="italic" ' . selected( $style, 'italic', false ) . '>italic</option></select>';
-			echo '<label style="display:block;margin:.25rem 0;font-weight:600">' . \esc_html__( 'Display', 'functionalities' ) . '</label><select name="functionalities_fonts[items]['.$i.'][display]"><option ' . selected( $display, 'swap', false ) . '>swap</option><option ' . selected( $display, 'auto', false ) . '>auto</option><option ' . selected( $display, 'block', false ) . '>block</option><option ' . selected( $display, 'fallback', false ) . '>fallback</option><option ' . selected( $display, 'optional', false ) . '>optional</option></select>';
-			echo '<label style="display:block;margin:.25rem 0;font-weight:600">' . \esc_html__( 'Static weight', 'functionalities' ) . '</label><input class="small-text" type="text" name="functionalities_fonts[items]['.$i.'][weight]" value="'.$weight.'" />';
-			echo '<label style="display:block;margin:.25rem 0;font-weight:600">' . \esc_html__( 'Variable weight range', 'functionalities' ) . '</label><input class="small-text" type="text" name="functionalities_fonts[items]['.$i.'][weight_range]" value="'.$weight_range.'" />';
-			echo '<label style="display:block;margin:.25rem 0"><input type="checkbox" name="functionalities_fonts[items]['.$i.'][is_variable]" value="1" ' . $isv . ' /> ' . \esc_html__( 'Variable font', 'functionalities' ) . '</label>';
-			echo '<label style="display:block;margin:.25rem 0"><input type="checkbox" name="functionalities_fonts[items]['.$i.'][preload]" value="1" ' . $ispr . ' /> ' . \esc_html__( 'Preload this font', 'functionalities' ) . '</label>';
-			echo '<label style="display:block;margin:.25rem 0;font-weight:600">' . \esc_html__( 'WOFF2 URL', 'functionalities' ) . '</label><input class="regular-text code" type="url" name="functionalities_fonts[items]['.$i.'][woff2_url]" value="'.$woff2.'" />';
-			echo '<label style="display:block;margin:.25rem 0;font-weight:600">' . \esc_html__( 'WOFF URL (fallback)', 'functionalities' ) . '</label><input class="regular-text code" type="url" name="functionalities_fonts[items]['.$i.'][woff_url]" value="'.$woff.'" />';
-			echo '</fieldset>';
-			$i++;
-		}
-		// new row
-		echo '<fieldset style="border:1px dashed #e5e7eb;padding:10px;margin:8px 0;border-radius:6px">';
-		echo '<legend>' . \esc_html__( 'Add new font', 'functionalities' ) . '</legend>';
-		echo '<label style="display:block;margin:.25rem 0;font-weight:600">' . \esc_html__( 'Family', 'functionalities' ) . '</label><input class="regular-text" type="text" name="functionalities_fonts[items]['.$i.'][family]" />';
-		echo '<label style="display:block;margin:.25rem 0;font-weight:600">' . \esc_html__( 'Style', 'functionalities' ) . '</label><select name="functionalities_fonts[items]['.$i.'][style]"><option value="normal">normal</option><option value="italic">italic</option></select>';
-		echo '<label style="display:block;margin:.25rem 0;font-weight:600">' . \esc_html__( 'Display', 'functionalities' ) . '</label><select name="functionalities_fonts[items]['.$i.'][display]"><option>swap</option><option>auto</option><option>block</option><option>fallback</option><option>optional</option></select>';
-		echo '<label style="display:block;margin:.25rem 0;font-weight:600">' . \esc_html__( 'Static weight', 'functionalities' ) . '</label><input class="small-text" type="text" name="functionalities_fonts[items]['.$i.'][weight]" />';
-		echo '<label style="display:block;margin:.25rem 0;font-weight:600">' . \esc_html__( 'Variable weight range', 'functionalities' ) . '</label><input class="small-text" type="text" name="functionalities_fonts[items]['.$i.'][weight_range]" />';
-		echo '<label style="display:block;margin:.25rem 0"><input type="checkbox" name="functionalities_fonts[items]['.$i.'][is_variable]" value="1" /> ' . \esc_html__( 'Variable font', 'functionalities' ) . '</label>';
-		echo '<label style="display:block;margin:.25rem 0;font-weight:600">' . \esc_html__( 'WOFF2 URL', 'functionalities' ) . '</label><input class="regular-text code" type="url" name="functionalities_fonts[items]['.$i.'][woff2_url]" />';
-		echo '<label style="display:block;margin:.25rem 0;font-weight:600">' . \esc_html__( 'WOFF URL (fallback)', 'functionalities' ) . '</label><input class="regular-text code" type="url" name="functionalities_fonts[items]['.$i.'][woff_url]" />';
-		echo '</fieldset>';
-		echo '</div>';
+		$total_items = count( $items );
+		
+		// Enqueue media uploader
+		\wp_enqueue_media();
+		?>
+		<style>
+			/* Fonts Manager Styles */
+			.fc-fonts {
+				max-width: 900px;
+			}
+			.fc-fonts__toolbar {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				margin-bottom: 16px;
+				padding-bottom: 12px;
+				border-bottom: 1px solid #e5e7eb;
+			}
+			.fc-fonts__count {
+				font-size: 13px;
+				color: #64748b;
+			}
+			.fc-fonts__add-btn {
+				display: inline-flex;
+				align-items: center;
+				gap: 6px;
+				padding: 8px 16px;
+				background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+				color: #fff;
+				border: none;
+				border-radius: 8px;
+				font-size: 13px;
+				font-weight: 600;
+				cursor: pointer;
+				transition: all 0.2s;
+				box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+			}
+			.fc-fonts__add-btn:hover {
+				transform: translateY(-1px);
+				box-shadow: 0 4px 8px rgba(59, 130, 246, 0.4);
+			}
+			.fc-fonts__grid {
+				display: grid;
+				gap: 16px;
+			}
+			.fc-font-card {
+				background: #fff;
+				border: 1px solid #e5e7eb;
+				border-radius: 12px;
+				overflow: hidden;
+				transition: all 0.2s;
+			}
+			.fc-font-card:hover {
+				border-color: #cbd5e1;
+				box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+			}
+			.fc-font-card.is-editing {
+				border-color: #3b82f6;
+				box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+			}
+			.fc-font-card__header {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				padding: 16px 20px;
+				background: linear-gradient(to bottom, #f8fafc, #f1f5f9);
+				border-bottom: 1px solid #e5e7eb;
+			}
+			.fc-font-card__title {
+				margin: 0;
+				font-size: 16px;
+				font-weight: 600;
+				color: #1e293b;
+			}
+			.fc-font-card__meta {
+				display: flex;
+				gap: 8px;
+				margin-top: 4px;
+			}
+			.fc-font-card__badge {
+				display: inline-block;
+				padding: 2px 8px;
+				background: #e0f2fe;
+				color: #0369a1;
+				border-radius: 4px;
+				font-size: 11px;
+				font-weight: 600;
+				text-transform: uppercase;
+			}
+			.fc-font-card__badge--variable {
+				background: #dcfce7;
+				color: #15803d;
+			}
+			.fc-font-card__badge--preload {
+				background: #fef3c7;
+				color: #b45309;
+			}
+			.fc-font-card__actions {
+				display: flex;
+				gap: 8px;
+			}
+			.fc-font-card__btn {
+				padding: 6px 12px;
+				border: 1px solid #e5e7eb;
+				border-radius: 6px;
+				background: #fff;
+				color: #475569;
+				font-size: 12px;
+				font-weight: 500;
+				cursor: pointer;
+				transition: all 0.15s;
+			}
+			.fc-font-card__btn:hover {
+				background: #f8fafc;
+				border-color: #cbd5e1;
+			}
+			.fc-font-card__btn--delete {
+				color: #dc2626;
+			}
+			.fc-font-card__btn--delete:hover {
+				background: #fef2f2;
+				border-color: #fecaca;
+			}
+			.fc-font-card__content {
+				display: none;
+				padding: 20px;
+			}
+			.fc-font-card.is-editing .fc-font-card__content {
+				display: block;
+			}
+			.fc-font-card.is-editing .fc-font-card__actions .fc-font-card__btn--edit {
+				display: none;
+			}
+			.fc-font-form__row {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+				gap: 16px;
+				margin-bottom: 16px;
+			}
+			.fc-font-form__group {
+				display: flex;
+				flex-direction: column;
+				gap: 6px;
+			}
+			.fc-font-form__label {
+				font-size: 12px;
+				font-weight: 600;
+				color: #374151;
+			}
+			.fc-font-form__input {
+				padding: 8px 12px;
+				border: 1px solid #d1d5db;
+				border-radius: 6px;
+				font-size: 14px;
+				transition: border-color 0.15s;
+			}
+			.fc-font-form__input:focus {
+				outline: none;
+				border-color: #3b82f6;
+				box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+			}
+			.fc-font-form__input--url {
+				font-family: ui-monospace, monospace;
+				font-size: 13px;
+			}
+			.fc-font-form__file-row {
+				display: flex;
+				gap: 8px;
+				align-items: flex-start;
+			}
+			.fc-font-form__file-row input[type="url"] {
+				flex: 1;
+			}
+			.fc-font-form__upload-btn {
+				padding: 8px 14px;
+				background: #f8fafc;
+				border: 1px solid #d1d5db;
+				border-radius: 6px;
+				color: #475569;
+				font-size: 13px;
+				font-weight: 500;
+				cursor: pointer;
+				white-space: nowrap;
+				transition: all 0.15s;
+			}
+			.fc-font-form__upload-btn:hover {
+				background: #f1f5f9;
+				border-color: #94a3b8;
+			}
+			.fc-font-form__checkbox {
+				display: flex;
+				align-items: center;
+				gap: 8px;
+				padding: 8px 0;
+			}
+			.fc-font-form__checkbox input {
+				width: 16px;
+				height: 16px;
+			}
+			.fc-font-form__checkbox label {
+				font-size: 13px;
+				color: #374151;
+			}
+			.fc-font-form__actions {
+				display: flex;
+				gap: 8px;
+				padding-top: 16px;
+				border-top: 1px solid #e5e7eb;
+				margin-top: 8px;
+			}
+			.fc-font-form__btn {
+				padding: 8px 16px;
+				border-radius: 6px;
+				font-size: 13px;
+				font-weight: 500;
+				cursor: pointer;
+				transition: all 0.15s;
+			}
+			.fc-font-form__btn--done {
+				background: #3b82f6;
+				color: #fff;
+				border: none;
+			}
+			.fc-font-form__btn--done:hover {
+				background: #2563eb;
+			}
+			.fc-font-form__btn--cancel {
+				background: #fff;
+				border: 1px solid #d1d5db;
+				color: #475569;
+			}
+			.fc-font-form__btn--cancel:hover {
+				background: #f8fafc;
+			}
+			.fc-fonts__empty {
+				text-align: center;
+				padding: 48px 24px;
+				background: #f8fafc;
+				border: 2px dashed #e5e7eb;
+				border-radius: 12px;
+			}
+			.fc-fonts__empty-icon {
+				font-size: 48px;
+				margin-bottom: 16px;
+			}
+			.fc-fonts__empty-title {
+				font-size: 16px;
+				font-weight: 600;
+				color: #374151;
+				margin: 0 0 8px;
+			}
+			.fc-fonts__empty-text {
+				font-size: 14px;
+				color: #64748b;
+				margin: 0;
+			}
+		</style>
+
+		<div class="fc-fonts" id="fc-fonts">
+			<div class="fc-fonts__toolbar">
+				<span class="fc-fonts__count" id="fc-fonts-count">
+					<?php printf( esc_html( _n( '%d font', '%d fonts', $total_items, 'functionalities' ) ), $total_items ); ?>
+				</span>
+				<button type="button" class="fc-fonts__add-btn" id="fc-add-font">
+					<span class="dashicons dashicons-plus-alt2" style="font-size:16px;width:16px;height:16px;"></span>
+					<?php esc_html_e( 'Add Font', 'functionalities' ); ?>
+				</button>
+			</div>
+
+			<div class="fc-fonts__grid" id="fc-fonts-grid">
+				<?php if ( empty( $items ) ) : ?>
+				<div class="fc-fonts__empty" id="fc-fonts-empty">
+					<div class="fc-fonts__empty-icon">🔤</div>
+					<h4 class="fc-fonts__empty-title"><?php esc_html_e( 'No fonts added yet', 'functionalities' ); ?></h4>
+					<p class="fc-fonts__empty-text"><?php esc_html_e( 'Click "Add Font" to start adding custom web fonts to your site.', 'functionalities' ); ?></p>
+				</div>
+				<?php endif; ?>
+				
+				<?php
+				$i = 0;
+				foreach ( $items as $it ) :
+					$family = esc_attr( $it['family'] ?? '' );
+					$style  = esc_attr( $it['style'] ?? 'normal' );
+					$display = esc_attr( $it['display'] ?? 'swap' );
+					$weight = esc_attr( $it['weight'] ?? '' );
+					$weight_range = esc_attr( $it['weight_range'] ?? '' );
+					$is_variable = ! empty( $it['is_variable'] );
+					$preload = ! empty( $it['preload'] );
+					$woff2 = esc_attr( $it['woff2_url'] ?? '' );
+					$woff  = esc_attr( $it['woff_url'] ?? '' );
+				?>
+				<div class="fc-font-card" data-index="<?php echo $i; ?>">
+					<div class="fc-font-card__header">
+						<div>
+							<h4 class="fc-font-card__title"><?php echo esc_html( $family ?: __( 'Untitled Font', 'functionalities' ) ); ?></h4>
+							<div class="fc-font-card__meta">
+								<span class="fc-font-card__badge"><?php echo esc_html( $style ); ?></span>
+								<?php if ( $is_variable ) : ?>
+								<span class="fc-font-card__badge fc-font-card__badge--variable"><?php esc_html_e( 'Variable', 'functionalities' ); ?></span>
+								<?php endif; ?>
+								<?php if ( $preload ) : ?>
+								<span class="fc-font-card__badge fc-font-card__badge--preload"><?php esc_html_e( 'Preload', 'functionalities' ); ?></span>
+								<?php endif; ?>
+							</div>
+						</div>
+						<div class="fc-font-card__actions">
+							<button type="button" class="fc-font-card__btn fc-font-card__btn--edit"><?php esc_html_e( 'Edit', 'functionalities' ); ?></button>
+							<button type="button" class="fc-font-card__btn fc-font-card__btn--delete"><?php esc_html_e( 'Delete', 'functionalities' ); ?></button>
+						</div>
+					</div>
+					<div class="fc-font-card__content">
+						<div class="fc-font-form__row">
+							<div class="fc-font-form__group">
+								<label class="fc-font-form__label"><?php esc_html_e( 'Font Family', 'functionalities' ); ?></label>
+								<input type="text" class="fc-font-form__input" name="functionalities_fonts[items][<?php echo $i; ?>][family]" value="<?php echo $family; ?>" placeholder="Inter, Roboto...">
+							</div>
+							<div class="fc-font-form__group">
+								<label class="fc-font-form__label"><?php esc_html_e( 'Style', 'functionalities' ); ?></label>
+								<select class="fc-font-form__input" name="functionalities_fonts[items][<?php echo $i; ?>][style]">
+									<option value="normal" <?php selected( $style, 'normal' ); ?>><?php esc_html_e( 'Normal', 'functionalities' ); ?></option>
+									<option value="italic" <?php selected( $style, 'italic' ); ?>><?php esc_html_e( 'Italic', 'functionalities' ); ?></option>
+								</select>
+							</div>
+							<div class="fc-font-form__group">
+								<label class="fc-font-form__label"><?php esc_html_e( 'Display', 'functionalities' ); ?></label>
+								<select class="fc-font-form__input" name="functionalities_fonts[items][<?php echo $i; ?>][display]">
+									<option value="swap" <?php selected( $display, 'swap' ); ?>>swap</option>
+									<option value="auto" <?php selected( $display, 'auto' ); ?>>auto</option>
+									<option value="block" <?php selected( $display, 'block' ); ?>>block</option>
+									<option value="fallback" <?php selected( $display, 'fallback' ); ?>>fallback</option>
+									<option value="optional" <?php selected( $display, 'optional' ); ?>>optional</option>
+								</select>
+							</div>
+						</div>
+						<div class="fc-font-form__row">
+							<div class="fc-font-form__group">
+								<label class="fc-font-form__label"><?php esc_html_e( 'Static Weight', 'functionalities' ); ?></label>
+								<input type="text" class="fc-font-form__input" name="functionalities_fonts[items][<?php echo $i; ?>][weight]" value="<?php echo $weight; ?>" placeholder="400, 700...">
+							</div>
+							<div class="fc-font-form__group">
+								<label class="fc-font-form__label"><?php esc_html_e( 'Variable Weight Range', 'functionalities' ); ?></label>
+								<input type="text" class="fc-font-form__input" name="functionalities_fonts[items][<?php echo $i; ?>][weight_range]" value="<?php echo $weight_range; ?>" placeholder="100 900">
+							</div>
+						</div>
+						<div class="fc-font-form__row">
+							<div class="fc-font-form__checkbox">
+								<input type="checkbox" id="fc-var-<?php echo $i; ?>" name="functionalities_fonts[items][<?php echo $i; ?>][is_variable]" value="1" <?php checked( $is_variable ); ?>>
+								<label for="fc-var-<?php echo $i; ?>"><?php esc_html_e( 'Variable font', 'functionalities' ); ?></label>
+							</div>
+							<div class="fc-font-form__checkbox">
+								<input type="checkbox" id="fc-pre-<?php echo $i; ?>" name="functionalities_fonts[items][<?php echo $i; ?>][preload]" value="1" <?php checked( $preload ); ?>>
+								<label for="fc-pre-<?php echo $i; ?>"><?php esc_html_e( 'Preload this font', 'functionalities' ); ?></label>
+							</div>
+						</div>
+						<div class="fc-font-form__group" style="margin-bottom: 16px;">
+							<label class="fc-font-form__label"><?php esc_html_e( 'WOFF2 URL (required)', 'functionalities' ); ?></label>
+							<div class="fc-font-form__file-row">
+								<input type="url" class="fc-font-form__input fc-font-form__input--url fc-font-url" name="functionalities_fonts[items][<?php echo $i; ?>][woff2_url]" value="<?php echo $woff2; ?>" placeholder="https://...">
+								<button type="button" class="fc-font-form__upload-btn fc-upload-font" data-format="woff2"><?php esc_html_e( 'Upload', 'functionalities' ); ?></button>
+							</div>
+						</div>
+						<div class="fc-font-form__group">
+							<label class="fc-font-form__label"><?php esc_html_e( 'WOFF URL (fallback)', 'functionalities' ); ?></label>
+							<div class="fc-font-form__file-row">
+								<input type="url" class="fc-font-form__input fc-font-form__input--url fc-font-url" name="functionalities_fonts[items][<?php echo $i; ?>][woff_url]" value="<?php echo $woff; ?>" placeholder="https://...">
+								<button type="button" class="fc-font-form__upload-btn fc-upload-font" data-format="woff"><?php esc_html_e( 'Upload', 'functionalities' ); ?></button>
+							</div>
+						</div>
+						<div class="fc-font-form__actions">
+							<button type="button" class="fc-font-form__btn fc-font-form__btn--done"><?php esc_html_e( 'Done', 'functionalities' ); ?></button>
+							<button type="button" class="fc-font-form__btn fc-font-form__btn--cancel"><?php esc_html_e( 'Cancel', 'functionalities' ); ?></button>
+						</div>
+					</div>
+				</div>
+				<?php
+					$i++;
+				endforeach;
+				?>
+			</div>
+		</div>
+
+		<!-- Template for new fonts -->
+		<template id="fc-font-template">
+			<div class="fc-font-card is-editing" data-index="__INDEX__">
+				<div class="fc-font-card__header">
+					<div>
+						<h4 class="fc-font-card__title"><?php esc_html_e( 'New Font', 'functionalities' ); ?></h4>
+						<div class="fc-font-card__meta">
+							<span class="fc-font-card__badge">normal</span>
+						</div>
+					</div>
+					<div class="fc-font-card__actions">
+						<button type="button" class="fc-font-card__btn fc-font-card__btn--edit"><?php esc_html_e( 'Edit', 'functionalities' ); ?></button>
+						<button type="button" class="fc-font-card__btn fc-font-card__btn--delete"><?php esc_html_e( 'Delete', 'functionalities' ); ?></button>
+					</div>
+				</div>
+				<div class="fc-font-card__content">
+					<div class="fc-font-form__row">
+						<div class="fc-font-form__group">
+							<label class="fc-font-form__label"><?php esc_html_e( 'Font Family', 'functionalities' ); ?></label>
+							<input type="text" class="fc-font-form__input" name="functionalities_fonts[items][__INDEX__][family]" value="" placeholder="Inter, Roboto...">
+						</div>
+						<div class="fc-font-form__group">
+							<label class="fc-font-form__label"><?php esc_html_e( 'Style', 'functionalities' ); ?></label>
+							<select class="fc-font-form__input" name="functionalities_fonts[items][__INDEX__][style]">
+								<option value="normal"><?php esc_html_e( 'Normal', 'functionalities' ); ?></option>
+								<option value="italic"><?php esc_html_e( 'Italic', 'functionalities' ); ?></option>
+							</select>
+						</div>
+						<div class="fc-font-form__group">
+							<label class="fc-font-form__label"><?php esc_html_e( 'Display', 'functionalities' ); ?></label>
+							<select class="fc-font-form__input" name="functionalities_fonts[items][__INDEX__][display]">
+								<option value="swap">swap</option>
+								<option value="auto">auto</option>
+								<option value="block">block</option>
+								<option value="fallback">fallback</option>
+								<option value="optional">optional</option>
+							</select>
+						</div>
+					</div>
+					<div class="fc-font-form__row">
+						<div class="fc-font-form__group">
+							<label class="fc-font-form__label"><?php esc_html_e( 'Static Weight', 'functionalities' ); ?></label>
+							<input type="text" class="fc-font-form__input" name="functionalities_fonts[items][__INDEX__][weight]" value="" placeholder="400, 700...">
+						</div>
+						<div class="fc-font-form__group">
+							<label class="fc-font-form__label"><?php esc_html_e( 'Variable Weight Range', 'functionalities' ); ?></label>
+							<input type="text" class="fc-font-form__input" name="functionalities_fonts[items][__INDEX__][weight_range]" value="" placeholder="100 900">
+						</div>
+					</div>
+					<div class="fc-font-form__row">
+						<div class="fc-font-form__checkbox">
+							<input type="checkbox" id="fc-var-__INDEX__" name="functionalities_fonts[items][__INDEX__][is_variable]" value="1">
+							<label for="fc-var-__INDEX__"><?php esc_html_e( 'Variable font', 'functionalities' ); ?></label>
+						</div>
+						<div class="fc-font-form__checkbox">
+							<input type="checkbox" id="fc-pre-__INDEX__" name="functionalities_fonts[items][__INDEX__][preload]" value="1">
+							<label for="fc-pre-__INDEX__"><?php esc_html_e( 'Preload this font', 'functionalities' ); ?></label>
+						</div>
+					</div>
+					<div class="fc-font-form__group" style="margin-bottom: 16px;">
+						<label class="fc-font-form__label"><?php esc_html_e( 'WOFF2 URL (required)', 'functionalities' ); ?></label>
+						<div class="fc-font-form__file-row">
+							<input type="url" class="fc-font-form__input fc-font-form__input--url fc-font-url" name="functionalities_fonts[items][__INDEX__][woff2_url]" value="" placeholder="https://...">
+							<button type="button" class="fc-font-form__upload-btn fc-upload-font" data-format="woff2"><?php esc_html_e( 'Upload', 'functionalities' ); ?></button>
+						</div>
+					</div>
+					<div class="fc-font-form__group">
+						<label class="fc-font-form__label"><?php esc_html_e( 'WOFF URL (fallback)', 'functionalities' ); ?></label>
+						<div class="fc-font-form__file-row">
+							<input type="url" class="fc-font-form__input fc-font-form__input--url fc-font-url" name="functionalities_fonts[items][__INDEX__][woff_url]" value="" placeholder="https://...">
+							<button type="button" class="fc-font-form__upload-btn fc-upload-font" data-format="woff"><?php esc_html_e( 'Upload', 'functionalities' ); ?></button>
+						</div>
+					</div>
+					<div class="fc-font-form__actions">
+						<button type="button" class="fc-font-form__btn fc-font-form__btn--done"><?php esc_html_e( 'Done', 'functionalities' ); ?></button>
+						<button type="button" class="fc-font-form__btn fc-font-form__btn--cancel"><?php esc_html_e( 'Cancel', 'functionalities' ); ?></button>
+					</div>
+				</div>
+			</div>
+		</template>
+
+		<script>
+		(function() {
+			var container = document.getElementById('fc-fonts');
+			var grid = document.getElementById('fc-fonts-grid');
+			var addBtn = document.getElementById('fc-add-font');
+			var template = document.getElementById('fc-font-template');
+			var emptyState = document.getElementById('fc-fonts-empty');
+			var countEl = document.getElementById('fc-fonts-count');
+			var nextIndex = <?php echo $i; ?>;
+			var totalItems = <?php echo $total_items; ?>;
+
+			if (!container || !grid) return;
+
+			// Update title from input
+			function updateCardTitle(card) {
+				var familyInput = card.querySelector('input[name*="[family]"]');
+				var titleEl = card.querySelector('.fc-font-card__title');
+				var styleSelect = card.querySelector('select[name*="[style]"]');
+				var varCheck = card.querySelector('input[name*="[is_variable]"]');
+				var preCheck = card.querySelector('input[name*="[preload]"]');
+				var metaEl = card.querySelector('.fc-font-card__meta');
+
+				if (familyInput && titleEl) {
+					titleEl.textContent = familyInput.value || '<?php echo esc_js( __( 'Untitled Font', 'functionalities' ) ); ?>';
+				}
+
+				// Update badges
+				if (metaEl && styleSelect) {
+					var badges = '<span class="fc-font-card__badge">' + styleSelect.value + '</span>';
+					if (varCheck && varCheck.checked) {
+						badges += '<span class="fc-font-card__badge fc-font-card__badge--variable"><?php echo esc_js( __( 'Variable', 'functionalities' ) ); ?></span>';
+					}
+					if (preCheck && preCheck.checked) {
+						badges += '<span class="fc-font-card__badge fc-font-card__badge--preload"><?php echo esc_js( __( 'Preload', 'functionalities' ) ); ?></span>';
+					}
+					metaEl.innerHTML = badges;
+				}
+			}
+
+			// Update count
+			function updateCount() {
+				var cards = grid.querySelectorAll('.fc-font-card');
+				totalItems = cards.length;
+				if (countEl) {
+					var text = totalItems === 1 ? '<?php echo esc_js( __( '1 font', 'functionalities' ) ); ?>' : totalItems + ' <?php echo esc_js( __( 'fonts', 'functionalities' ) ); ?>';
+					countEl.textContent = text;
+				}
+				// Toggle empty state
+				if (emptyState) {
+					emptyState.style.display = totalItems === 0 ? 'block' : 'none';
+				}
+			}
+
+			// Event delegation
+			container.addEventListener('click', function(e) {
+				var card = e.target.closest('.fc-font-card');
+
+				// Edit button
+				if (e.target.closest('.fc-font-card__btn--edit')) {
+					e.preventDefault();
+					if (card) card.classList.add('is-editing');
+					return;
+				}
+
+				// Done button
+				if (e.target.closest('.fc-font-form__btn--done')) {
+					e.preventDefault();
+					if (card) {
+						updateCardTitle(card);
+						card.classList.remove('is-editing');
+					}
+					return;
+				}
+
+				// Cancel button
+				if (e.target.closest('.fc-font-form__btn--cancel')) {
+					e.preventDefault();
+					if (card) {
+						var familyInput = card.querySelector('input[name*="[family]"]');
+						var woff2Input = card.querySelector('input[name*="[woff2_url]"]');
+						// Remove if new and empty
+						if (familyInput && !familyInput.value && woff2Input && !woff2Input.value) {
+							card.remove();
+							updateCount();
+						} else {
+							card.classList.remove('is-editing');
+						}
+					}
+					return;
+				}
+
+				// Delete button
+				if (e.target.closest('.fc-font-card__btn--delete')) {
+					e.preventDefault();
+					if (card && confirm('<?php echo esc_js( __( 'Delete this font?', 'functionalities' ) ); ?>')) {
+						// Clear all inputs
+						var inputs = card.querySelectorAll('input, select');
+						inputs.forEach(function(input) {
+							input.value = '';
+							input.name = '';
+						});
+						card.remove();
+						updateCount();
+					}
+					return;
+				}
+
+				// Upload button
+				if (e.target.closest('.fc-upload-font')) {
+					e.preventDefault();
+					var btn = e.target.closest('.fc-upload-font');
+					var format = btn.dataset.format;
+					var urlInput = btn.parentElement.querySelector('.fc-font-url');
+
+					var mediaUploader = wp.media({
+						title: '<?php echo esc_js( __( 'Select or Upload Font File', 'functionalities' ) ); ?>',
+						button: { text: '<?php echo esc_js( __( 'Use this file', 'functionalities' ) ); ?>' },
+						multiple: false
+					});
+
+					mediaUploader.on('select', function() {
+						var attachment = mediaUploader.state().get('selection').first().toJSON();
+						if (urlInput) {
+							urlInput.value = attachment.url;
+						}
+					});
+
+					mediaUploader.open();
+					return;
+				}
+			});
+
+			// Live updates on input
+			container.addEventListener('input', function(e) {
+				if (e.target.matches('input, select')) {
+					var card = e.target.closest('.fc-font-card');
+					if (card) updateCardTitle(card);
+				}
+			});
+
+			container.addEventListener('change', function(e) {
+				if (e.target.matches('input[type="checkbox"], select')) {
+					var card = e.target.closest('.fc-font-card');
+					if (card) updateCardTitle(card);
+				}
+			});
+
+			// Add new font
+			if (addBtn && template) {
+				addBtn.addEventListener('click', function() {
+					// Hide empty state
+					if (emptyState) emptyState.style.display = 'none';
+
+					var html = template.innerHTML.replace(/__INDEX__/g, nextIndex);
+					grid.insertAdjacentHTML('beforeend', html);
+					nextIndex++;
+					updateCount();
+
+					var newCard = grid.lastElementChild;
+					if (newCard) {
+						newCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+						var familyInput = newCard.querySelector('input[name*="[family]"]');
+						if (familyInput) familyInput.focus();
+					}
+				});
+			}
+		})();
+		</script>
+
+		<p class="description" style="margin-top: 16px;">
+			<?php esc_html_e( 'Add multiple fonts and upload WOFF2/WOFF files directly. Each font generates a separate @font-face rule. Enable "Preload" for critical fonts to improve performance.', 'functionalities' ); ?>
+		</p>
+		<?php
 	}
 
 	/**
