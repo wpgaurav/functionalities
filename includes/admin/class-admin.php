@@ -42,9 +42,6 @@ class Admin {
 
 		// AJAX handler for running assumption detection.
 		\add_action( 'wp_ajax_functionalities_run_detection', array( __CLASS__, 'ajax_run_detection' ) );
-
-		// AJAX handler for clearing debug logs.
-		\add_action( 'wp_ajax_functionalities_clear_logs', array( __CLASS__, 'ajax_clear_logs' ) );
 	}
 
 	/**
@@ -185,34 +182,6 @@ class Admin {
 	}
 
 	/**
-	 * AJAX handler for clearing debug logs.
-	 *
-	 * @return void
-	 */
-	public static function ajax_clear_logs() : void {
-		// Verify nonce.
-		if ( ! isset( $_POST['nonce'] ) || ! \wp_verify_nonce( $_POST['nonce'], 'functionalities_debugger' ) ) {
-			\wp_send_json_error( array( 'message' => \__( 'Security check failed.', 'functionalities' ) ) );
-			return;
-		}
-
-		// Check capabilities.
-		if ( ! \current_user_can( 'manage_options' ) ) {
-			\wp_send_json_error( array( 'message' => \__( 'Insufficient permissions.', 'functionalities' ) ) );
-			return;
-		}
-
-		$log_file = \Functionalities\Features\Debugger::get_log_file_path();
-
-		if ( file_exists( $log_file ) ) {
-			\unlink( $log_file );
-			\wp_send_json_success( array( 'message' => \__( 'Logs cleared.', 'functionalities' ) ) );
-		} else {
-			\wp_send_json_error( array( 'message' => \__( 'Log file does not exist.', 'functionalities' ) ) );
-		}
-	}
-
-	/**
 	 * Define available modules.
 	 *
 	 * @return void
@@ -302,12 +271,6 @@ class Admin {
 				'title'       => \__( 'GitHub Updates', 'functionalities' ),
 				'description' => \__( 'Receive plugin updates directly from GitHub releases.', 'functionalities' ),
 				'icon'        => 'dashicons-update',
-			),
-			'debugger'        => array(
-				'title'       => \__( 'Debugger', 'functionalities' ),
-				'description' => \__( 'Debug plugin behavior and view system logs.', 'functionalities' ),
-				'icon'        => 'dashicons-bug',
-				'custom_page' => true,
 			),
 		);
 	}
@@ -7072,83 +7035,6 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 						$btn.css('color', '');
 					}, 2000);
 				}
-			});
-		});
-		</script>
-		<?php
-	}
-
-	/**
-	 * Render the Debugger module.
-	 *
-	 * @param array $module Module data.
-	 * @return void
-	 */
-	public static function render_module_debugger(array $module): void
-	{
-		$nonce = \wp_create_nonce('functionalities_debugger');
-		$log_file = \Functionalities\Features\Debugger::get_log_file_path();
-		$logs = '';
-
-		if (file_exists($log_file)) {
-			$logs = file_get_contents($log_file);
-		}
-
-		?>
-		<div class="func-module-header">
-			<div class="func-module-header-title">
-				<span class="dashicons <?php echo \esc_attr($module['icon']); ?>"></span>
-				<h2><?php echo \esc_html($module['title']); ?></h2>
-			</div>
-			<div class="func-module-header-actions">
-				<button type="button" class="button button-danger" id="clear-logs-btn" <?php echo empty($logs) ? 'disabled' : ''; ?>>
-					<?php echo \esc_html__('Clear Logs', 'functionalities'); ?>
-				</button>
-			</div>
-		</div>
-
-		<div class="func-module-content">
-			<div class="func-debug-container">
-				<?php if (empty($logs)) : ?>
-					<div class="func-debug-empty">
-						<span class="dashicons dashicons-info"></span>
-						<p><?php echo \esc_html__('No debug logs found.', 'functionalities'); ?></p>
-					</div>
-				<?php else : ?>
-					<pre class="func-debug-logs"><?php echo \esc_html($logs); ?></pre>
-				<?php endif; ?>
-			</div>
-		</div>
-
-		<style>
-		.func-debug-container { background: #fff; border: 1px solid #c3c4c7; border-radius: 4px; overflow: hidden; }
-		.func-debug-logs { margin: 0; padding: 15px; max-height: 600px; overflow-y: auto; background: #263238; color: #eceff1; font-family: 'Courier New', Courier, monospace; font-size: 12px; line-height: 1.5; white-space: pre-wrap; word-break: break-all; }
-		.func-debug-empty { padding: 40px; text-align: center; color: #646970; }
-		.func-debug-empty .dashicons { font-size: 48px; width: 48px; height: 48px; margin-bottom: 12px; }
-		.button-danger { color: #d63638 !important; border-color: #d63638 !important; }
-		.button-danger:hover { background: #fcf0f1 !important; }
-		</style>
-
-		<script>
-		jQuery(function($) {
-			$('#clear-logs-btn').on('click', function() {
-				if (!confirm('<?php echo \esc_js(\__('Are you sure you want to clear all logs?', 'functionalities')); ?>')) {
-					return;
-				}
-				var $btn = $(this);
-				$btn.prop('disabled', true).text('<?php echo \esc_js(\__('Clearing...', 'functionalities')); ?>');
-				
-				$.post(ajaxurl, {
-					action: 'functionalities_clear_logs',
-					nonce: '<?php echo \esc_js($nonce); ?>'
-				}, function(response) {
-					if (response.success) {
-						location.reload();
-					} else {
-						alert('<?php echo \esc_js(\__('Error clearing logs.', 'functionalities')); ?>');
-						$btn.prop('disabled', false).text('<?php echo \esc_js(\__('Clear Logs', 'functionalities')); ?>');
-					}
-				});
 			});
 		});
 		</script>
