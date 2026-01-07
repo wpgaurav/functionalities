@@ -298,11 +298,22 @@ class Meta {
 	}
 
 	/**
+	 * Cached options.
+	 *
+	 * @var array
+	 */
+	private static $options = null;
+
+	/**
 	 * Get module options with defaults.
 	 *
 	 * @return array Module options.
 	 */
 	public static function get_options() : array {
+		if ( null !== self::$options ) {
+			return self::$options;
+		}
+
 		$defaults = array(
 			'enabled'                 => false,
 			'enable_copyright_meta'   => true,
@@ -317,7 +328,8 @@ class Meta {
 			'dc_language'             => '',
 		);
 		$opts     = (array) \get_option( 'functionalities_meta', $defaults );
-		return array_merge( $defaults, $opts );
+		self::$options = array_merge( $defaults, $opts );
+		return self::$options;
 	}
 
 	/**

@@ -146,7 +146,25 @@ class Block_Cleanup {
 	 *     @type string $custom_classes_to_remove      Custom classes to remove (one per line).
 	 * }
 	 */
+	/**
+	 * Cached options.
+	 *
+	 * @var array
+	 */
+	private static $options = null;
+
+	/**
+	 * Get module options with defaults.
+	 *
+	 * @since 0.2.0
+	 *
+	 * @return array Options array.
+	 */
 	protected static function get_options() : array {
+		if ( null !== self::$options ) {
+			return self::$options;
+		}
+
 		$defaults = array(
 			'remove_heading_block_class'    => false,
 			'remove_list_block_class'       => false,
@@ -163,7 +181,8 @@ class Block_Cleanup {
 			'custom_classes_to_remove'      => '',
 		);
 		$opts = (array) \get_option( 'functionalities_block_cleanup', $defaults );
-		return array_merge( $defaults, $opts );
+		self::$options = array_merge( $defaults, $opts );
+		return self::$options;
 	}
 
 	/**
@@ -187,7 +206,7 @@ class Block_Cleanup {
 		}
 
 		// Skip empty content.
-		if ( trim( $content ) === '' ) {
+		if ( trim( $content ) === '' || false === strpos( $content, 'wp-block-' ) ) {
 			return $content;
 		}
 

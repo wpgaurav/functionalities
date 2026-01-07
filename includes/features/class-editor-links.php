@@ -90,24 +90,31 @@ class Editor_Links {
 	}
 
 	/**
+	 * Cached options.
+	 *
+	 * @var array
+	 */
+	private static $options = null;
+
+	/**
 	 * Get module options with defaults.
 	 *
 	 * @since 0.2.0
 	 *
-	 * @return array {
-	 *     Editor links options.
-	 *
-	 *     @type bool  $enable_limit Whether to limit link suggestions.
-	 *     @type array $post_types   Array of allowed post type slugs.
-	 * }
+	 * @return array Options array.
 	 */
 	protected static function get_options() : array {
+		if ( null !== self::$options ) {
+			return self::$options;
+		}
+
 		$defaults = array(
 			'enable_limit' => false,
 			'post_types'   => array(),
 		);
 		$opts = (array) \get_option( 'functionalities_editor_links', $defaults );
-		return array_merge( $defaults, $opts );
+		self::$options = array_merge( $defaults, $opts );
+		return self::$options;
 	}
 
 	/**

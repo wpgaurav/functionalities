@@ -1,16 +1,16 @@
 <?php
 /**
- * Plugin Name: Functionalities
- * Plugin URI: https://functionalities.dev
- * Description: Modular site-specific plugin with modern dashboard and features.
- * Version: 0.11.6
- * Author: Gaurav Tiwari
- * Author URI: https://gauravtiwari.org
- * License: GPL-2.0-or-later
- * Text Domain: functionalities
- * Domain Path: /languages
+ * Plugin Name:       Functionalities
+ * Plugin URI:        https://functionalities.dev
+ * Description:       Modular site-specific plugin with modern dashboard and features.
+ * Version:           0.12.0
+ * Author:            Gaurav Tiwari
+ * Author URI:        https://gauravtiwari.org
+ * License:           GPL-2.0-or-later
+ * Text Domain:       functionalities
+ * Domain Path:       /languages
  * Requires at least: 5.8
- * Requires PHP: 7.4
+ * Requires PHP:      7.4
  */
 
 if (!defined('ABSPATH')) {
@@ -19,7 +19,7 @@ if (!defined('ABSPATH')) {
 
 // Define constants.
 if (!defined('FUNCTIONALITIES_VERSION')) {
-	define('FUNCTIONALITIES_VERSION', '0.11.6');
+	define('FUNCTIONALITIES_VERSION', '0.12.0');
 }
 if (!defined('FUNCTIONALITIES_FILE')) {
 	define('FUNCTIONALITIES_FILE', __FILE__);
@@ -31,26 +31,28 @@ if (!defined('FUNCTIONALITIES_URL')) {
 	define('FUNCTIONALITIES_URL', plugin_dir_url(__FILE__));
 }
 
-// Autoload includes.
-require_once FUNCTIONALITIES_DIR . 'includes/admin/class-admin-ui.php';
-require_once FUNCTIONALITIES_DIR . 'includes/admin/class-module-docs.php';
-require_once FUNCTIONALITIES_DIR . 'includes/admin/class-admin.php';
-require_once FUNCTIONALITIES_DIR . 'includes/features/class-link-management.php';
-require_once FUNCTIONALITIES_DIR . 'includes/features/class-block-cleanup.php';
-require_once FUNCTIONALITIES_DIR . 'includes/features/class-editor-links.php';
-require_once FUNCTIONALITIES_DIR . 'includes/features/class-misc.php';
-require_once FUNCTIONALITIES_DIR . 'includes/features/class-snippets.php';
-require_once FUNCTIONALITIES_DIR . 'includes/features/class-schema.php';
-require_once FUNCTIONALITIES_DIR . 'includes/features/class-components.php';
-require_once FUNCTIONALITIES_DIR . 'includes/features/class-fonts.php';
-require_once FUNCTIONALITIES_DIR . 'includes/features/class-meta.php';
-require_once FUNCTIONALITIES_DIR . 'includes/features/class-content-regression.php';
-require_once FUNCTIONALITIES_DIR . 'includes/features/class-assumption-detection.php';
-require_once FUNCTIONALITIES_DIR . 'includes/features/class-task-manager.php';
-require_once FUNCTIONALITIES_DIR . 'includes/features/class-redirect-manager.php';
-require_once FUNCTIONALITIES_DIR . 'includes/features/class-login-security.php';
-require_once FUNCTIONALITIES_DIR . 'includes/features/class-svg-icons.php';
-require_once FUNCTIONALITIES_DIR . 'includes/class-github-updater.php';
+// Simple autoloader for plugin classes.
+spl_autoload_register(function (string $class) {
+	if (strpos($class, 'Functionalities\\') !== 0) {
+		return;
+	}
+
+	$parts = explode('\\', $class);
+	array_shift($parts); // Remove Functionalities
+
+	$filename = 'class-' . strtolower(str_replace('_', '-', (string) end($parts))) . '.php';
+	
+	$subpath = '';
+	if (count($parts) > 1) {
+		$subpath = strtolower((string) $parts[0]) . '/';
+	}
+
+	$file = FUNCTIONALITIES_DIR . 'includes/' . $subpath . $filename;
+
+	if (file_exists($file)) {
+		require_once $file;
+	}
+});
 
 // Initialize plugin at init to ensure translations are loaded first.
 // Using priority 0 for textdomain, priority 10 for plugin initialization.

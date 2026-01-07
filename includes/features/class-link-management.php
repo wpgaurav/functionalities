@@ -38,11 +38,36 @@ class Link_Management {
 	}
 
 	/**
+	 * Cached options.
+	 *
+	 * @var array
+	 */
+	private static $options = null;
+
+	/**
+	 * Cached exceptions.
+	 *
+	 * @var array
+	 */
+	private static $cached_exceptions = array();
+
+	/**
+	 * Cached internal exceptions.
+	 *
+	 * @var array
+	 */
+	private static $cached_internal_exceptions = array();
+
+	/**
 	 * Get link management options.
 	 *
 	 * @return array Options array.
 	 */
 	protected static function get_options() : array {
+		if ( null !== self::$options ) {
+			return self::$options;
+		}
+
 		$defaults = array(
 			'nofollow_external'             => false,
 			'exceptions'                    => '',
@@ -53,7 +78,8 @@ class Link_Management {
 			'enable_developer_filters'      => false,
 		);
 		$opts = (array) \get_option( 'functionalities_link_management', $defaults );
-		return array_merge( $defaults, $opts );
+		self::$options = array_merge( $defaults, $opts );
+		return self::$options;
 	}
 
 	/**
@@ -69,7 +95,17 @@ class Link_Management {
 	 * @return void
 	 */
 	public static function load_json_preset() : void {
-		$opts      = self::get_options();
+		$opts = self::get_options();
+
+		// Use transient to avoid disk I/O on every request.
+		$transient_key = 'func_link_exceptions_json_' . md5( (string) $opts['json_preset_url'] . \get_stylesheet() );
+		$cached_json   = \get_transient( $transient_key );
+
+		if ( false !== $cached_json ) {
+			self::$cached_exceptions = (array) $cached_json;
+			return;
+		}
+
 		$json_path = '';
 
 		// Priority 1: User-provided custom URL/path.
@@ -122,13 +158,12 @@ class Link_Management {
 			return;
 		}
 
-		// Merge JSON URLs with existing exceptions.
-		$current_exceptions = self::parse_exceptions( $opts['exceptions'] );
-		$json_urls          = is_array( $preset['urls'] ) ? $preset['urls'] : array();
-		$merged             = array_unique( array_merge( $current_exceptions, $json_urls ) );
+		$json_urls = is_array( $preset['urls'] ) ? $preset['urls'] : array();
+		
+		// Cache in transient for 12 hours.
+		\set_transient( $transient_key, $json_urls, 12 * HOUR_IN_SECONDS );
 
-		// Update option temporarily (won't persist).
-		self::$cached_exceptions = $merged;
+		self::$cached_exceptions = $json_urls;
 	}
 
 	/**
@@ -185,13 +220,6 @@ class Link_Management {
 	}
 
 	/**
-	 * Cached exceptions for performance.
-	 *
-	 * @var array
-	 */
-	private static $cached_exceptions = array();
-
-	/**
 	 * Filter content to modify links.
 	 *
 	 * @param string $content The content to filter.
@@ -204,13 +232,14 @@ class Link_Management {
 			return $content;
 		}
 
-		if ( trim( $content ) === '' ) {
+		if ( trim( $content ) === '' || false === strpos( $content, '<a' ) ) {
 			return $content;
 		}
 
-		$opts        = self::get_options();
-		$exceptions  = self::parse_exceptions( (string) $opts['exceptions'] );
-		$internal_ex = self::parse_exceptions( (string) $opts['internal_new_tab_exceptions'] );
+		$opts              = self::get_options();
+		$manual_exceptions = self::parse_exceptions( (string) $opts['exceptions'] );
+		$exceptions        = array_unique( array_merge( $manual_exceptions, self::$cached_exceptions ) );
+		$internal_ex       = self::parse_exceptions( (string) $opts['internal_new_tab_exceptions'] );
 		$site_host   = (string) \wp_parse_url( \home_url(), PHP_URL_HOST );
 
 		$libxml_previous = libxml_use_internal_errors( true );
@@ -279,15 +308,22 @@ class Link_Management {
 	}
 
 	/**
+	 * Runtime cache for parsed exceptions.
+	 *
+	 * @var array
+	 */
+	private static $runtime_exceptions_cache = array();
+
+	/**
 	 * Parse exception list from raw text.
 	 *
 	 * @param string $raw Raw exception text (one per line or comma-separated).
 	 * @return array Array of exceptions.
 	 */
 	protected static function parse_exceptions( string $raw ) : array {
-		// Use cached if available.
-		if ( ! empty( self::$cached_exceptions ) ) {
-			return self::$cached_exceptions;
+		$cache_key = md5( $raw );
+		if ( isset( self::$runtime_exceptions_cache[ $cache_key ] ) ) {
+			return self::$runtime_exceptions_cache[ $cache_key ];
 		}
 
 		$lines = preg_split( '/\r\n|\r|\n|,/', $raw );
@@ -311,6 +347,7 @@ class Link_Management {
 			$items = \apply_filters( 'gtnf_exception_urls', $items );
 		}
 
+		self::$runtime_exceptions_cache[ $cache_key ] = $items;
 		return $items;
 	}
 

@@ -49,11 +49,17 @@
 	var useState = wp.element.useState;
 	var useCallback = wp.element.useCallback;
 	var registerFormatType = wp.richText.registerFormatType;
+	var registerBlockType = wp.blocks.registerBlockType;
 	var insert = wp.richText.insert;
 	var create = wp.richText.create;
 	var BlockControls = wp.blockEditor.BlockControls;
+	var InspectorControls = wp.blockEditor.InspectorControls;
+	var AlignmentToolbar = wp.blockEditor.AlignmentToolbar;
 	var RichTextToolbarButton = wp.blockEditor.RichTextToolbarButton;
 	var Popover = wp.components.Popover;
+	var PanelBody = wp.components.PanelBody;
+	var RangeControl = wp.components.RangeControl;
+	var ColorPalette = wp.components.ColorPalette;
 	var ToolbarGroup = wp.components.ToolbarGroup;
 	var ToolbarButton = wp.components.ToolbarButton;
 	var SearchControl = wp.components.SearchControl;
@@ -130,8 +136,16 @@
 			log('Inserting icon', icon.slug);
 
 			// Insert placeholder span (PHP will replace with SVG on frontend)
-			var iconHTML = '<span data-icon="' + icon.slug + '" class="func-icon"></span>';
-			onChange(insert(value, create({ html: iconHTML })));
+			// contenteditable="false" prevents the cursor from getting stuck inside the span.
+			var iconHTML = '<span data-icon="' + icon.slug + '" class="func-icon" contenteditable="false"></span>';
+			
+			// We insert the icon and then a space separately. 
+			// This helps prevent the space (and subsequent typing) from being merged into the atomic span.
+			var iconValue = create({ html: iconHTML });
+			var spaceValue = create({ text: ' ' });
+			var combinedValue = wp.richText.concat ? wp.richText.concat(iconValue, spaceValue) : insert(iconValue, spaceValue, iconValue.text.length);
+			
+			onChange(insert(value, combinedValue));
 
 			// Inject CSS to display icon in editor using pseudo-element
 			injectIconStyle(icon);
@@ -262,11 +276,156 @@
 				title: i18n.insertIcon || __('Insert Icon', 'functionalities'),
 				tagName: 'span',
 				className: 'func-icon',
-				edit: IconPickerEdit
+				attributes: {
+					dataIcon: 'data-icon'
+				},
+				edit: IconPickerEdit,
+				object: true
 			});
 			log('Format type registered successfully: functionalities/svg-icon');
 		} catch (error) {
 			log('ERROR registering format type', error);
+		}
+
+		// Register Block Type
+		try {
+			registerBlockType('functionalities/svg-icon-block', {
+				title: i18n.blockTitle || __('SVG Icon', 'functionalities'),
+				description: i18n.blockDesc || __('Insert an SVG icon from your library as a block.', 'functionalities'),
+				icon: toolbarIcon,
+				category: 'design',
+				attributes: {
+					iconSlug: { type: 'string' },
+					size: { type: 'number', default: 48 },
+					align: { type: 'string', default: 'none' },
+					color: { type: 'string' }
+				},
+				edit: function (props) {
+					var attributes = props.attributes;
+					var setAttributes = props.setAttributes;
+					var iconSlug = attributes.iconSlug;
+					var size = attributes.size;
+					var align = attributes.align;
+					var color = attributes.color;
+
+					var stateOpen = useState(false);
+					var isOpen = stateOpen[0];
+					var setIsOpen = stateOpen[1];
+
+					var stateSearch = useState('');
+					var searchTerm = stateSearch[0];
+					var setSearchTerm = stateSearch[1];
+
+					var selectedIcon = allIcons.find(function (i) { return i.slug === iconSlug; });
+
+					var filteredIcons = allIcons;
+					if (searchTerm) {
+						var term = searchTerm.toLowerCase();
+						filteredIcons = allIcons.filter(function (icon) {
+							return (icon.name && icon.name.toLowerCase().indexOf(term) !== -1) ||
+								(icon.slug && icon.slug.toLowerCase().indexOf(term) !== -1);
+						});
+					}
+
+					var onSelectIcon = function (icon) {
+						setAttributes({ iconSlug: icon.slug });
+						setIsOpen(false);
+					};
+
+					var iconButtons = [];
+					if (filteredIcons.length === 0) {
+						iconButtons.push(el('p', { key: 'empty', className: 'func-icon-empty' }, i18n.noIcons || __('No matching icons found.', 'functionalities')));
+					} else {
+						filteredIcons.forEach(function (icon) {
+							iconButtons.push(
+								el('button', {
+									key: icon.slug,
+									type: 'button',
+									className: 'func-icon-btn' + (iconSlug === icon.slug ? ' is-selected' : ''),
+									onClick: function () { onSelectIcon(icon); },
+									title: icon.name
+								}, renderSvgIcon(icon.svg))
+							);
+						});
+					}
+
+					return el(Fragment, {},
+						el(BlockControls, {},
+							el(AlignmentToolbar, {
+								value: align,
+								onChange: function (newAlign) { setAttributes({ align: newAlign }); }
+							}),
+							el(ToolbarGroup, {},
+								el(ToolbarButton, {
+									icon: toolbarIcon,
+									title: i18n.changeIcon || __('Change Icon', 'functionalities'),
+									onClick: function () { setIsOpen(true); }
+								})
+							)
+						),
+						el(InspectorControls, {},
+							el(PanelBody, { title: i18n.iconSettings || __('Icon Settings', 'functionalities') },
+								el(RangeControl, {
+									label: i18n.iconSize || __('Icon Size (px)', 'functionalities'),
+									value: size,
+									onChange: function (newSize) { setAttributes({ size: newSize }); },
+									min: 10,
+									max: 300
+								}),
+								el('p', {}, i18n.iconColor || __('Icon Color', 'functionalities')),
+								el(ColorPalette, {
+									value: color,
+									onChange: function (newColor) { setAttributes({ color: newColor }); }
+								})
+							)
+						),
+						el('div', {
+							className: 'func-svg-icon-block-wrapper align' + align,
+							style: {
+								textAlign: align === 'left' || align === 'right' || align === 'center' ? align : undefined
+							}
+						},
+							selectedIcon ? el('div', {
+								className: 'func-svg-icon-block-render',
+								style: {
+									width: size + 'px',
+									height: size + 'px',
+									color: color,
+									display: 'inline-block'
+								},
+								dangerouslySetInnerHTML: { __html: selectedIcon.svg }
+							}) : el(Button, {
+								isPrimary: true,
+								onClick: function () { setIsOpen(true); },
+								className: 'func-svg-icon-block-placeholder'
+							}, i18n.selectIcon || __('Select Icon', 'functionalities')),
+							isOpen && el(Popover, {
+								onClose: function () { setIsOpen(false); },
+								className: 'func-svg-icon-popover'
+							},
+								el('div', { className: 'func-svg-icon-picker' },
+									el('div', { className: 'func-icon-search-wrapper' },
+										el('input', {
+											type: 'search',
+											value: searchTerm,
+											onChange: function (e) { setSearchTerm(e.target.value); },
+											placeholder: i18n.searchIcons || __('Search icons...', 'functionalities'),
+											className: 'func-icon-search-input'
+										})
+									),
+									el('div', { className: 'func-icon-grid' }, iconButtons)
+								)
+							)
+						)
+					);
+				},
+				save: function () {
+					return null;
+				}
+			});
+			log('Block type registered successfully: functionalities/svg-icon-block');
+		} catch (error) {
+			log('ERROR registering block type', error);
 		}
 	});
 

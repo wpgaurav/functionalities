@@ -2,7 +2,7 @@
 
 A modular site-specific plugin that organizes common WordPress features with simple toggles. Built with modern WordPress coding standards and a clean module-based dashboard.
 
-**Version:** 0.10.4  
+**Version:** 0.12.0  
 **License:** GPL-2.0-or-later  
 **Text Domain:** `functionalities`
 
@@ -321,7 +321,30 @@ Example module definition:
 
 ## Changelog
 
-### 0.10.4 (Current)
+### 0.12.0 (Current)
+- Performance: Implemented a custom autoloader for lazy-loading module files.
+- Performance: Added static property caching for options across all modules to minimize `get_option` calls.
+- Performance: Replaced expensive `DOMDocument` parsing in Schema module with optimized regex.
+- Performance: Added `strpos` fast-exit checks to all content filters (`the_content`, `widget_text`, etc.).
+- Performance: Implemented transient-based caching for JSON presets in Link Management and Redirect Manager.
+- Performance: Optimized Components module to use versioning in options, avoiding repeated disk I/O for file hash checks.
+- Improved: Robustness of exception parsing in Link Management.
+
+### 0.11.8
+- Fixed: Issue where inline SVG icons were not rendering on the frontend if text was incorrectly placed inside the icon span in the editor.
+- Improved: Robustness of icon replacement logic to handle non-empty placeholder spans.
+- Improved: Icon insertion logic in the editor to further prevent text merging into atomic icons.
+
+### 0.11.7
+- Fixed: Issue where user was unable to type after inserting an inline SVG icon in the block editor.
+- Improved: SVG icon format is now registered as an atomic object for better editor stability.
+
+### 0.11.0
+- Added: SVG Icons module with block and inline support.
+- Registered `functionalities/svg-icon-block` block.
+- Registered `functionalities/svg-icon` RichText format.
+
+### 0.10.4
 - Fixed translation loading warning for WordPress 6.7+
 
 ### 0.10.3

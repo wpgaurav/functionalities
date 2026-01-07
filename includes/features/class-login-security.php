@@ -86,11 +86,22 @@ class Login_Security {
 	}
 
 	/**
+	 * Cached options.
+	 *
+	 * @var array
+	 */
+	private static $options = null;
+
+	/**
 	 * Get module options with defaults.
 	 *
 	 * @return array Options.
 	 */
 	public static function get_options() : array {
+		if ( null !== self::$options ) {
+			return self::$options;
+		}
+
 		$defaults = array(
 			'enabled'                      => false,
 			'limit_login_attempts'         => true,
@@ -104,7 +115,8 @@ class Login_Security {
 			'custom_form_background'       => '',
 		);
 		$opts = (array) \get_option( 'functionalities_login_security', $defaults );
-		return array_merge( $defaults, $opts );
+		self::$options = array_merge( $defaults, $opts );
+		return self::$options;
 	}
 
 	/**

@@ -153,3 +153,48 @@ svg.func-icon,
 	max-width: 22px;
 	max-height: 22px;
 }
+
+/* Block styles */
+.func-svg-icon-block-wrapper {
+	margin: 1em 0;
+	clear: both;
+}
+
+.func-svg-icon-block-render {
+	line-height: 0;
+}
+
+.func-svg-icon-block-render svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+	fill: currentColor;
+}
+
+.func-svg-icon-block-render svg path {
+	fill: inherit;
+}
+
+.func-svg-icon-block-placeholder {
+	display: flex !important;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	padding: 40px !important;
+	background: #f0f0f0 !important;
+	border: 2px dashed #ccc !important;
+	color: #666 !important;
+	border-radius: 4px;
+	cursor: pointer;
+}
+
+.func-svg-icon-block-placeholder:hover {
+	background: #e8e8e8 !important;
+	border-color: #999 !important;
+}
+
+.func-icon-btn.is-selected {
+	border-color: #007cba;
+	background: #f0f6fc;
+	box-shadow: 0 0 0 1px #007cba;
+}

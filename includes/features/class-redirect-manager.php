@@ -88,6 +88,13 @@ class Redirect_Manager {
 			return self::$redirects_cache;
 		}
 
+		// Use transient to avoid disk I/O on every request.
+		$cached = \get_transient( 'func_redirects_json' );
+		if ( false !== $cached && is_array( $cached ) ) {
+			self::$redirects_cache = $cached;
+			return self::$redirects_cache;
+		}
+
 		if ( ! file_exists( self::$redirects_file ) ) {
 			self::$redirects_cache = array();
 			return self::$redirects_cache;
@@ -106,6 +113,10 @@ class Redirect_Manager {
 		}
 
 		self::$redirects_cache = $data['redirects'];
+		
+		// Cache for 12 hours.
+		\set_transient( 'func_redirects_json', self::$redirects_cache, 12 * HOUR_IN_SECONDS );
+
 		return self::$redirects_cache;
 	}
 
@@ -132,6 +143,7 @@ class Redirect_Manager {
 		$result = file_put_contents( self::$redirects_file, $json );
 		if ( false !== $result ) {
 			self::$redirects_cache = $redirects;
+			\set_transient( 'func_redirects_json', $redirects, 12 * HOUR_IN_SECONDS );
 			return true;
 		}
 

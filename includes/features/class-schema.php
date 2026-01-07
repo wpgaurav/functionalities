@@ -116,25 +116,24 @@ class Schema {
 	}
 
 	/**
+	 * Cached options.
+	 *
+	 * @var array
+	 */
+	private static $options = null;
+
+	/**
 	 * Get module options with defaults.
 	 *
 	 * @since 0.3.0
 	 *
-	 * @return array {
-	 *     Schema options.
-	 *
-	 *     @type bool   $enable_site_schema  Add schema to html element.
-	 *     @type string $site_itemtype       Schema type for html (WebPage, etc.).
-	 *     @type bool   $enable_header_part  Add WPHeader schema to header.
-	 *     @type bool   $enable_footer_part  Add WPFooter schema to footer.
-	 *     @type bool   $enable_article      Add Article schema to content.
-	 *     @type string $article_itemtype    Schema type for article.
-	 *     @type bool   $add_headline        Add itemprop="headline" to headings.
-	 *     @type bool   $add_dates           Add date itemprops to time elements.
-	 *     @type bool   $add_author          Add itemprop="author" to author elements.
-	 * }
+	 * @return array Options array.
 	 */
 	protected static function get_options() : array {
+		if ( null !== self::$options ) {
+			return self::$options;
+		}
+
 		$defaults = array(
 			'enable_site_schema'  => true,
 			'site_itemtype'       => 'WebPage',
@@ -147,7 +146,8 @@ class Schema {
 			'add_author'          => true,
 		);
 		$opts = (array) \get_option( 'functionalities_schema', $defaults );
-		return array_merge( $defaults, $opts );
+		self::$options = array_merge( $defaults, $opts );
+		return self::$options;
 	}
 
 	/**
@@ -259,41 +259,16 @@ class Schema {
 			return $html;
 		}
 
-		// Parse HTML with DOMDocument.
-		$libxml_prev = libxml_use_internal_errors( true );
-		$dom         = new \DOMDocument( '1.0', 'UTF-8' );
-		$dom->loadHTML( '<?xml encoding="utf-8" ?>' . $html );
-		$xpath = new \DOMXPath( $dom );
-
-		// Add WPHeader schema.
+		// Use regex for performance instead of full DOM parsing of the entire page.
 		if ( $enable_header ) {
-			$nodes = $xpath->query( '//header' );
-			if ( $nodes instanceof \DOMNodeList && $nodes->length > 0 ) {
-				$el = $nodes->item( 0 );
-				if ( $el instanceof \DOMElement && ! $el->hasAttribute( 'itemscope' ) ) {
-					$el->setAttribute( 'itemscope', '' );
-					$el->setAttribute( 'itemtype', 'https://schema.org/WPHeader' );
-				}
-			}
+			$html = preg_replace( '/<header\b(?![^>]*itemscope)/i', '<header itemscope itemtype="https://schema.org/WPHeader"', $html, 1 );
 		}
 
-		// Add WPFooter schema.
 		if ( $enable_footer ) {
-			$nodes = $xpath->query( '//footer' );
-			if ( $nodes instanceof \DOMNodeList && $nodes->length > 0 ) {
-				$el = $nodes->item( 0 );
-				if ( $el instanceof \DOMElement && ! $el->hasAttribute( 'itemscope' ) ) {
-					$el->setAttribute( 'itemscope', '' );
-					$el->setAttribute( 'itemtype', 'https://schema.org/WPFooter' );
-				}
-			}
+			$html = preg_replace( '/<footer\b(?![^>]*itemscope)/i', '<footer itemscope itemtype="https://schema.org/WPFooter"', $html, 1 );
 		}
 
-		$out = $dom->saveHTML();
-		libxml_clear_errors();
-		libxml_use_internal_errors( $libxml_prev );
-
-		return is_string( $out ) && $out !== '' ? $out : $html;
+		return $html;
 	}
 
 	/**

@@ -69,11 +69,22 @@ class Content_Regression {
 	}
 
 	/**
+	 * Cached options.
+	 *
+	 * @var array
+	 */
+	private static $options = null;
+
+	/**
 	 * Get module options.
 	 *
 	 * @return array Options array.
 	 */
 	public static function get_options() : array {
+		if ( null !== self::$options ) {
+			return self::$options;
+		}
+
 		$defaults = array(
 			'enabled'                     => false,
 			'post_types'                  => array( 'post', 'page' ),
@@ -102,7 +113,8 @@ class Content_Regression {
 			'show_post_column'            => true,
 		);
 		$opts = (array) \get_option( 'functionalities_content_regression', $defaults );
-		return array_merge( $defaults, $opts );
+		self::$options = array_merge( $defaults, $opts );
+		return self::$options;
 	}
 
 	/**

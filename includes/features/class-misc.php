@@ -248,7 +248,25 @@ class Misc {
 	 *     @type bool $enable_textarea_fullscreen      Fullscreen textareas.
 	 * }
 	 */
+	/**
+	 * Cached options.
+	 *
+	 * @var array
+	 */
+	private static $options = null;
+
+	/**
+	 * Get module options with defaults.
+	 *
+	 * @since 0.2.0
+	 *
+	 * @return array Options array.
+	 */
 	protected static function get_options() : array {
+		if ( null !== self::$options ) {
+			return self::$options;
+		}
+
 		$defaults = array(
 			'disable_block_widgets'           => false,
 			'load_separate_core_block_assets' => false,
@@ -267,7 +285,8 @@ class Misc {
 			'enable_textarea_fullscreen'      => false,
 		);
 		$opts = (array) \get_option( 'functionalities_misc', $defaults );
-		return array_merge( $defaults, $opts );
+		self::$options = array_merge( $defaults, $opts );
+		return self::$options;
 	}
 
 	/**

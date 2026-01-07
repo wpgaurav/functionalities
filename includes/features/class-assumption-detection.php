@@ -89,11 +89,22 @@ class Assumption_Detection {
 	}
 
 	/**
+	 * Cached options.
+	 *
+	 * @var array
+	 */
+	private static $options = null;
+
+	/**
 	 * Get module options.
 	 *
 	 * @return array Options array.
 	 */
 	public static function get_options() : array {
+		if ( null !== self::$options ) {
+			return self::$options;
+		}
+
 		$defaults = array(
 			'enabled'                       => false,
 			'detect_schema_collision'       => true,
@@ -111,7 +122,8 @@ class Assumption_Detection {
 			'detect_cron_issues'            => true,
 		);
 		$opts = (array) \get_option( 'functionalities_assumption_detection', $defaults );
-		return array_merge( $defaults, $opts );
+		self::$options = array_merge( $defaults, $opts );
+		return self::$options;
 	}
 
 	/**

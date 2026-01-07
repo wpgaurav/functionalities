@@ -112,37 +112,44 @@ class Components {
 	}
 
 	/**
+	 * Cached options.
+	 *
+	 * @var array
+	 */
+	private static $options = null;
+
+	/**
 	 * Get module options with defaults.
 	 *
 	 * If no items are configured, loads the default component set.
 	 *
 	 * @since 0.3.0
 	 *
-	 * @return array {
-	 *     Components options.
-	 *
-	 *     @type bool  $enabled Whether components output is enabled.
-	 *     @type array $items   Array of component definitions.
-	 * }
+	 * @return array Options array.
 	 */
 	protected static function get_options() : array {
+		if ( null !== self::$options ) {
+			return self::$options;
+		}
+
 		$defaults = array(
 			'enabled' => true,
 			'items'   => array(),
+			'css_ver' => '',
 		);
 		$opts = (array) \get_option( 'functionalities_components', $defaults );
-		$out  = array_merge( $defaults, $opts );
+		self::$options = array_merge( $defaults, $opts );
 
 		// Load default components if none configured.
-		if ( empty( $out['items'] ) || ! is_array( $out['items'] ) ) {
+		if ( empty( self::$options['items'] ) || ! is_array( self::$options['items'] ) ) {
 			if ( class_exists( '\\Functionalities\\Admin\\Admin' ) ) {
-				$out['items'] = \Functionalities\Admin\Admin::default_components();
+				self::$options['items'] = \Functionalities\Admin\Admin::default_components();
 			} else {
-				$out['items'] = array();
+				self::$options['items'] = array();
 			}
 		}
 
-		return $out;
+		return self::$options;
 	}
 
 	/**
@@ -249,68 +256,62 @@ class Components {
 	}
 
 	/**
-	 * Ensure CSS file exists and is up-to-date.
+	 * Cached CSS file info.
 	 *
-	 * Creates or updates the CSS file in the uploads directory.
-	 * Uses MD5 hash comparison to avoid unnecessary writes.
-	 *
-	 * @since 0.3.0
-	 * @since 0.8.0 Added filter for file path, action on update.
+	 * @var array|null
+	 */
+	private static $css_file_info = null;
+
+	/**
+	 * Ensure the components CSS file exists and is up to date.
 	 *
 	 * @param string $css The CSS content to write.
-	 * @return array|null {
-	 *     File info array on success, null on failure.
-	 *
-	 *     @type string $path Full file system path.
-	 *     @type string $url  Public URL to the file.
-	 *     @type string $ver  Version hash for cache busting.
-	 * }
+	 * @return array|null File info array on success, null on failure.
 	 */
 	protected static function ensure_css_file( string $css ) : ?array {
-		$upload = \wp_upload_dir();
+		if ( null !== self::$css_file_info ) {
+			return self::$css_file_info;
+		}
 
+		$upload = \wp_upload_dir();
 		if ( ! empty( $upload['error'] ) ) {
 			return null;
 		}
 
-		$dir = rtrim( (string) $upload['basedir'], '/\\' ) . '/functionalities';
+		$dir  = rtrim( (string) $upload['basedir'], '/\\' ) . '/functionalities';
+		$file = \apply_filters( 'functionalities_components_file_path', $dir . '/components.css' );
+		$hash = md5( $css );
 
-		// Create directory if needed.
-		if ( ! is_dir( $dir ) && ! \wp_mkdir_p( $dir ) ) {
-			return null;
+		// Avoid md5_file on every request. Check if file exists first.
+		$file_exists = is_file( $file );
+		
+		// If we have a cached version in options, compare with current hash.
+		$opts = self::get_options();
+		$needs_update = ! $file_exists || ( ! empty( $opts['css_ver'] ) && $opts['css_ver'] !== $hash );
+		
+		// If no cached version in options but file exists, we might still want to check once.
+		if ( ! $needs_update && $file_exists && empty( $opts['css_ver'] ) ) {
+			if ( md5_file( $file ) !== $hash ) {
+				$needs_update = true;
+			}
 		}
 
-		/**
-		 * Filters the path to the components CSS file.
-		 *
-		 * @since 0.8.0
-		 *
-		 * @param string $path Full path to the CSS file.
-		 */
-		$file = \apply_filters( 'functionalities_components_file_path', $dir . '/components.css' );
+		if ( $needs_update ) {
+			// Create directory if needed.
+			if ( ! is_dir( $dir ) && ! \wp_mkdir_p( $dir ) ) {
+				return null;
+			}
 
-		$hash          = md5( $css );
-		$existing_hash = is_file( $file ) ? md5_file( $file ) : '';
-
-		// Only write if content has changed.
-		if ( $hash !== $existing_hash ) {
-			// Sanitize CSS before writing to file.
 			$sanitized_css = self::sanitize_css( $css );
 
-			// Use WP_Filesystem for safer file operations.
 			if ( ! function_exists( 'WP_Filesystem' ) ) {
 				require_once ABSPATH . 'wp-admin/includes/file.php';
 			}
 
 			global $wp_filesystem;
 			if ( ! WP_Filesystem() ) {
-				// Fallback to direct file write with proper error handling.
 				$bytes = file_put_contents( $file, $sanitized_css );
 				if ( false === $bytes ) {
-					// Log error for debugging (admin only).
-					if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-						error_log( 'Functionalities: Failed to write CSS file: ' . $file );
-					}
 					return null;
 				}
 			} else {
@@ -319,24 +320,23 @@ class Components {
 				}
 			}
 
-			/**
-			 * Fires when the components CSS file is regenerated.
-			 *
-			 * @since 0.8.0
-			 *
-			 * @param string $file Path to the generated CSS file.
-			 * @param string $css  The CSS content written.
-			 */
+			// Update the version in options to avoid future checks.
+			$opts['css_ver'] = $hash;
+			\update_option( 'functionalities_components', $opts );
+			self::$options = $opts; // Update static cache.
+
 			\do_action( 'functionalities_components_updated', $file, $css );
 		}
 
 		$url = rtrim( (string) $upload['baseurl'], '/\\' ) . '/functionalities/components.css';
 
-		return array(
+		self::$css_file_info = array(
 			'path' => $file,
 			'url'  => $url,
 			'ver'  => $hash,
 		);
+
+		return self::$css_file_info;
 	}
 
 	/**
