@@ -29,6 +29,21 @@ svg.func-icon,
 	fill: inherit;
 }
 
+/* Hide the placeholder bullet character inside func-icon.
+   We use a bullet to force Gutenberg to keep the closing tag.
+   The ::before pseudo-element shows the icon, text is hidden. */
+i.func-icon,
+span.func-icon {
+	font-size: 0 !important;
+	line-height: 0 !important;
+}
+
+/* The icon is shown via ::before pseudo-element, which uses normal font-size */
+i.func-icon::before,
+span.func-icon::before {
+	font-size: 1rem;
+}
+
 /* Popover styles */
 .func-svg-icon-popover {
 	z-index: 100001;

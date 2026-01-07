@@ -2,7 +2,7 @@
 
 A modular site-specific plugin that organizes common WordPress features with simple toggles. Built with modern WordPress coding standards and a clean module-based dashboard. Optimized for performance with lazy-loading, static property caching, and intelligent transients.
 
-**Version:** 0.14.2  
+**Version:** 0.14.3  
 **License:** GPL-2.0-or-later  
 **Text Domain:** `functionalities`
 
@@ -444,7 +444,10 @@ Example module definition:
 
 ## Changelog
 
-### 0.14.2 (Current)
+### 0.14.3 (Current)
+- **Fixed**: SVG icon closing tag issue - now uses visible bullet placeholder hidden by CSS.
+
+### 0.14.2
 - **Fixed**: SVG icon tags now properly close in Gutenberg editor using zero-width space technique.
 - **Changed**: SVG icons now use `<i>` tag instead of `<span>` (standard for icons, better Gutenberg compatibility).
 - **Improved**: Backward compatibility maintained for legacy `<span>` icon tags.
