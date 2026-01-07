@@ -1,6 +1,6 @@
 # Functionalities
 
-A modular site-specific plugin that organizes common WordPress features with simple toggles. Built with modern WordPress coding standards and a clean module-based dashboard.
+A modular site-specific plugin that organizes common WordPress features with simple toggles. Built with modern WordPress coding standards and a clean module-based dashboard. Optimized for performance with lazy-loading, static property caching, and intelligent transients.
 
 **Version:** 0.12.0  
 **License:** GPL-2.0-or-later  
@@ -8,11 +8,27 @@ A modular site-specific plugin that organizes common WordPress features with sim
 
 ## Installation
 
-1. Copy the `functionalities/` folder into `wp-content/plugins/`
-2. Activate in wp-admin under **Plugins**
-3. Navigate to **Functionalities** in the admin menu
+1. **Download:** Get the latest production-ready ZIP file from [GitHub Releases](https://github.com/wpgaurav/functionalities/releases).
+2. **Upload:** In your WordPress admin, go to **Plugins > Add New > Upload Plugin** and select the downloaded file.
+3. **Activate:** Activate the plugin through the **Plugins** menu in WordPress.
+4. **Setup:** Navigate to the new **Functionalities** menu item to enable and configure your modules.
+
+*Alternatively, you can manually copy the `functionalities/` folder into `wp-content/plugins/`.*
 
 All modules are accessed through a unified dashboard at `wp-admin/admin.php?page=functionalities`. Click any module card to configure its settings.
+
+---
+
+## Performance & Footprint
+
+This plugin is built with a "Performance First" philosophy. Unlike many all-in-one plugins that slow down your site, Functionalities is designed to be as lightweight as possible:
+
+- **Modular & Lazy Loaded:** Using a custom autoloader, the plugin only loads the code required for active modules. If a feature is disabled, its code is never even included in memory.
+- **Minimized Database Load:** All module settings are cached in static properties. This ensures that `get_option()` is called at most once per module per request, regardless of how many times a feature is accessed.
+- **Zero Frontend Bloat:** Most modules are "Zero Footprint" on the frontend, meaning they load no CSS or JS unless explicitly required (like the Components or Fonts modules).
+- **Intelligent Filtering:** Content filters (`the_content`, etc.) use `strpos()` fast-exit checks. If the specific markers or tags for a feature aren't present in your content, the plugin exits immediately without running expensive regular expressions or DOM parsing.
+- **Efficient HTML Processing:** We use targeted regex for lightweight tasks (like Schema injection) and only resort to `DOMDocument` when structural manipulation is strictly necessary, ensuring maximum speed.
+- **Aggressive Caching:** Heavy operations—such as reading JSON exception lists, calculating file hashes, or managing redirects—are cached using WordPress Transients or versioned options to minimize Disk I/O.
 
 ---
 
@@ -52,9 +68,9 @@ Limit link suggestions to selected post types in the block editor. Reduces clutt
 
 ---
 
-### Miscellaneous (Bloat Control)
+### Performance & Cleanup
 
-Fine-grained control over WordPress default behaviors:
+Fine-grained control over WordPress default behaviors and performance tweaks:
 
 - Disable emojis scripts/styles
 - Disable embeds (oEmbed)
@@ -122,19 +138,49 @@ Register custom font families with @font-face:
 
 ---
 
-### Icons
+### Meta & Copyright
 
-Replace Font Awesome with SVG `<use>` icons:
+Copyright, Dublin Core, licensing, and SEO plugin integration.
 
-- Remove Font Awesome assets to reduce page weight
-- Custom SVG sprite URL
-- Configurable class-to-symbol mappings
+**Features:**
+- Automatic copyright meta tags and Dublin Core metadata
+- Creative Commons licensing integration
+- Standalone Schema.org output for copyright/license information
+- Integration with popular SEO plugins for unified metadata
 
-**Navigate to:** `?page=functionalities&module=icons`
+**Navigate to:** `?page=functionalities&module=meta`
 
 ---
 
-### Content Regression Detection
+### SVG Icons
+
+Upload custom SVG icons and insert them inline in the block editor.
+
+**Features:**
+- Custom SVG icon library with secure sanitization
+- Inline insertion via RichText toolbar (inherits surrounding font size)
+- Standalone SVG Icon block with alignment, size, and color controls
+- Zero frontend footprint when no icons are used
+
+**Navigate to:** `?page=functionalities&module=svg-icons`
+
+---
+
+### GitHub Updates
+
+Receive plugin updates directly from GitHub releases—a clever trick that brings the convenience of the WordPress.org directory to your custom site-specific plugin. Once enabled, updates are delivered directly to your WordPress dashboard just like any other plugin.
+
+**Features:**
+- Automatic update checks against GitHub repository releases
+- Native WordPress update notifications and one-click upgrades
+- Supports private repositories via access tokens
+- Configurable cache duration for update checks
+
+**Navigate to:** `?page=functionalities&module=updates`
+
+---
+
+### Content Integrity
 
 Detect structural regressions when posts are updated.
 
@@ -179,7 +225,12 @@ Dashboard UI with acknowledge/ignore actions for each detected issue.
 
 ### Task Manager
 
-Simple task tracking for content and development workflows within WordPress admin.
+Simple, file-based project task management for content and development workflows within WordPress admin.
+
+**Features:**
+- Track tasks directly in the WordPress dashboard
+- Stored in a portable JSON file for version control friendliness
+- Organized by status and priority
 
 **Navigate to:** `?page=functionalities&module=task-manager`
 
@@ -187,7 +238,13 @@ Simple task tracking for content and development workflows within WordPress admi
 
 ### Redirect Manager
 
-Manage URL redirects directly from WordPress admin. Supports 301 and 302 redirects.
+Manage URL redirects directly from WordPress admin with high-performance file-based storage.
+
+**Features:**
+- Supports 301, 302, 307, and 308 redirects
+- File-based JSON storage for zero database overhead during redirects
+- Integrated hit counter for tracking redirect usage
+- Normalized path matching
 
 **Navigate to:** `?page=functionalities&module=redirect-manager`
 
@@ -195,7 +252,14 @@ Manage URL redirects directly from WordPress admin. Supports 301 and 302 redirec
 
 ### Login Security
 
-Enhanced login protection with limited login attempts and additional security measures.
+Enhanced login protection and security measures for your WordPress site.
+
+**Features:**
+- Limit login attempts to prevent brute force attacks
+- Configurable lockout durations
+- Disable XML-RPC authentication and application passwords
+- Hide detailed login errors to prevent user enumeration
+- Custom login page logo and background styling
 
 **Navigate to:** `?page=functionalities&module=login-security`
 
@@ -259,6 +323,40 @@ Navigate to **Link Management** and scroll to "Database Update Tool":
 
 ---
 
+## SVG Icons: Developer Reference
+
+### Shortcode
+
+You can render any icon from your library using the `[func_icon]` shortcode.
+
+```text
+[func_icon name="car" class="my-custom-class"]
+```
+
+**Attributes:**
+- `name` (required): The slug of the icon as defined in the SVG Icons library.
+- `class` (optional): Additional CSS classes to add to the `<svg>` element.
+
+### Developer Filters
+
+```php
+// Disable the SVG Icons module via code
+add_filter( 'functionalities_svg_icons_enabled', '__return_false' );
+
+// Filter the list of available icons
+add_filter( 'functionalities_svg_icons_list', function( $icons ) {
+    // Modify $icons array
+    return $icons;
+});
+
+// Filter sanitized SVG content before it is saved to the database
+add_filter( 'functionalities_svg_icons_sanitize', function( $svg, $slug ) {
+    return $svg;
+}, 10, 2 );
+```
+
+---
+
 ## File Structure
 
 ```
@@ -267,11 +365,13 @@ functionalities/
 │   ├── css/
 │   │   ├── admin.css
 │   │   ├── admin-ui.css
-│   │   └── content-regression.css
+│   │   ├── content-regression.css
+│   │   └── svg-icons-editor.css
 │   └── js/
 │       ├── admin.js
 │       ├── admin-ui.js
-│       └── content-regression.js
+│       ├── content-regression.js
+│       └── svg-icons-editor.js
 ├── includes/
 │   ├── admin/
 │   │   ├── class-admin.php
@@ -284,7 +384,6 @@ functionalities/
 │   │   ├── class-content-regression.php
 │   │   ├── class-editor-links.php
 │   │   ├── class-fonts.php
-│   │   ├── class-icons.php
 │   │   ├── class-link-management.php
 │   │   ├── class-login-security.php
 │   │   ├── class-meta.php
@@ -292,10 +391,14 @@ functionalities/
 │   │   ├── class-redirect-manager.php
 │   │   ├── class-schema.php
 │   │   ├── class-snippets.php
+│   │   ├── class-svg-icons.php
 │   │   └── class-task-manager.php
 │   └── class-github-updater.php
 ├── languages/
-└── functionalities.php
+├── exception-urls.json.sample
+├── functionalities.php
+├── index.php
+└── uninstall.php
 ```
 
 ---
