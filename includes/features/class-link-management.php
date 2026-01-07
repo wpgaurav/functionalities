@@ -28,13 +28,13 @@ class Link_Management {
 	 * @return void
 	 */
 	public static function init() : void {
+		// Load JSON preset immediately (we're already on init hook).
+		self::load_json_preset();
+
 		// Apply to content, widgets, and comments (GT Nofollow Manager compatibility).
 		\add_filter( 'the_content', array( __CLASS__, 'filter_content' ), 999 );
 		\add_filter( 'widget_text', array( __CLASS__, 'filter_content' ), 999 );
 		\add_filter( 'comment_text', array( __CLASS__, 'filter_content' ), 999 );
-
-		// Load JSON preset if available.
-		\add_action( 'init', array( __CLASS__, 'load_json_preset' ) );
 	}
 
 	/**

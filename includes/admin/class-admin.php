@@ -5659,6 +5659,50 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 			font-family: monospace;
 			font-size: 12px;
 		}
+		/* Responsive breakpoints for task manager */
+		@media screen and (max-width: 782px) {
+			.functionalities-task-manager .projects-grid {
+				grid-template-columns: 1fr;
+			}
+			.functionalities-task-manager .feature-list {
+				grid-template-columns: 1fr;
+			}
+			.functionalities-task-manager .project-header {
+				flex-direction: column;
+				align-items: flex-start;
+			}
+			.functionalities-task-manager .project-toolbar {
+				width: 100%;
+			}
+			.functionalities-task-manager .new-project-form {
+				flex-direction: column;
+				align-items: stretch;
+			}
+			.functionalities-task-manager .task-item {
+				flex-wrap: wrap;
+			}
+			.functionalities-task-manager .task-actions {
+				width: 100%;
+				justify-content: flex-end;
+				margin-top: 8px;
+			}
+		}
+		@media screen and (min-width: 783px) and (max-width: 1024px) {
+			.functionalities-task-manager .projects-grid {
+				grid-template-columns: repeat(2, 1fr);
+			}
+			.functionalities-task-manager .feature-list {
+				grid-template-columns: repeat(2, 1fr);
+			}
+		}
+		@media screen and (min-width: 1025px) {
+			.functionalities-task-manager .projects-grid {
+				grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+			}
+			.functionalities-task-manager .feature-list {
+				grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+			}
+		}
 		</style>
 		<?php
 	}
