@@ -639,8 +639,8 @@ class SVG_Icons
 	/**
 	 * Render icons in post content.
 	 *
-	 * Converts <span class="func-icon" data-icon="slug"></span> to inline SVG.
-	 * Also handles unclosed spans that Gutenberg may save.
+	 * Converts <i class="func-icon" data-icon="slug"></i> to inline SVG.
+	 * Also supports legacy <span> tags for backward compatibility.
 	 *
 	 * @since 0.11.0
 	 * @param string $content The post content.
@@ -652,46 +652,49 @@ class SVG_Icons
 			return $content;
 		}
 
-		// First, fix any unclosed span tags by finding them and closing them.
-		// Pattern matches: <span ... class="func-icon" ... data-icon="slug" ...> without a closing </span>
-		// This handles the Gutenberg bug where spans are saved unclosed.
-		$content = self::fix_unclosed_icon_spans($content);
-
-		// Now match properly closed icon placeholders.
+		// Match <i> tags with func-icon class (primary format).
 		// Supports both attribute orders: class before data-icon, or data-icon before class.
-		$pattern = '/<span[^>]+class="[^"]*func-icon[^"]*"[^>]*data-icon="([^"]+)"[^>]*>([^<]*)<\/span>|<span[^>]+data-icon="([^"]+)"[^>]*class="[^"]*func-icon[^"]*"[^>]*>([^<]*)<\/span>/i';
+		$pattern_i = '/<i[^>]+class="[^"]*func-icon[^"]*"[^>]*data-icon="([^"]+)"[^>]*><\/i>|<i[^>]+data-icon="([^"]+)"[^>]*class="[^"]*func-icon[^"]*"[^>]*><\/i>/i';
 
-		return preg_replace_callback(
-			$pattern,
+		$content = preg_replace_callback(
+			$pattern_i,
 			function ($matches) {
-				// Get slug from whichever capture group matched.
-				// Alternative 1: slug in $matches[1], inner in $matches[2]
-				// Alternative 2: slug in $matches[3], inner in $matches[4]
-				if (!empty($matches[1])) {
-					$slug = $matches[1];
-				} else {
-					$slug = isset($matches[3]) ? $matches[3] : '';
-				}
-
+				$slug = !empty($matches[1]) ? $matches[1] : (isset($matches[2]) ? $matches[2] : '');
 				return self::render_icon(\sanitize_key($slug));
 			},
 			$content
 		);
+
+		// Legacy support: Match <span> tags with func-icon class.
+		// First fix any unclosed spans.
+		$content = self::fix_unclosed_icon_tags($content);
+
+		$pattern_span = '/<span[^>]+class="[^"]*func-icon[^"]*"[^>]*data-icon="([^"]+)"[^>]*>[^<]*<\/span>|<span[^>]+data-icon="([^"]+)"[^>]*class="[^"]*func-icon[^"]*"[^>]*>[^<]*<\/span>/i';
+
+		$content = preg_replace_callback(
+			$pattern_span,
+			function ($matches) {
+				$slug = !empty($matches[1]) ? $matches[1] : (isset($matches[2]) ? $matches[2] : '');
+				return self::render_icon(\sanitize_key($slug));
+			},
+			$content
+		);
+
+		return $content;
 	}
 
 	/**
-	 * Fix unclosed icon span tags in content.
+	 * Fix unclosed icon tags in content.
 	 *
-	 * Gutenberg's RichText sometimes saves spans without closing tags.
+	 * Legacy support: Gutenberg's RichText sometimes saved spans without closing tags.
 	 * This function finds and properly closes them.
 	 *
 	 * @since 0.14.0
 	 * @param string $content The post content.
-	 * @return string Content with fixed span tags.
+	 * @return string Content with fixed tags.
 	 */
-	private static function fix_unclosed_icon_spans(string $content): string
+	private static function fix_unclosed_icon_tags(string $content): string
 	{
-		// Use DOMDocument to properly fix malformed HTML.
 		if (false === strpos($content, 'func-icon')) {
 			return $content;
 		}
@@ -699,8 +702,6 @@ class SVG_Icons
 		// Regex to find unclosed icon spans: <span...func-icon...data-icon="..."...> not followed by </span>
 		// This uses a negative lookahead to find spans that don't have a closing tag.
 		$pattern = '/<span([^>]*class="[^"]*func-icon[^"]*"[^>]*data-icon="([^"]+)"[^>]*)>(?!<\/span>)/i';
-		
-		// Also handle reverse attribute order.
 		$pattern2 = '/<span([^>]*data-icon="([^"]+)"[^>]*class="[^"]*func-icon[^"]*"[^>]*)>(?!<\/span>)/i';
 
 		// Replace unclosed spans with properly closed ones.
