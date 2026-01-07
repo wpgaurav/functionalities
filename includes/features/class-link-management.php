@@ -109,12 +109,12 @@ class Link_Management {
 		$json_path = '';
 
 		// Priority 1: User-provided custom URL/path.
-		if ( ! empty( $opts['json_preset_url'] ) ) {
+		if ( ! empty( $opts['json_preset_url'] ) && self::is_valid_json_source( $opts['json_preset_url'] ) ) {
 			$json_path = $opts['json_preset_url'];
 		} else {
 			// Priority 2: Developer filter.
 			$filtered_path = \apply_filters( 'functionalities_json_preset_path', '' );
-			if ( ! empty( $filtered_path ) && ( self::is_valid_json_source( $filtered_path ) ) ) {
+			if ( ! empty( $filtered_path ) && self::is_valid_json_source( $filtered_path ) ) {
 				$json_path = $filtered_path;
 			}
 		}
@@ -154,11 +154,23 @@ class Link_Management {
 		}
 
 		$preset = json_decode( $json_content, true );
-		if ( ! is_array( $preset ) || ! isset( $preset['urls'] ) ) {
+		if ( ! is_array( $preset ) ) {
 			return;
 		}
 
-		$json_urls = is_array( $preset['urls'] ) ? $preset['urls'] : array();
+		$json_urls = array();
+		if ( isset( $preset['urls'] ) && is_array( $preset['urls'] ) ) {
+			// Object format: {"urls": ["...", "..."]}
+			$json_urls = $preset['urls'];
+		} else {
+			// Flat array format: ["...", "..."]
+			// Filter to ensure only strings are kept.
+			$json_urls = array_filter( $preset, 'is_string' );
+		}
+
+		if ( empty( $json_urls ) ) {
+			return;
+		}
 		
 		// Cache in transient for 12 hours.
 		\set_transient( $transient_key, $json_urls, 12 * HOUR_IN_SECONDS );

@@ -143,9 +143,72 @@ class Misc {
 			\add_filter( 'xmlrpc_enabled', '__return_false' );
 		}
 
+		// Disable XML-RPC Pingbacks (only if full XML-RPC is not disabled).
+		if ( self::is_option_enabled( $opts, 'disable_xmlrpc_pingbacks' ) && ! self::is_option_enabled( $opts, 'disable_xmlrpc' ) ) {
+			\add_filter(
+				'xmlrpc_methods',
+				function ( $methods ) {
+					unset( $methods['pingback.ping'] );
+					unset( $methods['pingback.extensions.getPingbacks'] );
+					return $methods;
+				}
+			);
+		}
+
 		// Disable feeds.
 		if ( self::is_option_enabled( $opts, 'disable_feeds' ) ) {
 			self::disable_feeds();
+		}
+
+		// Disable Gravatars.
+		if ( self::is_option_enabled( $opts, 'disable_gravatars' ) ) {
+			\add_filter( 'get_avatar', '__return_empty_string' );
+		}
+
+		// Disable Self Pingbacks.
+		if ( self::is_option_enabled( $opts, 'disable_self_pingbacks' ) ) {
+			\add_action( 'pre_ping', array( __CLASS__, 'disable_self_pings' ) );
+		}
+
+		// Remove query strings from static resources.
+		if ( self::is_option_enabled( $opts, 'remove_query_strings' ) ) {
+			\add_filter( 'script_loader_src', array( __CLASS__, 'remove_ver_query_string' ), 15 );
+			\add_filter( 'style_loader_src', array( __CLASS__, 'remove_ver_query_string' ), 15 );
+		}
+
+		// Remove DNS prefetch.
+		if ( self::is_option_enabled( $opts, 'remove_dns_prefetch' ) ) {
+			\add_filter(
+				'wp_resource_hints',
+				function ( $hints, $relation_type ) {
+					return 'dns-prefetch' === $relation_type ? array() : $hints;
+				},
+				10,
+				2
+			);
+		}
+
+		// Remove recent comments inline CSS.
+		if ( self::is_option_enabled( $opts, 'remove_recent_comments_css' ) ) {
+			\add_action(
+				'widgets_init',
+				function () {
+					global $wp_widget_factory;
+					if ( isset( $wp_widget_factory->widgets['WP_Widget_Recent_Comments'] ) ) {
+						\remove_action( 'wp_head', array( $wp_widget_factory->widgets['WP_Widget_Recent_Comments'], 'recent_comments_style' ) );
+					}
+				}
+			);
+		}
+
+		// Limit revisions.
+		if ( self::is_option_enabled( $opts, 'limit_revisions' ) ) {
+			\add_filter(
+				'wp_revisions_to_keep',
+				function () {
+					return 10;
+				}
+			);
 		}
 
 		// Disable dashicons for guests.
@@ -276,7 +339,14 @@ class Misc {
 			'remove_rsd_wlw_shortlink'        => false,
 			'remove_generator_meta'           => false,
 			'disable_xmlrpc'                  => false,
+			'disable_xmlrpc_pingbacks'        => false,
 			'disable_feeds'                   => false,
+			'disable_gravatars'               => false,
+			'disable_self_pingbacks'          => false,
+			'remove_query_strings'            => false,
+			'remove_dns_prefetch'             => false,
+			'remove_recent_comments_css'      => false,
+			'limit_revisions'                 => false,
 			'disable_dashicons_for_guests'    => false,
 			'disable_heartbeat'               => false,
 			'disable_admin_bar_front'         => false,
@@ -342,6 +412,38 @@ class Misc {
 				echo '<script>window.Prism&&Prism.highlightAll();</script>';
 			}
 		);
+	}
+
+	/**
+	 * Remove version query string from scripts and styles.
+	 *
+	 * @since 0.13.0
+	 *
+	 * @param string $src The source URL.
+	 * @return string The source URL without version query string.
+	 */
+	public static function remove_ver_query_string( string $src ) : string {
+		if ( strpos( $src, 'ver=' ) ) {
+			$src = remove_query_arg( 'ver', $src );
+		}
+		return $src;
+	}
+
+	/**
+	 * Disable self-pingbacks.
+	 *
+	 * @since 0.13.0
+	 *
+	 * @param array $links Array of links to ping.
+	 * @return void
+	 */
+	public static function disable_self_pings( array &$links ) : void {
+		$home = home_url();
+		foreach ( $links as $l => $link ) {
+			if ( 0 === strpos( $link, $home ) ) {
+				unset( $links[ $l ] );
+			}
+		}
 	}
 
 	/**

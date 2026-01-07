@@ -111,6 +111,7 @@ class Snippets {
 	 */
 	public static function init() : void {
 		\add_action( 'wp_head', array( __CLASS__, 'output_head' ), 20 );
+		\add_action( 'wp_body_open', array( __CLASS__, 'output_body_open' ), 20 );
 		\add_action( 'wp_footer', array( __CLASS__, 'output_footer' ), 20 );
 	}
 
@@ -150,12 +151,14 @@ class Snippets {
 		}
 
 		$defaults = array(
-			'enable_header' => false,
-			'header_code'   => '',
-			'enable_footer' => false,
-			'footer_code'   => '',
-			'enable_ga4'    => false,
-			'ga4_id'        => '',
+			'enable_header'    => false,
+			'header_code'      => '',
+			'enable_body_open' => false,
+			'body_open_code'   => '',
+			'enable_footer'    => false,
+			'footer_code'      => '',
+			'enable_ga4'       => false,
+			'ga4_id'           => '',
 		);
 		$opts = (array) \get_option( 'functionalities_snippets', $defaults );
 		self::$options = array_merge( $defaults, $opts );
@@ -314,5 +317,43 @@ class Snippets {
 		 * @since 0.8.0
 		 */
 		\do_action( 'functionalities_after_footer_snippets' );
+	}
+
+	/**
+	 * Output body open snippets.
+	 *
+	 * Outputs custom code in the wp_body_open hook.
+	 *
+	 * @since 0.13.0
+	 *
+	 * @return void
+	 */
+	public static function output_body_open() : void {
+		if ( ! self::should_output() ) {
+			return;
+		}
+
+		$opts = self::get_options();
+
+		if ( empty( $opts['enable_body_open'] ) || empty( $opts['body_open_code'] ) ) {
+			return;
+		}
+
+		/**
+		 * Filters the custom body open code before output.
+		 *
+		 * @since 0.13.0
+		 *
+		 * @param string $code The body open code.
+		 */
+		$body_open_code = \apply_filters( 'functionalities_snippets_body_open_code', (string) $opts['body_open_code'] );
+
+		if ( empty( $body_open_code ) ) {
+			return;
+		}
+
+		echo "\n<!-- Functionalities: Custom Body Open Code -->\n";
+		echo $body_open_code;
+		echo "\n";
 	}
 }

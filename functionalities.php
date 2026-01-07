@@ -3,7 +3,7 @@
  * Plugin Name:       Functionalities
  * Plugin URI:        https://functionalities.dev
  * Description:       Modular site-specific plugin with modern dashboard and features.
- * Version:           0.12.0
+ * Version:           0.13.0
  * Author:            Gaurav Tiwari
  * Author URI:        https://gauravtiwari.org
  * License:           GPL-2.0-or-later
@@ -19,7 +19,7 @@ if (!defined('ABSPATH')) {
 
 // Define constants.
 if (!defined('FUNCTIONALITIES_VERSION')) {
-	define('FUNCTIONALITIES_VERSION', '0.12.0');
+	define('FUNCTIONALITIES_VERSION', '0.13.0');
 }
 if (!defined('FUNCTIONALITIES_FILE')) {
 	define('FUNCTIONALITIES_FILE', __FILE__);

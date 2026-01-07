@@ -2,7 +2,7 @@
 
 A modular site-specific plugin that organizes common WordPress features with simple toggles. Built with modern WordPress coding standards and a clean module-based dashboard. Optimized for performance with lazy-loading, static property caching, and intelligent transients.
 
-**Version:** 0.12.0  
+**Version:** 0.13.0  
 **License:** GPL-2.0-or-later  
 **Text Domain:** `functionalities`
 
@@ -16,6 +16,20 @@ A modular site-specific plugin that organizes common WordPress features with sim
 *Alternatively, you can manually copy the `functionalities/` folder into `wp-content/plugins/`.*
 
 All modules are accessed through a unified dashboard at `wp-admin/admin.php?page=functionalities`. Click any module card to configure its settings.
+
+Learn more on [Functionalities Site](https://functionalities.dev)
+---
+
+## Performance & Footprint
+
+This plugin is built with a "Performance First" philosophy. Unlike many all-in-one plugins that slow down your site, Functionalities is designed to be as lightweight as possible:
+
+- **Modular & Lazy Loaded:** Using a custom autoloader, the plugin only loads the code required for active modules. If a feature is disabled, its code is never even included in memory.
+- **Minimized Database Load:** All module settings are cached in static properties. This ensures that `get_option()` is called at most once per module per request, regardless of how many times a feature is accessed.
+- **Zero Frontend Bloat:** Most modules are "Zero Footprint" on the frontend, meaning they load no CSS or JS unless explicitly required (like the Components or Fonts modules).
+- **Intelligent Filtering:** Content filters (`the_content`, etc.) use `strpos()` fast-exit checks. If the specific markers or tags for a feature aren't present in your content, the plugin exits immediately without running expensive regular expressions or DOM parsing.
+- **Efficient HTML Processing:** We use targeted regex for lightweight tasks (like Schema injection) and only resort to `DOMDocument` when structural manipulation is strictly necessary, ensuring maximum speed.
+- **Aggressive Caching:** Heavy operations—such as reading JSON exception lists, calculating file hashes, or managing redirects—are cached using WordPress Transients or versioned options to minimize Disk I/O.
 
 ---
 
@@ -77,8 +91,14 @@ Fine-grained control over WordPress default behaviors and performance tweaks:
 - Remove REST API and oEmbed discovery links
 - Remove RSD, WLWManifest, shortlink tags
 - Remove WordPress version meta
-- Disable XML-RPC
+- Disable XML-RPC (complete or pingbacks only)
 - Disable RSS/Atom feeds
+- Disable Gravatars
+- Disable self-pingbacks
+- Remove query strings from static resources
+- Remove DNS prefetch
+- Remove Recent Comments inline CSS
+- Limit post revisions
 - Disable Dashicons for non-logged-in users
 - Disable Heartbeat API
 - Disable admin bar on frontend
@@ -424,7 +444,34 @@ Example module definition:
 
 ## Changelog
 
-### 0.12.0 (Current)
+### 0.13.0 (Current)
+- Added new features to **Performance & Cleanup** module:
+  - Disable Gravatars site-wide
+  - Disable self-pingbacks
+  - Granular XML-RPC control (disable only pingbacks)
+  - Remove query strings from static resources (`?ver=`)
+  - Remove DNS prefetch links
+  - Remove Recent Comments inline CSS
+  - Limit post revisions to 10
+- Added `wp_body_open` support to **Snippets** module for easier script placement.
+- Added `BreadcrumbList` JSON-LD support to **Schema** module.
+- Added font preloading option to **Fonts** module for better LCP.
+- Improved **Link Management** JSON source handling (supports flat arrays and additional validation).
+- Performance optimizations and code refinement across all modules.
+
+### 0.12.2
+- Improved: Task Manager UX with drag-and-drop reordering, filtering, and bulk actions.
+- Added: Search bar and priority/status filters to Task Manager project view.
+- Added: Clickable tags in Task Manager for instant filtering.
+- Added: Keyboard shortcuts (Cmd/Ctrl + Enter) for adding and editing tasks.
+- Improved: Task Manager UI with drag handles and auto-focus on entry.
+
+### 0.12.1
+- Fixed: Issue where JSON exception files using a flat array format were not correctly parsed in Link Management.
+- Fixed: Improved robustness of JSON preset loading with better path validation and fallbacks.
+- Improved: Link Management no longer caches empty exception results in transients, allowing for quicker recovery if a remote file is temporarily missing or invalid.
+
+### 0.12.0
 - Performance: Implemented a custom autoloader for lazy-loading module files.
 - Performance: Added static property caching for options across all modules to minimize `get_option` calls.
 - Performance: Replaced expensive `DOMDocument` parsing in Schema module with optimized regex.

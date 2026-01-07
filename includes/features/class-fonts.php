@@ -87,6 +87,9 @@ class Fonts {
 	 * @return void
 	 */
 	public static function init() : void {
+		// Preload fonts early.
+		\add_action( 'wp_head', array( __CLASS__, 'preload_fonts' ), 1 );
+
 		\add_action( 'wp_head', array( __CLASS__, 'print_fonts_css' ), 20 );
 		\add_action( 'admin_head', array( __CLASS__, 'print_fonts_css' ), 20 );
 	}
@@ -192,6 +195,36 @@ class Fonts {
 
 		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSS is sanitized in build_css().
 		echo '<style id="functionalities-fonts">' . self::sanitize_css( $css ) . '</style>';
+	}
+
+	/**
+	 * Preload fonts in head.
+	 *
+	 * @since 0.13.0
+	 * @return void
+	 */
+	public static function preload_fonts() : void {
+		if ( \is_admin() ) {
+			return;
+		}
+
+		$opts = self::get_options();
+
+		if ( ! \apply_filters( 'functionalities_fonts_enabled', ! empty( $opts['enabled'] ) ) ) {
+			return;
+		}
+
+		if ( empty( $opts['items'] ) || ! is_array( $opts['items'] ) ) {
+			return;
+		}
+
+		$items = \apply_filters( 'functionalities_fonts_items', $opts['items'] );
+
+		foreach ( $items as $item ) {
+			if ( ! empty( $item['preload'] ) && ! empty( $item['woff2_url'] ) ) {
+				echo '<link rel="preload" href="' . \esc_url( $item['woff2_url'] ) . '" as="font" type="font/woff2" crossorigin>' . "\n";
+			}
+		}
 	}
 
 	/**
