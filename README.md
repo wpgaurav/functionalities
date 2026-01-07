@@ -2,7 +2,7 @@
 
 A modular site-specific plugin that organizes common WordPress features with simple toggles. Built with modern WordPress coding standards and a clean module-based dashboard. Optimized for performance with lazy-loading, static property caching, and intelligent transients.
 
-**Version:** 0.14.3  
+**Version:** 0.14.4  
 **License:** GPL-2.0-or-later  
 **Text Domain:** `functionalities`
 
@@ -444,7 +444,11 @@ Example module definition:
 
 ## Changelog
 
-### 0.14.3 (Current)
+### 0.14.4 (Current)
+- **Fixed**: Removed `contenteditable` attribute from SVG icon placeholder.
+- **Fixed**: Simplified icon insertion logic in editor.
+
+### 0.14.3
 - **Fixed**: SVG icon closing tag issue - now uses visible bullet placeholder hidden by CSS.
 
 ### 0.14.2

@@ -136,19 +136,14 @@
 			log('Inserting icon', icon.slug);
 
 			// Insert placeholder i tag (PHP will replace with SVG on frontend)
-			// Using <i> tag as it's standard for icons and Gutenberg handles it better than empty spans.
+			// Using <i> tag as it's standard for icons.
 			// We add a bullet character inside to prevent Gutenberg from stripping the closing tag.
 			// CSS hides the bullet in the editor, PHP strips it on frontend render.
-			// contenteditable="false" prevents the cursor from getting stuck inside.
-			var iconHTML = '<i data-icon="' + icon.slug + '" class="func-icon" contenteditable="false">•</i>';
+			var iconHTML = '<i data-icon="' + icon.slug + '" class="func-icon">•</i> ';
 
-			// We insert the icon and then a space separately. 
-			// This helps prevent the space (and subsequent typing) from being merged into the atomic span.
+			// Create rich text value from HTML and insert at current position
 			var iconValue = create({ html: iconHTML });
-			var spaceValue = create({ text: ' ' });
-			var combinedValue = wp.richText.concat ? wp.richText.concat(iconValue, spaceValue) : insert(iconValue, spaceValue, iconValue.text.length);
-
-			onChange(insert(value, combinedValue));
+			onChange(insert(value, iconValue));
 
 			// Inject CSS to display icon in editor using pseudo-element
 			injectIconStyle(icon);
