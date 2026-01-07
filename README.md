@@ -2,7 +2,7 @@
 
 A modular site-specific plugin that organizes common WordPress features with simple toggles. Built with modern WordPress coding standards and a clean module-based dashboard. Optimized for performance with lazy-loading, static property caching, and intelligent transients.
 
-**Version:** 0.14.4  
+**Version:** 0.15.1
 **License:** GPL-2.0-or-later  
 **Text Domain:** `functionalities`
 
@@ -444,7 +444,24 @@ Example module definition:
 
 ## Changelog
 
-### 0.14.4 (Current)
+### 0.15.1 (Current)
+- **Fixed**: Removed automatic conversion of icon tags to shortcodes on save, as requested. The plugin now only uses shortcodes when they are explicitly inserted or used, while still supporting legacy HTML tags on the frontend.
+
+### 0.15.0
+- **Changed**: SVG Icons now use the `[func_icon name="slug"]` shortcode workaround for better stability.
+- **Improved**: Updated block editor to insert shortcodes directly into content.
+- **Fixed**: Render logic now gracefully handles unclosed icon tags on the frontend for existing content.
+
+### 0.14.9
+- **Fixed**: Improved icon tag processing to handle slashed quotes, resolving issues when saving content via REST API or other filters that apply slashes.
+- **Improved**: Enhanced debugger logging to distinguish between save contexts (standard save vs REST API).
+
+### 0.14.5
+- **Added**: Comprehensive Debugger module to monitor and log plugin behavior.
+- **Fixed**: "Invalid Content" error in Block Editor by properly closing icon tags before saving.
+- **Fixed**: Buggy PHP regex that corrupted icon tags with content.
+
+### 0.14.4
 - **Fixed**: Removed `contenteditable` attribute from SVG icon placeholder.
 - **Fixed**: Simplified icon insertion logic in editor.
 

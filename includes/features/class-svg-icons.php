@@ -652,13 +652,9 @@ class SVG_Icons
 			return $content;
 		}
 
-		// Fix any unclosed icon tags (both <i> and <span>).
-		$content = self::fix_unclosed_icon_tags($content);
-
 		// Match <i> tags with func-icon class (primary format).
-		// Supports both attribute orders: class before data-icon, or data-icon before class.
-		// The [^<]* allows for zero-width space or other invisible characters inside the tag.
-		$pattern_i = '/<i[^>]+class="[^"]*func-icon[^"]*"[^>]*data-icon="([^"]+)"[^>]*>[^<]*<\/i>|<i[^>]+data-icon="([^"]+)"[^>]*class="[^"]*func-icon[^"]*"[^>]*>[^<]*<\/i>/i';
+		// Supports both attribute orders, slashed/unslashed quotes, and unclosed tags.
+		$pattern_i = '/<i[^>]+(?:class=\\\\?"[^"]*func-icon[^"]*\\\\?"[^>]+data-icon=\\\\?"([^"\\\]+)\\\\?"|data-icon=\\\\?"([^"\\\]+)\\\\?"[^>]+class=\\\\?"[^"]*func-icon[^"]*\\\\?")[^>]*>(?:[^<]*<\/i>)?/i';
 
 		$content = preg_replace_callback(
 			$pattern_i,
@@ -670,7 +666,7 @@ class SVG_Icons
 		);
 
 		// Legacy support: Match <span> tags with func-icon class.
-		$pattern_span = '/<span[^>]+class="[^"]*func-icon[^"]*"[^>]*data-icon="([^"]+)"[^>]*>[^<]*<\/span>|<span[^>]+data-icon="([^"]+)"[^>]*class="[^"]*func-icon[^"]*"[^>]*>[^<]*<\/span>/i';
+		$pattern_span = '/<span[^>]+(?:class=\\\\?"[^"]*func-icon[^"]*\\\\?"[^>]+data-icon=\\\\?"([^"\\\]+)\\\\?"|data-icon=\\\\?"([^"\\\]+)\\\\?"[^>]+class=\\\\?"[^"]*func-icon[^"]*\\\\?")[^>]*>(?:[^<]*<\/span>)?/i';
 
 		$content = preg_replace_callback(
 			$pattern_span,
@@ -684,35 +680,4 @@ class SVG_Icons
 		return $content;
 	}
 
-	/**
-	 * Fix unclosed icon tags in content.
-	 *
-	 * Legacy support: Gutenberg's RichText sometimes saved spans without closing tags.
-	 * This function finds and properly closes them.
-	 *
-	 * @since 0.14.0
-	 * @param string $content The post content.
-	 * @return string Content with fixed tags.
-	 */
-	private static function fix_unclosed_icon_tags(string $content): string
-	{
-		if (false === strpos($content, 'func-icon')) {
-			return $content;
-		}
-
-		$tags = array('i', 'span');
-
-		foreach ($tags as $tag) {
-			// Regex to find unclosed icon tags (<i> or <span>): <tag...func-icon...data-icon="..."...> 
-			// not followed by a closing tag before the next opening tag or end of content.
-			$pattern = '/<' . $tag . '([^>]*class="[^"]*func-icon[^"]*"[^>]*data-icon="([^"]+)"[^>]*)>(?![^<]*<\/' . $tag . '>)/i';
-			$pattern2 = '/<' . $tag . '([^>]*data-icon="([^"]+)"[^>]*class="[^"]*func-icon[^"]*"[^>]*)>(?![^<]*<\/' . $tag . '>)/i';
-
-			// Replace unclosed tags with properly closed ones.
-			$content = preg_replace($pattern, '<' . $tag . '$1></' . $tag . '>', $content);
-			$content = preg_replace($pattern2, '<' . $tag . '$1></' . $tag . '>', $content);
-		}
-
-		return $content;
-	}
 }

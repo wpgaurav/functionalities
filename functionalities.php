@@ -3,7 +3,7 @@
  * Plugin Name:       Functionalities
  * Plugin URI:        https://functionalities.dev
  * Description:       Modular site-specific plugin with modern dashboard and features.
- * Version:           0.14.4
+ * Version:           0.15.1
  * Author:            Gaurav Tiwari
  * Author URI:        https://gauravtiwari.org
  * License:           GPL-2.0-or-later
@@ -19,7 +19,7 @@ if (!defined('ABSPATH')) {
 
 // Define constants.
 if (!defined('FUNCTIONALITIES_VERSION')) {
-	define('FUNCTIONALITIES_VERSION', '0.14.4');
+	define('FUNCTIONALITIES_VERSION', '0.15.1');
 }
 if (!defined('FUNCTIONALITIES_FILE')) {
 	define('FUNCTIONALITIES_FILE', __FILE__);
@@ -77,6 +77,7 @@ spl_autoload_register(function (string $class) {
 	\Functionalities\Features\Redirect_Manager::init();
 	\Functionalities\Features\Login_Security::init();
 	\Functionalities\Features\SVG_Icons::init();
+	\Functionalities\Features\Debugger::init();
 
 	// Initialize GitHub Updater if enabled.
 	$update_options = \Functionalities\Admin\Admin::get_updates_options();
