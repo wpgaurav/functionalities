@@ -29,3 +29,6 @@ assets/.DS_Store
 
 # AI assistant guidelines (keep local)
 CLAUDE.md
+
+# Local release builds
+releases/
