@@ -652,6 +652,9 @@ class SVG_Icons
 			return $content;
 		}
 
+		// Fix any unclosed icon tags (both <i> and <span>).
+		$content = self::fix_unclosed_icon_tags($content);
+
 		// Match <i> tags with func-icon class (primary format).
 		// Supports both attribute orders: class before data-icon, or data-icon before class.
 		// The [^<]* allows for zero-width space or other invisible characters inside the tag.
@@ -667,9 +670,6 @@ class SVG_Icons
 		);
 
 		// Legacy support: Match <span> tags with func-icon class.
-		// First fix any unclosed spans.
-		$content = self::fix_unclosed_icon_tags($content);
-
 		$pattern_span = '/<span[^>]+class="[^"]*func-icon[^"]*"[^>]*data-icon="([^"]+)"[^>]*>[^<]*<\/span>|<span[^>]+data-icon="([^"]+)"[^>]*class="[^"]*func-icon[^"]*"[^>]*>[^<]*<\/span>/i';
 
 		$content = preg_replace_callback(
@@ -700,14 +700,18 @@ class SVG_Icons
 			return $content;
 		}
 
-		// Regex to find unclosed icon spans: <span...func-icon...data-icon="..."...> not followed by </span>
-		// This uses a negative lookahead to find spans that don't have a closing tag.
-		$pattern = '/<span([^>]*class="[^"]*func-icon[^"]*"[^>]*data-icon="([^"]+)"[^>]*)>(?!<\/span>)/i';
-		$pattern2 = '/<span([^>]*data-icon="([^"]+)"[^>]*class="[^"]*func-icon[^"]*"[^>]*)>(?!<\/span>)/i';
+		// Regex to find unclosed icon tags (<i> or <span>): <tag...func-icon...data-icon="..."...> not followed by </tag>
+		// This uses a negative lookahead to find tags that don't have a closing tag.
+		$tags = array('i', 'span');
 
-		// Replace unclosed spans with properly closed ones.
-		$content = preg_replace($pattern, '<span$1></span>', $content);
-		$content = preg_replace($pattern2, '<span$1></span>', $content);
+		foreach ($tags as $tag) {
+			$pattern = '/<' . $tag . '([^>]*class="[^"]*func-icon[^"]*"[^>]*data-icon="([^"]+)"[^>]*)>(?!<\/' . $tag . '>)/i';
+			$pattern2 = '/<' . $tag . '([^>]*data-icon="([^"]+)"[^>]*class="[^"]*func-icon[^"]*"[^>]*)>(?!<\/' . $tag . '>)/i';
+
+			// Replace unclosed tags with properly closed ones.
+			$content = preg_replace($pattern, '<' . $tag . '$1></' . $tag . '>', $content);
+			$content = preg_replace($pattern2, '<' . $tag . '$1></' . $tag . '>', $content);
+		}
 
 		return $content;
 	}
