@@ -2,7 +2,7 @@
 
 A modular site-specific plugin that organizes common WordPress features with simple toggles. Built with modern WordPress coding standards and a clean module-based dashboard. Optimized for performance with lazy-loading, static property caching, and intelligent transients.
 
-**Version:** 0.14.0  
+**Version:** 0.14.1  
 **License:** GPL-2.0-or-later  
 **Text Domain:** `functionalities`
 
@@ -444,7 +444,13 @@ Example module definition:
 
 ## Changelog
 
-### 0.14.0 (Current)
+### 0.14.1 (Current)
+- **Fixed**: SVG icons now render correctly when multiple icons are in one paragraph.
+- **Fixed**: SVG icon span tags are now properly closed, resolving "Block contains unexpected or invalid content" errors in the editor.
+- **Fixed**: Link Management JSON file exceptions now correctly exclude URLs from nofollow on the frontend.
+- **Improved**: Task Manager responsive grid layout adapts to different device sizes.
+
+### 0.14.0
 - **Fonts Module UI Overhaul**: Completely rebuilt the Fonts management interface with a modern card-based design.
   - Dynamic add/remove functionality for unlimited custom fonts
   - WordPress Media Uploader integration for WOFF2/WOFF file uploads
