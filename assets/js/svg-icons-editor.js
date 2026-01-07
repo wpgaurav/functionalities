@@ -137,8 +137,9 @@
 
 			// Insert placeholder i tag (PHP will replace with SVG on frontend)
 			// Using <i> tag as it's standard for icons and Gutenberg handles it better than empty spans.
+			// We add a zero-width space (&#8203;) inside to prevent Gutenberg from stripping the closing tag.
 			// contenteditable="false" prevents the cursor from getting stuck inside.
-			var iconHTML = '<i data-icon="' + icon.slug + '" class="func-icon" contenteditable="false"></i>';
+			var iconHTML = '<i data-icon="' + icon.slug + '" class="func-icon" contenteditable="false">\u200B</i>';
 
 			// We insert the icon and then a space separately. 
 			// This helps prevent the space (and subsequent typing) from being merged into the atomic span.

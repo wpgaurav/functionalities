@@ -654,7 +654,8 @@ class SVG_Icons
 
 		// Match <i> tags with func-icon class (primary format).
 		// Supports both attribute orders: class before data-icon, or data-icon before class.
-		$pattern_i = '/<i[^>]+class="[^"]*func-icon[^"]*"[^>]*data-icon="([^"]+)"[^>]*><\/i>|<i[^>]+data-icon="([^"]+)"[^>]*class="[^"]*func-icon[^"]*"[^>]*><\/i>/i';
+		// The [^<]* allows for zero-width space or other invisible characters inside the tag.
+		$pattern_i = '/<i[^>]+class="[^"]*func-icon[^"]*"[^>]*data-icon="([^"]+)"[^>]*>[^<]*<\/i>|<i[^>]+data-icon="([^"]+)"[^>]*class="[^"]*func-icon[^"]*"[^>]*>[^<]*<\/i>/i';
 
 		$content = preg_replace_callback(
 			$pattern_i,
