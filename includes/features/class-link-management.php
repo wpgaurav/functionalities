@@ -97,15 +97,6 @@ class Link_Management {
 	public static function load_json_preset() : void {
 		$opts = self::get_options();
 
-		// Use transient to avoid disk I/O on every request.
-		$transient_key = 'func_link_exceptions_json_' . md5( (string) $opts['json_preset_url'] . \get_stylesheet() );
-		$cached_json   = \get_transient( $transient_key );
-
-		if ( false !== $cached_json ) {
-			self::$cached_exceptions = (array) $cached_json;
-			return;
-		}
-
 		$json_path = '';
 
 		// Priority 1: User-provided custom URL/path.
@@ -171,9 +162,6 @@ class Link_Management {
 		if ( empty( $json_urls ) ) {
 			return;
 		}
-		
-		// Cache in transient for 12 hours.
-		\set_transient( $transient_key, $json_urls, 12 * HOUR_IN_SECONDS );
 
 		self::$cached_exceptions = $json_urls;
 	}
