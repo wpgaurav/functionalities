@@ -1467,6 +1467,7 @@ class Assumption_Detection {
 		try {
 			// Capture wp_head output.
 			ob_start();
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Intentionally calling core WordPress hook to detect scripts/styles.
 			\do_action( 'wp_head' );
 			$head_output = ob_get_clean();
 
@@ -1476,6 +1477,7 @@ class Assumption_Detection {
 
 			// Capture wp_footer output.
 			ob_start();
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Intentionally calling core WordPress hook to detect scripts/styles.
 			\do_action( 'wp_footer' );
 			$footer_output = ob_get_clean();
 
@@ -1485,6 +1487,7 @@ class Assumption_Detection {
 		} catch ( \Exception $e ) {
 			// Log but don't fail.
 			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Intentional debug logging when WP_DEBUG is enabled.
 				error_log( 'Functionalities Assumption Detection error: ' . $e->getMessage() );
 			}
 			// Clean any remaining output buffers.

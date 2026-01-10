@@ -234,6 +234,7 @@ class Snippets {
 
 			if ( $ga4_enabled && $ga4_id !== '' ) {
 				echo "\n<!-- Functionalities: GA4 -->\n";
+				// phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedScript -- GA4 script must be inline with dynamic ID.
 				echo '<script async src="https://www.googletagmanager.com/gtag/js?id=' . esc_attr( $ga4_id ) . '"></script>' . "\n";
 				echo '<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}';
 				echo "gtag('js',new Date());gtag('config','" . esc_js( $ga4_id ) . "');</script>\n";

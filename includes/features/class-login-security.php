@@ -127,7 +127,7 @@ class Login_Security {
 	private static function get_client_ip() : string {
 		$ip = '';
 
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Sanitized below with sanitize_text_field.
+		// phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Sanitized below with sanitize_text_field.
 		if ( ! empty( $_SERVER['HTTP_CLIENT_IP'] ) ) {
 			$ip = \wp_unslash( $_SERVER['HTTP_CLIENT_IP'] );
 		} elseif ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
@@ -135,6 +135,7 @@ class Login_Security {
 		} elseif ( ! empty( $_SERVER['REMOTE_ADDR'] ) ) {
 			$ip = \wp_unslash( $_SERVER['REMOTE_ADDR'] );
 		}
+		// phpcs:enable
 
 		return sanitize_text_field( trim( $ip ) );
 	}

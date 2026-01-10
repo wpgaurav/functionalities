@@ -2,7 +2,7 @@
 
 A modular site-specific plugin that organizes common WordPress features with simple toggles. Built with modern WordPress coding standards and a clean module-based dashboard. Optimized for performance with lazy-loading, static property caching, and intelligent transients.
 
-**Version:** 0.15.4
+**Version:** 0.15.6
 **License:** GPL-2.0-or-later  
 **Text Domain:** `functionalities`
 
@@ -183,20 +183,6 @@ Upload custom SVG icons and insert them inline in the block editor.
 - Zero frontend footprint when no icons are used
 
 **Navigate to:** `?page=functionalities&module=svg-icons`
-
----
-
-### GitHub Updates
-
-Receive plugin updates directly from GitHub releases—a clever trick that brings the convenience of the WordPress.org directory to your custom site-specific plugin. Once enabled, updates are delivered directly to your WordPress dashboard just like any other plugin.
-
-**Features:**
-- Automatic update checks against GitHub repository releases
-- Native WordPress update notifications and one-click upgrades
-- Supports private repositories via access tokens
-- Configurable cache duration for update checks
-
-**Navigate to:** `?page=functionalities&module=updates`
 
 ---
 
@@ -413,7 +399,6 @@ functionalities/
 │   │   ├── class-snippets.php
 │   │   ├── class-svg-icons.php
 │   │   └── class-task-manager.php
-│   └── class-github-updater.php
 ├── languages/
 ├── exception-urls.json.sample
 ├── functionalities.php
@@ -443,8 +428,17 @@ Example module definition:
 ---
 
 ## Changelog
-### 0.15.4 (Current)
+### 0.15.6 (Current)
+- **Fixed**: Additional PHPCS compliance fixes for WordPress.org submission.
+- **Updated**: Tested up to WordPress 6.9.
+
+### 0.15.5
 - **Fixed**: PHPCS compliance - added proper escaping, wp_unslash(), nonce verification comments, and translators comments across all modules.
+- **Removed**: GitHub Updates module (not permitted on WordPress.org).
+- **Added**: readme.txt for WordPress.org submission.
+
+### 0.15.4
+- **Fixed**: PHPCS compliance improvements.
 
 ### 0.15.3
 - **Removed**: Transient cache from Link Management JSON preset loader for realtime exception updates.

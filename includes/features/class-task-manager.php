@@ -71,6 +71,7 @@ class Task_Manager {
 			if ( ! file_exists( $index_file ) ) {
 				$result = file_put_contents( $index_file, '<?php // Silence is golden.' );
 				if ( false === $result && defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+					// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Intentional debug logging when WP_DEBUG is enabled.
 					error_log( 'Functionalities: Failed to create index.php in tasks directory.' );
 				}
 			}
@@ -558,11 +559,11 @@ class Task_Manager {
 		<div class="functionalities-task-widget">
 			<div class="task-progress" style="margin-bottom: 10px;">
 				<div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 12px; color: #646970;">
-					<span><?php printf( '%d/%d tasks', $stats['completed'], $stats['total'] ); ?></span>
-					<span><?php echo $stats['percent']; ?>%</span>
+					<span><?php printf( '%d/%d tasks', (int) $stats['completed'], (int) $stats['total'] ); ?></span>
+					<span><?php echo (int) $stats['percent']; ?>%</span>
 				</div>
 				<div style="background: #dcdcde; border-radius: 3px; height: 8px; overflow: hidden;">
-					<div style="background: #2271b1; height: 100%; width: <?php echo $stats['percent']; ?>%; transition: width 0.3s;"></div>
+					<div style="background: #2271b1; height: 100%; width: <?php echo (int) $stats['percent']; ?>%; transition: width 0.3s;"></div>
 				</div>
 			</div>
 			<ul style="margin: 0; padding: 0; list-style: none; max-height: 200px; overflow-y: auto;">
@@ -724,16 +725,16 @@ class Task_Manager {
 		$task_id  = isset( $_POST['task_id'] ) ? \sanitize_key( $_POST['task_id'] ) : '';
 		$updates  = array();
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 		if ( isset( $_POST['text'] ) ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 			$updates['text'] = \sanitize_text_field( \wp_unslash( $_POST['text'] ) );
 		}
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 		if ( isset( $_POST['notes'] ) ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 			$updates['notes'] = \sanitize_textarea_field( \wp_unslash( $_POST['notes'] ) );
 		}
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 		if ( isset( $_POST['priority'] ) ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 			$updates['priority'] = (int) $_POST['priority'];
 		}
 		// phpcs:disable WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- Nonce verified in verify_ajax(). Tags are sanitized with array_map.
@@ -929,7 +930,9 @@ class Task_Manager {
 			return;
 		}
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 		$slug        = isset( $_POST['project'] ) ? \sanitize_key( $_POST['project'] ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 		$show_widget = isset( $_POST['show_widget'] ) && $_POST['show_widget'] === 'true';
 
 		if ( empty( $slug ) ) {

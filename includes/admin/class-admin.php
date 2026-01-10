@@ -275,11 +275,6 @@ class Admin {
 				'icon'        => 'dashicons-flag',
 				'custom_page' => true,
 			),
-			'updates'         => array(
-				'title'       => \__( 'GitHub Updates', 'functionalities' ),
-				'description' => \__( 'Receive plugin updates directly from GitHub releases.', 'functionalities' ),
-				'icon'        => 'dashicons-update',
-			),
 		);
 	}
 
@@ -311,7 +306,7 @@ class Admin {
 		);
 
 		// Add submenus for top modules.
-		$skip_submenus = array( 'misc', 'updates', 'assumption-detection', 'login-security', 'block-cleanup' );
+		$skip_submenus = array( 'misc', 'assumption-detection', 'login-security', 'block-cleanup' );
 
 		foreach ( self::$modules as $slug => $module ) {
 			if ( in_array( $slug, $skip_submenus, true ) ) {
@@ -1702,118 +1697,6 @@ class Admin {
 			'functionalities_meta_section'
 		);
 
-		// GitHub Updates settings.
-		\register_setting(
-			'functionalities_updates',
-			'functionalities_updates',
-			array(
-				'sanitize_callback' => array( __CLASS__, 'sanitize_updates' ),
-				'default'           => array(
-					'enabled'        => false,
-					'github_owner'   => 'wpgaurav',
-					'github_repo'    => 'functionalities',
-					'access_token'   => '',
-					'cache_duration' => 21600,
-				),
-			)
-		);
-
-		\add_settings_section(
-			'functionalities_updates_section',
-			\__( 'GitHub Updates Settings', 'functionalities' ),
-			array( __CLASS__, 'section_updates' ),
-			'functionalities_updates'
-		);
-
-		\add_settings_field(
-			'updates_enabled',
-			\__( 'Enable GitHub Updates', 'functionalities' ),
-			function() {
-				$o = self::get_updates_options();
-				$checked = ! empty( $o['enabled'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_updates[enabled]" value="1" ' . esc_attr( $checked ) . '> ';
-				echo \esc_html__( 'Check for plugin updates from GitHub releases', 'functionalities' ) . '</label>';
-			},
-			'functionalities_updates',
-			'functionalities_updates_section'
-		);
-
-		\add_settings_field(
-			'github_owner',
-			\__( 'GitHub Owner/Organization', 'functionalities' ),
-			function() {
-				$o = self::get_updates_options();
-				$val = isset( $o['github_owner'] ) ? (string) $o['github_owner'] : '';
-				echo '<input type="text" class="regular-text" name="functionalities_updates[github_owner]" value="' . \esc_attr( $val ) . '" placeholder="wpgaurav" />';
-				echo '<p class="description">' . \esc_html__( 'The GitHub username or organization that owns the repository.', 'functionalities' ) . '</p>';
-			},
-			'functionalities_updates',
-			'functionalities_updates_section'
-		);
-
-		\add_settings_field(
-			'github_repo',
-			\__( 'GitHub Repository Name', 'functionalities' ),
-			function() {
-				$o = self::get_updates_options();
-				$val = isset( $o['github_repo'] ) ? (string) $o['github_repo'] : '';
-				echo '<input type="text" class="regular-text" name="functionalities_updates[github_repo]" value="' . \esc_attr( $val ) . '" placeholder="functionalities" />';
-				echo '<p class="description">' . \esc_html__( 'The name of the GitHub repository.', 'functionalities' ) . '</p>';
-			},
-			'functionalities_updates',
-			'functionalities_updates_section'
-		);
-
-		\add_settings_field(
-			'access_token',
-			\__( 'GitHub Access Token (Optional)', 'functionalities' ),
-			function() {
-				$o = self::get_updates_options();
-				$val = isset( $o['access_token'] ) ? (string) $o['access_token'] : '';
-				$masked = ! empty( $val ) ? str_repeat( '•', 20 ) . substr( $val, -4 ) : '';
-				echo '<input type="password" class="regular-text" name="functionalities_updates[access_token]" value="" placeholder="' . \esc_attr( $masked ?: 'ghp_xxxxxxxxxxxx' ) . '" autocomplete="new-password" />';
-				echo '<p class="description">' . \esc_html__( 'Required for private repositories. Leave empty for public repos. Token needs "repo" scope.', 'functionalities' ) . '</p>';
-				if ( ! empty( $val ) ) {
-					echo '<p class="description" style="color:#059669">✓ ' . \esc_html__( 'Token is saved. Leave empty to keep current token, or enter new one to replace.', 'functionalities' ) . '</p>';
-				}
-			},
-			'functionalities_updates',
-			'functionalities_updates_section'
-		);
-
-		\add_settings_field(
-			'cache_duration',
-			\__( 'Update Check Interval', 'functionalities' ),
-			function() {
-				$o = self::get_updates_options();
-				$val = isset( $o['cache_duration'] ) ? (int) $o['cache_duration'] : 21600;
-				$options = array(
-					3600   => \__( '1 hour', 'functionalities' ),
-					10800  => \__( '3 hours', 'functionalities' ),
-					21600  => \__( '6 hours (recommended)', 'functionalities' ),
-					43200  => \__( '12 hours', 'functionalities' ),
-					86400  => \__( '24 hours', 'functionalities' ),
-				);
-				echo '<select name="functionalities_updates[cache_duration]">';
-				foreach ( $options as $seconds => $label ) {
-					$sel = selected( $val, $seconds, false );
-					echo '<option value="' . \esc_attr( $seconds ) . '" ' . esc_attr( $sel ) . '>' . \esc_html( $label ) . '</option>';
-				}
-				echo '</select>';
-				echo '<p class="description">' . \esc_html__( 'How often to check GitHub for new releases. More frequent checks may hit API rate limits.', 'functionalities' ) . '</p>';
-			},
-			'functionalities_updates',
-			'functionalities_updates_section'
-		);
-
-		\add_settings_field(
-			'update_status',
-			\__( 'Current Status', 'functionalities' ),
-			array( __CLASS__, 'field_update_status' ),
-			'functionalities_updates',
-			'functionalities_updates_section'
-		);
-
 		// Content Regression Detection settings.
 		\register_setting(
 			'functionalities_content_regression',
@@ -2670,7 +2553,7 @@ class Admin {
 		$checked = ! empty( $opts['enable_developer_filters'] ) ? 'checked' : '';
 		?>
 		<label>
-			<input type="checkbox" name="functionalities_link_management[enable_developer_filters]" value="1" <?php echo $checked; ?>>
+			<input type="checkbox" name="functionalities_link_management[enable_developer_filters]" value="1" <?php echo esc_attr( $checked ); ?>>
 			<?php echo \esc_html__( 'Enable developer filters for exception customization', 'functionalities' ); ?>
 		</label>
 		<p class="description">
@@ -3557,7 +3440,10 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 		<div class="fc-components" id="fc-components">
 			<div class="fc-components__toolbar">
 				<span class="fc-components__count">
-					<?php printf( \esc_html__( '%d components', 'functionalities' ), $total_items ); ?>
+					<?php
+					/* translators: %d: Number of components. */
+					printf( \esc_html__( '%d components', 'functionalities' ), (int) $total_items );
+					?>
 				</span>
 				<button type="button" class="fc-components__add-btn" id="fc-add-new">
 					<span class="dashicons dashicons-plus-alt2" style="font-size:16px;width:16px;height:16px;"></span>
@@ -3575,7 +3461,7 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 					$page  = floor( $i / $per_page ) + 1;
 					$is_visible = ( $page === 1 ) ? 'is-visible' : '';
 				?>
-				<div class="fc-card <?php echo $is_visible; ?>" data-index="<?php echo $i; ?>" data-page="<?php echo $page; ?>">
+				<div class="fc-card <?php echo \esc_attr( $is_visible ); ?>" data-index="<?php echo (int) $i; ?>" data-page="<?php echo (int) $page; ?>">
 					<div class="fc-card__preview">
 						<div class="fc-card__preview-box" style="<?php echo \esc_attr( $css ); ?>">
 							<?php echo \esc_html( $name ?: 'Preview' ); ?>
@@ -3594,15 +3480,15 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 					<div class="fc-card__form">
 						<div class="fc-form__group">
 							<label class="fc-form__label"><?php \esc_html_e( 'Name', 'functionalities' ); ?></label>
-							<input type="text" class="fc-form__input" name="functionalities_components[items][<?php echo $i; ?>][name]" value="<?php echo \esc_attr( $name ); ?>" placeholder="<?php \esc_attr_e( 'Component Name', 'functionalities' ); ?>">
+							<input type="text" class="fc-form__input" name="functionalities_components[items][<?php echo (int) $i; ?>][name]" value="<?php echo \esc_attr( $name ); ?>" placeholder="<?php \esc_attr_e( 'Component Name', 'functionalities' ); ?>">
 						</div>
 						<div class="fc-form__group">
 							<label class="fc-form__label"><?php \esc_html_e( 'CSS Selector', 'functionalities' ); ?></label>
-							<input type="text" class="fc-form__input" name="functionalities_components[items][<?php echo $i; ?>][class]" value="<?php echo \esc_attr( $class ); ?>" placeholder=".my-component">
+							<input type="text" class="fc-form__input" name="functionalities_components[items][<?php echo (int) $i; ?>][class]" value="<?php echo \esc_attr( $class ); ?>" placeholder=".my-component">
 						</div>
 						<div class="fc-form__group">
 							<label class="fc-form__label"><?php \esc_html_e( 'CSS Rules', 'functionalities' ); ?></label>
-							<textarea class="fc-form__input fc-form__textarea" name="functionalities_components[items][<?php echo $i; ?>][css]" placeholder="background: #fff; padding: 1rem;"><?php echo \esc_textarea( $css ); ?></textarea>
+							<textarea class="fc-form__input fc-form__textarea" name="functionalities_components[items][<?php echo (int) $i; ?>][css]" placeholder="background: #fff; padding: 1rem;"><?php echo \esc_textarea( $css ); ?></textarea>
 						</div>
 						<div class="fc-form__actions">
 							<button type="button" class="fc-form__btn fc-form__btn--save"><?php \esc_html_e( 'Done', 'functionalities' ); ?></button>
@@ -3622,8 +3508,8 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 					&larr; <?php \esc_html_e( 'Prev', 'functionalities' ); ?>
 				</button>
 				<?php for ( $p = 1; $p <= $total_pages; $p++ ) : ?>
-				<button type="button" class="fc-pagination__btn <?php echo ( $p === 1 ) ? 'is-active' : ''; ?>" data-page="<?php echo $p; ?>">
-					<?php echo $p; ?>
+				<button type="button" class="fc-pagination__btn <?php echo ( $p === 1 ) ? 'is-active' : ''; ?>" data-page="<?php echo (int) $p; ?>">
+					<?php echo (int) $p; ?>
 				</button>
 				<?php endfor; ?>
 				<button type="button" class="fc-pagination__btn" data-action="next" <?php echo ( 1 === $total_pages ) ? 'disabled' : ''; ?>>
@@ -3684,9 +3570,9 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 			var addBtn = document.getElementById('fc-add-new');
 			var template = document.getElementById('fc-card-template');
 			var currentPage = 1;
-			var perPage = <?php echo $per_page; ?>;
-			var totalItems = <?php echo $total_items; ?>;
-			var nextIndex = <?php echo $i; ?>;
+			var perPage = <?php echo (int) $per_page; ?>;
+			var totalItems = <?php echo (int) $total_items; ?>;
+			var nextIndex = <?php echo (int) $i; ?>;
 
 			if (!container || !grid) return;
 
@@ -4292,7 +4178,7 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 					$woff2 = esc_attr( $it['woff2_url'] ?? '' );
 					$woff  = esc_attr( $it['woff_url'] ?? '' );
 				?>
-				<div class="fc-font-card" data-index="<?php echo $i; ?>">
+				<div class="fc-font-card" data-index="<?php echo (int) $i; ?>">
 					<div class="fc-font-card__header">
 						<div>
 							<h4 class="fc-font-card__title"><?php echo esc_html( $family ?: __( 'Untitled Font', 'functionalities' ) ); ?></h4>
@@ -4315,18 +4201,18 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 						<div class="fc-font-form__row">
 							<div class="fc-font-form__group">
 								<label class="fc-font-form__label"><?php esc_html_e( 'Font Family', 'functionalities' ); ?></label>
-								<input type="text" class="fc-font-form__input" name="functionalities_fonts[items][<?php echo $i; ?>][family]" value="<?php echo $family; ?>" placeholder="Inter, Roboto...">
+								<input type="text" class="fc-font-form__input" name="functionalities_fonts[items][<?php echo (int) $i; ?>][family]" value="<?php echo \esc_attr( $family ); ?>" placeholder="Inter, Roboto...">
 							</div>
 							<div class="fc-font-form__group">
 								<label class="fc-font-form__label"><?php esc_html_e( 'Style', 'functionalities' ); ?></label>
-								<select class="fc-font-form__input" name="functionalities_fonts[items][<?php echo $i; ?>][style]">
+								<select class="fc-font-form__input" name="functionalities_fonts[items][<?php echo (int) $i; ?>][style]">
 									<option value="normal" <?php selected( $style, 'normal' ); ?>><?php esc_html_e( 'Normal', 'functionalities' ); ?></option>
 									<option value="italic" <?php selected( $style, 'italic' ); ?>><?php esc_html_e( 'Italic', 'functionalities' ); ?></option>
 								</select>
 							</div>
 							<div class="fc-font-form__group">
 								<label class="fc-font-form__label"><?php esc_html_e( 'Display', 'functionalities' ); ?></label>
-								<select class="fc-font-form__input" name="functionalities_fonts[items][<?php echo $i; ?>][display]">
+								<select class="fc-font-form__input" name="functionalities_fonts[items][<?php echo (int) $i; ?>][display]">
 									<option value="swap" <?php selected( $display, 'swap' ); ?>>swap</option>
 									<option value="auto" <?php selected( $display, 'auto' ); ?>>auto</option>
 									<option value="block" <?php selected( $display, 'block' ); ?>>block</option>
@@ -4338,34 +4224,34 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 						<div class="fc-font-form__row">
 							<div class="fc-font-form__group">
 								<label class="fc-font-form__label"><?php esc_html_e( 'Static Weight', 'functionalities' ); ?></label>
-								<input type="text" class="fc-font-form__input" name="functionalities_fonts[items][<?php echo $i; ?>][weight]" value="<?php echo $weight; ?>" placeholder="400, 700...">
+								<input type="text" class="fc-font-form__input" name="functionalities_fonts[items][<?php echo (int) $i; ?>][weight]" value="<?php echo \esc_attr( $weight ); ?>" placeholder="400, 700...">
 							</div>
 							<div class="fc-font-form__group">
 								<label class="fc-font-form__label"><?php esc_html_e( 'Variable Weight Range', 'functionalities' ); ?></label>
-								<input type="text" class="fc-font-form__input" name="functionalities_fonts[items][<?php echo $i; ?>][weight_range]" value="<?php echo $weight_range; ?>" placeholder="100 900">
+								<input type="text" class="fc-font-form__input" name="functionalities_fonts[items][<?php echo (int) $i; ?>][weight_range]" value="<?php echo \esc_attr( $weight_range ); ?>" placeholder="100 900">
 							</div>
 						</div>
 						<div class="fc-font-form__row">
 							<div class="fc-font-form__checkbox">
-								<input type="checkbox" id="fc-var-<?php echo $i; ?>" name="functionalities_fonts[items][<?php echo $i; ?>][is_variable]" value="1" <?php checked( $is_variable ); ?>>
-								<label for="fc-var-<?php echo $i; ?>"><?php esc_html_e( 'Variable font', 'functionalities' ); ?></label>
+								<input type="checkbox" id="fc-var-<?php echo (int) $i; ?>" name="functionalities_fonts[items][<?php echo (int) $i; ?>][is_variable]" value="1" <?php checked( $is_variable ); ?>>
+								<label for="fc-var-<?php echo (int) $i; ?>"><?php esc_html_e( 'Variable font', 'functionalities' ); ?></label>
 							</div>
 							<div class="fc-font-form__checkbox">
-								<input type="checkbox" id="fc-pre-<?php echo $i; ?>" name="functionalities_fonts[items][<?php echo $i; ?>][preload]" value="1" <?php checked( $preload ); ?>>
-								<label for="fc-pre-<?php echo $i; ?>"><?php esc_html_e( 'Preload this font', 'functionalities' ); ?></label>
+								<input type="checkbox" id="fc-pre-<?php echo (int) $i; ?>" name="functionalities_fonts[items][<?php echo (int) $i; ?>][preload]" value="1" <?php checked( $preload ); ?>>
+								<label for="fc-pre-<?php echo (int) $i; ?>"><?php esc_html_e( 'Preload this font', 'functionalities' ); ?></label>
 							</div>
 						</div>
 						<div class="fc-font-form__group" style="margin-bottom: 16px;">
 							<label class="fc-font-form__label"><?php esc_html_e( 'WOFF2 URL (required)', 'functionalities' ); ?></label>
 							<div class="fc-font-form__file-row">
-								<input type="url" class="fc-font-form__input fc-font-form__input--url fc-font-url" name="functionalities_fonts[items][<?php echo $i; ?>][woff2_url]" value="<?php echo $woff2; ?>" placeholder="https://...">
+								<input type="url" class="fc-font-form__input fc-font-form__input--url fc-font-url" name="functionalities_fonts[items][<?php echo (int) $i; ?>][woff2_url]" value="<?php echo \esc_url( $woff2 ); ?>" placeholder="https://...">
 								<button type="button" class="fc-font-form__upload-btn fc-upload-font" data-format="woff2"><?php esc_html_e( 'Upload', 'functionalities' ); ?></button>
 							</div>
 						</div>
 						<div class="fc-font-form__group">
 							<label class="fc-font-form__label"><?php esc_html_e( 'WOFF URL (fallback)', 'functionalities' ); ?></label>
 							<div class="fc-font-form__file-row">
-								<input type="url" class="fc-font-form__input fc-font-form__input--url fc-font-url" name="functionalities_fonts[items][<?php echo $i; ?>][woff_url]" value="<?php echo $woff; ?>" placeholder="https://...">
+								<input type="url" class="fc-font-form__input fc-font-form__input--url fc-font-url" name="functionalities_fonts[items][<?php echo (int) $i; ?>][woff_url]" value="<?php echo \esc_url( $woff ); ?>" placeholder="https://...">
 								<button type="button" class="fc-font-form__upload-btn fc-upload-font" data-format="woff"><?php esc_html_e( 'Upload', 'functionalities' ); ?></button>
 							</div>
 						</div>
@@ -4471,8 +4357,8 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 			var template = document.getElementById('fc-font-template');
 			var emptyState = document.getElementById('fc-fonts-empty');
 			var countEl = document.getElementById('fc-fonts-count');
-			var nextIndex = <?php echo $i; ?>;
-			var totalItems = <?php echo $total_items; ?>;
+			var nextIndex = <?php echo (int) $i; ?>;
+			var totalItems = <?php echo (int) $total_items; ?>;
 
 			if (!container || !grid) return;
 
@@ -4810,167 +4696,6 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 	}
 
 	/**
-	 * Render section description for GitHub Updates.
-	 *
-	 * @return void
-	 */
-	public static function section_updates() : void {
-		echo '<p>' . \esc_html__( 'Receive plugin updates directly from GitHub releases. Configure your repository details below to enable automatic update checks.', 'functionalities' ) . '</p>';
-
-		// Get module docs.
-		$docs = Module_Docs::get( 'updates' );
-
-		// Render documentation accordions.
-		echo '<div class="functionalities-module-docs">';
-
-		if ( ! empty( $docs['features'] ) ) {
-			$list = '<ul>';
-			foreach ( $docs['features'] as $feature ) {
-				$list .= '<li>' . \esc_html( $feature ) . '</li>';
-			}
-			$list .= '</ul>';
-			Admin_UI::render_docs_section( \__( 'What This Module Does', 'functionalities' ), $list, 'info' );
-		}
-
-		// How it works.
-		$how_html = '<ol>';
-		$how_html .= '<li>' . \esc_html__( 'Create releases on GitHub with version tags (e.g., v0.5.0 or 0.5.0)', 'functionalities' ) . '</li>';
-		$how_html .= '<li>' . \esc_html__( 'WordPress will check GitHub for new releases based on your interval setting', 'functionalities' ) . '</li>';
-		$how_html .= '<li>' . \esc_html__( 'When a new version is found, update notification appears in your dashboard', 'functionalities' ) . '</li>';
-		$how_html .= '<li>' . \esc_html__( 'Click "Update Now" to install the new version with one click', 'functionalities' ) . '</li>';
-		$how_html .= '</ol>';
-		Admin_UI::render_docs_section( \__( 'How It Works', 'functionalities' ), $how_html, 'usage' );
-
-		// Release requirements.
-		$req_html = '<ul>';
-		$req_html .= '<li>' . \esc_html__( 'Tag format: v1.0.0, 1.0.0, or any semver format', 'functionalities' ) . '</li>';
-		$req_html .= '<li>' . \esc_html__( 'Attach a .zip file to the release (recommended) OR use auto-generated zipball', 'functionalities' ) . '</li>';
-		$req_html .= '<li>' . \esc_html__( 'The zip should contain the plugin files in a folder matching the plugin directory name', 'functionalities' ) . '</li>';
-		$req_html .= '</ul>';
-		Admin_UI::render_docs_section( \__( 'Release Requirements', 'functionalities' ), $req_html, 'developer' );
-
-		if ( ! empty( $docs['usage'] ) ) {
-			Admin_UI::render_docs_section( \__( 'Usage Note', 'functionalities' ), '<p>' . \esc_html( $docs['usage'] ) . '</p>', 'caution' );
-		}
-
-		echo '</div>';
-	}
-
-	/**
-	 * Render update status field.
-	 *
-	 * @return void
-	 */
-	public static function field_update_status() : void {
-		$options = self::get_updates_options();
-
-		if ( empty( $options['enabled'] ) || empty( $options['github_owner'] ) || empty( $options['github_repo'] ) ) {
-			echo '<p style="color:#6b7280">' . \esc_html__( 'Configure settings above and save to check for updates.', 'functionalities' ) . '</p>';
-			return;
-		}
-
-		// Get current version.
-		$current_version = FUNCTIONALITIES_VERSION;
-
-		// Try to get cached release info.
-		$cache_key = 'functionalities_github_update_' . md5( \plugin_basename( FUNCTIONALITIES_FILE ) );
-		$release   = \get_transient( $cache_key );
-
-		echo '<div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:12px 16px">';
-		echo '<p style="margin:0 0 8px"><strong>' . \esc_html__( 'Current Version:', 'functionalities' ) . '</strong> ' . \esc_html( $current_version ) . '</p>';
-		echo '<p style="margin:0 0 8px"><strong>' . \esc_html__( 'Repository:', 'functionalities' ) . '</strong> ';
-		echo '<a href="https://github.com/' . \esc_attr( $options['github_owner'] ) . '/' . \esc_attr( $options['github_repo'] ) . '" target="_blank">';
-		echo \esc_html( $options['github_owner'] . '/' . $options['github_repo'] );
-		echo '</a></p>';
-
-		if ( $release && is_object( $release ) ) {
-			echo '<p style="margin:0 0 8px"><strong>' . \esc_html__( 'Latest Release:', 'functionalities' ) . '</strong> ';
-			if ( version_compare( $current_version, $release->version, '<' ) ) {
-				echo '<span style="color:#dc2626">' . \esc_html( $release->version ) . ' (' . \esc_html__( 'Update available!', 'functionalities' ) . ')</span>';
-			} else {
-				echo '<span style="color:#059669">' . \esc_html( $release->version ) . ' (' . \esc_html__( 'Up to date', 'functionalities' ) . ')</span>';
-			}
-			echo '</p>';
-		} else {
-			echo '<p style="margin:0;color:#6b7280">' . \esc_html__( 'No cached release data. Use "Check for updates" link on the Plugins page.', 'functionalities' ) . '</p>';
-		}
-
-		echo '</div>';
-
-		// Add manual check link.
-		$check_url = \wp_nonce_url(
-			\admin_url( 'plugins.php?functionalities_check_update=1' ),
-			'functionalities_check_update'
-		);
-		echo '<p style="margin-top:8px"><a href="' . \esc_url( $check_url ) . '" class="button">' . \esc_html__( 'Check Now', 'functionalities' ) . '</a></p>';
-	}
-
-	/**
-	 * Sanitize GitHub Updates settings.
-	 *
-	 * @param array $input Raw input data.
-	 * @return array Sanitized data.
-	 */
-	public static function sanitize_updates( $input ) : array {
-		$current = self::get_updates_options();
-
-		$out = array(
-			'enabled'        => ! empty( $input['enabled'] ),
-			'github_owner'   => 'wpgaurav',
-			'github_repo'    => 'functionalities',
-			'access_token'   => $current['access_token'], // Preserve existing token by default.
-			'cache_duration' => 21600,
-		);
-
-		// Sanitize owner (alphanumeric, hyphens, underscores).
-		if ( isset( $input['github_owner'] ) ) {
-			$out['github_owner'] = preg_replace( '/[^a-zA-Z0-9\-_]/', '', (string) $input['github_owner'] );
-		}
-
-		// Sanitize repo name.
-		if ( isset( $input['github_repo'] ) ) {
-			$out['github_repo'] = preg_replace( '/[^a-zA-Z0-9\-_\.]/', '', (string) $input['github_repo'] );
-		}
-
-		// Only update token if a new one was provided.
-		if ( isset( $input['access_token'] ) && ! empty( trim( $input['access_token'] ) ) ) {
-			$out['access_token'] = \sanitize_text_field( $input['access_token'] );
-		}
-
-		// Validate cache duration.
-		$valid_durations = array( 3600, 10800, 21600, 43200, 86400 );
-		if ( isset( $input['cache_duration'] ) ) {
-			$duration = (int) $input['cache_duration'];
-			if ( in_array( $duration, $valid_durations, true ) ) {
-				$out['cache_duration'] = $duration;
-			}
-		}
-
-		// Clear update cache when settings change.
-		$cache_key = 'functionalities_github_update_' . md5( \plugin_basename( FUNCTIONALITIES_FILE ) );
-		\delete_transient( $cache_key );
-
-		return $out;
-	}
-
-	/**
-	 * Get GitHub Updates options with defaults.
-	 *
-	 * @return array Updates options.
-	 */
-	public static function get_updates_options() : array {
-		$defaults = array(
-			'enabled'        => false,
-			'github_owner'   => 'wpgaurav',
-			'github_repo'    => 'functionalities',
-			'access_token'   => '',
-			'cache_duration' => 21600,
-		);
-		$opts = (array) \get_option( 'functionalities_updates', $defaults );
-		return array_merge( $defaults, $opts );
-	}
-
-	/**
 	 * Render section description for content regression detection.
 	 *
 	 * @return void
@@ -5201,7 +4926,7 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 			if ( ! empty( $assumption['detected'] ) ) {
 				$time_ago = \human_time_diff( $assumption['detected'], \time() );
 				/* translators: %s: human-readable time difference */
-				echo '<span style="display:inline-block;font-size:11px;margin-left:10px;color:#646970;">' . \sprintf( \esc_html__( 'Detected %s ago', 'functionalities' ), $time_ago ) . '</span>';
+				echo '<span style="display:inline-block;font-size:11px;margin-left:10px;color:#646970;">' . \sprintf( \esc_html__( 'Detected %s ago', 'functionalities' ), \esc_html( $time_ago ) ) . '</span>';
 			}
 
 			echo '</div></div>';
@@ -5398,6 +5123,7 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 	 * @return void
 	 */
 	private static function render_module_task_manager( array $module ) : void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only navigation parameter.
 		$current_project = isset( $_GET['project'] ) ? \sanitize_key( $_GET['project'] ) : '';
 		$projects        = \Functionalities\Features\Task_Manager::get_projects();
 		$project_data    = null;
@@ -5833,8 +5559,8 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 							printf(
 								/* translators: 1: completed count, 2: total count */
 								\esc_html__( '%1$d of %2$d tasks completed', 'functionalities' ),
-								$stats['completed'],
-								$stats['total']
+								(int) $stats['completed'],
+								(int) $stats['total']
 							);
 							?>
 						</div>
@@ -6043,7 +5769,7 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 				<h2 style="margin: 0;">
 					<?php echo \esc_html( $project['name'] ); ?>
 					<span style="font-weight: normal; color: #646970; font-size: 14px;">
-						(<?php printf( '%d/%d', $stats['completed'], $stats['total'] ); ?>)
+						(<?php printf( '%d/%d', (int) $stats['completed'], (int) $stats['total'] ); ?>)
 					</span>
 				</h2>
 				<div class="progress-bar" style="width: 200px; margin-top: 8px;">
@@ -6105,7 +5831,7 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 					<?php foreach ( $project['tasks'] as $task ) :
 						$completed_class = ! empty( $task['completed'] ) ? ' completed' : '';
 						?>
-						<div class="task-item<?php echo $completed_class; ?>" data-task-id="<?php echo \esc_attr( $task['id'] ); ?>">
+						<div class="task-item<?php echo \esc_attr( $completed_class ); ?>" data-task-id="<?php echo \esc_attr( $task['id'] ); ?>">
 							<div class="task-drag-handle" title="<?php \esc_attr_e( 'Drag to reorder', 'functionalities' ); ?>">
 								<span class="dashicons dashicons-menu"></span>
 							</div>
@@ -6193,8 +5919,8 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 			var nonce = '<?php echo \esc_js( $nonce ); ?>';
 			var ajaxUrl = '<?php echo \esc_js( \admin_url( 'admin-ajax.php' ) ); ?>';
 			var projectSlug = '<?php echo \esc_js( $project['slug'] ); ?>';
-			var totalTasks = <?php echo count( $project['tasks'] ); ?>;
-			var completedTasks = <?php echo $stats['completed']; ?>;
+			var totalTasks = <?php echo (int) count( $project['tasks'] ); ?>;
+			var completedTasks = <?php echo (int) $stats['completed']; ?>;
 
 			// Focus new task input
 			$('#new-task-text').focus();
@@ -6585,15 +6311,15 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 				<p><?php \esc_html_e( 'Manage 301 (permanent) and 302 (temporary) redirects. Redirects are stored in a JSON file with zero database overhead.', 'functionalities' ); ?></p>
 				<div style="display:flex;gap:20px;margin-top:15px;">
 					<div style="background:#f0f6fc;padding:10px 15px;border-radius:4px;text-align:center;">
-						<strong style="font-size:24px;color:#2271b1;"><?php echo $stats['total']; ?></strong>
+						<strong style="font-size:24px;color:#2271b1;"><?php echo (int) $stats['total']; ?></strong>
 						<div style="font-size:12px;color:#646970;"><?php \esc_html_e( 'Total', 'functionalities' ); ?></div>
 					</div>
 					<div style="background:#f0fdf4;padding:10px 15px;border-radius:4px;text-align:center;">
-						<strong style="font-size:24px;color:#16a34a;"><?php echo $stats['enabled']; ?></strong>
+						<strong style="font-size:24px;color:#16a34a;"><?php echo (int) $stats['enabled']; ?></strong>
 						<div style="font-size:12px;color:#646970;"><?php \esc_html_e( 'Active', 'functionalities' ); ?></div>
 					</div>
 					<div style="background:#fef3c7;padding:10px 15px;border-radius:4px;text-align:center;">
-						<strong style="font-size:24px;color:#d97706;"><?php echo $stats['hits']; ?></strong>
+						<strong style="font-size:24px;color:#d97706;"><?php echo (int) $stats['hits']; ?></strong>
 						<div style="font-size:12px;color:#646970;"><?php \esc_html_e( 'Total Hits', 'functionalities' ); ?></div>
 					</div>
 				</div>
@@ -6797,7 +6523,7 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 		$nonce = \wp_create_nonce( 'functionalities_svg_icons' );
 
 		// Handle enable/disable toggle.
-		if ( isset( $_POST['functionalities_svg_icons_toggle'] ) && \wp_verify_nonce( $_POST['_wpnonce'] ?? '', 'functionalities_svg_icons_toggle' ) ) {
+		if ( isset( $_POST['functionalities_svg_icons_toggle'] ) && \wp_verify_nonce( \sanitize_text_field( \wp_unslash( $_POST['_wpnonce'] ?? '' ) ), 'functionalities_svg_icons_toggle' ) ) {
 			$opts['enabled'] = ! empty( $_POST['enabled'] );
 			\update_option( 'functionalities_svg_icons', $opts );
 			echo '<div class="notice notice-success is-dismissible"><p>' . \esc_html__( 'Settings saved.', 'functionalities' ) . '</p></div>';
@@ -6897,7 +6623,10 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 					<?php foreach ( $icons as $slug => $icon ) : ?>
 						<div class="func-svg-icon-card" data-slug="<?php echo \esc_attr( $slug ); ?>">
 							<div class="func-svg-icon-preview">
-								<?php echo $icon['svg']; ?>
+								<?php
+								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- SVG is sanitized during upload via SVG_Icons::sanitize_svg()
+								echo $icon['svg'];
+								?>
 							</div>
 							<div class="func-svg-icon-info">
 								<p class="func-svg-icon-name"><?php echo \esc_html( $icon['name'] ); ?></p>

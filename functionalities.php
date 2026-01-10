@@ -3,7 +3,7 @@
  * Plugin Name:       Functionalities
  * Plugin URI:        https://functionalities.dev
  * Description:       Modular site-specific plugin with modern dashboard and features.
- * Version:           0.15.4
+ * Version:           0.15.6
  * Author:            Gaurav Tiwari
  * Author URI:        https://gauravtiwari.org
  * License:           GPL-2.0-or-later
@@ -19,7 +19,7 @@ if (!defined('ABSPATH')) {
 
 // Define constants.
 if (!defined('FUNCTIONALITIES_VERSION')) {
-	define('FUNCTIONALITIES_VERSION', '0.15.4');
+	define('FUNCTIONALITIES_VERSION', '0.15.6');
 }
 if (!defined('FUNCTIONALITIES_FILE')) {
 	define('FUNCTIONALITIES_FILE', __FILE__);
@@ -54,13 +54,7 @@ spl_autoload_register(function (string $class) {
 	}
 });
 
-// Initialize plugin at init to ensure translations are loaded first.
-// Using priority 0 for textdomain, priority 10 for plugin initialization.
-// phpcs:ignore WordPress.WP.DeprecatedFunctions.load_plugin_textdomainDeprecatedArgument -- Backward compatibility for WP < 5.9.
-\add_action('init', function () {
-	\load_plugin_textdomain('functionalities', false, dirname(\plugin_basename(FUNCTIONALITIES_FILE)) . '/languages');
-}, 0);
-
+// Initialize plugin on init hook.
 \add_action('init', function () {
 	\Functionalities\Admin\Admin::init();
 	\Functionalities\Features\Link_Management::init();
@@ -78,19 +72,6 @@ spl_autoload_register(function (string $class) {
 	\Functionalities\Features\Redirect_Manager::init();
 	\Functionalities\Features\Login_Security::init();
 	\Functionalities\Features\SVG_Icons::init();
-
-	// Initialize GitHub Updater if enabled.
-	$update_options = \Functionalities\Admin\Admin::get_updates_options();
-	if (!empty($update_options['enabled']) && !empty($update_options['github_owner']) && !empty($update_options['github_repo'])) {
-		$updater = new \Functionalities\GitHub_Updater(array(
-			'plugin_file' => FUNCTIONALITIES_FILE,
-			'github_owner' => $update_options['github_owner'],
-			'github_repo' => $update_options['github_repo'],
-			'access_token' => $update_options['access_token'],
-			'cache_duration' => (int) $update_options['cache_duration'],
-		));
-		$updater->init();
-	}
 }, 10);
 
 // Activation/Deactivation hooks.

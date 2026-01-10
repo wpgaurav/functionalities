@@ -431,8 +431,8 @@ class Link_Management {
 			}
 		}
 
-		// translators: %d: Number of posts updated.
 		$message = sprintf(
+			/* translators: %d: Number of posts updated. */
 			\__( 'Successfully updated %d post(s).', 'functionalities' ),
 			$updated_count
 		);

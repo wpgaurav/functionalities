@@ -475,16 +475,16 @@ class Redirect_Manager {
 		$id      = isset( $_POST['id'] ) ? sanitize_key( $_POST['id'] ) : '';
 		$updates = array();
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 		if ( isset( $_POST['from'] ) ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 			$updates['from'] = sanitize_text_field( wp_unslash( $_POST['from'] ) );
 		}
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 		if ( isset( $_POST['to'] ) ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 			$updates['to'] = esc_url_raw( wp_unslash( $_POST['to'] ) );
 		}
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 		if ( isset( $_POST['type'] ) ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 			$updates['type'] = (int) $_POST['type'];
 		}
 
@@ -593,8 +593,8 @@ class Redirect_Manager {
 			}
 		}
 
-			// translators: %d: Number of redirects imported.
 		\wp_send_json_success( array(
+			/* translators: %d: Number of redirects imported. */
 			'message' => sprintf( \__( 'Imported %d redirect(s).', 'functionalities' ), $imported ),
 			'count'   => $imported,
 		));

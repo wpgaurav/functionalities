@@ -403,7 +403,9 @@ class Misc {
 			'https://unpkg.com/prismjs@1.29.0/themes/prism.min.css'
 		);
 
+		// phpcs:ignore PluginCheck.CodeAnalysis.EnqueuedResourceOffloading.OffloadedContent -- Admin-only feature using Prism.js for code highlighting. CDN used for performance.
 		\wp_enqueue_style( 'functionalities-prism', $theme_url, array(), FUNCTIONALITIES_VERSION );
+		// phpcs:ignore PluginCheck.CodeAnalysis.EnqueuedResourceOffloading.OffloadedContent -- Admin-only feature using Prism.js for code highlighting. CDN used for performance.
 		\wp_enqueue_script( 'functionalities-prism', 'https://unpkg.com/prismjs@1.29.0/prism.min.js', array(), FUNCTIONALITIES_VERSION, true );
 
 		\add_action(

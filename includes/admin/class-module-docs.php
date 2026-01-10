@@ -185,16 +185,6 @@ class Module_Docs {
 				),
 			),
 
-			'updates' => array(
-				'features' => array(
-					\__( 'Receive plugin updates directly from GitHub releases', 'functionalities' ),
-					\__( 'Supports both public and private repositories', 'functionalities' ),
-					\__( 'Configurable update check interval', 'functionalities' ),
-					\__( 'Shows update notifications in WordPress dashboard', 'functionalities' ),
-				),
-				'usage' => \__( 'Enter your GitHub repository details. For private repos, create a Personal Access Token with repo scope.', 'functionalities' ),
-			),
-
 			'content-regression' => array(
 				'features' => array(
 					\__( 'Detects when internal links are accidentally removed', 'functionalities' ),

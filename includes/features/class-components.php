@@ -202,6 +202,7 @@ class Components {
 
 		// Output external file link if available.
 		if ( $file && isset( $file['url'], $file['ver'] ) ) {
+			// phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- Dynamically generated CSS file from user components.
 			echo '<link rel="stylesheet" id="functionalities-components-css" href="' . \esc_url( $file['url'] . '?ver=' . rawurlencode( $file['ver'] ) ) . '" media="all" />';
 			return;
 		}
