@@ -204,6 +204,7 @@ class Content_Regression {
 			$GLOBALS['post'] = $post;
 
 			// Apply content filters with error suppression.
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Applying core WordPress filter.
 			$rendered = \apply_filters( 'the_content', $content );
 
 			// Restore original post.
@@ -214,6 +215,7 @@ class Content_Regression {
 			// If content filter fails, use raw content.
 			$rendered = $content;
 			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Debug logging only when WP_DEBUG is enabled.
 				error_log( 'Functionalities Content Regression: Error rendering content - ' . $e->getMessage() );
 			}
 		}
@@ -354,7 +356,7 @@ class Content_Regression {
 			$test = 'http:' . $href;
 		}
 
-		$host = (string) parse_url( $test, PHP_URL_HOST );
+		$host = (string) \wp_parse_url( $test, PHP_URL_HOST );
 		if ( empty( $host ) ) {
 			return true;
 		}
@@ -413,6 +415,7 @@ class Content_Regression {
 			self::extract_headings_from_blocks( $blocks, $heading_map, $h1_count );
 		} else {
 			// Fallback to HTML parsing.
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Applying core WordPress filter.
 			$rendered = \apply_filters( 'the_content', $content );
 			self::extract_headings_from_html( $rendered, $heading_map, $h1_count );
 		}

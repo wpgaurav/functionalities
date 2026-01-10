@@ -253,6 +253,7 @@ class Snippets {
 
 			if ( ! empty( $header_code ) ) {
 				echo "\n<!-- Functionalities: Custom Header Code -->\n";
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Admin-provided code snippets are intentionally output raw.
 				echo $header_code;
 				echo "\n";
 			}
@@ -307,6 +308,7 @@ class Snippets {
 
 		if ( ! empty( $footer_code ) ) {
 			echo "\n<!-- Functionalities: Custom Footer Code -->\n";
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Admin-provided code snippets are intentionally output raw.
 			echo $footer_code;
 			echo "\n";
 		}
@@ -353,6 +355,7 @@ class Snippets {
 		}
 
 		echo "\n<!-- Functionalities: Custom Body Open Code -->\n";
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Admin-provided code snippets are intentionally output raw.
 		echo $body_open_code;
 		echo "\n";
 	}

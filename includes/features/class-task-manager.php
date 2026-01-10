@@ -249,7 +249,8 @@ class Task_Manager {
 			return false;
 		}
 
-		return unlink( $project['file_path'] );
+		\wp_delete_file( $project['file_path'] );
+		return ! file_exists( $project['file_path'] );
 	}
 
 	/**
@@ -615,7 +616,9 @@ class Task_Manager {
 	 * @return bool True if valid.
 	 */
 	private static function verify_ajax() : bool {
-		if ( ! isset( $_POST['nonce'] ) || ! \wp_verify_nonce( $_POST['nonce'], 'functionalities_task_manager' ) ) {
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce doesn't need sanitization.
+		$nonce = isset( $_POST['nonce'] ) ? \wp_unslash( $_POST['nonce'] ) : '';
+		if ( empty( $nonce ) || ! \wp_verify_nonce( $nonce, 'functionalities_task_manager' ) ) {
 			\wp_send_json_error( array( 'message' => \__( 'Security check failed.', 'functionalities' ) ) );
 			return false;
 		}
@@ -636,7 +639,8 @@ class Task_Manager {
 			return;
 		}
 
-		$name = isset( $_POST['name'] ) ? \sanitize_text_field( $_POST['name'] ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
+		$name = isset( $_POST['name'] ) ? \sanitize_text_field( \wp_unslash( $_POST['name'] ) ) : '';
 		if ( empty( $name ) ) {
 			\wp_send_json_error( array( 'message' => \__( 'Project name is required.', 'functionalities' ) ) );
 			return;
@@ -661,6 +665,7 @@ class Task_Manager {
 			return;
 		}
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 		$slug = isset( $_POST['project'] ) ? \sanitize_key( $_POST['project'] ) : '';
 		if ( empty( $slug ) ) {
 			\wp_send_json_error( array( 'message' => \__( 'Project slug is required.', 'functionalities' ) ) );
@@ -682,9 +687,12 @@ class Task_Manager {
 			return;
 		}
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 		$project = isset( $_POST['project'] ) ? \sanitize_key( $_POST['project'] ) : '';
-		$text    = isset( $_POST['text'] ) ? \sanitize_text_field( $_POST['text'] ) : '';
-		$notes   = isset( $_POST['notes'] ) ? \sanitize_textarea_field( $_POST['notes'] ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
+		$text    = isset( $_POST['text'] ) ? \sanitize_text_field( \wp_unslash( $_POST['text'] ) ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
+		$notes   = isset( $_POST['notes'] ) ? \sanitize_textarea_field( \wp_unslash( $_POST['notes'] ) ) : '';
 
 		if ( empty( $project ) || empty( $text ) ) {
 			\wp_send_json_error( array( 'message' => \__( 'Project and task text are required.', 'functionalities' ) ) );
@@ -710,23 +718,30 @@ class Task_Manager {
 			return;
 		}
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 		$project  = isset( $_POST['project'] ) ? \sanitize_key( $_POST['project'] ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 		$task_id  = isset( $_POST['task_id'] ) ? \sanitize_key( $_POST['task_id'] ) : '';
 		$updates  = array();
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 		if ( isset( $_POST['text'] ) ) {
-			$updates['text'] = \sanitize_text_field( $_POST['text'] );
+			$updates['text'] = \sanitize_text_field( \wp_unslash( $_POST['text'] ) );
 		}
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 		if ( isset( $_POST['notes'] ) ) {
-			$updates['notes'] = \sanitize_textarea_field( $_POST['notes'] );
+			$updates['notes'] = \sanitize_textarea_field( \wp_unslash( $_POST['notes'] ) );
 		}
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 		if ( isset( $_POST['priority'] ) ) {
 			$updates['priority'] = (int) $_POST['priority'];
 		}
+		// phpcs:disable WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- Nonce verified in verify_ajax(). Tags are sanitized with array_map.
 		if ( isset( $_POST['tags'] ) ) {
-			$tags = is_array( $_POST['tags'] ) ? $_POST['tags'] : explode( ',', $_POST['tags'] );
+			$tags = is_array( $_POST['tags'] ) ? \wp_unslash( $_POST['tags'] ) : explode( ',', \wp_unslash( $_POST['tags'] ) );
 			$updates['tags'] = array_map( 'sanitize_key', $tags );
 		}
+		// phpcs:enable
 
 		if ( empty( $project ) || empty( $task_id ) ) {
 			\wp_send_json_error( array( 'message' => \__( 'Project and task ID are required.', 'functionalities' ) ) );
@@ -752,7 +767,9 @@ class Task_Manager {
 			return;
 		}
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 		$project = isset( $_POST['project'] ) ? \sanitize_key( $_POST['project'] ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 		$task_id = isset( $_POST['task_id'] ) ? \sanitize_key( $_POST['task_id'] ) : '';
 
 		if ( empty( $project ) || empty( $task_id ) ) {
@@ -775,7 +792,9 @@ class Task_Manager {
 			return;
 		}
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 		$project = isset( $_POST['project'] ) ? \sanitize_key( $_POST['project'] ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 		$task_id = isset( $_POST['task_id'] ) ? \sanitize_key( $_POST['task_id'] ) : '';
 
 		if ( empty( $project ) || empty( $task_id ) ) {
@@ -802,9 +821,12 @@ class Task_Manager {
 			return;
 		}
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 		$project  = isset( $_POST['project'] ) ? \sanitize_key( $_POST['project'] ) : '';
-		$task_ids = isset( $_POST['task_ids'] ) ? (array) $_POST['task_ids'] : array();
+		// phpcs:disable WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- Nonce verified. IDs are sanitized with array_map.
+		$task_ids = isset( $_POST['task_ids'] ) ? (array) \wp_unslash( $_POST['task_ids'] ) : array();
 		$task_ids = array_map( 'sanitize_key', $task_ids );
+		// phpcs:enable
 
 		if ( empty( $project ) || empty( $task_ids ) ) {
 			\wp_send_json_error( array( 'message' => \__( 'Project and task IDs are required.', 'functionalities' ) ) );
@@ -826,6 +848,7 @@ class Task_Manager {
 			return;
 		}
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce verified. JSON needs raw parsing.
 		$json = isset( $_POST['json'] ) ? \wp_unslash( $_POST['json'] ) : '';
 		if ( empty( $json ) ) {
 			\wp_send_json_error( array( 'message' => \__( 'JSON data is required.', 'functionalities' ) ) );
@@ -877,6 +900,7 @@ class Task_Manager {
 			return;
 		}
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 		$slug = isset( $_POST['project'] ) ? \sanitize_key( $_POST['project'] ) : '';
 		if ( empty( $slug ) ) {
 			\wp_send_json_error( array( 'message' => \__( 'Project slug is required.', 'functionalities' ) ) );

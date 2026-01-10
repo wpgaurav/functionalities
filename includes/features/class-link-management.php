@@ -278,7 +278,7 @@ class Link_Management {
 					// If link host matches an exception domain, skip
 					$test = $href;
 					if ( strpos( $href, '//' ) === 0 ) { $test = 'http:' . $href; }
-					$host = (string) parse_url( $test, PHP_URL_HOST );
+					$host = (string) \wp_parse_url( $test, PHP_URL_HOST );
 					$host = strtolower( $host );
 					$skip = false;
 					foreach ( $internal_ex as $exd ) {
@@ -343,7 +343,9 @@ class Link_Management {
 			$items = \apply_filters( 'functionalities_exception_urls', $items );
 
 			// Legacy GT Nofollow Manager filter names for backward compatibility.
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Legacy hook name for backward compatibility.
 			$items = \apply_filters( 'gtnf_exception_domains', $items );
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Legacy hook name for backward compatibility.
 			$items = \apply_filters( 'gtnf_exception_urls', $items );
 		}
 
@@ -429,6 +431,7 @@ class Link_Management {
 			}
 		}
 
+		// translators: %d: Number of posts updated.
 		$message = sprintf(
 			\__( 'Successfully updated %d post(s).', 'functionalities' ),
 			$updated_count
@@ -505,7 +508,7 @@ class Link_Management {
 		if ( strpos( $href, '//' ) === 0 ) {
 			$test = 'http:' . $href;
 		}
-		$host = (string) parse_url( $test, PHP_URL_HOST );
+		$host = (string) \wp_parse_url( $test, PHP_URL_HOST );
 		if ( $host === '' ) { return false; }
 		return strcasecmp( $host, $site_host ) !== 0;
 	}
@@ -522,7 +525,7 @@ class Link_Management {
 		$host = '';
 		$test = $href;
 		if ( strpos( $href, '//' ) === 0 ) { $test = 'http:' . $href; }
-		$tmpHost = parse_url( $test, PHP_URL_HOST );
+		$tmpHost = \wp_parse_url( $test, PHP_URL_HOST );
 		if ( is_string( $tmpHost ) ) { $host = strtolower( $tmpHost ); }
 
 		foreach ( $exceptions as $ex ) {

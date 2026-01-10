@@ -473,7 +473,9 @@ class SVG_Icons
 	public static function ajax_save_icon(): void
 	{
 		// Verify nonce.
-		if (!isset($_POST['nonce']) || !\wp_verify_nonce($_POST['nonce'], 'functionalities_svg_icons')) {
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonces don't require sanitization.
+		$nonce = isset($_POST['nonce']) ? \wp_unslash($_POST['nonce']) : '';
+		if (!$nonce || !\wp_verify_nonce($nonce, 'functionalities_svg_icons')) {
 			\wp_send_json_error(array('message' => \__('Security check failed.', 'functionalities')));
 			return;
 		}
@@ -486,7 +488,8 @@ class SVG_Icons
 
 		// Get and validate input.
 		$slug = isset($_POST['slug']) ? \sanitize_key($_POST['slug']) : '';
-		$name = isset($_POST['name']) ? \sanitize_text_field($_POST['name']) : '';
+		$name = isset($_POST['name']) ? \sanitize_text_field(\wp_unslash($_POST['name'])) : '';
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- SVG is sanitized with self::sanitize_svg().
 		$svg = isset($_POST['svg']) ? \wp_unslash($_POST['svg']) : '';
 
 		if (empty($slug) || empty($svg)) {
@@ -544,7 +547,9 @@ class SVG_Icons
 	public static function ajax_delete_icon(): void
 	{
 		// Verify nonce.
-		if (!isset($_POST['nonce']) || !\wp_verify_nonce($_POST['nonce'], 'functionalities_svg_icons')) {
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonces don't require sanitization.
+		$nonce = isset($_POST['nonce']) ? \wp_unslash($_POST['nonce']) : '';
+		if (!$nonce || !\wp_verify_nonce($nonce, 'functionalities_svg_icons')) {
 			\wp_send_json_error(array('message' => \__('Security check failed.', 'functionalities')));
 			return;
 		}

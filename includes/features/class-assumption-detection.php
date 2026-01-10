@@ -1342,7 +1342,7 @@ class Assumption_Detection {
 			\wp_send_json_error( array( 'message' => \__( 'Permission denied.', 'functionalities' ) ) );
 		}
 
-		$hash = isset( $_POST['hash'] ) ? \sanitize_text_field( $_POST['hash'] ) : '';
+		$hash = isset( $_POST['hash'] ) ? \sanitize_text_field( \wp_unslash( $_POST['hash'] ) ) : '';
 
 		if ( empty( $hash ) ) {
 			\wp_send_json_error( array( 'message' => \__( 'Invalid request.', 'functionalities' ) ) );
@@ -1370,7 +1370,7 @@ class Assumption_Detection {
 			\wp_send_json_error( array( 'message' => \__( 'Permission denied.', 'functionalities' ) ) );
 		}
 
-		$hash = isset( $_POST['hash'] ) ? \sanitize_text_field( $_POST['hash'] ) : '';
+		$hash = isset( $_POST['hash'] ) ? \sanitize_text_field( \wp_unslash( $_POST['hash'] ) ) : '';
 
 		if ( empty( $hash ) ) {
 			\wp_send_json_error( array( 'message' => \__( 'Invalid request.', 'functionalities' ) ) );
@@ -1398,7 +1398,7 @@ class Assumption_Detection {
 			\wp_send_json_error( array( 'message' => \__( 'Permission denied.', 'functionalities' ) ) );
 		}
 
-		$hash = isset( $_POST['hash'] ) ? \sanitize_text_field( $_POST['hash'] ) : '';
+		$hash = isset( $_POST['hash'] ) ? \sanitize_text_field( \wp_unslash( $_POST['hash'] ) ) : '';
 		$days = isset( $_POST['days'] ) ? (int) $_POST['days'] : 7;
 
 		if ( empty( $hash ) ) {

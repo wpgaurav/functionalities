@@ -320,7 +320,8 @@ class Redirect_Manager {
 		}
 
 		// Get current path.
-		$current_path = self::normalize_path( $_SERVER['REQUEST_URI'] ?? '' );
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitized by normalize_path.
+		$current_path = self::normalize_path( isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '' );
 
 		foreach ( $redirects as $redirect ) {
 			if ( empty( $redirect['enabled'] ) ) {
@@ -355,6 +356,9 @@ class Redirect_Manager {
 
 		$status = isset( $redirect['type'] ) ? (int) $redirect['type'] : 301;
 
+			// Note: Using wp_redirect instead of wp_safe_redirect because destination
+		// URLs may be external domains, which is valid for redirects.
+		// phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect
 		\wp_redirect( $redirect['to'], $status );
 		exit;
 	}
@@ -413,7 +417,9 @@ class Redirect_Manager {
 	 * @return bool True if valid.
 	 */
 	private static function verify_ajax() : bool {
-		if ( ! isset( $_POST['nonce'] ) || ! \wp_verify_nonce( $_POST['nonce'], 'functionalities_redirect_manager' ) ) {
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- nonce doesn't need sanitization.
+		$nonce = isset( $_POST['nonce'] ) ? wp_unslash( $_POST['nonce'] ) : '';
+		if ( empty( $nonce ) || ! \wp_verify_nonce( $nonce, 'functionalities_redirect_manager' ) ) {
 			\wp_send_json_error( array( 'message' => \__( 'Security check failed.', 'functionalities' ) ) );
 			return false;
 		}
@@ -434,8 +440,11 @@ class Redirect_Manager {
 			return;
 		}
 
-		$from = isset( $_POST['from'] ) ? sanitize_text_field( $_POST['from'] ) : '';
-		$to   = isset( $_POST['to'] ) ? esc_url_raw( $_POST['to'] ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
+		$from = isset( $_POST['from'] ) ? sanitize_text_field( wp_unslash( $_POST['from'] ) ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
+		$to   = isset( $_POST['to'] ) ? esc_url_raw( wp_unslash( $_POST['to'] ) ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 		$type = isset( $_POST['type'] ) ? (int) $_POST['type'] : 301;
 
 		if ( empty( $from ) || empty( $to ) ) {
@@ -462,15 +471,19 @@ class Redirect_Manager {
 			return;
 		}
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 		$id      = isset( $_POST['id'] ) ? sanitize_key( $_POST['id'] ) : '';
 		$updates = array();
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 		if ( isset( $_POST['from'] ) ) {
-			$updates['from'] = sanitize_text_field( $_POST['from'] );
+			$updates['from'] = sanitize_text_field( wp_unslash( $_POST['from'] ) );
 		}
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 		if ( isset( $_POST['to'] ) ) {
-			$updates['to'] = esc_url_raw( $_POST['to'] );
+			$updates['to'] = esc_url_raw( wp_unslash( $_POST['to'] ) );
 		}
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 		if ( isset( $_POST['type'] ) ) {
 			$updates['type'] = (int) $_POST['type'];
 		}
@@ -499,6 +512,7 @@ class Redirect_Manager {
 			return;
 		}
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 		$id = isset( $_POST['id'] ) ? sanitize_key( $_POST['id'] ) : '';
 
 		if ( empty( $id ) ) {
@@ -521,6 +535,7 @@ class Redirect_Manager {
 			return;
 		}
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 		$id = isset( $_POST['id'] ) ? sanitize_key( $_POST['id'] ) : '';
 
 		if ( empty( $id ) ) {
@@ -547,7 +562,9 @@ class Redirect_Manager {
 			return;
 		}
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce verified in verify_ajax(). JSON needs to be parsed raw.
 		$json = isset( $_POST['json'] ) ? wp_unslash( $_POST['json'] ) : '';
+		$json = sanitize_textarea_field( $json );
 		if ( empty( $json ) ) {
 			\wp_send_json_error( array( 'message' => \__( 'JSON data is required.', 'functionalities' ) ) );
 			return;
@@ -576,6 +593,7 @@ class Redirect_Manager {
 			}
 		}
 
+			// translators: %d: Number of redirects imported.
 		\wp_send_json_success( array(
 			'message' => sprintf( \__( 'Imported %d redirect(s).', 'functionalities' ), $imported ),
 			'count'   => $imported,

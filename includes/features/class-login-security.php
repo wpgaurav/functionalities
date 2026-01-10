@@ -127,12 +127,13 @@ class Login_Security {
 	private static function get_client_ip() : string {
 		$ip = '';
 
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Sanitized below with sanitize_text_field.
 		if ( ! empty( $_SERVER['HTTP_CLIENT_IP'] ) ) {
-			$ip = $_SERVER['HTTP_CLIENT_IP'];
+			$ip = \wp_unslash( $_SERVER['HTTP_CLIENT_IP'] );
 		} elseif ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
-			$ip = explode( ',', $_SERVER['HTTP_X_FORWARDED_FOR'] )[0];
+			$ip = explode( ',', \wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) )[0];
 		} elseif ( ! empty( $_SERVER['REMOTE_ADDR'] ) ) {
-			$ip = $_SERVER['REMOTE_ADDR'];
+			$ip = \wp_unslash( $_SERVER['REMOTE_ADDR'] );
 		}
 
 		return sanitize_text_field( trim( $ip ) );
@@ -339,7 +340,7 @@ class Login_Security {
 		?>
 		<style type="text/css">
 			#login h1 a, .login h1 a {
-				background-image: url(<?php echo $logo_url; ?>);
+				background-image: url(<?php echo esc_url( $logo_url ); ?>);
 				background-size: contain;
 				background-repeat: no-repeat;
 				background-position: center;
@@ -367,12 +368,12 @@ class Login_Security {
 		<style type="text/css">
 			<?php if ( ! empty( $bg_color ) ) : ?>
 			body.login {
-				background-color: <?php echo $bg_color; ?>;
+				background-color: <?php echo esc_attr( $bg_color ); ?>;
 			}
 			<?php endif; ?>
 			<?php if ( ! empty( $form_bg ) ) : ?>
 			.login form {
-				background-color: <?php echo $form_bg; ?>;
+				background-color: <?php echo esc_attr( $form_bg ); ?>;
 			}
 			<?php endif; ?>
 		</style>

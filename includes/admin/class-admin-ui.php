@@ -31,8 +31,9 @@ class Admin_UI {
 		$open_attr = $open ? ' open' : '';
 		$class = 'functionalities-docs-accordion functionalities-docs-' . esc_attr( $type );
 
-		echo '<details class="' . $class . '"' . $open_attr . '>';
+		echo '<details class="' . esc_attr( $class ) . '"' . esc_attr( $open_attr ) . '>';
 		echo '<summary>' . esc_html( $title ) . '</summary>';
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Content is pre-escaped HTML from render functions.
 		echo '<div class="functionalities-docs-content">' . $content . '</div>';
 		echo '</details>';
 	}

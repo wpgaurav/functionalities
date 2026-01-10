@@ -3,7 +3,7 @@
  * Plugin Name:       Functionalities
  * Plugin URI:        https://functionalities.dev
  * Description:       Modular site-specific plugin with modern dashboard and features.
- * Version:           0.15.3
+ * Version:           0.15.4
  * Author:            Gaurav Tiwari
  * Author URI:        https://gauravtiwari.org
  * License:           GPL-2.0-or-later
@@ -19,7 +19,7 @@ if (!defined('ABSPATH')) {
 
 // Define constants.
 if (!defined('FUNCTIONALITIES_VERSION')) {
-	define('FUNCTIONALITIES_VERSION', '0.15.3');
+	define('FUNCTIONALITIES_VERSION', '0.15.4');
 }
 if (!defined('FUNCTIONALITIES_FILE')) {
 	define('FUNCTIONALITIES_FILE', __FILE__);
@@ -56,6 +56,7 @@ spl_autoload_register(function (string $class) {
 
 // Initialize plugin at init to ensure translations are loaded first.
 // Using priority 0 for textdomain, priority 10 for plugin initialization.
+// phpcs:ignore WordPress.WP.DeprecatedFunctions.load_plugin_textdomainDeprecatedArgument -- Backward compatibility for WP < 5.9.
 \add_action('init', function () {
 	\load_plugin_textdomain('functionalities', false, dirname(\plugin_basename(FUNCTIONALITIES_FILE)) . '/languages');
 }, 0);

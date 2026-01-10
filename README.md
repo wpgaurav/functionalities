@@ -2,7 +2,7 @@
 
 A modular site-specific plugin that organizes common WordPress features with simple toggles. Built with modern WordPress coding standards and a clean module-based dashboard. Optimized for performance with lazy-loading, static property caching, and intelligent transients.
 
-**Version:** 0.15.3
+**Version:** 0.15.4
 **License:** GPL-2.0-or-later  
 **Text Domain:** `functionalities`
 
@@ -443,7 +443,10 @@ Example module definition:
 ---
 
 ## Changelog
-### 0.15.3 (Current)
+### 0.15.4 (Current)
+- **Fixed**: PHPCS compliance - added proper escaping, wp_unslash(), nonce verification comments, and translators comments across all modules.
+
+### 0.15.3
 - **Removed**: Transient cache from Link Management JSON preset loader for realtime exception updates.
 
 ### 0.15.2

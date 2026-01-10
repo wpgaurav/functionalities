@@ -430,8 +430,9 @@ class GitHub_Updater {
 		if ( ! \current_user_can( 'update_plugins' ) ) {
 			return;
 		}
-
-		if ( ! \wp_verify_nonce( $_GET['_wpnonce'] ?? '', 'functionalities_check_update' ) ) {
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce doesn't need sanitization.
+		$nonce = isset( $_GET['_wpnonce'] ) ? \wp_unslash( $_GET['_wpnonce'] ) : '';
+		if ( ! \wp_verify_nonce( $nonce, 'functionalities_check_update' ) ) {
 			return;
 		}
 

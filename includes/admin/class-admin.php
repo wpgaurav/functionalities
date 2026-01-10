@@ -51,7 +51,9 @@ class Admin {
 	 */
 	public static function ajax_update_database() : void {
 		// Verify nonce.
-		if ( ! isset( $_POST['nonce'] ) || ! \wp_verify_nonce( $_POST['nonce'], 'functionalities_db_update' ) ) {
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonces don't require sanitization for verification.
+		$nonce = isset( $_POST['nonce'] ) ? wp_unslash( $_POST['nonce'] ) : '';
+		if ( ! $nonce || ! \wp_verify_nonce( $nonce, 'functionalities_db_update' ) ) {
 			\wp_send_json_error( array( 'message' => \__( 'Security check failed.', 'functionalities' ) ) );
 			return; // Explicit return for clarity.
 		}
@@ -63,7 +65,7 @@ class Admin {
 		}
 
 		// Get URL from request.
-		$url = isset( $_POST['url'] ) ? \sanitize_text_field( $_POST['url'] ) : '';
+		$url = isset( $_POST['url'] ) ? \sanitize_text_field( wp_unslash( $_POST['url'] ) ) : '';
 
 		// Call the update method.
 		$result = \Functionalities\Features\Link_Management::update_links_in_database( $url );
@@ -82,7 +84,9 @@ class Admin {
 	 */
 	public static function ajax_create_json_file() : void {
 		// Verify nonce.
-		if ( ! isset( $_POST['nonce'] ) || ! \wp_verify_nonce( $_POST['nonce'], 'functionalities_create_json' ) ) {
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonces don't require sanitization for verification.
+		$nonce = isset( $_POST['nonce'] ) ? wp_unslash( $_POST['nonce'] ) : '';
+		if ( ! $nonce || ! \wp_verify_nonce( $nonce, 'functionalities_create_json' ) ) {
 			\wp_send_json_error( array( 'message' => \__( 'Security check failed.', 'functionalities' ) ) );
 			return; // Explicit return for clarity.
 		}
@@ -94,6 +98,7 @@ class Admin {
 		}
 
 		// Get content from request.
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- JSON content needs to remain raw for parsing.
 		$content = isset( $_POST['content'] ) ? \wp_unslash( $_POST['content'] ) : '';
 
 		// Validate JSON with proper error handling.
@@ -114,6 +119,7 @@ class Admin {
 		$file_path = $theme_dir . '/exception-urls.json';
 
 		// Check if theme directory is writable.
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_is_writable -- Pre-check for writability, WP_Filesystem has no equivalent.
 		if ( ! is_writable( $theme_dir ) ) {
 			\wp_send_json_error(
 				array(
@@ -155,7 +161,9 @@ class Admin {
 	 */
 	public static function ajax_run_detection() : void {
 		// Verify nonce.
-		if ( ! isset( $_POST['nonce'] ) || ! \wp_verify_nonce( $_POST['nonce'], 'functionalities_run_detection' ) ) {
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonces don't require sanitization for verification.
+		$nonce = isset( $_POST['nonce'] ) ? wp_unslash( $_POST['nonce'] ) : '';
+		if ( ! $nonce || ! \wp_verify_nonce( $nonce, 'functionalities_run_detection' ) ) {
 			\wp_send_json_error( array( 'message' => \__( 'Security check failed.', 'functionalities' ) ) );
 			return; // Explicit return for clarity.
 		}
@@ -333,7 +341,9 @@ class Admin {
 		}
 
 		$deps = array( 'jquery' );
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Page detection doesn't require nonce.
 		$page = isset( $_GET['page'] ) ? \sanitize_key( $_GET['page'] ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Module detection doesn't require nonce.
 		$module = isset( $_GET['module'] ) ? \sanitize_key( $_GET['module'] ) : '';
 		
 		if ( 'task-manager' === $module || 'functionalities-task-manager' === $page ) {
@@ -379,7 +389,9 @@ class Admin {
 		}
 
 		// Get current module from URL parameter or page slug.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Page/module detection doesn't require nonce.
 		$current_module = isset( $_GET['module'] ) ? \sanitize_key( $_GET['module'] ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Page detection doesn't require nonce.
 		$page = isset( $_GET['page'] ) ? \sanitize_key( $_GET['page'] ) : '';
 
 		if ( empty( $current_module ) && strpos( $page, 'functionalities-' ) === 0 ) {
@@ -453,8 +465,8 @@ class Admin {
 				<p style="color: #646970; margin-top: 15px; margin-bottom: 0; font-size: 12px;">
 					<?php
 					printf(
-						/* translators: %s: Plugin version number */
-						\esc_html__( 'Functionalities v%s | Visit %s for more information.', 'functionalities' ),
+						/* translators: %1$s: Plugin version number, %2$s: Website link */
+						\esc_html__( 'Functionalities v%1$s | Visit %2$s for more information.', 'functionalities' ),
 						\esc_html( FUNCTIONALITIES_VERSION ),
 						'<a href="https://functionalities.dev" target="_blank" rel="noopener">functionalities.dev</a>'
 					);
@@ -663,7 +675,7 @@ class Admin {
 			function() {
 				$opts = self::get_block_cleanup_options();
 				$checked = ! empty( $opts['remove_paragraph_block_class'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_block_cleanup[remove_paragraph_block_class]" value="1" ' . $checked . '> ';
+				echo '<label><input type="checkbox" name="functionalities_block_cleanup[remove_paragraph_block_class]" value="1" ' . esc_attr( $checked ) . '> ';
 				echo \esc_html__( 'Remove "wp-block-paragraph" from paragraph elements', 'functionalities' ) . '</label>';
 			},
 			'functionalities_block_cleanup',
@@ -675,7 +687,7 @@ class Admin {
 			function() {
 				$opts = self::get_block_cleanup_options();
 				$checked = ! empty( $opts['remove_quote_block_class'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_block_cleanup[remove_quote_block_class]" value="1" ' . $checked . '> ';
+				echo '<label><input type="checkbox" name="functionalities_block_cleanup[remove_quote_block_class]" value="1" ' . esc_attr( $checked ) . '> ';
 				echo \esc_html__( 'Remove "wp-block-quote" from blockquote elements', 'functionalities' ) . '</label>';
 			},
 			'functionalities_block_cleanup',
@@ -687,7 +699,7 @@ class Admin {
 			function() {
 				$opts = self::get_block_cleanup_options();
 				$checked = ! empty( $opts['remove_table_block_class'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_block_cleanup[remove_table_block_class]" value="1" ' . $checked . '> ';
+				echo '<label><input type="checkbox" name="functionalities_block_cleanup[remove_table_block_class]" value="1" ' . esc_attr( $checked ) . '> ';
 				echo \esc_html__( 'Remove "wp-block-table" from table elements', 'functionalities' ) . '</label>';
 			},
 			'functionalities_block_cleanup',
@@ -699,7 +711,7 @@ class Admin {
 			function() {
 				$opts = self::get_block_cleanup_options();
 				$checked = ! empty( $opts['remove_separator_block_class'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_block_cleanup[remove_separator_block_class]" value="1" ' . $checked . '> ';
+				echo '<label><input type="checkbox" name="functionalities_block_cleanup[remove_separator_block_class]" value="1" ' . esc_attr( $checked ) . '> ';
 				echo \esc_html__( 'Remove "wp-block-separator" from hr/separator elements', 'functionalities' ) . '</label>';
 			},
 			'functionalities_block_cleanup',
@@ -711,7 +723,7 @@ class Admin {
 			function() {
 				$opts = self::get_block_cleanup_options();
 				$checked = ! empty( $opts['remove_group_block_class'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_block_cleanup[remove_group_block_class]" value="1" ' . $checked . '> ';
+				echo '<label><input type="checkbox" name="functionalities_block_cleanup[remove_group_block_class]" value="1" ' . esc_attr( $checked ) . '> ';
 				echo \esc_html__( 'Remove "wp-block-group" from group containers', 'functionalities' ) . '</label>';
 			},
 			'functionalities_block_cleanup',
@@ -723,7 +735,7 @@ class Admin {
 			function() {
 				$opts = self::get_block_cleanup_options();
 				$checked = ! empty( $opts['remove_columns_block_class'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_block_cleanup[remove_columns_block_class]" value="1" ' . $checked . '> ';
+				echo '<label><input type="checkbox" name="functionalities_block_cleanup[remove_columns_block_class]" value="1" ' . esc_attr( $checked ) . '> ';
 				echo \esc_html__( 'Remove "wp-block-columns" and "wp-block-column" from column layouts', 'functionalities' ) . '</label>';
 			},
 			'functionalities_block_cleanup',
@@ -735,7 +747,7 @@ class Admin {
 			function() {
 				$opts = self::get_block_cleanup_options();
 				$checked = ! empty( $opts['remove_button_block_class'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_block_cleanup[remove_button_block_class]" value="1" ' . $checked . '> ';
+				echo '<label><input type="checkbox" name="functionalities_block_cleanup[remove_button_block_class]" value="1" ' . esc_attr( $checked ) . '> ';
 				echo \esc_html__( 'Remove "wp-block-button(s)" from button elements', 'functionalities' ) . '</label>';
 			},
 			'functionalities_block_cleanup',
@@ -747,7 +759,7 @@ class Admin {
 			function() {
 				$opts = self::get_block_cleanup_options();
 				$checked = ! empty( $opts['remove_cover_block_class'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_block_cleanup[remove_cover_block_class]" value="1" ' . $checked . '> ';
+				echo '<label><input type="checkbox" name="functionalities_block_cleanup[remove_cover_block_class]" value="1" ' . esc_attr( $checked ) . '> ';
 				echo \esc_html__( 'Remove "wp-block-cover" from cover blocks', 'functionalities' ) . '</label>';
 			},
 			'functionalities_block_cleanup',
@@ -759,7 +771,7 @@ class Admin {
 			function() {
 				$opts = self::get_block_cleanup_options();
 				$checked = ! empty( $opts['remove_media_text_block_class'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_block_cleanup[remove_media_text_block_class]" value="1" ' . $checked . '> ';
+				echo '<label><input type="checkbox" name="functionalities_block_cleanup[remove_media_text_block_class]" value="1" ' . esc_attr( $checked ) . '> ';
 				echo \esc_html__( 'Remove "wp-block-media-text" from media-text blocks', 'functionalities' ) . '</label>';
 			},
 			'functionalities_block_cleanup',
@@ -899,7 +911,7 @@ class Admin {
 			function() {
 				$o = self::get_snippets_options();
 				$checked = ! empty( $o['enable_ga4'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_snippets[enable_ga4]" value="1" ' . $checked . '> ' . \esc_html__( 'Insert GA4 gtag in head', 'functionalities' ) . '</label>';
+				echo '<label><input type="checkbox" name="functionalities_snippets[enable_ga4]" value="1" ' . esc_attr( $checked ) . '> ' . \esc_html__( 'Insert GA4 gtag in head', 'functionalities' ) . '</label>';
 			},
 			'functionalities_snippets',
 			'functionalities_snippets_section'
@@ -921,7 +933,7 @@ class Admin {
 			function() {
 				$o = self::get_snippets_options();
 				$checked = ! empty( $o['enable_header'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_snippets[enable_header]" value="1" ' . $checked . '> ' . \esc_html__( 'Output below in wp_head', 'functionalities' ) . '</label>';
+				echo '<label><input type="checkbox" name="functionalities_snippets[enable_header]" value="1" ' . esc_attr( $checked ) . '> ' . \esc_html__( 'Output below in wp_head', 'functionalities' ) . '</label>';
 			},
 			'functionalities_snippets',
 			'functionalities_snippets_section'
@@ -944,7 +956,7 @@ class Admin {
 			function() {
 				$o = self::get_snippets_options();
 				$checked = ! empty( $o['enable_body_open'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_snippets[enable_body_open]" value="1" ' . $checked . '> ' . \esc_html__( 'Output below in wp_body_open', 'functionalities' ) . '</label>';
+				echo '<label><input type="checkbox" name="functionalities_snippets[enable_body_open]" value="1" ' . esc_attr( $checked ) . '> ' . \esc_html__( 'Output below in wp_body_open', 'functionalities' ) . '</label>';
 			},
 			'functionalities_snippets',
 			'functionalities_snippets_section'
@@ -1026,7 +1038,7 @@ class Admin {
 			function() {
 				$o = self::get_schema_options();
 				$checked = ! empty( $o['enable_site_schema'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_schema[enable_site_schema]" value="1" ' . $checked . '> ' . \esc_html__( 'Add itemscope/itemtype to <html>', 'functionalities' ) . '</label>';
+				echo '<label><input type="checkbox" name="functionalities_schema[enable_site_schema]" value="1" ' . esc_attr( $checked ) . '> ' . \esc_html__( 'Add itemscope/itemtype to <html>', 'functionalities' ) . '</label>';
 			},
 			'functionalities_schema',
 			'functionalities_schema_section'
@@ -1041,7 +1053,7 @@ class Admin {
 				echo '<select name="functionalities_schema[site_itemtype]">';
 				foreach ( $opts as $opt ) {
 					$sel = selected( $val, $opt, false );
-					echo '<option value="' . esc_attr( $opt ) . '" ' . $sel . '>' . esc_html( $opt ) . '</option>';
+					echo '<option value="' . esc_attr( $opt ) . '" ' . esc_attr( $sel ) . '>' . esc_html( $opt ) . '</option>';
 				}
 				echo '</select>';
 			},
@@ -1054,7 +1066,7 @@ class Admin {
 			function() {
 				$o = self::get_schema_options();
 				$checked = ! empty( $o['enable_header_part'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_schema[enable_header_part]" value="1" ' . $checked . '> ' . \esc_html__( 'Output a microdata hasPart for header', 'functionalities' ) . '</label>';
+				echo '<label><input type="checkbox" name="functionalities_schema[enable_header_part]" value="1" ' . esc_attr( $checked ) . '> ' . \esc_html__( 'Output a microdata hasPart for header', 'functionalities' ) . '</label>';
 			},
 			'functionalities_schema',
 			'functionalities_schema_section'
@@ -1065,7 +1077,7 @@ class Admin {
 			function() {
 				$o = self::get_schema_options();
 				$checked = ! empty( $o['enable_footer_part'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_schema[enable_footer_part]" value="1" ' . $checked . '> ' . \esc_html__( 'Output a microdata hasPart for footer', 'functionalities' ) . '</label>';
+				echo '<label><input type="checkbox" name="functionalities_schema[enable_footer_part]" value="1" ' . esc_attr( $checked ) . '> ' . \esc_html__( 'Output a microdata hasPart for footer', 'functionalities' ) . '</label>';
 			},
 			'functionalities_schema',
 			'functionalities_schema_section'
@@ -1076,7 +1088,7 @@ class Admin {
 			function() {
 				$o = self::get_schema_options();
 				$checked = ! empty( $o['enable_article'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_schema[enable_article]" value="1" ' . $checked . '> ' . \esc_html__( 'Wrap content with Article microdata on singular', 'functionalities' ) . '</label>';
+				echo '<label><input type="checkbox" name="functionalities_schema[enable_article]" value="1" ' . esc_attr( $checked ) . '> ' . \esc_html__( 'Wrap content with Article microdata on singular', 'functionalities' ) . '</label>';
 			},
 			'functionalities_schema',
 			'functionalities_schema_section'
@@ -1091,7 +1103,7 @@ class Admin {
 				echo '<select name="functionalities_schema[article_itemtype]">';
 				foreach ( $opts as $opt ) {
 					$sel = selected( $val, $opt, false );
-					echo '<option value="' . esc_attr( $opt ) . '" ' . $sel . '>' . esc_html( $opt ) . '</option>';
+					echo '<option value="' . esc_attr( $opt ) . '" ' . esc_attr( $sel ) . '>' . esc_html( $opt ) . '</option>';
 				}
 				echo '</select>';
 			},
@@ -1104,7 +1116,7 @@ class Admin {
 			function() {
 				$o = self::get_schema_options();
 				$checked = ! empty( $o['add_headline'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_schema[add_headline]" value="1" ' . $checked . '> ' . \esc_html__( 'Add itemprop="headline"', 'functionalities' ) . '</label>';
+				echo '<label><input type="checkbox" name="functionalities_schema[add_headline]" value="1" ' . esc_attr( $checked ) . '> ' . \esc_html__( 'Add itemprop="headline"', 'functionalities' ) . '</label>';
 			},
 			'functionalities_schema',
 			'functionalities_schema_section'
@@ -1115,7 +1127,7 @@ class Admin {
 			function() {
 				$o = self::get_schema_options();
 				$checked = ! empty( $o['add_dates'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_schema[add_dates]" value="1" ' . $checked . '> ' . \esc_html__( 'Add itemprop dates to time tags', 'functionalities' ) . '</label>';
+				echo '<label><input type="checkbox" name="functionalities_schema[add_dates]" value="1" ' . esc_attr( $checked ) . '> ' . \esc_html__( 'Add itemprop dates to time tags', 'functionalities' ) . '</label>';
 			},
 			'functionalities_schema',
 			'functionalities_schema_section'
@@ -1126,7 +1138,7 @@ class Admin {
 			function() {
 				$o = self::get_schema_options();
 				$checked = ! empty( $o['add_author'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_schema[add_author]" value="1" ' . $checked . '> ' . \esc_html__( 'Add itemprop="author" where possible', 'functionalities' ) . '</label>';
+				echo '<label><input type="checkbox" name="functionalities_schema[add_author]" value="1" ' . esc_attr( $checked ) . '> ' . \esc_html__( 'Add itemprop="author" where possible', 'functionalities' ) . '</label>';
 			},
 			'functionalities_schema',
 			'functionalities_schema_section'
@@ -1137,7 +1149,7 @@ class Admin {
 			function() {
 				$o = self::get_schema_options();
 				$checked = ! empty( $o['enable_breadcrumbs'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_schema[enable_breadcrumbs]" value="1" ' . $checked . '> ' . \esc_html__( 'Add BreadcrumbList JSON-LD to singular pages', 'functionalities' ) . '</label>';
+				echo '<label><input type="checkbox" name="functionalities_schema[enable_breadcrumbs]" value="1" ' . esc_attr( $checked ) . '> ' . \esc_html__( 'Add BreadcrumbList JSON-LD to singular pages', 'functionalities' ) . '</label>';
 			},
 			'functionalities_schema',
 			'functionalities_schema_section'
@@ -1195,7 +1207,7 @@ class Admin {
 			function() {
 				$o = self::get_components_options();
 				$checked = ! empty( $o['enabled'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_components[enabled]" value="1" ' . $checked . '> ' . \esc_html__( 'Output components CSS on frontend', 'functionalities' ) . '</label>';
+				echo '<label><input type="checkbox" name="functionalities_components[enabled]" value="1" ' . esc_attr( $checked ) . '> ' . \esc_html__( 'Output components CSS on frontend', 'functionalities' ) . '</label>';
 			},
 			'functionalities_components',
 			'functionalities_components_section'
@@ -1213,7 +1225,7 @@ class Admin {
 			function() {
 				$o = self::get_snippets_options();
 				$checked = ! empty( $o['enable_footer'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_snippets[enable_footer]" value="1" ' . $checked . '> ' . \esc_html__( 'Output below in wp_footer', 'functionalities' ) . '</label>';
+				echo '<label><input type="checkbox" name="functionalities_snippets[enable_footer]" value="1" ' . esc_attr( $checked ) . '> ' . \esc_html__( 'Output below in wp_footer', 'functionalities' ) . '</label>';
 			},
 			'functionalities_snippets',
 			'functionalities_snippets_section'
@@ -1371,7 +1383,7 @@ class Admin {
 			function() {
 				$o = self::get_fonts_options();
 				$checked = ! empty( $o['enabled'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_fonts[enabled]" value="1" ' . $checked . '> ' . \esc_html__( 'Output @font-face CSS across site (front and admin)', 'functionalities' ) . '</label>';
+				echo '<label><input type="checkbox" name="functionalities_fonts[enabled]" value="1" ' . esc_attr( $checked ) . '> ' . \esc_html__( 'Output @font-face CSS across site (front and admin)', 'functionalities' ) . '</label>';
 			},
 			'functionalities_fonts',
 			'functionalities_fonts_section'
@@ -1504,7 +1516,7 @@ class Admin {
 			function() {
 				$o = self::get_meta_options();
 				$checked = ! empty( $o['enabled'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_meta[enabled]" value="1" ' . $checked . '> ';
+				echo '<label><input type="checkbox" name="functionalities_meta[enabled]" value="1" ' . esc_attr( $checked ) . '> ';
 				echo \esc_html__( 'Enable copyright, Dublin Core, and licensing features', 'functionalities' ) . '</label>';
 			},
 			'functionalities_meta',
@@ -1517,7 +1529,7 @@ class Admin {
 			function() {
 				$o = self::get_meta_options();
 				$checked = ! empty( $o['enable_copyright_meta'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_meta[enable_copyright_meta]" value="1" ' . $checked . '> ';
+				echo '<label><input type="checkbox" name="functionalities_meta[enable_copyright_meta]" value="1" ' . esc_attr( $checked ) . '> ';
 				echo \esc_html__( 'Output copyright, author, owner, and rights meta tags', 'functionalities' ) . '</label>';
 			},
 			'functionalities_meta',
@@ -1530,7 +1542,7 @@ class Admin {
 			function() {
 				$o = self::get_meta_options();
 				$checked = ! empty( $o['enable_dublin_core'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_meta[enable_dublin_core]" value="1" ' . $checked . '> ';
+				echo '<label><input type="checkbox" name="functionalities_meta[enable_dublin_core]" value="1" ' . esc_attr( $checked ) . '> ';
 				echo \esc_html__( 'Output Dublin Core metadata (DC.title, DC.creator, DC.rights, etc.)', 'functionalities' ) . '</label>';
 			},
 			'functionalities_meta',
@@ -1543,7 +1555,7 @@ class Admin {
 			function() {
 				$o = self::get_meta_options();
 				$checked = ! empty( $o['enable_license_metabox'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_meta[enable_license_metabox]" value="1" ' . $checked . '> ';
+				echo '<label><input type="checkbox" name="functionalities_meta[enable_license_metabox]" value="1" ' . esc_attr( $checked ) . '> ';
 				echo \esc_html__( 'Show license selection metabox in post editor', 'functionalities' ) . '</label>';
 			},
 			'functionalities_meta',
@@ -1565,7 +1577,7 @@ class Admin {
 					'aioseo'        => 'All in One SEO',
 					'none'          => \__( 'None detected', 'functionalities' ),
 				);
-				echo '<label><input type="checkbox" name="functionalities_meta[enable_schema_integration]" value="1" ' . $checked . '> ';
+				echo '<label><input type="checkbox" name="functionalities_meta[enable_schema_integration]" value="1" ' . esc_attr( $checked ) . '> ';
 				echo \esc_html__( 'Add copyright data to SEO plugin Schema.org output', 'functionalities' ) . '</label>';
 				echo '<p class="description" style="margin-top:4px">';
 				if ( $detected !== 'none' ) {
@@ -1598,7 +1610,7 @@ class Admin {
 				echo '<select name="functionalities_meta[default_license]">';
 				foreach ( $licenses as $key => $label ) {
 					$sel = selected( $val, $key, false );
-					echo '<option value="' . \esc_attr( $key ) . '" ' . $sel . '>' . \esc_html( $label ) . '</option>';
+					echo '<option value="' . \esc_attr( $key ) . '" ' . esc_attr( $sel ) . '>' . \esc_html( $label ) . '</option>';
 				}
 				echo '</select>';
 				echo '<p class="description">' . \esc_html__( 'Default license for new posts (can be overridden per-post).', 'functionalities' ) . '</p>';
@@ -1631,7 +1643,7 @@ class Admin {
 				foreach ( $pts as $name => $obj ) {
 					$is_checked = in_array( $name, $selected, true ) ? 'checked' : '';
 					$label = sprintf( '%s (%s)', $obj->labels->singular_name ?? $name, $name );
-					echo '<label style="display:block; margin:2px 0;"><input type="checkbox" name="functionalities_meta[post_types][]" value="' . \esc_attr( $name ) . '" ' . $is_checked . '> ' . \esc_html( $label ) . '</label>';
+					echo '<label style="display:block; margin:2px 0;"><input type="checkbox" name="functionalities_meta[post_types][]" value="' . \esc_attr( $name ) . '" ' . esc_attr( $is_checked ) . '> ' . \esc_html( $label ) . '</label>';
 				}
 				echo '</fieldset>';
 				echo '<p class="description">' . \esc_html__( 'Select post types where meta tags and license metabox should appear.', 'functionalities' ) . '</p>';
@@ -1654,7 +1666,7 @@ class Admin {
 				echo '<select name="functionalities_meta[copyright_holder_type]" id="meta_copyright_holder_type">';
 				foreach ( $options as $key => $label ) {
 					$sel = selected( $val, $key, false );
-					echo '<option value="' . \esc_attr( $key ) . '" ' . $sel . '>' . \esc_html( $label ) . '</option>';
+					echo '<option value="' . \esc_attr( $key ) . '" ' . esc_attr( $sel ) . '>' . \esc_html( $label ) . '</option>';
 				}
 				echo '</select>';
 				echo '<p class="description">' . \esc_html__( 'Who should be listed as the copyright holder.', 'functionalities' ) . '</p>';
@@ -1719,7 +1731,7 @@ class Admin {
 			function() {
 				$o = self::get_updates_options();
 				$checked = ! empty( $o['enabled'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_updates[enabled]" value="1" ' . $checked . '> ';
+				echo '<label><input type="checkbox" name="functionalities_updates[enabled]" value="1" ' . esc_attr( $checked ) . '> ';
 				echo \esc_html__( 'Check for plugin updates from GitHub releases', 'functionalities' ) . '</label>';
 			},
 			'functionalities_updates',
@@ -1785,7 +1797,7 @@ class Admin {
 				echo '<select name="functionalities_updates[cache_duration]">';
 				foreach ( $options as $seconds => $label ) {
 					$sel = selected( $val, $seconds, false );
-					echo '<option value="' . \esc_attr( $seconds ) . '" ' . $sel . '>' . \esc_html( $label ) . '</option>';
+					echo '<option value="' . \esc_attr( $seconds ) . '" ' . esc_attr( $sel ) . '>' . \esc_html( $label ) . '</option>';
 				}
 				echo '</select>';
 				echo '<p class="description">' . \esc_html__( 'How often to check GitHub for new releases. More frequent checks may hit API rate limits.', 'functionalities' ) . '</p>';
@@ -1844,7 +1856,7 @@ class Admin {
 			function() {
 				$o = self::get_content_regression_options();
 				$checked = ! empty( $o['enabled'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_content_regression[enabled]" value="1" ' . $checked . '> ';
+				echo '<label><input type="checkbox" name="functionalities_content_regression[enabled]" value="1" ' . esc_attr( $checked ) . '> ';
 				echo \esc_html__( 'Detect structural regressions when posts are updated', 'functionalities' ) . '</label>';
 			},
 			'functionalities_content_regression',
@@ -1866,7 +1878,7 @@ class Admin {
 					}
 					$is_checked = in_array( $name, $selected, true ) ? 'checked' : '';
 					$label = sprintf( '%s (%s)', $obj->labels->singular_name ?? $name, $name );
-					echo '<label style="display:block; margin:2px 0;"><input type="checkbox" name="functionalities_content_regression[post_types][]" value="' . \esc_attr( $name ) . '" ' . $is_checked . '> ' . \esc_html( $label ) . '</label>';
+					echo '<label style="display:block; margin:2px 0;"><input type="checkbox" name="functionalities_content_regression[post_types][]" value="' . \esc_attr( $name ) . '" ' . esc_attr( $is_checked ) . '> ' . \esc_html( $label ) . '</label>';
 				}
 				echo '</fieldset>';
 			},
@@ -1891,7 +1903,7 @@ class Admin {
 			function() {
 				$o = self::get_content_regression_options();
 				$checked = ! empty( $o['link_drop_enabled'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_content_regression[link_drop_enabled]" value="1" ' . $checked . '> ';
+				echo '<label><input type="checkbox" name="functionalities_content_regression[link_drop_enabled]" value="1" ' . esc_attr( $checked ) . '> ';
 				echo \esc_html__( 'Warn when internal links drop significantly', 'functionalities' ) . '</label>';
 			},
 			'functionalities_content_regression',
@@ -1930,7 +1942,7 @@ class Admin {
 			function() {
 				$o = self::get_content_regression_options();
 				$checked = ! empty( $o['exclude_nofollow_links'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_content_regression[exclude_nofollow_links]" value="1" ' . $checked . '> ';
+				echo '<label><input type="checkbox" name="functionalities_content_regression[exclude_nofollow_links]" value="1" ' . esc_attr( $checked ) . '> ';
 				echo \esc_html__( 'Do not count links with rel="nofollow"', 'functionalities' ) . '</label>';
 			},
 			'functionalities_content_regression',
@@ -1954,7 +1966,7 @@ class Admin {
 			function() {
 				$o = self::get_content_regression_options();
 				$checked = ! empty( $o['word_count_enabled'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_content_regression[word_count_enabled]" value="1" ' . $checked . '> ';
+				echo '<label><input type="checkbox" name="functionalities_content_regression[word_count_enabled]" value="1" ' . esc_attr( $checked ) . '> ';
 				echo \esc_html__( 'Warn when word count drops significantly', 'functionalities' ) . '</label>';
 			},
 			'functionalities_content_regression',
@@ -1993,7 +2005,7 @@ class Admin {
 			function() {
 				$o = self::get_content_regression_options();
 				$checked = ! empty( $o['exclude_shortcodes'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_content_regression[exclude_shortcodes]" value="1" ' . $checked . '> ';
+				echo '<label><input type="checkbox" name="functionalities_content_regression[exclude_shortcodes]" value="1" ' . esc_attr( $checked ) . '> ';
 				echo \esc_html__( 'Remove shortcode content from word count', 'functionalities' ) . '</label>';
 			},
 			'functionalities_content_regression',
@@ -2017,7 +2029,7 @@ class Admin {
 			function() {
 				$o = self::get_content_regression_options();
 				$checked = ! empty( $o['heading_enabled'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_content_regression[heading_enabled]" value="1" ' . $checked . '> ';
+				echo '<label><input type="checkbox" name="functionalities_content_regression[heading_enabled]" value="1" ' . esc_attr( $checked ) . '> ';
 				echo \esc_html__( 'Check heading structure for accessibility issues', 'functionalities' ) . '</label>';
 			},
 			'functionalities_content_regression',
@@ -2030,7 +2042,7 @@ class Admin {
 			function() {
 				$o = self::get_content_regression_options();
 				$checked = ! empty( $o['detect_missing_h1'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_content_regression[detect_missing_h1]" value="1" ' . $checked . '> ';
+				echo '<label><input type="checkbox" name="functionalities_content_regression[detect_missing_h1]" value="1" ' . esc_attr( $checked ) . '> ';
 				echo \esc_html__( 'Warn when no H1 heading is present', 'functionalities' ) . '</label>';
 			},
 			'functionalities_content_regression',
@@ -2043,7 +2055,7 @@ class Admin {
 			function() {
 				$o = self::get_content_regression_options();
 				$checked = ! empty( $o['detect_multiple_h1'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_content_regression[detect_multiple_h1]" value="1" ' . $checked . '> ';
+				echo '<label><input type="checkbox" name="functionalities_content_regression[detect_multiple_h1]" value="1" ' . esc_attr( $checked ) . '> ';
 				echo \esc_html__( 'Warn when multiple H1 headings exist', 'functionalities' ) . '</label>';
 			},
 			'functionalities_content_regression',
@@ -2056,7 +2068,7 @@ class Admin {
 			function() {
 				$o = self::get_content_regression_options();
 				$checked = ! empty( $o['detect_skipped_levels'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_content_regression[detect_skipped_levels]" value="1" ' . $checked . '> ';
+				echo '<label><input type="checkbox" name="functionalities_content_regression[detect_skipped_levels]" value="1" ' . esc_attr( $checked ) . '> ';
 				echo \esc_html__( 'Warn when heading levels are skipped (e.g., H2 to H4)', 'functionalities' ) . '</label>';
 			},
 			'functionalities_content_regression',
@@ -2093,7 +2105,7 @@ class Admin {
 			function() {
 				$o = self::get_content_regression_options();
 				$checked = ! empty( $o['show_post_column'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_content_regression[show_post_column]" value="1" ' . $checked . '> ';
+				echo '<label><input type="checkbox" name="functionalities_content_regression[show_post_column]" value="1" ' . esc_attr( $checked ) . '> ';
 				echo \esc_html__( 'Display integrity status icon in post list table', 'functionalities' ) . '</label>';
 			},
 			'functionalities_content_regression',
@@ -2138,7 +2150,7 @@ class Admin {
 			function() {
 				$o = self::get_assumption_detection_options();
 				$checked = ! empty( $o['enabled'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_assumption_detection[enabled]" value="1" ' . $checked . '> ';
+				echo '<label><input type="checkbox" name="functionalities_assumption_detection[enabled]" value="1" ' . esc_attr( $checked ) . '> ';
 				echo \esc_html__( 'Detect when implicit site assumptions stop being true', 'functionalities' ) . '</label>';
 			},
 			'functionalities_assumption_detection',
@@ -2151,7 +2163,7 @@ class Admin {
 			function() {
 				$o = self::get_assumption_detection_options();
 				$checked = ! empty( $o['detect_schema_collision'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_assumption_detection[detect_schema_collision]" value="1" ' . $checked . '> ';
+				echo '<label><input type="checkbox" name="functionalities_assumption_detection[detect_schema_collision]" value="1" ' . esc_attr( $checked ) . '> ';
 				echo \esc_html__( 'Warn when multiple sources output the same schema type', 'functionalities' ) . '</label>';
 			},
 			'functionalities_assumption_detection',
@@ -2164,7 +2176,7 @@ class Admin {
 			function() {
 				$o = self::get_assumption_detection_options();
 				$checked = ! empty( $o['detect_analytics_dupe'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_assumption_detection[detect_analytics_dupe]" value="1" ' . $checked . '> ';
+				echo '<label><input type="checkbox" name="functionalities_assumption_detection[detect_analytics_dupe]" value="1" ' . esc_attr( $checked ) . '> ';
 				echo \esc_html__( 'Warn when analytics scripts load multiple times', 'functionalities' ) . '</label>';
 			},
 			'functionalities_assumption_detection',
@@ -2177,7 +2189,7 @@ class Admin {
 			function() {
 				$o = self::get_assumption_detection_options();
 				$checked = ! empty( $o['detect_font_redundancy'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_assumption_detection[detect_font_redundancy]" value="1" ' . $checked . '> ';
+				echo '<label><input type="checkbox" name="functionalities_assumption_detection[detect_font_redundancy]" value="1" ' . esc_attr( $checked ) . '> ';
 				echo \esc_html__( 'Warn when fonts load from multiple sources', 'functionalities' ) . '</label>';
 			},
 			'functionalities_assumption_detection',
@@ -2190,7 +2202,7 @@ class Admin {
 			function() {
 				$o = self::get_assumption_detection_options();
 				$checked = ! empty( $o['detect_inline_css_growth'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_assumption_detection[detect_inline_css_growth]" value="1" ' . $checked . '> ';
+				echo '<label><input type="checkbox" name="functionalities_assumption_detection[detect_inline_css_growth]" value="1" ' . esc_attr( $checked ) . '> ';
 				echo \esc_html__( 'Track inline CSS size over time', 'functionalities' ) . '</label>';
 			},
 			'functionalities_assumption_detection',
@@ -2216,7 +2228,7 @@ class Admin {
 			function() {
 				$o = self::get_assumption_detection_options();
 				$checked = ! empty( $o['detect_jquery_conflicts'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_assumption_detection[detect_jquery_conflicts]" value="1" ' . $checked . '> ';
+				echo '<label><input type="checkbox" name="functionalities_assumption_detection[detect_jquery_conflicts]" value="1" ' . esc_attr( $checked ) . '> ';
 				echo \esc_html__( 'Warn when multiple jQuery versions or sources are loaded', 'functionalities' ) . '</label>';
 			},
 			'functionalities_assumption_detection',
@@ -2229,7 +2241,7 @@ class Admin {
 			function() {
 				$o = self::get_assumption_detection_options();
 				$checked = ! empty( $o['detect_meta_duplication'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_assumption_detection[detect_meta_duplication]" value="1" ' . $checked . '> ';
+				echo '<label><input type="checkbox" name="functionalities_assumption_detection[detect_meta_duplication]" value="1" ' . esc_attr( $checked ) . '> ';
 				echo \esc_html__( 'Warn when duplicate meta tags are detected (viewport, robots, OG tags)', 'functionalities' ) . '</label>';
 			},
 			'functionalities_assumption_detection',
@@ -2242,7 +2254,7 @@ class Admin {
 			function() {
 				$o = self::get_assumption_detection_options();
 				$checked = ! empty( $o['detect_rest_exposure'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_assumption_detection[detect_rest_exposure]" value="1" ' . $checked . '> ';
+				echo '<label><input type="checkbox" name="functionalities_assumption_detection[detect_rest_exposure]" value="1" ' . esc_attr( $checked ) . '> ';
 				echo \esc_html__( 'Warn when REST API exposes user information publicly', 'functionalities' ) . '</label>';
 			},
 			'functionalities_assumption_detection',
@@ -2255,7 +2267,7 @@ class Admin {
 			function() {
 				$o = self::get_assumption_detection_options();
 				$checked = ! empty( $o['detect_lazy_load_conflict'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_assumption_detection[detect_lazy_load_conflict]" value="1" ' . $checked . '> ';
+				echo '<label><input type="checkbox" name="functionalities_assumption_detection[detect_lazy_load_conflict]" value="1" ' . esc_attr( $checked ) . '> ';
 				echo \esc_html__( 'Warn when multiple lazy loading implementations are detected', 'functionalities' ) . '</label>';
 			},
 			'functionalities_assumption_detection',
@@ -2268,7 +2280,7 @@ class Admin {
 			function() {
 				$o = self::get_assumption_detection_options();
 				$checked = ! empty( $o['detect_mixed_content'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_assumption_detection[detect_mixed_content]" value="1" ' . $checked . '> ';
+				echo '<label><input type="checkbox" name="functionalities_assumption_detection[detect_mixed_content]" value="1" ' . esc_attr( $checked ) . '> ';
 				echo \esc_html__( 'Warn when HTTP resources are loaded on HTTPS pages', 'functionalities' ) . '</label>';
 			},
 			'functionalities_assumption_detection',
@@ -2281,7 +2293,7 @@ class Admin {
 			function() {
 				$o = self::get_assumption_detection_options();
 				$checked = ! empty( $o['detect_missing_security_headers'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_assumption_detection[detect_missing_security_headers]" value="1" ' . $checked . '> ';
+				echo '<label><input type="checkbox" name="functionalities_assumption_detection[detect_missing_security_headers]" value="1" ' . esc_attr( $checked ) . '> ';
 				echo \esc_html__( 'Warn when critical security headers are missing', 'functionalities' ) . '</label>';
 			},
 			'functionalities_assumption_detection',
@@ -2294,7 +2306,7 @@ class Admin {
 			function() {
 				$o = self::get_assumption_detection_options();
 				$checked = ! empty( $o['detect_debug_exposure'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_assumption_detection[detect_debug_exposure]" value="1" ' . $checked . '> ';
+				echo '<label><input type="checkbox" name="functionalities_assumption_detection[detect_debug_exposure]" value="1" ' . esc_attr( $checked ) . '> ';
 				echo \esc_html__( 'Warn when WP_DEBUG or error display is enabled in production', 'functionalities' ) . '</label>';
 			},
 			'functionalities_assumption_detection',
@@ -2307,7 +2319,7 @@ class Admin {
 			function() {
 				$o = self::get_assumption_detection_options();
 				$checked = ! empty( $o['detect_cron_issues'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_assumption_detection[detect_cron_issues]" value="1" ' . $checked . '> ';
+				echo '<label><input type="checkbox" name="functionalities_assumption_detection[detect_cron_issues]" value="1" ' . esc_attr( $checked ) . '> ';
 				echo \esc_html__( 'Warn when WP-Cron is disabled or has stuck jobs', 'functionalities' ) . '</label>';
 			},
 			'functionalities_assumption_detection',
@@ -2343,7 +2355,7 @@ class Admin {
 	public static function field_nofollow_external() : void {
 		$opts = self::get_link_management_options();
 		$checked = ! empty( $opts['nofollow_external'] ) ? 'checked' : '';
-		echo '<label><input type="checkbox" name="functionalities_link_management[nofollow_external]" value="1" ' . $checked . '> ' . \esc_html__( 'Enable rel="nofollow" for all external links', 'functionalities' ) . '</label>';
+		echo '<label><input type="checkbox" name="functionalities_link_management[nofollow_external]" value="1" ' . esc_attr( $checked ) . '> ' . \esc_html__( 'Enable rel="nofollow" for all external links', 'functionalities' ) . '</label>';
 	}
 
 	/**
@@ -2402,7 +2414,7 @@ class Admin {
 	public static function field_open_external_new_tab() : void {
 		$opts    = self::get_link_management_options();
 		$checked = ! empty( $opts['open_external_new_tab'] ) ? 'checked' : '';
-		echo '<label><input type="checkbox" name="functionalities_link_management[open_external_new_tab]" value="1" ' . $checked . '> ';
+		echo '<label><input type="checkbox" name="functionalities_link_management[open_external_new_tab]" value="1" ' . esc_attr( $checked ) . '> ';
 		echo \esc_html__( 'Adds target="_blank" and rel="noopener" to external links', 'functionalities' ) . '</label>';
 	}
 
@@ -2414,7 +2426,7 @@ class Admin {
 	public static function field_open_internal_new_tab() : void {
 		$opts    = self::get_link_management_options();
 		$checked = ! empty( $opts['open_internal_new_tab'] ) ? 'checked' : '';
-		echo '<label><input type="checkbox" name="functionalities_link_management[open_internal_new_tab]" value="1" ' . $checked . '> ';
+		echo '<label><input type="checkbox" name="functionalities_link_management[open_internal_new_tab]" value="1" ' . esc_attr( $checked ) . '> ';
 		echo \esc_html__( 'Adds target="_blank" to same-domain links (see exceptions)', 'functionalities' ) . '</label>';
 	}
 
@@ -2586,7 +2598,7 @@ class Admin {
 					data: {
 						action: 'functionalities_create_json_file',
 						content: content,
-						nonce: '<?php echo \wp_create_nonce( 'functionalities_create_json' ); ?>'
+						nonce: '<?php echo esc_attr( \wp_create_nonce( 'functionalities_create_json' ) ); ?>'
 					},
 					success: function(response) {
 						if (response.success) {
@@ -2885,7 +2897,7 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 						data: {
 							action: 'functionalities_update_database',
 							url: url,
-							nonce: '<?php echo \wp_create_nonce( 'functionalities_db_update' ); ?>'
+							nonce: '<?php echo esc_attr( \wp_create_nonce( 'functionalities_db_update' ) ); ?>'
 						},
 						success: function(response) {
 							if (response.success) {
@@ -3027,17 +3039,17 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 	public static function field_bc_remove_heading() : void {
 		$opts = self::get_block_cleanup_options();
 		$checked = ! empty( $opts['remove_heading_block_class'] ) ? 'checked' : '';
-		echo '<label><input type="checkbox" name="functionalities_block_cleanup[remove_heading_block_class]" value="1" ' . $checked . '> ' . \esc_html__( 'Remove class "wp-block-heading" from headings (h1–h6)', 'functionalities' ) . '</label>';
+		echo '<label><input type="checkbox" name="functionalities_block_cleanup[remove_heading_block_class]" value="1" ' . esc_attr( $checked ) . '> ' . \esc_html__( 'Remove class "wp-block-heading" from headings (h1–h6)', 'functionalities' ) . '</label>';
 	}
 	public static function field_bc_remove_list() : void {
 		$opts = self::get_block_cleanup_options();
 		$checked = ! empty( $opts['remove_list_block_class'] ) ? 'checked' : '';
-		echo '<label><input type="checkbox" name="functionalities_block_cleanup[remove_list_block_class]" value="1" ' . $checked . '> ' . \esc_html__( 'Remove class "wp-block-list" from ul/ol', 'functionalities' ) . '</label>';
+		echo '<label><input type="checkbox" name="functionalities_block_cleanup[remove_list_block_class]" value="1" ' . esc_attr( $checked ) . '> ' . \esc_html__( 'Remove class "wp-block-list" from ul/ol', 'functionalities' ) . '</label>';
 	}
 	public static function field_bc_remove_image() : void {
 		$opts = self::get_block_cleanup_options();
 		$checked = ! empty( $opts['remove_image_block_class'] ) ? 'checked' : '';
-		echo '<label><input type="checkbox" name="functionalities_block_cleanup[remove_image_block_class]" value="1" ' . $checked . '> ' . \esc_html__( 'Remove class ".wp-block-image" from frontend', 'functionalities' ) . '</label>';
+		echo '<label><input type="checkbox" name="functionalities_block_cleanup[remove_image_block_class]" value="1" ' . esc_attr( $checked ) . '> ' . \esc_html__( 'Remove class ".wp-block-image" from frontend', 'functionalities' ) . '</label>';
 	}
 	public static function sanitize_block_cleanup( $input ) : array {
 		return [
@@ -3082,7 +3094,7 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 	public static function field_el_enable() : void {
 		$opts = self::get_editor_links_options();
 		$checked = ! empty( $opts['enable_limit'] ) ? 'checked' : '';
-		echo '<label><input type="checkbox" name="functionalities_editor_links[enable_limit]" value="1" ' . $checked . '> ' . \esc_html__( 'Limit editor link suggestions to selected post types', 'functionalities' ) . '</label>';
+		echo '<label><input type="checkbox" name="functionalities_editor_links[enable_limit]" value="1" ' . esc_attr( $checked ) . '> ' . \esc_html__( 'Limit editor link suggestions to selected post types', 'functionalities' ) . '</label>';
 	}
 	public static function field_el_post_types() : void {
 		$opts = self::get_editor_links_options();
@@ -3092,7 +3104,7 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 		foreach ( $pts as $name => $obj ) {
 			$is_checked = in_array( $name, $selected, true ) ? 'checked' : '';
 			$label = sprintf( '%s (%s)', $obj->labels->singular_name ?? $name, $name );
-			echo '<label style="display:block; margin:2px 0;"><input type="checkbox" name="functionalities_editor_links[post_types][]" value="' . esc_attr( $name ) . '" ' . $is_checked . '> ' . esc_html( $label ) . '</label>';
+			echo '<label style="display:block; margin:2px 0;"><input type="checkbox" name="functionalities_editor_links[post_types][]" value="' . esc_attr( $name ) . '" ' . esc_attr( $is_checked ) . '> ' . esc_html( $label ) . '</label>';
 		}
 		echo '</fieldset>';
 	}
@@ -3618,7 +3630,10 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 					<?php \esc_html_e( 'Next', 'functionalities' ); ?> &rarr;
 				</button>
 				<span class="fc-pagination__info">
-					<?php printf( \esc_html__( 'Page %1$d of %2$d', 'functionalities' ), 1, $total_pages ); ?>
+					<?php
+					/* translators: 1: current page number, 2: total pages */
+					printf( \esc_html__( 'Page %1$d of %2$d', 'functionalities' ), 1, esc_html( $total_pages ) );
+					?>
 				</span>
 			</div>
 			<?php endif; ?>
@@ -3879,7 +3894,7 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 			function() use ( $key, $label ) {
 				$opts = self::get_misc_options();
 				$checked = ! empty( $opts[ $key ] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_misc[' . esc_attr( $key ) . ']" value="1" ' . $checked . '> ' . esc_html( $label ) . '</label>';
+				echo '<label><input type="checkbox" name="functionalities_misc[' . esc_attr( $key ) . ']" value="1" ' . esc_attr( $checked ) . '> ' . esc_html( $label ) . '</label>';
 			},
 			'functionalities_misc',
 			'functionalities_misc_section'
@@ -4244,7 +4259,10 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 		<div class="fc-fonts" id="fc-fonts">
 			<div class="fc-fonts__toolbar">
 				<span class="fc-fonts__count" id="fc-fonts-count">
-					<?php printf( esc_html( _n( '%d font', '%d fonts', $total_items, 'functionalities' ) ), $total_items ); ?>
+					<?php
+					/* translators: %d: number of fonts */
+					printf( esc_html( _n( '%d font', '%d fonts', $total_items, 'functionalities' ) ), (int) $total_items );
+					?>
 				</span>
 				<button type="button" class="fc-fonts__add-btn" id="fc-add-font">
 					<span class="dashicons dashicons-plus-alt2" style="font-size:16px;width:16px;height:16px;"></span>
