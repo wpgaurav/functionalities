@@ -51,6 +51,8 @@ class Task_Manager {
 		\add_action( 'wp_ajax_functionalities_task_import', array( __CLASS__, 'ajax_import_project' ) );
 		\add_action( 'wp_ajax_functionalities_task_export', array( __CLASS__, 'ajax_export_project' ) );
 		\add_action( 'wp_ajax_functionalities_task_update_widget_setting', array( __CLASS__, 'ajax_update_widget_setting' ) );
+		\add_action( 'wp_ajax_functionalities_task_search_posts', array( __CLASS__, 'ajax_search_posts' ) );
+		\add_action( 'wp_ajax_functionalities_task_import_drafts', array( __CLASS__, 'ajax_import_drafts' ) );
 
 		// Dashboard widgets.
 		\add_action( 'wp_dashboard_setup', array( __CLASS__, 'register_dashboard_widgets' ) );
@@ -956,5 +958,114 @@ class Task_Manager {
 		} else {
 			\wp_send_json_error( array( 'message' => \__( 'Failed to update setting.', 'functionalities' ) ) );
 		}
+	}
+
+	/**
+	 * AJAX: Search for posts by title.
+	 *
+	 * Searches for published and draft posts matching the search term.
+	 * Used for @mention autocomplete in task input.
+	 */
+	public static function ajax_search_posts() : void {
+		if ( ! self::verify_ajax() ) {
+			return;
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
+		$search = isset( $_POST['search'] ) ? \sanitize_text_field( \wp_unslash( $_POST['search'] ) ) : '';
+
+		if ( empty( $search ) || strlen( $search ) < 2 ) {
+			\wp_send_json_success( array( 'posts' => array() ) );
+			return;
+		}
+
+		$args = array(
+			'post_type'      => array( 'post', 'page' ),
+			'post_status'    => array( 'publish', 'draft' ),
+			's'              => $search,
+			'posts_per_page' => 10,
+			'orderby'        => 'relevance',
+			'order'          => 'DESC',
+		);
+
+		$query = new \WP_Query( $args );
+		$posts = array();
+
+		if ( $query->have_posts() ) {
+			while ( $query->have_posts() ) {
+				$query->the_post();
+				$post_id     = \get_the_ID();
+				$post_status = \get_post_status();
+				$posts[]     = array(
+					'id'        => $post_id,
+					'title'     => \get_the_title(),
+					'status'    => $post_status,
+					'edit_url'  => \get_edit_post_link( $post_id, 'raw' ),
+					'view_url'  => \get_permalink( $post_id ),
+					'post_type' => \get_post_type(),
+				);
+			}
+			\wp_reset_postdata();
+		}
+
+		\wp_send_json_success( array( 'posts' => $posts ) );
+	}
+
+	/**
+	 * AJAX: Import all draft posts as tasks.
+	 */
+	public static function ajax_import_drafts() : void {
+		if ( ! self::verify_ajax() ) {
+			return;
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
+		$project_slug = isset( $_POST['project'] ) ? \sanitize_key( $_POST['project'] ) : '';
+
+		if ( empty( $project_slug ) ) {
+			\wp_send_json_error( array( 'message' => \__( 'Project required.', 'functionalities' ) ) );
+			return;
+		}
+
+		$args = array(
+			'post_type'      => array( 'post', 'page' ),
+			'post_status'    => 'draft',
+			'posts_per_page' => -1,
+		);
+
+		$query = new \WP_Query( $args );
+		$count = 0;
+
+		if ( $query->have_posts() ) {
+			while ( $query->have_posts() ) {
+				$query->the_post(); // Sets global $post
+				
+				// Get title
+				$text = \sanitize_text_field( \get_the_title() );
+				
+				// Append WP tags as hashtags if available (for posts)
+				$tags = \get_the_tags();
+				if ( $tags ) {
+					foreach ( $tags as $tag ) {
+						// Only add if not already present to avoid duplication
+						if ( stripos( $text, '#' . $tag->slug ) === false ) {
+							$text .= ' #' . $tag->slug;
+						}
+					}
+				}
+
+				// NOTE: We do not delete the draft post. We just create a task from it.
+				// Pass title to add_task, which handles hashtag (#tag) and priority (!1) extraction.
+				if ( self::add_task( $project_slug, $text ) ) {
+					$count++;
+				}
+			}
+			\wp_reset_postdata();
+		}
+
+		\wp_send_json_success( array( 
+			'message' => sprintf( \__( 'Imported %d draft posts.', 'functionalities' ), $count ),
+			'count'   => $count
+		) );
 	}
 }

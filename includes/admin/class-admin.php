@@ -5447,6 +5447,174 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 				grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
 			}
 		}
+		/* View Mode Toggle */
+		.functionalities-task-manager .view-mode-btn {
+			background: transparent;
+			border: none;
+			padding: 6px 10px;
+			cursor: pointer;
+			border-radius: 3px;
+			color: #50575e;
+			transition: all 0.15s ease;
+		}
+		.functionalities-task-manager .view-mode-btn:hover {
+			background: rgba(0,0,0,0.08);
+		}
+		.functionalities-task-manager .view-mode-btn.active {
+			background: #fff;
+			color: #2271b1;
+			box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+		}
+		/* Post Search Dropdown */
+		.functionalities-task-manager .post-search-dropdown {
+			display: none;
+			position: absolute;
+			top: 100%;
+			left: 0;
+			right: 0;
+			background: #fff;
+			border: 1px solid #c3c4c7;
+			border-radius: 0 0 4px 4px;
+			box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+			z-index: 1000;
+			max-height: 250px;
+			overflow-y: auto;
+		}
+		.functionalities-task-manager .post-search-dropdown.active {
+			display: block;
+		}
+		.functionalities-task-manager .post-search-item {
+			padding: 10px 12px;
+			cursor: pointer;
+			border-bottom: 1px solid #f0f0f0;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+		}
+		.functionalities-task-manager .post-search-item:last-child {
+			border-bottom: none;
+		}
+		.functionalities-task-manager .post-search-item:hover,
+		.functionalities-task-manager .post-search-item.selected {
+			background: #f0f6fc;
+		}
+		.functionalities-task-manager .post-search-item .post-title {
+			flex: 1;
+			font-weight: 500;
+		}
+		.functionalities-task-manager .post-search-item .post-status {
+			font-size: 11px;
+			padding: 2px 6px;
+			border-radius: 3px;
+			text-transform: uppercase;
+		}
+		.functionalities-task-manager .post-search-item .post-status.publish {
+			background: #d4edda;
+			color: #155724;
+		}
+		.functionalities-task-manager .post-search-item .post-status.draft {
+			background: #fff3cd;
+			color: #856404;
+		}
+		.functionalities-task-manager .post-search-loading {
+			padding: 15px;
+			text-align: center;
+			color: #646970;
+		}
+		.functionalities-task-manager .post-search-empty {
+			padding: 15px;
+			text-align: center;
+			color: #646970;
+		}
+		/* Post Mention in Tasks */
+		.functionalities-task-manager .task-post-link {
+			color: #2271b1;
+			text-decoration: none;
+			font-weight: 500;
+			background: #f0f6fc;
+			padding: 1px 6px;
+			border-radius: 3px;
+		}
+		.functionalities-task-manager .task-post-link:hover {
+			text-decoration: underline;
+			background: #e5f0fa;
+		}
+		/* Columns View */
+		.functionalities-task-manager .tasks-columns-view {
+			display: none;
+			gap: 15px;
+			padding: 15px;
+			background: #f6f7f7;
+		}
+		.functionalities-task-manager .tasks-columns-view.active {
+			display: grid;
+			grid-template-columns: repeat(4, 1fr);
+		}
+		.functionalities-task-manager .priority-column {
+			background: #fff;
+			border: 1px solid #c3c4c7;
+			border-radius: 4px;
+			min-height: 200px;
+		}
+		.functionalities-task-manager .priority-column-header {
+			padding: 12px 15px;
+			border-bottom: 1px solid #c3c4c7;
+			font-weight: 600;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+		}
+		.functionalities-task-manager .priority-column-header .count {
+			background: #dcdcde;
+			padding: 2px 8px;
+			border-radius: 10px;
+			font-size: 11px;
+			font-weight: normal;
+		}
+		.functionalities-task-manager .priority-column.p1 .priority-column-header {
+			background: linear-gradient(135deg, #fff5f5 0%, #ffe3e3 100%);
+			border-bottom-color: #ffc9c9;
+		}
+		.functionalities-task-manager .priority-column.p2 .priority-column-header {
+			background: linear-gradient(135deg, #fff9e6 0%, #fff3cd 100%);
+			border-bottom-color: #ffe69c;
+		}
+		.functionalities-task-manager .priority-column.p3 .priority-column-header {
+			background: linear-gradient(135deg, #e7f5ff 0%, #d0ebff 100%);
+			border-bottom-color: #a5d8ff;
+		}
+		.functionalities-task-manager .priority-column.p0 .priority-column-header {
+			background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+		}
+		.functionalities-task-manager .priority-column-tasks {
+			padding: 10px;
+			max-height: 500px;
+			overflow-y: auto;
+		}
+		.functionalities-task-manager .priority-column-tasks .task-item {
+			margin-bottom: 8px;
+			padding: 10px;
+			border-radius: 4px;
+		}
+		.functionalities-task-manager .priority-column-tasks .task-item:last-child {
+			margin-bottom: 0;
+		}
+		.functionalities-task-manager .priority-column-empty {
+			padding: 20px;
+			text-align: center;
+			color: #adb5bd;
+			font-size: 13px;
+		}
+		@media screen and (max-width: 1200px) {
+			.functionalities-task-manager .tasks-columns-view.active {
+				grid-template-columns: repeat(2, 1fr);
+			}
+		}
+		@media screen and (max-width: 782px) {
+			.functionalities-task-manager .tasks-columns-view.active {
+				grid-template-columns: 1fr;
+			}
+		}
 		</style>
 		<?php
 	}
@@ -5776,11 +5944,23 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 					<div class="progress-bar-fill" id="project-progress" style="width: <?php echo \esc_attr( $stats['percent'] ); ?>%;"></div>
 				</div>
 			</div>
-			<div class="project-toolbar">
+		<div class="project-toolbar">
+				<div class="view-mode-toggle" style="display: flex; gap: 4px; background: #dcdcde; border-radius: 4px; padding: 2px;">
+					<button type="button" class="view-mode-btn active" data-view="list" title="<?php \esc_attr_e( 'List View', 'functionalities' ); ?>">
+						<span class="dashicons dashicons-list-view" style="font-size: 16px; width: 16px; height: 16px; line-height: 16px;"></span>
+					</button>
+					<button type="button" class="view-mode-btn" data-view="columns" title="<?php \esc_attr_e( 'Column View', 'functionalities' ); ?>">
+						<span class="dashicons dashicons-columns" style="font-size: 16px; width: 16px; height: 16px; line-height: 16px;"></span>
+					</button>
+				</div>
 				<label style="display: flex; align-items: center; gap: 5px;">
 					<input type="checkbox" id="show-widget-toggle" <?php checked( ! empty( $project['show_widget'] ) ); ?>>
 					<?php \esc_html_e( 'Show on Dashboard', 'functionalities' ); ?>
 				</label>
+				<button type="button" class="button" id="import-drafts-btn">
+					<span class="dashicons dashicons-upload" style="font-size: 16px; width: 16px; height: 16px; vertical-align: text-bottom;"></span>
+					<?php \esc_html_e( 'Import Drafts', 'functionalities' ); ?>
+				</button>
 				<button type="button" class="button" id="export-this-project-btn">
 					<span class="dashicons dashicons-download" style="font-size: 16px; width: 16px; height: 16px; vertical-align: text-bottom;"></span>
 					<?php \esc_html_e( 'Export', 'functionalities' ); ?>
@@ -5812,9 +5992,12 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 			</div>
 
 			<div class="add-task-form">
-				<input type="text" id="new-task-text" placeholder="<?php \esc_attr_e( 'Add a new task... (use #tag for tags, !1/!2/!3 for priority)', 'functionalities' ); ?>">
+				<div class="add-task-input-wrapper" style="position: relative;">
+					<input type="text" id="new-task-text" placeholder="<?php \esc_attr_e( 'Add a new task... (use @post to link, #tag for tags, !1/!2/!3 for priority)', 'functionalities' ); ?>">
+					<div id="post-search-dropdown" class="post-search-dropdown"></div>
+				</div>
 				<div class="add-task-hint">
-					<?php \esc_html_e( 'Examples: "Review PR #urgent !1" or "Update documentation #docs !3"', 'functionalities' ); ?>
+					<?php \esc_html_e( 'Examples: "Review @my-post-title !1" or "Update documentation #docs !3" — Type @ to search posts', 'functionalities' ); ?>
 				</div>
 				<textarea id="new-task-notes" placeholder="<?php \esc_attr_e( 'Optional notes...', 'functionalities' ); ?>"></textarea>
 				<button type="button" id="add-task-btn" class="button button-primary">
@@ -5865,6 +6048,38 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 						</div>
 					<?php endforeach; ?>
 				<?php endif; ?>
+			</div>
+		</div>
+
+		<!-- Columns View (for priority-based display) -->
+		<div id="tasks-columns-view" class="tasks-columns-view">
+			<div class="priority-column p1">
+				<div class="priority-column-header">
+					<span style="color: #d63638;">!1</span> <?php \esc_html_e( 'High Priority', 'functionalities' ); ?>
+					<span class="count" id="count-p1">0</span>
+				</div>
+				<div class="priority-column-tasks" data-priority="1"></div>
+			</div>
+			<div class="priority-column p2">
+				<div class="priority-column-header">
+					<span style="color: #dba617;">!2</span> <?php \esc_html_e( 'Medium Priority', 'functionalities' ); ?>
+					<span class="count" id="count-p2">0</span>
+				</div>
+				<div class="priority-column-tasks" data-priority="2"></div>
+			</div>
+			<div class="priority-column p3">
+				<div class="priority-column-header">
+					<span style="color: #2271b1;">!3</span> <?php \esc_html_e( 'Low Priority', 'functionalities' ); ?>
+					<span class="count" id="count-p3">0</span>
+				</div>
+				<div class="priority-column-tasks" data-priority="3"></div>
+			</div>
+			<div class="priority-column p0">
+				<div class="priority-column-header">
+					<?php \esc_html_e( 'No Priority', 'functionalities' ); ?>
+					<span class="count" id="count-p0">0</span>
+				</div>
+				<div class="priority-column-tasks" data-priority="0"></div>
 			</div>
 		</div>
 
@@ -6241,6 +6456,31 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 				});
 			});
 
+			// Import Drafts
+			$('#import-drafts-btn').on('click', function() {
+				if (!confirm('<?php echo \esc_js( \__( 'Import all draft posts as tasks? This will scan for all drafts and add them to this project.', 'functionalities' ) ); ?>')) {
+					return;
+				}
+				
+				var $btn = $(this);
+				var originalText = $btn.html();
+				$btn.prop('disabled', true).text('<?php echo \esc_js( \__( 'Importing...', 'functionalities' ) ); ?>');
+
+				$.post(ajaxUrl, {
+					action: 'functionalities_task_import_drafts',
+					nonce: nonce,
+					project: projectSlug
+				}, function(response) {
+					if (response.success) {
+						alert(response.data.message);
+						location.reload();
+					} else {
+						alert(response.data?.message || '<?php echo \esc_js( \__( 'Failed to import drafts.', 'functionalities' ) ); ?>');
+						$btn.prop('disabled', false).html(originalText);
+					}
+				});
+			});
+
 			// Export this project
 			$('#export-this-project-btn').on('click', function() {
 				$.post(ajaxUrl, {
@@ -6274,6 +6514,220 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 			$('.modal-overlay').on('click', function(e) {
 				if (e.target === this) {
 					$(this).removeClass('active');
+				}
+			});
+
+			// ========================================
+			// View Mode Toggle (List vs Columns)
+			// ========================================
+			var currentViewMode = 'list';
+
+			$('.view-mode-btn').on('click', function() {
+				var viewMode = $(this).data('view');
+				if (viewMode === currentViewMode) return;
+
+				currentViewMode = viewMode;
+				$('.view-mode-btn').removeClass('active');
+				$(this).addClass('active');
+
+				if (viewMode === 'columns') {
+					$('.task-list').hide();
+					$('#tasks-columns-view').addClass('active');
+					populateColumnsView();
+				} else {
+					$('#tasks-columns-view').removeClass('active');
+					$('.task-list').show();
+				}
+			});
+
+			function populateColumnsView() {
+				// Clear all columns
+				$('.priority-column-tasks').empty();
+
+				// Counters for each priority
+				var counts = { p0: 0, p1: 0, p2: 0, p3: 0 };
+
+				// Get all tasks from the list view and clone them to columns
+				$('#tasks-container .task-item').each(function() {
+					var $task = $(this);
+					var priorityClasses = $task.find('.task-priority').attr('class') || '';
+					var priority = '0';
+					var match = priorityClasses.match(/p(\d)/);
+					if (match) priority = match[1];
+
+					// Clone the task
+					var $clone = $task.clone();
+					$clone.show(); // Show in case filtered
+
+					// Add to appropriate column
+					$('.priority-column-tasks[data-priority="' + priority + '"]').append($clone);
+					counts['p' + priority]++;
+				});
+
+				// Update counts
+				$('#count-p0').text(counts.p0);
+				$('#count-p1').text(counts.p1);
+				$('#count-p2').text(counts.p2);
+				$('#count-p3').text(counts.p3);
+
+				// Add empty states
+				$('.priority-column-tasks').each(function() {
+					if ($(this).children().length === 0) {
+						$(this).html('<div class="priority-column-empty"><?php echo \esc_js( \__( 'No tasks', 'functionalities' ) ); ?></div>');
+					}
+				});
+			}
+
+			// ========================================
+			// Post Search (@mention) Autocomplete
+			// ========================================
+			var $taskInput = $('#new-task-text');
+			var $dropdown = $('#post-search-dropdown');
+			var searchTimeout = null;
+			var isSearching = false;
+			var atPosition = -1;
+
+			$taskInput.on('input', function() {
+				var value = $(this).val();
+				var cursorPos = this.selectionStart;
+
+				// Find the @ position before cursor
+				var textBeforeCursor = value.substring(0, cursorPos);
+				var atIndex = textBeforeCursor.lastIndexOf('@');
+
+				if (atIndex !== -1) {
+					// Check if @ is at start or preceded by space
+					if (atIndex === 0 || textBeforeCursor[atIndex - 1] === ' ') {
+						var searchTerm = textBeforeCursor.substring(atIndex + 1);
+						
+						// Check if no space after the search term (still typing)
+						if (searchTerm.indexOf(' ') === -1 && searchTerm.length >= 2) {
+							atPosition = atIndex;
+							clearTimeout(searchTimeout);
+							searchTimeout = setTimeout(function() {
+								searchPosts(searchTerm);
+							}, 300);
+							return;
+						}
+					}
+				}
+
+				// Hide dropdown if no valid @ pattern
+				hideDropdown();
+			});
+
+			$taskInput.on('keydown', function(e) {
+				if (!$dropdown.hasClass('active')) return;
+
+				var $items = $dropdown.find('.post-search-item');
+				var $selected = $items.filter('.selected');
+
+				if (e.which === 40) { // Down arrow
+					e.preventDefault();
+					if ($selected.length === 0) {
+						$items.first().addClass('selected');
+					} else {
+						$selected.removeClass('selected');
+						var $next = $selected.next('.post-search-item');
+						if ($next.length) {
+							$next.addClass('selected');
+						} else {
+							$items.first().addClass('selected');
+						}
+					}
+				} else if (e.which === 38) { // Up arrow
+					e.preventDefault();
+					if ($selected.length === 0) {
+						$items.last().addClass('selected');
+					} else {
+						$selected.removeClass('selected');
+						var $prev = $selected.prev('.post-search-item');
+						if ($prev.length) {
+							$prev.addClass('selected');
+						} else {
+							$items.last().addClass('selected');
+						}
+					}
+				} else if (e.which === 13 || e.which === 9) { // Enter or Tab
+					if ($selected.length) {
+						e.preventDefault();
+						e.stopPropagation();
+						selectPost($selected);
+					}
+				} else if (e.which === 27) { // Escape
+					hideDropdown();
+				}
+			});
+
+			function searchPosts(term) {
+				if (isSearching) return;
+				isSearching = true;
+
+				$dropdown.html('<div class="post-search-loading"><?php echo \esc_js( \__( 'Searching...', 'functionalities' ) ); ?></div>');
+				$dropdown.addClass('active');
+
+				$.post(ajaxUrl, {
+					action: 'functionalities_task_search_posts',
+					nonce: nonce,
+					search: term
+				}, function(response) {
+					isSearching = false;
+					if (response.success && response.data.posts.length > 0) {
+						var html = '';
+						response.data.posts.forEach(function(post) {
+							html += '<div class="post-search-item" data-id="' + post.id + '" data-title="' + escapeHtml(post.title) + '" data-edit-url="' + post.edit_url + '">';
+							html += '<span class="post-title">' + escapeHtml(post.title) + '</span>';
+							html += '<span class="post-status ' + post.status + '">' + post.status + '</span>';
+							html += '</div>';
+						});
+						$dropdown.html(html);
+					} else {
+						$dropdown.html('<div class="post-search-empty"><?php echo \esc_js( \__( 'No posts found', 'functionalities' ) ); ?></div>');
+					}
+				}).fail(function() {
+					isSearching = false;
+					hideDropdown();
+				});
+			}
+
+			function selectPost($item) {
+				var title = $item.data('title');
+				var value = $taskInput.val();
+				var cursorPos = $taskInput[0].selectionStart;
+
+				// Replace @searchterm with the post title
+				var beforeAt = value.substring(0, atPosition);
+				var afterCursor = value.substring(cursorPos);
+
+				var newValue = beforeAt + '@' + title + ' ' + afterCursor.trimStart();
+				$taskInput.val(newValue);
+
+				// Set cursor position after the inserted title
+				var newCursorPos = atPosition + title.length + 2;
+				$taskInput[0].setSelectionRange(newCursorPos, newCursorPos);
+				$taskInput.focus();
+
+				hideDropdown();
+			}
+
+			function hideDropdown() {
+				$dropdown.removeClass('active').empty();
+				atPosition = -1;
+			}
+
+			function escapeHtml(str) {
+				return $('<div>').text(str).html();
+			}
+
+			// Click to select post
+			$(document).on('click', '.post-search-item', function() {
+				selectPost($(this));
+			});
+
+			// Hide dropdown when clicking outside
+			$(document).on('click', function(e) {
+				if (!$(e.target).closest('.add-task-input-wrapper').length) {
+					hideDropdown();
 				}
 			});
 		});
