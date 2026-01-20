@@ -3868,7 +3868,7 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 				if ( $family === '' || $woff2 === '' ) { continue; }
 				$out['items'][] = [
 					'family' => \sanitize_text_field( $family ),
-					'style'  => in_array( $style, [ 'normal', 'italic' ], true ) ? $style : 'normal',
+					'style'  => self::sanitize_font_style( $style ),
 					'display'=> in_array( $display, [ 'auto', 'block', 'swap', 'fallback', 'optional' ], true ) ? $display : 'swap',
 					'weight' => preg_replace( '/[^0-9]/', '', $weight ),
 					'weight_range' => preg_replace( '/[^0-9\s]/', '', $weight_range ),
@@ -3881,6 +3881,39 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 		}
 		return $out;
 	}
+
+	/**
+	 * Sanitize CSS font-style value.
+	 *
+	 * Supports: normal, italic, oblique, oblique with angles (e.g., oblique -12deg 0deg).
+	 *
+	 * @since 0.14.0
+	 *
+	 * @param string $style The font-style value to sanitize.
+	 * @return string Sanitized font-style value, defaults to 'normal' if invalid.
+	 */
+	protected static function sanitize_font_style( string $style ) : string {
+		$style = trim( strtolower( $style ) );
+
+		// Simple keyword values.
+		if ( in_array( $style, [ 'normal', 'italic', 'oblique' ], true ) ) {
+			return $style;
+		}
+
+		// Oblique with angle range (e.g., "oblique -12deg 0deg" or "oblique 14deg").
+		// Pattern: oblique followed by 1 or 2 angle values (optional minus, number, deg/grad/rad/turn).
+		if ( preg_match( '/^oblique\s+(-?\d+(?:\.\d+)?(?:deg|grad|rad|turn)?)(?:\s+(-?\d+(?:\.\d+)?(?:deg|grad|rad|turn)?))?$/', $style, $matches ) ) {
+			// Reconstruct the validated value.
+			$result = 'oblique ' . $matches[1];
+			if ( ! empty( $matches[2] ) ) {
+				$result .= ' ' . $matches[2];
+			}
+			return $result;
+		}
+
+		return 'normal';
+	}
+
 	public static function field_fonts_items() : void {
 		$o = self::get_fonts_options();
 		$items = isset( $o['items'] ) && is_array( $o['items'] ) ? $o['items'] : [];
@@ -4205,10 +4238,7 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 							</div>
 							<div class="fc-font-form__group">
 								<label class="fc-font-form__label"><?php esc_html_e( 'Style', 'functionalities' ); ?></label>
-								<select class="fc-font-form__input" name="functionalities_fonts[items][<?php echo (int) $i; ?>][style]">
-									<option value="normal" <?php selected( $style, 'normal' ); ?>><?php esc_html_e( 'Normal', 'functionalities' ); ?></option>
-									<option value="italic" <?php selected( $style, 'italic' ); ?>><?php esc_html_e( 'Italic', 'functionalities' ); ?></option>
-								</select>
+								<input type="text" class="fc-font-form__input" name="functionalities_fonts[items][<?php echo (int) $i; ?>][style]" value="<?php echo \esc_attr( $style ); ?>" placeholder="normal, italic, oblique -12deg 0deg">
 							</div>
 							<div class="fc-font-form__group">
 								<label class="fc-font-form__label"><?php esc_html_e( 'Display', 'functionalities' ); ?></label>
@@ -4291,10 +4321,7 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 						</div>
 						<div class="fc-font-form__group">
 							<label class="fc-font-form__label"><?php esc_html_e( 'Style', 'functionalities' ); ?></label>
-							<select class="fc-font-form__input" name="functionalities_fonts[items][__INDEX__][style]">
-								<option value="normal"><?php esc_html_e( 'Normal', 'functionalities' ); ?></option>
-								<option value="italic"><?php esc_html_e( 'Italic', 'functionalities' ); ?></option>
-							</select>
+							<input type="text" class="fc-font-form__input" name="functionalities_fonts[items][__INDEX__][style]" value="normal" placeholder="normal, italic, oblique -12deg 0deg">
 						</div>
 						<div class="fc-font-form__group">
 							<label class="fc-font-form__label"><?php esc_html_e( 'Display', 'functionalities' ); ?></label>

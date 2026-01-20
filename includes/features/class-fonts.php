@@ -29,7 +29,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * - Variable font support with weight ranges
  * - WOFF2 and WOFF format support
  * - Configurable font-display strategy
- * - Font-style (normal, italic, oblique) support
+ * - Font-style (normal, italic, oblique, oblique with angles) support
  * - Output in both frontend and admin
  *
  * ## Filters
