@@ -1,0 +1,7 @@
+{
+  "urls": [
+    "https://example.com/trusted-page",
+    "https://partner-site.com",
+    "https://another-trusted-site.com/blog"
+  ]
+}

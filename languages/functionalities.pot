@@ -1,0 +1,9 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Functionalities 1.0.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-02-03 19:11+0530\n"
+"MIME-Version: 1.0\n"
+
+# Placeholder POT file. Use a tool like wp i18n make-pot to regenerate.
