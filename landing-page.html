@@ -1,0 +1,1115 @@
+<link rel="stylesheet" href="https://gauravtiwari.org/wp-content/themes/md-local/style.css">
+<link rel="stylesheet" href="https://gauravtiwari.org/static/css/grid.css">
+<link rel="stylesheet" href="https://gauravtiwari.org/wp-content/uploads/generateblocks/style-global.css">
+<style>
+  /* --------------------------------------------------------
+     Functionalities Landing Page
+     Spacing: all via custom CSS (no theme spacing classes)
+     Layout/grid: MD framework classes retained
+   -------------------------------------------------------- */
+
+  :root {
+    --func-indigo: #4f46e5;
+    --func-indigo-light: #6366f1;
+    --func-indigo-bg: rgba(79, 70, 229, 0.08);
+    --func-dark: #0f172a;
+    --func-dark-mid: #1e293b;
+    --func-slate: #334155;
+    --func-gray: #64748b;
+    --func-gray-light: #94a3b8;
+    --func-border: #e2e8f0;
+    --func-surface: #f8fafc;
+    --func-white: #ffffff;
+    --func-green: #059669;
+    --func-green-bg: rgba(16, 185, 129, 0.08);
+    --func-red: #dc2626;
+    --func-red-bg: rgba(239, 68, 68, 0.08);
+    --func-amber: #d97706;
+    --func-amber-bg: rgba(245, 158, 11, 0.08);
+    --func-pink: #db2777;
+    --func-pink-bg: rgba(236, 72, 153, 0.08);
+    --func-radius: 12px;
+    --func-radius-sm: 8px;
+    --func-radius-lg: 16px;
+    --func-radius-xl: 20px;
+    --func-radius-pill: 999px;
+    --func-shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+    --func-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    --func-shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+    --func-transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* ---- Hero ---- */
+  .func-hero {
+    background: linear-gradient(160deg, #0c0a1d 0%, #1a1145 35%, #1e1b4b 60%, #1e293b 100%);
+    padding: 100px 0 80px;
+    position: relative;
+    overflow: hidden;
+  }
+  .func-hero::before {
+    content: '';
+    position: absolute;
+    top: -200px;
+    right: -100px;
+    width: 700px;
+    height: 700px;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.18) 0%, transparent 65%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .func-hero::after {
+    content: '';
+    position: absolute;
+    bottom: -150px;
+    left: -80px;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(192, 57, 43, 0.08) 0%, transparent 65%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .func-hero .inner {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+  }
+
+  .func-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    border-radius: var(--func-radius-pill);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .func-eyebrow-hero {
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.85);
+    border: 1px solid rgba(255,255,255,0.12);
+    margin-bottom: 28px;
+  }
+  .func-eyebrow-hero::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #34d399;
+    box-shadow: 0 0 6px rgba(52, 211, 153, 0.6);
+  }
+
+  .func-hero h1 {
+    font-size: clamp(2.25rem, 5vw, 3.75rem);
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.12;
+    max-width: 820px;
+    margin: 0 auto 24px;
+    letter-spacing: -0.02em;
+  }
+  .func-hero-sub {
+    font-size: clamp(1.0625rem, 2vw, 1.25rem);
+    color: rgba(255,255,255,0.7);
+    line-height: 1.65;
+    max-width: 600px;
+    margin: 0 auto 40px;
+  }
+
+  .func-hero-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 56px;
+  }
+  .func-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 28px;
+    border-radius: var(--func-radius-sm);
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: var(--func-transition);
+    cursor: pointer;
+    border: none;
+    line-height: 1.3;
+  }
+  .func-btn-primary {
+    background: var(--func-indigo);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.35);
+  }
+  .func-btn-primary:hover {
+    background: var(--func-indigo-light);
+    box-shadow: 0 4px 16px rgba(79, 70, 229, 0.45);
+    transform: translateY(-1px);
+    color: #fff;
+  }
+  .func-btn-ghost {
+    background: transparent;
+    color: rgba(255,255,255,0.9);
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+  .func-btn-ghost:hover {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.35);
+    color: #fff;
+  }
+  .func-btn svg { width: 16px; height: 16px; }
+
+  .func-stats {
+    display: flex;
+    gap: 48px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .func-stat { text-align: center; }
+  .func-stat-num {
+    font-size: 2.5rem;
+    font-weight: 800;
+    font-family: var(--font-head);
+    line-height: 1;
+    background: linear-gradient(135deg, #a5b4fc 0%, #c4b5fd 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .func-stat-label {
+    font-size: 12px;
+    color: rgba(255,255,255,0.45);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 6px;
+    font-weight: 500;
+  }
+
+  /* ---- About ---- */
+  .func-about {
+    padding: 80px 0;
+  }
+  .func-about-inner {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .func-about h2 {
+    font-size: 2rem;
+    font-weight: 800;
+    margin: 0 0 12px;
+    color: var(--func-dark);
+  }
+  .func-about-tagline {
+    font-size: 1.375rem;
+    font-weight: 600;
+    color: var(--func-indigo);
+    margin: 0 0 24px;
+  }
+  .func-about p {
+    font-size: 1.0625rem;
+    line-height: 1.75;
+    color: var(--func-slate);
+    margin: 0 0 16px;
+  }
+  .func-about p:last-child { margin-bottom: 0; }
+
+  /* ---- Section Header ---- */
+  .func-section-header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  .func-eyebrow-section {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 14px;
+    border-radius: var(--func-radius-pill);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .func-eyebrow-indigo {
+    background: var(--func-indigo-bg);
+    color: var(--func-indigo);
+  }
+  .func-eyebrow-green {
+    background: var(--func-green-bg);
+    color: var(--func-green);
+  }
+  .func-section-header h2 {
+    font-size: clamp(1.75rem, 3vw, 2.25rem);
+    font-weight: 800;
+    color: var(--func-dark);
+    margin: 0 0 12px;
+    letter-spacing: -0.01em;
+  }
+  .func-section-header p {
+    font-size: 1.0625rem;
+    color: var(--func-gray);
+    max-width: 560px;
+    margin: 0 auto;
+    line-height: 1.65;
+  }
+
+  /* ---- Module Grid ---- */
+  .func-modules {
+    padding: 80px 0;
+    background: var(--func-surface);
+  }
+  .func-module-card {
+    background: var(--func-white);
+    border: 1px solid var(--func-border);
+    border-radius: var(--func-radius);
+    padding: 28px 24px;
+    transition: var(--func-transition);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  .func-module-card:hover {
+    border-color: rgba(79, 70, 229, 0.25);
+    box-shadow: var(--func-shadow);
+    transform: translateY(-3px);
+  }
+  .func-module-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--func-radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    flex-shrink: 0;
+  }
+  .func-module-icon svg {
+    width: 22px;
+    height: 22px;
+  }
+  .func-icon-perf { background: var(--func-indigo-bg); color: var(--func-indigo); }
+  .func-icon-security { background: var(--func-red-bg); color: var(--func-red); }
+  .func-icon-seo { background: var(--func-green-bg); color: var(--func-green); }
+  .func-icon-content { background: var(--func-amber-bg); color: var(--func-amber); }
+  .func-icon-dev { background: rgba(99, 102, 241, 0.08); color: var(--func-indigo-light); }
+  .func-icon-media { background: var(--func-pink-bg); color: var(--func-pink); }
+
+  .func-module-card h4 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0 0 6px;
+    color: var(--func-dark);
+  }
+  .func-module-card p {
+    font-size: 0.9375rem;
+    color: var(--func-gray);
+    line-height: 1.6;
+    margin: 0;
+    flex: 1;
+  }
+  .func-module-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 2px 8px;
+    border-radius: var(--func-radius-pill);
+    margin-top: 12px;
+  }
+  .func-tag-pro {
+    background: linear-gradient(135deg, rgba(79,70,229,0.1), rgba(147,51,234,0.1));
+    color: #7c3aed;
+  }
+  .func-tag-new {
+    background: var(--func-green-bg);
+    color: var(--func-green);
+  }
+
+  /* Module grid gap override */
+  .func-module-grid {
+    gap: 16px !important;
+  }
+  .func-module-grid .col {
+    margin-bottom: 0;
+  }
+
+  /* ---- Architecture ---- */
+  .func-arch {
+    padding: 80px 0;
+  }
+  .func-arch-grid {
+    gap: 16px !important;
+  }
+  .func-arch-card {
+    background: var(--func-surface);
+    border-radius: var(--func-radius);
+    padding: 32px 28px;
+    border: 1px solid var(--func-border);
+    position: relative;
+    overflow: hidden;
+    transition: var(--func-transition);
+  }
+  .func-arch-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 100%;
+    background: linear-gradient(180deg, var(--func-indigo) 0%, var(--func-indigo-light) 100%);
+    opacity: 0;
+    transition: var(--func-transition);
+  }
+  .func-arch-card:hover {
+    border-color: rgba(79, 70, 229, 0.2);
+    background: #fff;
+  }
+  .func-arch-card:hover::before { opacity: 1; }
+
+  .func-arch-num {
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--func-indigo);
+    margin-bottom: 8px;
+    font-family: var(--font-head);
+  }
+  .func-arch-card h4 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin: 0 0 8px;
+    color: var(--func-dark);
+  }
+  .func-arch-card p {
+    font-size: 0.9375rem;
+    color: var(--func-gray);
+    margin: 0;
+    line-height: 1.65;
+  }
+
+  /* ---- Comparison ---- */
+  .func-compare {
+    padding: 80px 0;
+    background: var(--func-surface);
+  }
+  .func-compare-table {
+    max-width: 800px;
+    margin: 0 auto;
+    border-radius: var(--func-radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--func-border);
+    background: var(--func-white);
+    box-shadow: var(--func-shadow-sm);
+  }
+  .func-compare-row {
+    display: grid;
+    grid-template-columns: 1fr 160px 160px;
+    border-bottom: 1px solid var(--func-border);
+    transition: var(--func-transition);
+  }
+  .func-compare-row:last-child { border-bottom: none; }
+  .func-compare-row:not(.func-compare-header):hover {
+    background: var(--func-surface);
+  }
+  .func-compare-header {
+    background: var(--func-dark);
+  }
+  .func-compare-cell {
+    padding: 14px 20px;
+    font-size: 0.9375rem;
+    display: flex;
+    align-items: center;
+  }
+  .func-compare-header .func-compare-cell {
+    color: #fff;
+    font-weight: 700;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 16px 20px;
+  }
+  .func-compare-feature {
+    color: var(--func-dark);
+    font-weight: 500;
+  }
+  .func-compare-cell:not(:first-child) {
+    justify-content: center;
+    text-align: center;
+  }
+  .func-check {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .func-check-yes {
+    background: var(--func-green-bg);
+    color: var(--func-green);
+  }
+  .func-check-no {
+    background: rgba(148, 163, 184, 0.12);
+    color: var(--func-gray-light);
+  }
+  .func-check svg { width: 12px; height: 12px; }
+
+  /* ---- Feature Highlights ---- */
+  .func-highlights {
+    padding: 80px 0;
+  }
+  .func-highlights-grid {
+    gap: 20px !important;
+  }
+  .func-highlight-card {
+    background: var(--func-surface);
+    border-radius: var(--func-radius-lg);
+    padding: 32px 28px;
+    border: 1px solid var(--func-border);
+    height: 100%;
+  }
+  .func-highlight-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .func-highlight-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--func-radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .func-highlight-icon svg { width: 18px; height: 18px; }
+  .func-hi-purple { background: var(--func-indigo-bg); color: var(--func-indigo); }
+  .func-hi-red { background: var(--func-red-bg); color: var(--func-red); }
+  .func-hi-green { background: var(--func-green-bg); color: var(--func-green); }
+  .func-hi-blue { background: rgba(99,102,241,0.08); color: var(--func-indigo-light); }
+
+  .func-highlight-header h3 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--func-dark);
+  }
+  .func-check-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .func-check-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--func-slate);
+    padding: 6px 0;
+  }
+  .func-check-list li + li {
+    border-top: 1px solid rgba(0,0,0,0.04);
+  }
+  .func-check-list li svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    margin-top: 3px;
+    color: var(--func-green);
+  }
+
+  /* ---- CTA ---- */
+  .func-cta {
+    padding: 80px 0;
+    background: var(--func-surface);
+  }
+  .func-cta-card {
+    background: linear-gradient(160deg, #0c0a1d 0%, #1a1145 40%, #1e293b 100%);
+    border-radius: var(--func-radius-xl);
+    padding: 72px 48px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .func-cta-card::before {
+    content: '';
+    position: absolute;
+    top: -150px;
+    right: -100px;
+    width: 450px;
+    height: 450px;
+    background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 65%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .func-cta-card::after {
+    content: '';
+    position: absolute;
+    bottom: -100px;
+    left: -50px;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(192,57,43,0.06) 0%, transparent 65%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .func-cta-card > * { position: relative; z-index: 1; }
+
+  .func-cta-card h2 {
+    font-size: clamp(1.75rem, 3vw, 2.5rem);
+    font-weight: 800;
+    color: #fff;
+    margin: 0 0 16px;
+  }
+  .func-cta-desc {
+    font-size: 1.0625rem;
+    color: rgba(255,255,255,0.65);
+    max-width: 480px;
+    margin: 0 auto 12px;
+    line-height: 1.65;
+  }
+  .func-price {
+    margin: 32px 0;
+  }
+  .func-price-current {
+    font-size: 1rem;
+    color: rgba(255,255,255,0.5);
+    margin: 0 0 4px;
+  }
+  .func-price-amount {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 4px;
+  }
+  .func-price-free {
+    font-size: 3rem;
+    font-weight: 800;
+    font-family: var(--font-head);
+    color: #fff;
+    line-height: 1;
+    background: linear-gradient(135deg, #a5b4fc 0%, #c4b5fd 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .func-price-after {
+    font-size: 0.9375rem;
+    color: rgba(255,255,255,0.45);
+    margin: 8px 0 0;
+  }
+  .func-price-after strong {
+    color: rgba(255,255,255,0.7);
+    font-weight: 600;
+  }
+
+  .func-cta-actions {
+    margin-bottom: 32px;
+  }
+
+  .func-req-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .func-req-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: var(--func-radius-pill);
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.6);
+  }
+  .func-req-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #34d399;
+  }
+
+  /* ---- Responsive ---- */
+  @media (max-width: 991px) {
+    .func-hero { padding: 72px 0 60px; }
+    .func-stats { gap: 32px; }
+    .func-stat-num { font-size: 2rem; }
+    .func-modules,
+    .func-arch,
+    .func-compare,
+    .func-highlights,
+    .func-cta { padding: 60px 0; }
+  }
+  @media (max-width: 767px) {
+    .func-hero { padding: 56px 0 48px; }
+    .func-stats { gap: 24px; }
+    .func-stat-num { font-size: 1.75rem; }
+    .func-compare-row {
+      grid-template-columns: 1fr 100px 100px;
+    }
+    .func-compare-cell {
+      padding: 10px 12px;
+      font-size: 0.875rem;
+    }
+    .func-cta-card { padding: 48px 24px; }
+    .func-price-free { font-size: 2.25rem; }
+    .func-modules,
+    .func-arch,
+    .func-compare,
+    .func-highlights,
+    .func-cta { padding: 48px 0; }
+  }
+</style>
+
+<!-- Hero -->
+<section class="func-hero">
+  <div class="inner">
+    <span class="func-eyebrow func-eyebrow-hero">Early Access</span>
+    <h1>Stop installing 10 plugins for basic WordPress optimization</h1>
+    <p class="func-hero-sub">15+ modules for performance, security, SEO, redirects, and content management. One lightweight plugin that only loads what you use.</p>
+    <div class="func-hero-actions">
+      <a href="#pricing" class="func-btn func-btn-primary">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+        Get Early Access
+      </a>
+      <a href="#modules" class="func-btn func-btn-ghost">See All Modules</a>
+    </div>
+    <div class="func-stats">
+      <div class="func-stat">
+        <div class="func-stat-num">15+</div>
+        <div class="func-stat-label">Modules</div>
+      </div>
+      <div class="func-stat">
+        <div class="func-stat-num">0 KB</div>
+        <div class="func-stat-label">Frontend JS</div>
+      </div>
+      <div class="func-stat">
+        <div class="func-stat-num">1</div>
+        <div class="func-stat-label">Plugin to Install</div>
+      </div>
+      <div class="func-stat">
+        <div class="func-stat-num">0</div>
+        <div class="func-stat-label">DB Bloat</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- About -->
+<section class="func-about">
+  <div class="inner">
+    <div class="func-about-inner">
+      <h2>About Functionalities</h2>
+      <p class="func-about-tagline">One plugin. 15+ features. Zero bloat.</p>
+      <p>I built Functionalities after getting tired of installing a dozen plugins just to do basic WordPress optimization. Each plugin adds overhead, conflicts with others, and slows down your site.</p>
+      <p>Functionalities consolidates everything into one modular toolkit that only loads what you actually use. Disabled modules don't execute a single line of code. No database queries, no file includes, no hook registrations. It's as if they don't exist.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Modules -->
+<section class="func-modules" id="modules">
+  <div class="inner">
+    <div class="func-section-header">
+      <span class="func-eyebrow-section func-eyebrow-indigo">What's Included</span>
+      <h2>Everything you need, nothing you don't</h2>
+      <p>Each module is self-contained. Enable only what your site needs.</p>
+    </div>
+
+    <div class="columns-3 func-module-grid">
+
+      <div class="col">
+        <div class="func-module-card">
+          <div class="func-module-icon func-icon-seo">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m9.86-2.57a4.5 4.5 0 00-6.364-6.364L4.5 8.186"/></svg>
+          </div>
+          <h4>Link Management</h4>
+          <p>Automate nofollow on external links, manage exception lists, control new-tab behavior, and bulk update existing posts.</p>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="func-module-card">
+          <div class="func-module-icon func-icon-seo">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"/></svg>
+          </div>
+          <h4>Redirect Manager</h4>
+          <p>File-based 301/302/307/308 redirects with regex pattern matching. Zero database overhead, instant resolution.</p>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="func-module-card">
+          <div class="func-module-icon func-icon-security">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
+          </div>
+          <h4>Login Security</h4>
+          <p>Limit login attempts, configurable lockout durations, hide error messages to stop username enumeration.</p>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="func-module-card">
+          <div class="func-module-icon func-icon-perf">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>
+          </div>
+          <h4>Performance &amp; Cleanup</h4>
+          <p>Disable emojis, embeds, XML-RPC, feeds, Gravatars, REST API discovery, and other WordPress bloat.</p>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="func-module-card">
+          <div class="func-module-icon func-icon-seo">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5"/></svg>
+          </div>
+          <h4>Schema Settings</h4>
+          <p>Add microdata and JSON-LD breadcrumbs to your site without installing another SEO plugin.</p>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="func-module-card">
+          <div class="func-module-icon func-icon-media">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12"/></svg>
+          </div>
+          <h4>Custom Fonts</h4>
+          <p>Register @font-face with WOFF2 support, preloading, and font-display control. Self-host Google Fonts properly.</p>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="func-module-card">
+          <div class="func-module-icon func-icon-media">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.763m3.42 3.42a6.776 6.776 0 00-3.42-3.42"/></svg>
+          </div>
+          <h4>SVG Icons</h4>
+          <p>Upload custom SVGs and insert them inline in the block editor. Full sanitization built in.</p>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="func-module-card">
+          <div class="func-module-icon func-icon-dev">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.25 9.75L16.5 12l-2.25 2.25m-4.5 0L7.5 12l2.25-2.25M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z"/></svg>
+          </div>
+          <h4>Header &amp; Footer Snippets</h4>
+          <p>GA4, custom scripts, wp_body_open support. Stop editing theme files for tracking codes.</p>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="func-module-card">
+          <div class="func-module-icon func-icon-content">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+          </div>
+          <h4>Content Integrity</h4>
+          <p>Detect when updates break internal links, reduce word count, or remove headings. Snapshots and diffing built in.</p>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="func-module-card">
+          <div class="func-module-icon func-icon-content">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          </div>
+          <h4>Assumption Detection</h4>
+          <p>Notices when implicit site assumptions stop being true: schema collisions, analytics dupes, font redundancy.</p>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="func-module-card">
+          <div class="func-module-icon func-icon-perf">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zm0 9.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zm0 9.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25a2.25 2.25 0 01-2.25-2.25v-2.25z"/></svg>
+          </div>
+          <h4>Block Cleanup</h4>
+          <p>Strip unnecessary block classes from frontend output for cleaner, lighter HTML markup.</p>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="func-module-card">
+          <div class="func-module-icon func-icon-dev">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.098 19.902a3.75 3.75 0 005.304 0l6.401-6.402M6.75 21A3.75 3.75 0 013 17.25V4.125C3 3.504 3.504 3 4.125 3h5.25c.621 0 1.125.504 1.125 1.125v4.072M6.75 21a3.75 3.75 0 003.75-3.75V8.197M6.75 21h13.125c.621 0 1.125-.504 1.125-1.125v-5.25c0-.621-.504-1.125-1.125-1.125h-4.072M10.5 8.197l2.88-2.88c.438-.439 1.15-.439 1.59 0l3.712 3.713c.44.44.44 1.152 0 1.59l-2.879 2.88M6.75 17.25h.008v.008H6.75v-.008z"/></svg>
+          </div>
+          <h4>Components</h4>
+          <p>Define reusable CSS components with a visual editor. Build and manage your design system in WordPress.</p>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="func-module-card">
+          <div class="func-module-icon func-icon-seo">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+          </div>
+          <h4>Meta &amp; Copyright</h4>
+          <p>Dublin Core, Creative Commons licensing, per-post copyright metadata, and SEO plugin integration.</p>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="func-module-card">
+          <div class="func-module-icon func-icon-content">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z"/></svg>
+          </div>
+          <h4>Task Manager</h4>
+          <p>File-based project task management with JSON storage. Track development tasks right in WordPress admin.</p>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="func-module-card">
+          <div class="func-module-icon func-icon-dev">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3l-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3l-3 3"/></svg>
+          </div>
+          <h4>Editor Link Suggestions</h4>
+          <p>Limit link suggestions to selected post types. Keep the editor autocomplete fast and relevant.</p>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="func-module-card">
+          <div class="func-module-icon func-icon-perf">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3"/></svg>
+          </div>
+          <h4>Progressive Web App</h4>
+          <p>Make your site installable with offline support, service worker caching, and custom install prompts.</p>
+          <span class="func-module-tag func-tag-new">New</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Architecture -->
+<section class="func-arch" id="architecture">
+  <div class="inner">
+    <div class="func-section-header">
+      <span class="func-eyebrow-section func-eyebrow-green">Architecture</span>
+      <h2>Built for performance from the ground up</h2>
+      <p>This isn't a plugin that bolts features onto WordPress. Every module is engineered to be as fast as doing nothing.</p>
+    </div>
+    <div class="columns-2 func-arch-grid">
+      <div class="col">
+        <div class="func-arch-card">
+          <div class="func-arch-num">01</div>
+          <h4>Modular Loading</h4>
+          <p>Disabled modules don't load any code. Not a single file include, hook registration, or class instantiation. It's as if they don't exist.</p>
+        </div>
+      </div>
+      <div class="col">
+        <div class="func-arch-card">
+          <div class="func-arch-num">02</div>
+          <h4>Static Caching</h4>
+          <p>Options are cached in memory via static properties. One database read per request, not one per function call. The way WordPress should work.</p>
+        </div>
+      </div>
+      <div class="col">
+        <div class="func-arch-card">
+          <div class="func-arch-num">03</div>
+          <h4>Fast-Exit Checks</h4>
+          <p>Content filters bail early with strpos() checks before doing real work. If there's nothing to change, the overhead is near zero.</p>
+        </div>
+      </div>
+      <div class="col">
+        <div class="func-arch-card">
+          <div class="func-arch-num">04</div>
+          <h4>File-Based Storage</h4>
+          <p>Redirects and tasks use flat JSON files, not database queries. No custom tables, no wp_options bloat, no autoload overhead.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Comparison -->
+<section class="func-compare">
+  <div class="inner">
+    <div class="func-section-header">
+      <h2>Replace plugins, not add another</h2>
+      <p>Here's what Functionalities covers that typically requires separate installations.</p>
+    </div>
+    <div class="func-compare-table">
+      <div class="func-compare-row func-compare-header">
+        <div class="func-compare-cell">Capability</div>
+        <div class="func-compare-cell">5+ Plugins</div>
+        <div class="func-compare-cell">Functionalities</div>
+      </div>
+      <div class="func-compare-row">
+        <div class="func-compare-cell func-compare-feature">Nofollow management</div>
+        <div class="func-compare-cell"><span class="func-check func-check-yes"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg></span></div>
+        <div class="func-compare-cell"><span class="func-check func-check-yes"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg></span></div>
+      </div>
+      <div class="func-compare-row">
+        <div class="func-compare-cell func-compare-feature">301/302 Redirects</div>
+        <div class="func-compare-cell"><span class="func-check func-check-yes"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg></span></div>
+        <div class="func-compare-cell"><span class="func-check func-check-yes"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg></span></div>
+      </div>
+      <div class="func-compare-row">
+        <div class="func-compare-cell func-compare-feature">Login security</div>
+        <div class="func-compare-cell"><span class="func-check func-check-yes"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg></span></div>
+        <div class="func-compare-cell"><span class="func-check func-check-yes"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg></span></div>
+      </div>
+      <div class="func-compare-row">
+        <div class="func-compare-cell func-compare-feature">Schema / JSON-LD</div>
+        <div class="func-compare-cell"><span class="func-check func-check-yes"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg></span></div>
+        <div class="func-compare-cell"><span class="func-check func-check-yes"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg></span></div>
+      </div>
+      <div class="func-compare-row">
+        <div class="func-compare-cell func-compare-feature">WP cleanup &amp; optimization</div>
+        <div class="func-compare-cell"><span class="func-check func-check-yes"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg></span></div>
+        <div class="func-compare-cell"><span class="func-check func-check-yes"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg></span></div>
+      </div>
+      <div class="func-compare-row">
+        <div class="func-compare-cell func-compare-feature">Zero DB overhead for redirects</div>
+        <div class="func-compare-cell"><span class="func-check func-check-no"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"/></svg></span></div>
+        <div class="func-compare-cell"><span class="func-check func-check-yes"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg></span></div>
+      </div>
+      <div class="func-compare-row">
+        <div class="func-compare-cell func-compare-feature">Content integrity monitoring</div>
+        <div class="func-compare-cell"><span class="func-check func-check-no"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"/></svg></span></div>
+        <div class="func-compare-cell"><span class="func-check func-check-yes"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg></span></div>
+      </div>
+      <div class="func-compare-row">
+        <div class="func-compare-cell func-compare-feature">Assumption detection</div>
+        <div class="func-compare-cell"><span class="func-check func-check-no"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"/></svg></span></div>
+        <div class="func-compare-cell"><span class="func-check func-check-yes"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg></span></div>
+      </div>
+      <div class="func-compare-row">
+        <div class="func-compare-cell func-compare-feature">Progressive Web App</div>
+        <div class="func-compare-cell"><span class="func-check func-check-no"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"/></svg></span></div>
+        <div class="func-compare-cell"><span class="func-check func-check-yes"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg></span></div>
+      </div>
+      <div class="func-compare-row">
+        <div class="func-compare-cell func-compare-feature">Modular (unused = zero overhead)</div>
+        <div class="func-compare-cell"><span class="func-check func-check-no"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"/></svg></span></div>
+        <div class="func-compare-cell"><span class="func-check func-check-yes"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg></span></div>
+      </div>
+      <div class="func-compare-row">
+        <div class="func-compare-cell func-compare-feature">Single plugin to maintain</div>
+        <div class="func-compare-cell"><span class="func-check func-check-no"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"/></svg></span></div>
+        <div class="func-compare-cell"><span class="func-check func-check-yes"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Feature Highlights -->
+<section class="func-highlights" id="features">
+  <div class="inner">
+    <div class="func-section-header">
+      <h2>Feature Highlights</h2>
+    </div>
+    <div class="columns-2 func-highlights-grid">
+
+      <div class="col">
+        <div class="func-highlight-card">
+          <div class="func-highlight-header">
+            <div class="func-highlight-icon func-hi-purple">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>
+            </div>
+            <h3>Performance</h3>
+          </div>
+          <ul class="func-check-list">
+            <li><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg> Modular loading: disabled features don't execute any code</li>
+            <li><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg> Static caching: settings cached in memory, not re-fetched per request</li>
+            <li><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg> Fast-exit filters: content processing skipped when unnecessary</li>
+            <li><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg> File-based storage: redirects stored in flat files, not database</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="func-highlight-card">
+          <div class="func-highlight-header">
+            <div class="func-highlight-icon func-hi-red">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+            </div>
+            <h3>Security</h3>
+          </div>
+          <ul class="func-check-list">
+            <li><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg> Login attempt limits to block brute force attacks</li>
+            <li><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg> Configurable lockout durations and thresholds</li>
+            <li><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg> XML-RPC disable to close common attack vector</li>
+            <li><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg> Error message hiding: don't reveal valid usernames</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="func-highlight-card">
+          <div class="func-highlight-header">
+            <div class="func-highlight-icon func-hi-green">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6"/></svg>
+            </div>
+            <h3>SEO &amp; Content</h3>
+          </div>
+          <ul class="func-check-list">
+            <li><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg> Nofollow automation for external links, handled automatically</li>
+            <li><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg> Exception lists: whitelist trusted domains</li>
+            <li><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg> Schema markup: microdata and JSON-LD without plugins</li>
+            <li><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg> Redirect manager: 301/302/307/308 with pattern matching</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="func-highlight-card">
+          <div class="func-highlight-header">
+            <div class="func-highlight-icon func-hi-blue">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5"/></svg>
+            </div>
+            <h3>Developer-Friendly</h3>
+          </div>
+          <ul class="func-check-list">
+            <li><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg> Hooks everywhere: filter and action for every feature</li>
+            <li><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg> Clean codebase: PSR-4 autoloading, namespaced classes</li>
+            <li><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg> WordPress standards: proper escaping, nonces, capabilities</li>
+            <li><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg> Extensible: build on top of any module via documented APIs</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="func-cta" id="pricing">
+  <div class="inner">
+    <div class="func-cta-card">
+      <span class="func-eyebrow func-eyebrow-hero" style="margin-bottom: 20px; display: inline-flex;">Limited Time</span>
+      <h2>Free during early access</h2>
+      <p class="func-cta-desc">Get full access to all 15+ modules. No feature restrictions, no trial limits. Just the complete plugin.</p>
+      <div class="func-price">
+        <p class="func-price-current">Right now</p>
+        <div class="func-price-amount">
+          <span class="func-price-free">Free</span>
+        </div>
+        <p class="func-price-after">Then <strong>$39/year</strong> for updates and priority support</p>
+      </div>
+      <div class="func-cta-actions">
+        <a href="#" class="func-btn func-btn-primary" style="font-size: 16px; padding: 16px 36px;">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+          Download Functionalities
+        </a>
+      </div>
+      <div class="func-req-row">
+        <span class="func-req-pill"><span class="func-req-dot"></span> WordPress 5.8+</span>
+        <span class="func-req-pill"><span class="func-req-dot"></span> PHP 7.4+</span>
+        <span class="func-req-pill"><span class="func-req-dot"></span> GPL-2.0+</span>
+      </div>
+    </div>
+  </div>
+</section>
