@@ -200,16 +200,21 @@ class Components {
 		$css  = self::build_css( $items );
 		$file = self::ensure_css_file( $css );
 
-		// Output external file link if available.
+		// Enqueue external file if available.
 		if ( $file && isset( $file['url'], $file['ver'] ) ) {
-			// phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- Dynamically generated CSS file from user components.
-			echo '<link rel="stylesheet" id="functionalities-components-css" href="' . \esc_url( $file['url'] . '?ver=' . rawurlencode( $file['ver'] ) ) . '" media="all" />';
+			\wp_enqueue_style(
+				'functionalities-components',
+				$file['url'],
+				array(),
+				$file['ver']
+			);
 			return;
 		}
 
 		// Fallback to inline styles with CSS sanitization.
-		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSS is sanitized.
-		echo '<style id="functionalities-components-inline">' . self::sanitize_css( $css ) . '</style>';
+		\wp_register_style( 'functionalities-components', false, array(), FUNCTIONALITIES_VERSION );
+		\wp_enqueue_style( 'functionalities-components' );
+		\wp_add_inline_style( 'functionalities-components', self::sanitize_css( $css ) );
 	}
 
 	/**

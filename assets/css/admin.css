@@ -486,3 +486,11 @@
 	color: #646970;
 	text-transform: uppercase;
 }
+
+/* jQuery UI Sortable placeholder */
+.ui-state-highlight {
+	background: #f0f6fc;
+	border: 1px dashed #2271b1;
+	height: 50px;
+	margin-bottom: 0;
+}

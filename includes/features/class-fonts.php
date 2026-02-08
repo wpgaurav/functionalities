@@ -193,8 +193,9 @@ class Fonts {
 			return;
 		}
 
-		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSS is sanitized in build_css().
-		echo '<style id="functionalities-fonts">' . self::sanitize_css( $css ) . '</style>';
+		\wp_register_style( 'functionalities-fonts', false, array(), FUNCTIONALITIES_VERSION );
+		\wp_enqueue_style( 'functionalities-fonts' );
+		\wp_add_inline_style( 'functionalities-fonts', self::sanitize_css( $css ) );
 	}
 
 	/**

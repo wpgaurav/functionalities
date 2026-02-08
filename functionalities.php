@@ -3,7 +3,7 @@
  * Plugin Name:       Functionalities
  * Plugin URI:        https://functionalities.dev
  * Description:       All-in-one WordPress optimization toolkit. 15+ modules for performance, security, SEO, and content management.
- * Version:           1.0.0
+ * Version:           1.0.1
  * Author:            Gaurav Tiwari
  * Author URI:        https://gauravtiwari.org
  * License:           GPL-2.0-or-later
@@ -20,7 +20,7 @@ if (!defined('ABSPATH')) {
 
 // Define constants.
 if (!defined('FUNCTIONALITIES_VERSION')) {
-	define('FUNCTIONALITIES_VERSION', '1.0.0');
+	define('FUNCTIONALITIES_VERSION', '1.0.1');
 }
 if (!defined('FUNCTIONALITIES_FILE')) {
 	define('FUNCTIONALITIES_FILE', __FILE__);
@@ -30,6 +30,9 @@ if (!defined('FUNCTIONALITIES_DIR')) {
 }
 if (!defined('FUNCTIONALITIES_URL')) {
 	define('FUNCTIONALITIES_URL', plugin_dir_url(__FILE__));
+}
+if (!defined('FUNCTIONALITIES_IS_PRO')) {
+	define('FUNCTIONALITIES_IS_PRO', true);
 }
 
 // Simple autoloader for plugin classes.
@@ -74,14 +77,42 @@ spl_autoload_register(function (string $class) {
 	\Functionalities\Features\Redirect_Manager::init();
 	\Functionalities\Features\Login_Security::init();
 	\Functionalities\Features\SVG_Icons::init();
+	\Functionalities\Premium\Loader::init();
 }, 10);
 
 // Activation/Deactivation hooks.
 \register_activation_hook(__FILE__, function () {
-	// If you add rewrites or CPTs on init, you may flush here.
+	include_once ABSPATH . 'wp-admin/includes/plugin.php';
+	$free = 'dynamic-functionalities/dynamic-functionalities.php';
+	if (\is_plugin_active($free)) {
+		\deactivate_plugins($free);
+		\set_transient('functionalities_free_deactivated', true, 30);
+	}
 	if (function_exists('flush_rewrite_rules')) {
 		\flush_rewrite_rules();
 	}
+});
+
+// Deactivate the free plugin if both are active (covers WP-CLI, bulk activate).
+\add_action('admin_init', function () {
+	$free = 'dynamic-functionalities/dynamic-functionalities.php';
+	if (\is_plugin_active($free)) {
+		\deactivate_plugins($free);
+		\set_transient('functionalities_free_deactivated', true, 30);
+	}
+});
+
+// Show a one-time notice after deactivating the free plugin.
+\add_action('admin_notices', function () {
+	if (!\get_transient('functionalities_free_deactivated')) {
+		return;
+	}
+	\delete_transient('functionalities_free_deactivated');
+	?>
+	<div class="notice notice-info is-dismissible">
+		<p><?php \esc_html_e('Dynamic Functionalities has been deactivated. Functionalities Pro includes all free features and more.', 'functionalities'); ?></p>
+	</div>
+	<?php
 });
 
 // Quick Settings link on the Plugins screen.

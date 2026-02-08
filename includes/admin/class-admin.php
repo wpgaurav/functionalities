@@ -5493,9 +5493,6 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 						});
 					}
 				});
-				
-				// CSS for placeholder
-				$('<style>.ui-state-highlight { background: #f0f6fc; border: 1px dashed #2271b1; height: 50px; margin-bottom: 0; }</style>').appendTo('head');
 			}
 
 			function updateProgress() {
@@ -6287,8 +6284,7 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 						<div class="func-svg-icon-card" data-slug="<?php echo \esc_attr( $slug ); ?>">
 							<div class="func-svg-icon-preview">
 								<?php
-								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- SVG is sanitized during upload via SVG_Icons::sanitize_svg()
-								echo $icon['svg'];
+								echo \wp_kses( $icon['svg'], self::get_svg_kses_allowed() );
 								?>
 							</div>
 							<div class="func-svg-icon-info">
@@ -6449,5 +6445,129 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 		});
 		</script>
 		<?php
+	}
+
+	/**
+	 * Get allowed HTML for wp_kses SVG output.
+	 *
+	 * Mirrors the allowed elements and attributes from SVG_Icons::sanitize_svg()
+	 * to ensure output escaping preserves all valid SVG content.
+	 *
+	 * @since 1.0.1
+	 *
+	 * @return array Allowed HTML array for wp_kses.
+	 */
+	private static function get_svg_kses_allowed(): array {
+		$common_attrs = array(
+			'id'               => true,
+			'class'            => true,
+			'style'            => true,
+			'fill'             => true,
+			'fill-opacity'     => true,
+			'fill-rule'        => true,
+			'stroke'           => true,
+			'stroke-width'     => true,
+			'stroke-linecap'   => true,
+			'stroke-linejoin'  => true,
+			'stroke-dasharray' => true,
+			'stroke-dashoffset' => true,
+			'stroke-opacity'   => true,
+			'opacity'          => true,
+			'transform'        => true,
+			'clip-path'        => true,
+			'clip-rule'        => true,
+			'mask'             => true,
+		);
+
+		return array(
+			'svg'            => array_merge( $common_attrs, array(
+				'xmlns'              => true,
+				'xmlns:xlink'        => true,
+				'viewbox'            => true,
+				'width'              => true,
+				'height'             => true,
+				'aria-hidden'        => true,
+				'role'               => true,
+				'focusable'          => true,
+				'preserveaspectratio' => true,
+				'version'            => true,
+				'xml:space'          => true,
+				'enable-background'  => true,
+			) ),
+			'g'              => $common_attrs,
+			'path'           => array_merge( $common_attrs, array( 'd' => true ) ),
+			'circle'         => array_merge( $common_attrs, array(
+				'cx' => true,
+				'cy' => true,
+				'r'  => true,
+			) ),
+			'ellipse'        => array_merge( $common_attrs, array(
+				'cx' => true,
+				'cy' => true,
+				'rx' => true,
+				'ry' => true,
+			) ),
+			'rect'           => array_merge( $common_attrs, array(
+				'x'      => true,
+				'y'      => true,
+				'width'  => true,
+				'height' => true,
+				'rx'     => true,
+				'ry'     => true,
+			) ),
+			'line'           => array_merge( $common_attrs, array(
+				'x1' => true,
+				'y1' => true,
+				'x2' => true,
+				'y2' => true,
+			) ),
+			'polyline'       => array_merge( $common_attrs, array( 'points' => true ) ),
+			'polygon'        => array_merge( $common_attrs, array( 'points' => true ) ),
+			'defs'           => array( 'id' => true ),
+			'clippath'       => array( 'id' => true ),
+			'mask'           => array( 'id' => true ),
+			'use'            => array(
+				'xlink:href' => true,
+				'href'       => true,
+				'x'          => true,
+				'y'          => true,
+				'width'      => true,
+				'height'     => true,
+			),
+			'symbol'         => array(
+				'id'                 => true,
+				'viewbox'            => true,
+				'preserveaspectratio' => true,
+			),
+			'title'          => array(),
+			'desc'           => array(),
+			'lineargradient' => array(
+				'id'                => true,
+				'gradientunits'     => true,
+				'gradienttransform' => true,
+				'spreadmethod'      => true,
+				'x1'                => true,
+				'y1'                => true,
+				'x2'                => true,
+				'y2'                => true,
+			),
+			'radialgradient' => array(
+				'id'                => true,
+				'gradientunits'     => true,
+				'gradienttransform' => true,
+				'spreadmethod'      => true,
+				'cx'                => true,
+				'cy'                => true,
+				'r'                 => true,
+				'fx'                => true,
+				'fy'                => true,
+			),
+			'stop'           => array(
+				'offset'       => true,
+				'stop-color'   => true,
+				'stop-opacity' => true,
+				'style'        => true,
+			),
+		);
 	}
 }

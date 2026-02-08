@@ -864,20 +864,35 @@ class Task_Manager {
 			return;
 		}
 
+		// Sanitize imported data.
+		$data['name'] = isset( $data['name'] ) ? \sanitize_text_field( $data['name'] ) : '';
+
 		// Create project with imported data.
-		$slug = sanitize_title( $data['name'] );
+		$slug          = sanitize_title( $data['name'] );
 		$original_slug = $slug;
-		$counter = 1;
+		$counter       = 1;
 		while ( self::get_project( $slug ) ) {
 			$slug = $original_slug . '-' . $counter;
-			$counter++;
+			++$counter;
 		}
 
-		// Ensure required fields.
-		$data['created']    = $data['created'] ?? current_time( 'mysql' );
-		$data['modified']   = current_time( 'mysql' );
-		$data['show_widget'] = $data['show_widget'] ?? false;
-		$data['tasks']      = $data['tasks'] ?? array();
+		// Ensure required fields with sanitization.
+		$data['created']     = isset( $data['created'] ) ? \sanitize_text_field( $data['created'] ) : current_time( 'mysql' );
+		$data['modified']    = current_time( 'mysql' );
+		$data['show_widget'] = ! empty( $data['show_widget'] );
+		$data['tasks']       = isset( $data['tasks'] ) && is_array( $data['tasks'] ) ? $data['tasks'] : array();
+
+		// Sanitize each task.
+		foreach ( $data['tasks'] as $key => $task ) {
+			$data['tasks'][ $key ]['text']      = isset( $task['text'] ) ? \sanitize_textarea_field( $task['text'] ) : '';
+			$data['tasks'][ $key ]['notes']     = isset( $task['notes'] ) ? \sanitize_textarea_field( $task['notes'] ) : '';
+			$data['tasks'][ $key ]['status']    = isset( $task['status'] ) ? \sanitize_key( $task['status'] ) : 'open';
+			$data['tasks'][ $key ]['priority']  = isset( $task['priority'] ) ? absint( $task['priority'] ) : 0;
+			$data['tasks'][ $key ]['completed'] = ! empty( $task['completed'] );
+			$data['tasks'][ $key ]['tags']      = isset( $task['tags'] ) && is_array( $task['tags'] )
+				? array_map( '\sanitize_text_field', $task['tags'] )
+				: array();
+		}
 
 		// Re-generate task IDs to avoid conflicts.
 		foreach ( $data['tasks'] as &$task ) {

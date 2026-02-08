@@ -254,8 +254,8 @@ class Snippets {
 
 			if ( ! empty( $header_code ) ) {
 				echo "\n<!-- Functionalities: Custom Header Code -->\n";
-				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Admin-provided code snippets are intentionally output raw.
-				echo $header_code;
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped via escape_snippet() with unfiltered_html cap check and wp_kses fallback.
+				echo self::escape_snippet( $header_code );
 				echo "\n";
 			}
 		}
@@ -309,8 +309,8 @@ class Snippets {
 
 		if ( ! empty( $footer_code ) ) {
 			echo "\n<!-- Functionalities: Custom Footer Code -->\n";
-			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Admin-provided code snippets are intentionally output raw.
-			echo $footer_code;
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped via escape_snippet() with unfiltered_html cap check and wp_kses fallback.
+			echo self::escape_snippet( $footer_code );
 			echo "\n";
 		}
 
@@ -356,8 +356,77 @@ class Snippets {
 		}
 
 		echo "\n<!-- Functionalities: Custom Body Open Code -->\n";
-		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Admin-provided code snippets are intentionally output raw.
-		echo $body_open_code;
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped via escape_snippet() with unfiltered_html cap check and wp_kses fallback.
+		echo self::escape_snippet( $body_open_code );
 		echo "\n";
+	}
+
+	/**
+	 * Escape a code snippet for safe output.
+	 *
+	 * Users with `unfiltered_html` capability stored raw content;
+	 * others had content filtered via wp_kses() on save.
+	 * This applies late escaping at output time.
+	 *
+	 * @since 1.0.1
+	 *
+	 * @param string $code The snippet code.
+	 * @return string Escaped snippet.
+	 */
+	private static function escape_snippet( string $code ): string {
+		if ( \current_user_can( 'unfiltered_html' ) ) {
+			return $code;
+		}
+
+		return \wp_kses(
+			$code,
+			array(
+				'script'   => array(
+					'type'        => true,
+					'src'         => true,
+					'async'       => true,
+					'defer'       => true,
+					'id'          => true,
+					'crossorigin' => true,
+					'integrity'   => true,
+					'nonce'       => true,
+				),
+				'noscript' => array(),
+				'style'    => array(
+					'type'  => true,
+					'media' => true,
+				),
+				'link'     => array(
+					'rel'   => true,
+					'href'  => true,
+					'type'  => true,
+					'media' => true,
+				),
+				'meta'     => array(
+					'name'       => true,
+					'content'    => true,
+					'charset'    => true,
+					'http-equiv' => true,
+					'property'   => true,
+				),
+				'img'      => array(
+					'src'     => true,
+					'alt'     => true,
+					'width'   => true,
+					'height'  => true,
+					'loading' => true,
+				),
+				'iframe'   => array(
+					'src'             => true,
+					'width'           => true,
+					'height'          => true,
+					'frameborder'     => true,
+					'allow'           => true,
+					'allowfullscreen' => true,
+					'loading'         => true,
+					'style'           => true,
+				),
+			)
+		);
 	}
 }

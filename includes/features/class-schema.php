@@ -126,6 +126,13 @@ class Schema {
 	private static $options = null;
 
 	/**
+	 * Whether output buffering was started by this class.
+	 *
+	 * @var bool
+	 */
+	private static $buffer_started = false;
+
+	/**
 	 * Get module options with defaults.
 	 *
 	 * @since 0.3.0
@@ -239,7 +246,33 @@ class Schema {
 		 */
 		\do_action( 'functionalities_schema_before_buffer' );
 
-		ob_start( array( __CLASS__, 'buffer_callback' ) );
+		self::$buffer_started = true;
+		ob_start();
+
+		\add_action( 'shutdown', array( __CLASS__, 'end_buffer' ), 0 );
+	}
+
+	/**
+	 * End output buffering on shutdown.
+	 *
+	 * @since 1.0.1
+	 *
+	 * @return void
+	 */
+	public static function end_buffer(): void {
+		if ( ! self::$buffer_started ) {
+			return;
+		}
+
+		self::$buffer_started = false;
+
+		if ( ob_get_level() > 0 ) {
+			$html = ob_get_clean();
+			if ( false !== $html ) {
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Full page HTML processed for schema attributes.
+				echo self::buffer_callback( $html );
+			}
+		}
 	}
 
 	/**
