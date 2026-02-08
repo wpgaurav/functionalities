@@ -144,6 +144,11 @@ class Admin {
 				'icon'        => 'dashicons-flag',
 				'custom_page' => true,
 			),
+			'pwa'             => array(
+				'title'       => \__( 'Progressive Web App', 'functionalities' ),
+				'description' => \__( 'Make your site installable and work offline.', 'functionalities' ),
+				'icon'        => 'dashicons-smartphone',
+			),
 		);
 	}
 
@@ -212,6 +217,12 @@ class Admin {
 		
 		if ( 'task-manager' === $module || 'functionalities-task-manager' === $page ) {
 			$deps[] = 'jquery-ui-sortable';
+		}
+
+		if ( 'pwa' === $module ) {
+			\wp_enqueue_media();
+			\wp_enqueue_style( 'wp-color-picker' );
+			$deps[] = 'wp-color-picker';
 		}
 
 		\wp_enqueue_style(
@@ -2102,6 +2113,503 @@ class Admin {
 			'functionalities_assumption_detection',
 			'functionalities_assumption_detection_section'
 		);
+
+		// PWA settings.
+		\register_setting(
+			'functionalities_pwa',
+			'functionalities_pwa',
+			array(
+				'sanitize_callback' => array( __CLASS__, 'sanitize_pwa' ),
+				'default'           => array(
+					'enabled' => false,
+				),
+			)
+		);
+
+		\add_settings_section(
+			'functionalities_pwa_identity',
+			\__( 'App Identity', 'functionalities' ),
+			function() {
+				echo '<p>' . \esc_html__( 'Basic information about your progressive web app.', 'functionalities' ) . '</p>';
+			},
+			'functionalities_pwa'
+		);
+
+		\add_settings_field(
+			'pwa_enabled',
+			\__( 'Enable PWA', 'functionalities' ),
+			function() {
+				$o = self::get_pwa_options();
+				$checked = ! empty( $o['enabled'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_pwa[enabled]" value="1" ' . \esc_attr( $checked ) . '> ';
+				echo \esc_html__( 'Enable Progressive Web App features', 'functionalities' ) . '</label>';
+			},
+			'functionalities_pwa',
+			'functionalities_pwa_identity'
+		);
+
+		\add_settings_field(
+			'pwa_app_name',
+			\__( 'App Name', 'functionalities' ),
+			function() {
+				$o = self::get_pwa_options();
+				echo '<input type="text" name="functionalities_pwa[app_name]" value="' . \esc_attr( $o['app_name'] ) . '" class="regular-text">';
+				echo '<p class="description">' . \esc_html__( 'Full name displayed on install. Leave blank to use site title.', 'functionalities' ) . '</p>';
+			},
+			'functionalities_pwa',
+			'functionalities_pwa_identity'
+		);
+
+		\add_settings_field(
+			'pwa_short_name',
+			\__( 'Short Name', 'functionalities' ),
+			function() {
+				$o = self::get_pwa_options();
+				echo '<input type="text" name="functionalities_pwa[short_name]" value="' . \esc_attr( $o['short_name'] ) . '" class="regular-text" maxlength="12">';
+				echo '<p class="description">' . \esc_html__( 'Short name for the home screen (12 chars max).', 'functionalities' ) . '</p>';
+			},
+			'functionalities_pwa',
+			'functionalities_pwa_identity'
+		);
+
+		\add_settings_field(
+			'pwa_description',
+			\__( 'Description', 'functionalities' ),
+			function() {
+				$o = self::get_pwa_options();
+				echo '<textarea name="functionalities_pwa[description]" rows="3" class="large-text">' . \esc_textarea( $o['description'] ) . '</textarea>';
+				echo '<p class="description">' . \esc_html__( 'Shown in app stores and install dialogs. Leave blank to use site tagline.', 'functionalities' ) . '</p>';
+			},
+			'functionalities_pwa',
+			'functionalities_pwa_identity'
+		);
+
+		\add_settings_field(
+			'pwa_start_url',
+			\__( 'Start URL', 'functionalities' ),
+			function() {
+				$o = self::get_pwa_options();
+				echo '<input type="text" name="functionalities_pwa[start_url]" value="' . \esc_attr( $o['start_url'] ) . '" class="regular-text" placeholder="/">';
+			},
+			'functionalities_pwa',
+			'functionalities_pwa_identity'
+		);
+
+		\add_settings_field(
+			'pwa_scope',
+			\__( 'Scope', 'functionalities' ),
+			function() {
+				$o = self::get_pwa_options();
+				echo '<input type="text" name="functionalities_pwa[scope]" value="' . \esc_attr( $o['scope'] ) . '" class="regular-text" placeholder="/">';
+				echo '<p class="description">' . \esc_html__( 'Navigation scope. "/" means the entire site.', 'functionalities' ) . '</p>';
+			},
+			'functionalities_pwa',
+			'functionalities_pwa_identity'
+		);
+
+		\add_settings_field(
+			'pwa_categories',
+			\__( 'Categories', 'functionalities' ),
+			function() {
+				$o = self::get_pwa_options();
+				echo '<input type="text" name="functionalities_pwa[categories]" value="' . \esc_attr( $o['categories'] ) . '" class="regular-text">';
+				echo '<p class="description">' . \esc_html__( 'Comma-separated W3C categories (e.g. news, education, business).', 'functionalities' ) . '</p>';
+			},
+			'functionalities_pwa',
+			'functionalities_pwa_identity'
+		);
+
+		\add_settings_field(
+			'pwa_display',
+			\__( 'Display Mode', 'functionalities' ),
+			function() {
+				$o = self::get_pwa_options();
+				$modes = array( 'standalone', 'fullscreen', 'minimal-ui', 'browser' );
+				echo '<select name="functionalities_pwa[display]">';
+				foreach ( $modes as $mode ) {
+					echo '<option value="' . \esc_attr( $mode ) . '"' . \selected( $o['display'], $mode, false ) . '>' . \esc_html( $mode ) . '</option>';
+				}
+				echo '</select>';
+			},
+			'functionalities_pwa',
+			'functionalities_pwa_identity'
+		);
+
+		\add_settings_field(
+			'pwa_orientation',
+			\__( 'Orientation', 'functionalities' ),
+			function() {
+				$o = self::get_pwa_options();
+				$orientations = array( 'any', 'portrait', 'landscape', 'portrait-primary', 'landscape-primary' );
+				echo '<select name="functionalities_pwa[orientation]">';
+				foreach ( $orientations as $orient ) {
+					echo '<option value="' . \esc_attr( $orient ) . '"' . \selected( $o['orientation'], $orient, false ) . '>' . \esc_html( $orient ) . '</option>';
+				}
+				echo '</select>';
+			},
+			'functionalities_pwa',
+			'functionalities_pwa_identity'
+		);
+
+		// Appearance section.
+		\add_settings_section(
+			'functionalities_pwa_appearance',
+			\__( 'Appearance & Icons', 'functionalities' ),
+			function() {
+				echo '<p>' . \esc_html__( 'Theme colors and app icons. Icons must be square PNG files.', 'functionalities' ) . '</p>';
+			},
+			'functionalities_pwa'
+		);
+
+		\add_settings_field(
+			'pwa_theme_color',
+			\__( 'Theme Color', 'functionalities' ),
+			function() {
+				$o = self::get_pwa_options();
+				echo '<input type="text" name="functionalities_pwa[theme_color]" value="' . \esc_attr( $o['theme_color'] ) . '" class="func-color-field" data-default-color="#4f46e5">';
+			},
+			'functionalities_pwa',
+			'functionalities_pwa_appearance'
+		);
+
+		\add_settings_field(
+			'pwa_background_color',
+			\__( 'Background Color', 'functionalities' ),
+			function() {
+				$o = self::get_pwa_options();
+				echo '<input type="text" name="functionalities_pwa[background_color]" value="' . \esc_attr( $o['background_color'] ) . '" class="func-color-field" data-default-color="#ffffff">';
+			},
+			'functionalities_pwa',
+			'functionalities_pwa_appearance'
+		);
+
+		\add_settings_field(
+			'pwa_icon_512',
+			\__( 'Icon 512x512', 'functionalities' ),
+			function() {
+				$o = self::get_pwa_options();
+				self::render_media_field( 'functionalities_pwa[icon_512]', $o['icon_512'], \__( 'Primary app icon (required for installability).', 'functionalities' ) );
+			},
+			'functionalities_pwa',
+			'functionalities_pwa_appearance'
+		);
+
+		\add_settings_field(
+			'pwa_icon_192',
+			\__( 'Icon 192x192', 'functionalities' ),
+			function() {
+				$o = self::get_pwa_options();
+				self::render_media_field( 'functionalities_pwa[icon_192]', $o['icon_192'], \__( 'Smaller icon for home screen and splash.', 'functionalities' ) );
+			},
+			'functionalities_pwa',
+			'functionalities_pwa_appearance'
+		);
+
+		\add_settings_field(
+			'pwa_maskable_icon_512',
+			\__( 'Maskable Icon 512x512', 'functionalities' ),
+			function() {
+				$o = self::get_pwa_options();
+				self::render_media_field( 'functionalities_pwa[maskable_icon_512]', $o['maskable_icon_512'], \__( 'Maskable icon for adaptive icon support (safe zone padding recommended).', 'functionalities' ) );
+			},
+			'functionalities_pwa',
+			'functionalities_pwa_appearance'
+		);
+
+		\add_settings_field(
+			'pwa_maskable_icon_192',
+			\__( 'Maskable Icon 192x192', 'functionalities' ),
+			function() {
+				$o = self::get_pwa_options();
+				self::render_media_field( 'functionalities_pwa[maskable_icon_192]', $o['maskable_icon_192'], \__( 'Smaller maskable icon.', 'functionalities' ) );
+			},
+			'functionalities_pwa',
+			'functionalities_pwa_appearance'
+		);
+
+		// Install Prompt section.
+		\add_settings_section(
+			'functionalities_pwa_prompt',
+			\__( 'Install Prompt', 'functionalities' ),
+			function() {
+				echo '<p>' . \esc_html__( 'Customize the in-page install prompt shown to visitors.', 'functionalities' ) . '</p>';
+			},
+			'functionalities_pwa'
+		);
+
+		\add_settings_field(
+			'pwa_install_prompt',
+			\__( 'Show Install Prompt', 'functionalities' ),
+			function() {
+				$o = self::get_pwa_options();
+				$checked = ! empty( $o['install_prompt'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_pwa[install_prompt]" value="1" ' . \esc_attr( $checked ) . '> ';
+				echo \esc_html__( 'Display a custom install prompt to visitors', 'functionalities' ) . '</label>';
+			},
+			'functionalities_pwa',
+			'functionalities_pwa_prompt'
+		);
+
+		\add_settings_field(
+			'pwa_prompt_title',
+			\__( 'Prompt Title', 'functionalities' ),
+			function() {
+				$o = self::get_pwa_options();
+				echo '<input type="text" name="functionalities_pwa[prompt_title]" value="' . \esc_attr( $o['prompt_title'] ) . '" class="regular-text" placeholder="' . \esc_attr__( 'Install App', 'functionalities' ) . '">';
+			},
+			'functionalities_pwa',
+			'functionalities_pwa_prompt'
+		);
+
+		\add_settings_field(
+			'pwa_prompt_text',
+			\__( 'Prompt Text', 'functionalities' ),
+			function() {
+				$o = self::get_pwa_options();
+				echo '<input type="text" name="functionalities_pwa[prompt_text]" value="' . \esc_attr( $o['prompt_text'] ) . '" class="large-text" placeholder="' . \esc_attr__( 'Add this site to your home screen for quick access.', 'functionalities' ) . '">';
+			},
+			'functionalities_pwa',
+			'functionalities_pwa_prompt'
+		);
+
+		\add_settings_field(
+			'pwa_prompt_button',
+			\__( 'Button Text', 'functionalities' ),
+			function() {
+				$o = self::get_pwa_options();
+				echo '<input type="text" name="functionalities_pwa[prompt_button]" value="' . \esc_attr( $o['prompt_button'] ) . '" class="regular-text" placeholder="' . \esc_attr__( 'Install', 'functionalities' ) . '">';
+			},
+			'functionalities_pwa',
+			'functionalities_pwa_prompt'
+		);
+
+		\add_settings_field(
+			'pwa_prompt_dismiss',
+			\__( 'Dismiss Text', 'functionalities' ),
+			function() {
+				$o = self::get_pwa_options();
+				echo '<input type="text" name="functionalities_pwa[prompt_dismiss]" value="' . \esc_attr( $o['prompt_dismiss'] ) . '" class="regular-text" placeholder="' . \esc_attr__( 'Not now', 'functionalities' ) . '">';
+			},
+			'functionalities_pwa',
+			'functionalities_pwa_prompt'
+		);
+
+		\add_settings_field(
+			'pwa_prompt_position',
+			\__( 'Position', 'functionalities' ),
+			function() {
+				$o = self::get_pwa_options();
+				$positions = array(
+					'bottom' => \__( 'Bottom', 'functionalities' ),
+					'top'    => \__( 'Top', 'functionalities' ),
+					'center' => \__( 'Center (modal)', 'functionalities' ),
+				);
+				echo '<select name="functionalities_pwa[prompt_position]">';
+				foreach ( $positions as $val => $label ) {
+					echo '<option value="' . \esc_attr( $val ) . '"' . \selected( $o['prompt_position'], $val, false ) . '>' . \esc_html( $label ) . '</option>';
+				}
+				echo '</select>';
+			},
+			'functionalities_pwa',
+			'functionalities_pwa_prompt'
+		);
+
+		\add_settings_field(
+			'pwa_prompt_style',
+			\__( 'Style', 'functionalities' ),
+			function() {
+				$o = self::get_pwa_options();
+				$styles = array(
+					'banner' => \__( 'Banner', 'functionalities' ),
+					'card'   => \__( 'Card', 'functionalities' ),
+				);
+				echo '<select name="functionalities_pwa[prompt_style]">';
+				foreach ( $styles as $val => $label ) {
+					echo '<option value="' . \esc_attr( $val ) . '"' . \selected( $o['prompt_style'], $val, false ) . '>' . \esc_html( $label ) . '</option>';
+				}
+				echo '</select>';
+			},
+			'functionalities_pwa',
+			'functionalities_pwa_prompt'
+		);
+
+		\add_settings_field(
+			'pwa_prompt_frequency',
+			\__( 'Re-show After (days)', 'functionalities' ),
+			function() {
+				$o = self::get_pwa_options();
+				echo '<input type="number" name="functionalities_pwa[prompt_frequency]" value="' . \esc_attr( $o['prompt_frequency'] ) . '" min="1" max="365" class="small-text">';
+				echo '<p class="description">' . \esc_html__( 'Days to wait before showing prompt again after dismissal.', 'functionalities' ) . '</p>';
+			},
+			'functionalities_pwa',
+			'functionalities_pwa_prompt'
+		);
+
+		// Offline & Caching section.
+		\add_settings_section(
+			'functionalities_pwa_caching',
+			\__( 'Offline & Caching', 'functionalities' ),
+			function() {
+				echo '<p>' . \esc_html__( 'Service worker caching and offline behavior.', 'functionalities' ) . '</p>';
+			},
+			'functionalities_pwa'
+		);
+
+		\add_settings_field(
+			'pwa_cache_version',
+			\__( 'Cache Version', 'functionalities' ),
+			function() {
+				$o = self::get_pwa_options();
+				echo '<input type="text" name="functionalities_pwa[cache_version]" value="' . \esc_attr( $o['cache_version'] ) . '" class="small-text" placeholder="v1">';
+				echo '<p class="description">' . \esc_html__( 'Increment to force cache refresh (e.g. v1, v2).', 'functionalities' ) . '</p>';
+			},
+			'functionalities_pwa',
+			'functionalities_pwa_caching'
+		);
+
+		\add_settings_field(
+			'pwa_precache_urls',
+			\__( 'Precache URLs', 'functionalities' ),
+			function() {
+				$o = self::get_pwa_options();
+				echo '<textarea name="functionalities_pwa[precache_urls]" rows="4" class="large-text" placeholder="/about/&#10;/contact/">' . \esc_textarea( $o['precache_urls'] ) . '</textarea>';
+				echo '<p class="description">' . \esc_html__( 'One URL per line. These pages will be cached immediately when the service worker installs.', 'functionalities' ) . '</p>';
+			},
+			'functionalities_pwa',
+			'functionalities_pwa_caching'
+		);
+
+		// Shortcuts section.
+		\add_settings_section(
+			'functionalities_pwa_shortcuts',
+			\__( 'Shortcuts', 'functionalities' ),
+			function() {
+				echo '<p>' . \esc_html__( 'App shortcut links shown on long-press of the app icon. Up to 4 shortcuts.', 'functionalities' ) . '</p>';
+			},
+			'functionalities_pwa'
+		);
+
+		\add_settings_field(
+			'pwa_shortcuts',
+			\__( 'Shortcuts', 'functionalities' ),
+			array( __CLASS__, 'field_pwa_shortcuts' ),
+			'functionalities_pwa',
+			'functionalities_pwa_shortcuts'
+		);
+
+		// Screenshots section.
+		\add_settings_section(
+			'functionalities_pwa_screenshots',
+			\__( 'Screenshots', 'functionalities' ),
+			function() {
+				echo '<p>' . \esc_html__( 'App screenshots shown in install dialogs and app stores. Provide wide and narrow sizes.', 'functionalities' ) . '</p>';
+			},
+			'functionalities_pwa'
+		);
+
+		\add_settings_field(
+			'pwa_screenshots',
+			\__( 'Screenshots', 'functionalities' ),
+			array( __CLASS__, 'field_pwa_screenshots' ),
+			'functionalities_pwa',
+			'functionalities_pwa_screenshots'
+		);
+
+		// Advanced section.
+		\add_settings_section(
+			'functionalities_pwa_advanced',
+			\__( 'Advanced', 'functionalities' ),
+			function() {
+				echo '<p>' . \esc_html__( 'Advanced PWA features. Only change these if you know what you\'re doing.', 'functionalities' ) . '</p>';
+			},
+			'functionalities_pwa'
+		);
+
+		\add_settings_field(
+			'pwa_display_override',
+			\__( 'Display Override', 'functionalities' ),
+			function() {
+				$o = self::get_pwa_options();
+				$checked = ! empty( $o['display_override'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_pwa[display_override]" value="1" ' . \esc_attr( $checked ) . '> ';
+				echo \esc_html__( 'Enable display_override with window-controls-overlay fallback chain', 'functionalities' ) . '</label>';
+			},
+			'functionalities_pwa',
+			'functionalities_pwa_advanced'
+		);
+
+		\add_settings_field(
+			'pwa_edge_side_panel',
+			\__( 'Edge Side Panel', 'functionalities' ),
+			function() {
+				$o = self::get_pwa_options();
+				$checked = ! empty( $o['edge_side_panel'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_pwa[edge_side_panel]" value="1" ' . \esc_attr( $checked ) . '> ';
+				echo \esc_html__( 'Allow opening in Microsoft Edge side panel', 'functionalities' ) . '</label>';
+			},
+			'functionalities_pwa',
+			'functionalities_pwa_advanced'
+		);
+
+		\add_settings_field(
+			'pwa_launch_handler',
+			\__( 'Launch Handler', 'functionalities' ),
+			function() {
+				$o = self::get_pwa_options();
+				$handlers = array(
+					''                => \__( 'Default', 'functionalities' ),
+					'focus-existing'  => 'focus-existing',
+					'navigate-new'    => 'navigate-new',
+					'navigate-existing' => 'navigate-existing',
+				);
+				echo '<select name="functionalities_pwa[launch_handler]">';
+				foreach ( $handlers as $val => $label ) {
+					echo '<option value="' . \esc_attr( $val ) . '"' . \selected( $o['launch_handler'], $val, false ) . '>' . \esc_html( $label ) . '</option>';
+				}
+				echo '</select>';
+				echo '<p class="description">' . \esc_html__( 'Controls behavior when the app is already open and a new navigation is triggered.', 'functionalities' ) . '</p>';
+			},
+			'functionalities_pwa',
+			'functionalities_pwa_advanced'
+		);
+
+		\add_settings_field(
+			'pwa_share_target',
+			\__( 'Share Target', 'functionalities' ),
+			function() {
+				$o = self::get_pwa_options();
+				$checked = ! empty( $o['share_target_enabled'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_pwa[share_target_enabled]" value="1" ' . \esc_attr( $checked ) . '> ';
+				echo \esc_html__( 'Register as a Web Share Target', 'functionalities' ) . '</label>';
+				echo '<div style="margin-top:10px">';
+				echo '<label>' . \esc_html__( 'Action URL:', 'functionalities' ) . ' ';
+				echo '<input type="text" name="functionalities_pwa[share_target_action]" value="' . \esc_attr( $o['share_target_action'] ) . '" class="regular-text" placeholder="/?shared=1"></label>';
+				echo '</div>';
+				$methods = array( 'GET' => 'GET', 'POST' => 'POST' );
+				echo '<div style="margin-top:5px">';
+				echo '<label>' . \esc_html__( 'Method:', 'functionalities' ) . ' ';
+				echo '<select name="functionalities_pwa[share_target_method]">';
+				foreach ( $methods as $val => $label ) {
+					echo '<option value="' . \esc_attr( $val ) . '"' . \selected( $o['share_target_method'], $val, false ) . '>' . \esc_html( $label ) . '</option>';
+				}
+				echo '</select></label>';
+				echo '</div>';
+			},
+			'functionalities_pwa',
+			'functionalities_pwa_advanced'
+		);
+
+		\add_settings_field(
+			'pwa_advanced_manifest',
+			\__( 'Custom Manifest JSON', 'functionalities' ),
+			function() {
+				$o = self::get_pwa_options();
+				echo '<textarea name="functionalities_pwa[advanced_manifest]" rows="6" class="large-text code" placeholder=\'{"key": "value"}\'>' . \esc_textarea( $o['advanced_manifest'] ) . '</textarea>';
+				echo '<p class="description">' . \esc_html__( 'Raw JSON to merge into the manifest. Must be a valid JSON object.', 'functionalities' ) . '</p>';
+			},
+			'functionalities_pwa',
+			'functionalities_pwa_advanced'
+		);
 	}
 
 	public static function field_nofollow_external() : void {
@@ -2757,7 +3265,7 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 		$items = isset( $o['items'] ) && is_array( $o['items'] ) ? $o['items'] : [];
 		$per_page = 24;
 		$total_items = count( $items );
-		$total_pages = max( 1, ceil( $total_items / $per_page ) );
+		$total_pages = (int) max( 1, ceil( $total_items / $per_page ) );
 		?>
 		<style>
 			/* Components Grid Container */
@@ -3071,8 +3579,8 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 					$name  = $item['name'] ?? '';
 					$class = $item['class'] ?? '';
 					$css   = $item['css'] ?? '';
-					$page  = floor( $i / $per_page ) + 1;
-					$is_visible = ( $page === 1 ) ? 'is-visible' : '';
+					$page  = (int) floor( $i / $per_page ) + 1;
+					$is_visible = ( 1 === $page ) ? 'is-visible' : '';
 				?>
 				<div class="fc-card <?php echo \esc_attr( $is_visible ); ?>" data-index="<?php echo (int) $i; ?>" data-page="<?php echo (int) $page; ?>">
 					<div class="fc-card__preview">
@@ -6569,5 +7077,174 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 				'style'        => true,
 			),
 		);
+	}
+
+	// -------------------------------------------------------------------------
+	// PWA Field Renderers
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Render a media upload field.
+	 *
+	 * @param string $name  Input name attribute.
+	 * @param string $value Current URL value.
+	 * @param string $desc  Description text.
+	 * @return void
+	 */
+	private static function render_media_field( string $name, string $value, string $desc = '' ) : void {
+		$id = 'func-media-' . \sanitize_key( str_replace( array( '[', ']' ), '-', $name ) );
+		echo '<div class="func-media-field">';
+		echo '<input type="text" id="' . \esc_attr( $id ) . '" name="' . \esc_attr( $name ) . '" value="' . \esc_attr( $value ) . '" class="regular-text">';
+		echo ' <button type="button" class="button func-upload-btn" data-target="#' . \esc_attr( $id ) . '">' . \esc_html__( 'Upload', 'functionalities' ) . '</button>';
+		if ( $value ) {
+			echo '<div style="margin-top:8px"><img src="' . \esc_url( $value ) . '" style="max-width:80px;max-height:80px;border-radius:4px;border:1px solid #ddd"></div>';
+		}
+		if ( $desc ) {
+			echo '<p class="description">' . \esc_html( $desc ) . '</p>';
+		}
+		echo '</div>';
+	}
+
+	/**
+	 * Render PWA shortcuts repeater field.
+	 *
+	 * @return void
+	 */
+	public static function field_pwa_shortcuts() : void {
+		$o = self::get_pwa_options();
+		$shortcuts = ! empty( $o['shortcuts'] ) ? $o['shortcuts'] : array();
+		echo '<div id="func-pwa-shortcuts">';
+		$i = 0;
+		foreach ( $shortcuts as $sc ) {
+			self::render_shortcut_row( $i, $sc );
+			$i++;
+		}
+		echo '</div>';
+		echo '<button type="button" class="button" id="func-pwa-add-shortcut">' . \esc_html__( '+ Add Shortcut', 'functionalities' ) . '</button>';
+		echo '<p class="description">' . \esc_html__( 'Maximum 4 shortcuts. Each needs a name and URL.', 'functionalities' ) . '</p>';
+		echo '<script>
+		jQuery(function($){
+			var idx = ' . $i . ';
+			$("#func-pwa-add-shortcut").on("click",function(){
+				if(idx>=4) return;
+				var html = ' . \wp_json_encode( self::get_shortcut_row_html( '__INDEX__' ) ) . ';
+				html = html.replace(/__INDEX__/g, idx);
+				$("#func-pwa-shortcuts").append(html);
+				idx++;
+			});
+			$(document).on("click",".func-pwa-remove-shortcut",function(){
+				$(this).closest(".func-pwa-shortcut-row").remove();
+			});
+		});
+		</script>';
+	}
+
+	/**
+	 * Render a single shortcut row.
+	 *
+	 * @param int   $index Row index.
+	 * @param array $data  Shortcut data.
+	 * @return void
+	 */
+	private static function render_shortcut_row( int $index, array $data ) : void {
+		$name = \esc_attr( $data['name'] ?? '' );
+		$url  = \esc_attr( $data['url'] ?? '' );
+		$desc = \esc_attr( $data['description'] ?? '' );
+		$icon = \esc_attr( $data['icon'] ?? '' );
+		$prefix = 'functionalities_pwa[shortcuts][' . $index . ']';
+		echo '<div class="func-pwa-shortcut-row" style="padding:10px;border:1px solid #ddd;border-radius:4px;margin-bottom:8px;background:#fafafa">';
+		echo '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
+		echo '<input type="text" name="' . \esc_attr( $prefix ) . '[name]" value="' . $name . '" placeholder="' . \esc_attr__( 'Name', 'functionalities' ) . '" class="regular-text">';
+		echo '<input type="url" name="' . \esc_attr( $prefix ) . '[url]" value="' . $url . '" placeholder="' . \esc_attr__( 'URL (e.g. /blog/)', 'functionalities' ) . '" class="regular-text">';
+		echo '<input type="text" name="' . \esc_attr( $prefix ) . '[description]" value="' . $desc . '" placeholder="' . \esc_attr__( 'Description', 'functionalities' ) . '" class="regular-text">';
+		echo '<input type="url" name="' . \esc_attr( $prefix ) . '[icon]" value="' . $icon . '" placeholder="' . \esc_attr__( 'Icon URL (96x96 PNG)', 'functionalities' ) . '" class="regular-text">';
+		echo '</div>';
+		echo '<button type="button" class="button button-link-delete func-pwa-remove-shortcut" style="margin-top:6px">' . \esc_html__( 'Remove', 'functionalities' ) . '</button>';
+		echo '</div>';
+	}
+
+	/**
+	 * Get shortcut row HTML template for JS.
+	 *
+	 * @param string $index Placeholder index.
+	 * @return string HTML template.
+	 */
+	private static function get_shortcut_row_html( string $index ) : string {
+		ob_start();
+		self::render_shortcut_row( (int) $index, array() );
+		$html = ob_get_clean();
+		return str_replace( (string) (int) $index, $index, $html );
+	}
+
+	/**
+	 * Render PWA screenshots repeater field.
+	 *
+	 * @return void
+	 */
+	public static function field_pwa_screenshots() : void {
+		$o = self::get_pwa_options();
+		$screenshots = ! empty( $o['screenshots'] ) ? $o['screenshots'] : array();
+		echo '<div id="func-pwa-screenshots">';
+		$i = 0;
+		foreach ( $screenshots as $ss ) {
+			self::render_screenshot_row( $i, $ss );
+			$i++;
+		}
+		echo '</div>';
+		echo '<button type="button" class="button" id="func-pwa-add-screenshot">' . \esc_html__( '+ Add Screenshot', 'functionalities' ) . '</button>';
+		echo '<script>
+		jQuery(function($){
+			var idx = ' . $i . ';
+			$("#func-pwa-add-screenshot").on("click",function(){
+				var html = ' . \wp_json_encode( self::get_screenshot_row_html( '__INDEX__' ) ) . ';
+				html = html.replace(/__INDEX__/g, idx);
+				$("#func-pwa-screenshots").append(html);
+				idx++;
+			});
+			$(document).on("click",".func-pwa-remove-screenshot",function(){
+				$(this).closest(".func-pwa-screenshot-row").remove();
+			});
+		});
+		</script>';
+	}
+
+	/**
+	 * Render a single screenshot row.
+	 *
+	 * @param int   $index Row index.
+	 * @param array $data  Screenshot data.
+	 * @return void
+	 */
+	private static function render_screenshot_row( int $index, array $data ) : void {
+		$src   = \esc_attr( $data['src'] ?? '' );
+		$sizes = \esc_attr( $data['sizes'] ?? '' );
+		$label = \esc_attr( $data['label'] ?? '' );
+		$form  = $data['form_factor'] ?? 'wide';
+		$prefix = 'functionalities_pwa[screenshots][' . $index . ']';
+		echo '<div class="func-pwa-screenshot-row" style="padding:10px;border:1px solid #ddd;border-radius:4px;margin-bottom:8px;background:#fafafa">';
+		echo '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
+		echo '<input type="url" name="' . \esc_attr( $prefix ) . '[src]" value="' . $src . '" placeholder="' . \esc_attr__( 'Image URL', 'functionalities' ) . '" class="regular-text">';
+		echo '<input type="text" name="' . \esc_attr( $prefix ) . '[sizes]" value="' . $sizes . '" placeholder="' . \esc_attr__( '1280x720', 'functionalities' ) . '" class="regular-text">';
+		echo '<input type="text" name="' . \esc_attr( $prefix ) . '[label]" value="' . $label . '" placeholder="' . \esc_attr__( 'Label', 'functionalities' ) . '" class="regular-text">';
+		echo '<select name="' . \esc_attr( $prefix ) . '[form_factor]">';
+		echo '<option value="wide"' . \selected( $form, 'wide', false ) . '>' . \esc_html__( 'Wide (desktop)', 'functionalities' ) . '</option>';
+		echo '<option value="narrow"' . \selected( $form, 'narrow', false ) . '>' . \esc_html__( 'Narrow (mobile)', 'functionalities' ) . '</option>';
+		echo '</select>';
+		echo '</div>';
+		echo '<button type="button" class="button button-link-delete func-pwa-remove-screenshot" style="margin-top:6px">' . \esc_html__( 'Remove', 'functionalities' ) . '</button>';
+		echo '</div>';
+	}
+
+	/**
+	 * Get screenshot row HTML template for JS.
+	 *
+	 * @param string $index Placeholder index.
+	 * @return string HTML template.
+	 */
+	private static function get_screenshot_row_html( string $index ) : string {
+		ob_start();
+		self::render_screenshot_row( (int) $index, array() );
+		$html = ob_get_clean();
+		return str_replace( (string) (int) $index, $index, $html );
 	}
 }

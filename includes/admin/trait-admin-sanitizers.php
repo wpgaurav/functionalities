@@ -454,4 +454,124 @@ trait Admin_Sanitizers {
 			'detect_cron_issues'              => ! empty( $input['detect_cron_issues'] ),
 		);
 	}
+
+	/**
+	 * Sanitize PWA settings.
+	 *
+	 * @param array $input Raw input data.
+	 * @return array Sanitized data.
+	 */
+	public static function sanitize_pwa( $input ) : array {
+		$allowed_displays     = array( 'standalone', 'fullscreen', 'minimal-ui', 'browser' );
+		$allowed_orientations = array( 'any', 'portrait', 'landscape', 'portrait-primary', 'landscape-primary' );
+		$allowed_positions    = array( 'bottom', 'top', 'center' );
+		$allowed_styles       = array( 'banner', 'card' );
+		$allowed_methods      = array( 'GET', 'POST' );
+		$allowed_handlers     = array( '', 'focus-existing', 'navigate-new', 'navigate-existing' );
+
+		$display     = \sanitize_text_field( $input['display'] ?? 'standalone' );
+		$orientation = \sanitize_text_field( $input['orientation'] ?? 'any' );
+		$position    = \sanitize_text_field( $input['prompt_position'] ?? 'bottom' );
+		$style       = \sanitize_text_field( $input['prompt_style'] ?? 'banner' );
+		$method      = \sanitize_text_field( $input['share_target_method'] ?? 'GET' );
+		$handler     = \sanitize_text_field( $input['launch_handler'] ?? '' );
+
+		$out = array(
+			'enabled'              => ! empty( $input['enabled'] ),
+			'app_name'             => \sanitize_text_field( $input['app_name'] ?? '' ),
+			'short_name'           => \sanitize_text_field( mb_substr( $input['short_name'] ?? '', 0, 12 ) ),
+			'description'          => \sanitize_textarea_field( $input['description'] ?? '' ),
+			'start_url'            => \sanitize_text_field( $input['start_url'] ?? '/' ),
+			'scope'                => \sanitize_text_field( $input['scope'] ?? '/' ),
+			'display'              => in_array( $display, $allowed_displays, true ) ? $display : 'standalone',
+			'orientation'          => in_array( $orientation, $allowed_orientations, true ) ? $orientation : 'any',
+			'categories'           => \sanitize_text_field( $input['categories'] ?? '' ),
+			'theme_color'          => \sanitize_hex_color( $input['theme_color'] ?? '#4f46e5' ) ?: '#4f46e5',
+			'background_color'     => \sanitize_hex_color( $input['background_color'] ?? '#ffffff' ) ?: '#ffffff',
+			'icon_512'             => \esc_url_raw( $input['icon_512'] ?? '' ),
+			'icon_192'             => \esc_url_raw( $input['icon_192'] ?? '' ),
+			'maskable_icon_512'    => \esc_url_raw( $input['maskable_icon_512'] ?? '' ),
+			'maskable_icon_192'    => \esc_url_raw( $input['maskable_icon_192'] ?? '' ),
+			'install_prompt'       => ! empty( $input['install_prompt'] ),
+			'prompt_title'         => \sanitize_text_field( $input['prompt_title'] ?? '' ),
+			'prompt_text'          => \sanitize_text_field( $input['prompt_text'] ?? '' ),
+			'prompt_button'        => \sanitize_text_field( $input['prompt_button'] ?? '' ),
+			'prompt_dismiss'       => \sanitize_text_field( $input['prompt_dismiss'] ?? '' ),
+			'prompt_position'      => in_array( $position, $allowed_positions, true ) ? $position : 'bottom',
+			'prompt_style'         => in_array( $style, $allowed_styles, true ) ? $style : 'banner',
+			'prompt_frequency'     => max( 1, min( 365, (int) ( $input['prompt_frequency'] ?? 14 ) ) ),
+			'cache_version'        => \sanitize_text_field( $input['cache_version'] ?? 'v1' ),
+			'precache_urls'        => '',
+			'display_override'     => ! empty( $input['display_override'] ),
+			'edge_side_panel'      => ! empty( $input['edge_side_panel'] ),
+			'launch_handler'       => in_array( $handler, $allowed_handlers, true ) ? $handler : '',
+			'share_target_enabled' => ! empty( $input['share_target_enabled'] ),
+			'share_target_action'  => \sanitize_text_field( $input['share_target_action'] ?? '' ),
+			'share_target_method'  => in_array( $method, $allowed_methods, true ) ? $method : 'GET',
+			'advanced_manifest'    => '',
+			'shortcuts'            => array(),
+			'screenshots'          => array(),
+			'rewrite_version'      => \Functionalities\Features\PWA::REWRITE_VERSION,
+		);
+
+		if ( isset( $input['precache_urls'] ) ) {
+			$lines = preg_split( '/\r\n|\r|\n/', (string) $input['precache_urls'] );
+			$clean = array();
+			foreach ( $lines as $line ) {
+				$line = trim( (string) $line );
+				if ( '' !== $line ) {
+					$clean[] = \sanitize_text_field( $line );
+				}
+			}
+			$out['precache_urls'] = implode( "\n", $clean );
+		}
+
+		if ( isset( $input['advanced_manifest'] ) ) {
+			$raw = trim( (string) $input['advanced_manifest'] );
+			if ( '' !== $raw ) {
+				$decoded = json_decode( $raw, true );
+				if ( json_last_error() === JSON_ERROR_NONE && is_array( $decoded ) ) {
+					$out['advanced_manifest'] = \wp_json_encode( $decoded );
+				}
+			}
+		}
+
+		if ( ! empty( $input['shortcuts'] ) && is_array( $input['shortcuts'] ) ) {
+			$shortcuts = array();
+			foreach ( array_slice( $input['shortcuts'], 0, 4 ) as $sc ) {
+				$name = \sanitize_text_field( $sc['name'] ?? '' );
+				$url  = \sanitize_text_field( $sc['url'] ?? '' );
+				if ( '' === $name || '' === $url ) {
+					continue;
+				}
+				$shortcuts[] = array(
+					'name'        => $name,
+					'url'         => $url,
+					'description' => \sanitize_text_field( $sc['description'] ?? '' ),
+					'icon'        => \esc_url_raw( $sc['icon'] ?? '' ),
+				);
+			}
+			$out['shortcuts'] = $shortcuts;
+		}
+
+		if ( ! empty( $input['screenshots'] ) && is_array( $input['screenshots'] ) ) {
+			$screenshots = array();
+			foreach ( $input['screenshots'] as $ss ) {
+				$src = \esc_url_raw( $ss['src'] ?? '' );
+				if ( '' === $src ) {
+					continue;
+				}
+				$form_factor = \sanitize_text_field( $ss['form_factor'] ?? 'wide' );
+				$screenshots[] = array(
+					'src'         => $src,
+					'sizes'       => \sanitize_text_field( $ss['sizes'] ?? '' ),
+					'label'       => \sanitize_text_field( $ss['label'] ?? '' ),
+					'form_factor' => in_array( $form_factor, array( 'wide', 'narrow' ), true ) ? $form_factor : 'wide',
+				);
+			}
+			$out['screenshots'] = $screenshots;
+		}
+
+		return $out;
+	}
 }

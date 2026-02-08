@@ -14,6 +14,8 @@
 		initAccordions();
 		initModuleCards();
 		initRunDetection();
+		initMediaUploads();
+		initColorPickers();
 	});
 
 	/**
@@ -88,6 +90,36 @@
 				}
 			});
 		});
+	}
+
+	/**
+	 * Initialize media upload buttons.
+	 */
+	function initMediaUploads() {
+		$(document).on('click', '.func-upload-btn', function(e) {
+			e.preventDefault();
+			var $btn = $(this);
+			var $target = $($btn.data('target'));
+			var frame = wp.media({
+				title: 'Select Image',
+				multiple: false,
+				library: { type: 'image' }
+			});
+			frame.on('select', function() {
+				var attachment = frame.state().get('selection').first().toJSON();
+				$target.val(attachment.url);
+			});
+			frame.open();
+		});
+	}
+
+	/**
+	 * Initialize color picker fields.
+	 */
+	function initColorPickers() {
+		if ($.fn.wpColorPicker) {
+			$('.func-color-field').wpColorPicker();
+		}
 	}
 
 })(jQuery);

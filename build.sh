@@ -38,7 +38,7 @@ INCLUDE=(
     "index.php"
     "readme.txt"
     "uninstall.php"
-    "exception-urls.json.sample"
+    "exception-urls-sample.json"
 )
 
 # Copy files to build directory

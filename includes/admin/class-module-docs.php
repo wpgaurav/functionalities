@@ -215,6 +215,22 @@ class Module_Docs {
 					array( 'name' => 'functionalities_assumptions_warnings', 'description' => \__( 'Modify detected warnings', 'functionalities' ) ),
 				),
 			),
+
+			'pwa' => array(
+				'features' => array(
+					\__( 'Web App Manifest for installability on mobile and desktop', 'functionalities' ),
+					\__( 'Service worker with cache-first, network-first, and stale-while-revalidate strategies', 'functionalities' ),
+					\__( 'Custom offline page with cached pages list and auto-reload', 'functionalities' ),
+					\__( 'Customizable install prompt with position and style options', 'functionalities' ),
+					\__( 'App shortcuts, screenshots, share target, and display override support', 'functionalities' ),
+				),
+				'usage' => \__( 'Enable this module to make your site installable as a standalone app. Configure icons, colors, and caching behavior. Visitors can install it from the browser or a custom prompt. The service worker handles offline access and smart caching.', 'functionalities' ),
+				'hooks' => array(
+					array( 'name' => 'functionalities_pwa_enabled', 'description' => \__( 'Toggle PWA output', 'functionalities' ) ),
+					array( 'name' => 'functionalities_pwa_manifest', 'description' => \__( 'Filter manifest data before output', 'functionalities' ) ),
+					array( 'name' => 'functionalities_pwa_service_worker_config', 'description' => \__( 'Filter service worker configuration', 'functionalities' ) ),
+				),
+			),
 		);
 	}
 }

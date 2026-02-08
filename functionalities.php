@@ -77,6 +77,7 @@ spl_autoload_register(function (string $class) {
 	\Functionalities\Features\Redirect_Manager::init();
 	\Functionalities\Features\Login_Security::init();
 	\Functionalities\Features\SVG_Icons::init();
+	\Functionalities\Features\PWA::init();
 	\Functionalities\Premium\Loader::init();
 }, 10);
 

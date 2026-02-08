@@ -68,10 +68,10 @@ class License_Manager {
 		}
 		\check_admin_referer( 'func_lic_license_nonce', 'func_lic_license_nonce' );
 
-		$action = \sanitize_text_field( $_POST['func_lic_license_action'] );
+		$action = \sanitize_text_field( \wp_unslash( $_POST['func_lic_license_action'] ) );
 
 		if ( 'activate' === $action ) {
-			$key = \sanitize_text_field( trim( $_POST['license_key'] ?? '' ) );
+			$key = \sanitize_text_field( trim( \wp_unslash( $_POST['license_key'] ?? '' ) ) );
 			if ( empty( $key ) ) {
 				\add_settings_error( 'func_lic_license', 'empty_key', \__( 'Please enter a license key.', 'functionalities' ), 'error' );
 				return;
@@ -243,7 +243,8 @@ class License_Manager {
 					<div style="background:#d4edda;border:1px solid #c3e6cb;padding:12px 16px;border-radius:4px;margin-bottom:16px;">
 						<strong style="color:#155724;">&#10003; <?php \esc_html_e( 'License Active', 'functionalities' ); ?></strong>
 						<?php if ( $expires && 'lifetime' !== $expires ) : ?>
-							<br><small><?php \printf( \esc_html__( 'Expires: %s', 'functionalities' ), \esc_html( $expires ) ); ?></small>
+							<?php /* translators: %s: license expiration date */ ?>
+						<br><small><?php \printf( \esc_html__( 'Expires: %s', 'functionalities' ), \esc_html( $expires ) ); ?></small>
 						<?php elseif ( 'lifetime' === $expires ) : ?>
 							<br><small><?php \esc_html_e( 'Lifetime license', 'functionalities' ); ?></small>
 						<?php endif; ?>
@@ -277,7 +278,8 @@ class License_Manager {
 						<p><input type="submit" class="button button-primary" value="<?php \esc_attr_e( 'Activate', 'functionalities' ); ?>"></p>
 					</form>
 					<hr>
-					<p><small><?php \printf( \esc_html__( 'Need a license? %sGet one here%s.', 'functionalities' ), '<a href="https://gauravtiwari.org/product/functionalities/" target="_blank">', '</a>' ); ?></small></p>
+					<?php /* translators: %1$s: opening link tag, %2$s: closing link tag */ ?>
+				<p><small><?php \printf( \esc_html__( 'Need a license? %1$sGet one here%2$s.', 'functionalities' ), '<a href="https://gauravtiwari.org/product/functionalities/" target="_blank">', '</a>' ); ?></small></p>
 				<?php endif; ?>
 			</div>
 		</div>

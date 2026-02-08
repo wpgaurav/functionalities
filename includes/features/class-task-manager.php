@@ -727,14 +727,17 @@ class Task_Manager {
 		$task_id  = isset( $_POST['task_id'] ) ? \sanitize_key( $_POST['task_id'] ) : '';
 		$updates  = array();
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 		if ( isset( $_POST['text'] ) ) {
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 			$updates['text'] = \sanitize_text_field( \wp_unslash( $_POST['text'] ) );
 		}
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 		if ( isset( $_POST['notes'] ) ) {
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 			$updates['notes'] = \sanitize_textarea_field( \wp_unslash( $_POST['notes'] ) );
 		}
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 		if ( isset( $_POST['priority'] ) ) {
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 			$updates['priority'] = (int) $_POST['priority'];
@@ -1078,7 +1081,8 @@ class Task_Manager {
 			\wp_reset_postdata();
 		}
 
-		\wp_send_json_success( array( 
+		\wp_send_json_success( array(
+			/* translators: %d: number of imported draft posts */
 			'message' => sprintf( \__( 'Imported %d draft posts.', 'functionalities' ), $count ),
 			'count'   => $count
 		) );

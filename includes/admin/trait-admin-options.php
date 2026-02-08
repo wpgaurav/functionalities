@@ -369,4 +369,13 @@ trait Admin_Options {
 	public static function get_svg_icons_options() : array {
 		return \Functionalities\Features\SVG_Icons::get_options();
 	}
+
+	/**
+	 * Get PWA options with defaults.
+	 *
+	 * @return array PWA options.
+	 */
+	public static function get_pwa_options() : array {
+		return \Functionalities\Features\PWA::get_options();
+	}
 }
