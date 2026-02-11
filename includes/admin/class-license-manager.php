@@ -150,9 +150,15 @@ class License_Manager {
 	}
 
 	public function check_for_update( $transient ) {
-		if ( empty( $transient->checked ) ) {
+		if ( ! is_object( $transient ) ) {
+			$transient = new \stdClass();
+		}
+
+		$basename = \plugin_basename( FUNCTIONALITIES_FILE );
+		if ( ! empty( $transient->response[ $basename ] ) ) {
 			return $transient;
 		}
+
 		$license = $this->get_license_data();
 		if ( empty( $license['license_key'] ) || 'valid' !== ( $license['status'] ?? '' ) ) {
 			return $transient;
