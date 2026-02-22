@@ -1,0 +1,120 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for changelog generation
+
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Get previous tag
+        id: prev_tag
+        run: |
+          PREV_TAG=$(git tag --sort=-creatordate | sed -n '2p')
+          echo "PREV_TAG=${PREV_TAG}" >> $GITHUB_OUTPUT
+          echo "Previous tag: ${PREV_TAG}"
+
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          VERSION="${{ steps.get_version.outputs.VERSION }}"
+          PREV_TAG="${{ steps.prev_tag.outputs.PREV_TAG }}"
+
+          # Start building release notes
+          cat > release_notes.md << 'HEADER'
+          ## What's Changed
+          HEADER
+
+          # Try CHANGELOG.md first for curated notes
+          if [ -f "CHANGELOG.md" ]; then
+            CHANGELOG_SECTION=$(awk "/^## \[${VERSION}\]/{found=1; next} /^## \[/{found=0} found" CHANGELOG.md)
+            if [ -n "$CHANGELOG_SECTION" ]; then
+              echo "" >> release_notes.md
+              echo "$CHANGELOG_SECTION" >> release_notes.md
+              echo "" >> release_notes.md
+            fi
+          fi
+
+          # Generate commit log between tags
+          if [ -n "$PREV_TAG" ]; then
+            echo "### Commits" >> release_notes.md
+            echo "" >> release_notes.md
+            git log ${PREV_TAG}..HEAD --pretty=format:"- %s (\`%h\`)" --no-merges >> release_notes.md
+            echo "" >> release_notes.md
+            echo "" >> release_notes.md
+
+            # Stats
+            COMMIT_COUNT=$(git rev-list ${PREV_TAG}..HEAD --count --no-merges)
+            FILES_CHANGED=$(git diff ${PREV_TAG}..HEAD --stat | tail -1)
+            echo "### Stats" >> release_notes.md
+            echo "" >> release_notes.md
+            echo "- **Commits:** ${COMMIT_COUNT}" >> release_notes.md
+            echo "- **Changes:** ${FILES_CHANGED}" >> release_notes.md
+            echo "" >> release_notes.md
+          fi
+
+          # Plugin info
+          PHP_VERSION=$(grep "Requires PHP" functionalities.php | grep -oP '[\d.]+')
+          WP_VERSION=$(grep "Requires at least" functionalities.php | grep -oP '[\d.]+')
+
+          echo "### Plugin Info" >> release_notes.md
+          echo "" >> release_notes.md
+          echo "- **Requires WordPress:** ${WP_VERSION}+" >> release_notes.md
+          echo "- **Requires PHP:** ${PHP_VERSION}+" >> release_notes.md
+          echo "" >> release_notes.md
+
+          # Install instructions
+          cat >> release_notes.md << 'INSTALL'
+          ### Installation
+
+          1. Download `functionalities-pro-*.zip` from the assets below
+          2. Go to **Plugins → Add New → Upload Plugin** in WordPress admin
+          3. Upload the zip file and activate
+          INSTALL
+
+          echo "Release notes generated:"
+          cat release_notes.md
+
+      - name: Create plugin zip
+        run: |
+          mkdir -p build/functionalities-pro
+
+          rsync -av \
+            --exclude='.*' \
+            --exclude='build' \
+            --exclude='node_modules' \
+            --exclude='*.log' \
+            --exclude='package-lock.json' \
+            --exclude='composer.lock' \
+            --exclude='release_notes.md' \
+            ./ build/functionalities-pro/
+
+          cd build
+          zip -r functionalities-pro-${{ steps.get_version.outputs.VERSION }}.zip functionalities-pro
+          mv functionalities-pro-${{ steps.get_version.outputs.VERSION }}.zip ../
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Functionalities Pro v${{ steps.get_version.outputs.VERSION }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: false
+          files: functionalities-pro-${{ steps.get_version.outputs.VERSION }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
