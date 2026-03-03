@@ -5,7 +5,7 @@ Tags: performance, security, seo, redirection, cleanup
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -129,6 +129,12 @@ All settings are preserved in the database. Reactivate anytime and everything is
 3. Assumption Detection module
 
 == Changelog ==
+
+= 1.1.1 =
+* Fixed: PHPCS escaping compliance for all output variables
+* Fixed: WordPress.org SVN tag version mismatch
+* Fixed: Short description truncation (now under 150 chars)
+* Fixed: Excluded landing-page.html and LICENSE from distribution
 
 = 1.1.0 =
 * Renamed to Dynamic Functionalities for WordPress.org
