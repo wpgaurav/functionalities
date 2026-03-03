@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name:       Dynamic Functionalities
- * Plugin URI:        https://wordpress.org/plugins/functionalities/
+ * Plugin URI:        https://gauravtiwari.org/product/functionalities/
  * Description:       All-in-one WordPress optimization toolkit. 15+ modules for performance, security, SEO, and content management.
  * Version:           1.1.0
  * Author:            Gaurav Tiwari

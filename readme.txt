@@ -1,5 +1,5 @@
 === Dynamic Functionalities ===
-Contributors: developer suspended
+Contributors: gauravtiwari
 Donate link: https://gauravtiwari.org
 Tags: performance, seo, schema, redirection, utilities
 Requires at least: 5.8
