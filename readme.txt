@@ -103,11 +103,9 @@ Yes, all features work with both classic and block themes.
 
 == Screenshots ==
 
-1. Main dashboard with module cards
-2. Link Management settings
-3. Performance & Cleanup options
-4. Redirect Manager interface
-5. Task Manager project view
+1. Dashboard overview with module cards
+2. Content Integrity module
+3. Assumption Detection module
 
 == Changelog ==
 

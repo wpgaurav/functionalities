@@ -320,6 +320,10 @@ class Admin {
 					<?php echo \esc_html__( 'Need help with Dynamic Functionalities? Check out these resources:', 'functionalities' ); ?>
 				</p>
 				<div style="display: flex; flex-wrap: wrap; gap: 10px;">
+					<a href="https://gauravtiwari.org/circle/course/functionalities-training/lessons" target="_blank" rel="noopener" class="button" style="display: inline-flex; align-items: center; gap: 5px;">
+						<span class="dashicons dashicons-book" style="font-size: 16px; width: 16px; height: 16px;"></span>
+						<?php echo \esc_html__( 'Documentation', 'functionalities' ); ?>
+					</a>
 					<a href="https://wordpress.org/support/plugin/functionalities/" target="_blank" rel="noopener" class="button" style="display: inline-flex; align-items: center; gap: 5px;">
 						<span class="dashicons dashicons-sos" style="font-size: 16px; width: 16px; height: 16px;"></span>
 						<?php echo \esc_html__( 'Support', 'functionalities' ); ?>
@@ -328,10 +332,6 @@ class Admin {
 						<span class="dashicons dashicons-flag" style="font-size: 16px; width: 16px; height: 16px;"></span>
 						<?php echo \esc_html__( 'Report Issues', 'functionalities' ); ?>
 					</a>
-					<a href="https://gauravtiwari.org/contact/" target="_blank" rel="noopener" class="button" style="display: inline-flex; align-items: center; gap: 5px;">
-						<span class="dashicons dashicons-email" style="font-size: 16px; width: 16px; height: 16px;"></span>
-						<?php echo \esc_html__( 'Contact Developer', 'functionalities' ); ?>
-					</a>
 				</div>
 				<p style="color: #646970; margin-top: 15px; margin-bottom: 0; font-size: 12px;">
 					<?php
@@ -339,7 +339,7 @@ class Admin {
 						/* translators: %1$s: Plugin version number, %2$s: Website link */
 						\esc_html__( 'Dynamic Functionalities v%1$s | Visit %2$s for more information.', 'functionalities' ),
 						\esc_html( FUNCTIONALITIES_VERSION ),
-						'<a href="https://wordpress.org/plugins/functionalities/" target="_blank" rel="noopener">WordPress.org</a>'
+						'<a href="https://functionalities.dev" target="_blank" rel="noopener">functionalities.dev</a>'
 					);
 					?>
 				</p>

@@ -1,0 +1,198 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <defs>
+    <!-- Background gradient -->
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f0f4f8"/>
+      <stop offset="100%" stop-color="#e2e8f0"/>
+    </linearGradient>
+
+    <!-- Platform shadow -->
+    <filter id="platformShadow" x="-30%" y="-10%" width="160%" height="150%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#1a365d" flood-opacity="0.12"/>
+    </filter>
+
+    <!-- Cube shadow -->
+    <filter id="cubeShadow" x="-40%" y="-20%" width="180%" height="160%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#1a365d" flood-opacity="0.15"/>
+    </filter>
+
+    <!-- Glass layer gradients (bottom to top: deep blue -> teal -> light cyan) -->
+    <linearGradient id="layer1" x1="0" y1="0" x2="1" y2="0.5">
+      <stop offset="0%" stop-color="#2563eb" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.55"/>
+    </linearGradient>
+    <linearGradient id="layer2" x1="0" y1="0" x2="1" y2="0.5">
+      <stop offset="0%" stop-color="#0ea5e9" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.45"/>
+    </linearGradient>
+    <linearGradient id="layer3" x1="0" y1="0" x2="1" y2="0.5">
+      <stop offset="0%" stop-color="#14b8a6" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#5eead4" stop-opacity="0.4"/>
+    </linearGradient>
+    <linearGradient id="layer4" x1="0" y1="0" x2="1" y2="0.5">
+      <stop offset="0%" stop-color="#67e8f9" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#a5f3fc" stop-opacity="0.35"/>
+    </linearGradient>
+
+    <!-- Layer edge highlights -->
+    <linearGradient id="edgeHighlight" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.1"/>
+    </linearGradient>
+
+    <!-- Green cube -->
+    <linearGradient id="greenCube" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#34d399"/>
+      <stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>
+    <linearGradient id="greenCubeLight" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#6ee7b7" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#34d399" stop-opacity="0.6"/>
+    </linearGradient>
+
+    <!-- Blue cube -->
+    <linearGradient id="blueCube" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+    <linearGradient id="blueCubeLight" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#93c5fd" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.6"/>
+    </linearGradient>
+
+    <!-- White/frosted cube -->
+    <linearGradient id="whiteCube" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f1f5f9"/>
+      <stop offset="100%" stop-color="#cbd5e1"/>
+    </linearGradient>
+    <linearGradient id="whiteCubeLight" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#e2e8f0" stop-opacity="0.7"/>
+    </linearGradient>
+
+    <!-- Platform gradient -->
+    <linearGradient id="platform" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e2e8f0"/>
+    </linearGradient>
+    <linearGradient id="platformRing" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="256" height="256" rx="32" fill="url(#bg)"/>
+
+  <!-- Subtle grid lines -->
+  <g opacity="0.08" stroke="#94a3b8" stroke-width="0.5">
+    <line x1="0" y1="64" x2="256" y2="64"/>
+    <line x1="0" y1="128" x2="256" y2="128"/>
+    <line x1="0" y1="192" x2="256" y2="192"/>
+    <line x1="64" y1="0" x2="64" y2="256"/>
+    <line x1="128" y1="0" x2="128" y2="256"/>
+    <line x1="192" y1="0" x2="192" y2="256"/>
+  </g>
+
+  <!-- Connection lines (behind everything) -->
+  <g stroke="#14b8a6" stroke-width="1.5" fill="none" opacity="0.6">
+    <!-- To green cube (top-left) -->
+    <line x1="105" y1="158" x2="58" y2="82"/>
+    <!-- To blue cube (bottom-right) -->
+    <line x1="152" y1="158" x2="198" y2="188"/>
+    <!-- To white cube (bottom-left) -->
+    <line x1="110" y1="172" x2="62" y2="192"/>
+    <!-- To green cube 2 (top-right) -->
+    <line x1="148" y1="145" x2="194" y2="78"/>
+  </g>
+
+  <!-- Connection dots -->
+  <g fill="#14b8a6">
+    <circle cx="105" cy="158" r="3" opacity="0.8"/>
+    <circle cx="152" cy="158" r="3" opacity="0.8"/>
+    <circle cx="110" cy="172" r="3" opacity="0.8"/>
+    <circle cx="148" cy="145" r="3" opacity="0.8"/>
+  </g>
+
+  <!-- Platform (isometric ellipse) -->
+  <g filter="url(#platformShadow)">
+    <!-- Platform base -->
+    <ellipse cx="128" cy="172" rx="62" ry="24" fill="url(#platform)"/>
+    <!-- Platform ring -->
+    <ellipse cx="128" cy="172" rx="62" ry="24" fill="none" stroke="url(#platformRing)" stroke-width="3"/>
+  </g>
+
+  <!-- Stacked glass layers (isometric parallelograms as ellipses) -->
+  <!-- Layer 1 - bottom (deep blue) -->
+  <g>
+    <ellipse cx="128" cy="158" rx="44" ry="16" fill="url(#layer1)"/>
+    <ellipse cx="128" cy="158" rx="44" ry="16" fill="none" stroke="#ffffff" stroke-width="0.8" stroke-opacity="0.4"/>
+    <ellipse cx="128" cy="156" rx="40" ry="13" fill="url(#edgeHighlight)" opacity="0.3"/>
+  </g>
+
+  <!-- Layer 2 (ocean blue) -->
+  <g>
+    <ellipse cx="128" cy="143" rx="40" ry="14" fill="url(#layer2)"/>
+    <ellipse cx="128" cy="143" rx="40" ry="14" fill="none" stroke="#ffffff" stroke-width="0.8" stroke-opacity="0.4"/>
+    <ellipse cx="128" cy="141" rx="36" ry="11" fill="url(#edgeHighlight)" opacity="0.3"/>
+  </g>
+
+  <!-- Layer 3 (teal) -->
+  <g>
+    <ellipse cx="128" cy="128" rx="36" ry="12" fill="url(#layer3)"/>
+    <ellipse cx="128" cy="128" rx="36" ry="12" fill="none" stroke="#ffffff" stroke-width="0.8" stroke-opacity="0.4"/>
+    <ellipse cx="128" cy="126" rx="32" ry="9" fill="url(#edgeHighlight)" opacity="0.3"/>
+  </g>
+
+  <!-- Layer 4 - top (light cyan) -->
+  <g>
+    <ellipse cx="128" cy="115" rx="32" ry="10" fill="url(#layer4)"/>
+    <ellipse cx="128" cy="115" rx="32" ry="10" fill="none" stroke="#ffffff" stroke-width="0.8" stroke-opacity="0.4"/>
+    <ellipse cx="128" cy="113" rx="28" ry="7" fill="url(#edgeHighlight)" opacity="0.4"/>
+  </g>
+
+  <!-- Vertical glass edges between layers -->
+  <g opacity="0.15">
+    <rect x="86" y="115" width="84" height="43" rx="2" fill="url(#layer1)"/>
+  </g>
+
+  <!-- Green cube - top left -->
+  <g filter="url(#cubeShadow)" transform="translate(38, 58)">
+    <!-- Top face -->
+    <path d="M20 0 L40 10 L20 20 L0 10 Z" fill="url(#greenCubeLight)"/>
+    <!-- Left face -->
+    <path d="M0 10 L20 20 L20 38 L0 28 Z" fill="url(#greenCube)" opacity="0.8"/>
+    <!-- Right face -->
+    <path d="M20 20 L40 10 L40 28 L20 38 Z" fill="#059669" opacity="0.7"/>
+    <!-- Top highlight -->
+    <path d="M20 2 L36 10 L20 18 L4 10 Z" fill="#ffffff" opacity="0.25"/>
+  </g>
+
+  <!-- Green cube 2 - top right -->
+  <g filter="url(#cubeShadow)" transform="translate(178, 54)">
+    <path d="M20 0 L40 10 L20 20 L0 10 Z" fill="url(#greenCubeLight)"/>
+    <path d="M0 10 L20 20 L20 38 L0 28 Z" fill="url(#greenCube)" opacity="0.8"/>
+    <path d="M20 20 L40 10 L40 28 L20 38 Z" fill="#059669" opacity="0.7"/>
+    <path d="M20 2 L36 10 L20 18 L4 10 Z" fill="#ffffff" opacity="0.25"/>
+  </g>
+
+  <!-- White/frosted cube - bottom left -->
+  <g filter="url(#cubeShadow)" transform="translate(38, 178)">
+    <path d="M16 0 L32 8 L16 16 L0 8 Z" fill="url(#whiteCubeLight)"/>
+    <path d="M0 8 L16 16 L16 30 L0 22 Z" fill="url(#whiteCube)" opacity="0.9"/>
+    <path d="M16 16 L32 8 L32 22 L16 30 Z" fill="#94a3b8" opacity="0.4"/>
+    <path d="M16 1 L29 8 L16 14 L3 8 Z" fill="#ffffff" opacity="0.4"/>
+  </g>
+
+  <!-- Blue cube - bottom right -->
+  <g filter="url(#cubeShadow)" transform="translate(184, 174)">
+    <path d="M18 0 L36 9 L18 18 L0 9 Z" fill="url(#blueCubeLight)"/>
+    <path d="M0 9 L18 18 L18 34 L0 25 Z" fill="url(#blueCube)" opacity="0.8"/>
+    <path d="M18 18 L36 9 L36 25 L18 34 Z" fill="#1d4ed8" opacity="0.7"/>
+    <path d="M18 1 L33 9 L18 16 L3 9 Z" fill="#ffffff" opacity="0.25"/>
+  </g>
+
+  <!-- Top sparkle/glow on the stack -->
+  <circle cx="128" cy="108" r="6" fill="#ffffff" opacity="0.3"/>
+  <circle cx="128" cy="108" r="3" fill="#ffffff" opacity="0.5"/>
+</svg>
