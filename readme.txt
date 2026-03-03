@@ -1,5 +1,6 @@
 === Dynamic Functionalities ===
 Contributors: developer suspended
+Donate link: https://gauravtiwari.org
 Tags: performance, seo, schema, redirection, utilities
 Requires at least: 5.8
 Tested up to: 6.9
@@ -8,15 +9,15 @@ Stable tag: 1.1.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-All-in-one WordPress optimization toolkit. 15+ modules for performance, security, SEO, and content management.
+All-in-one WordPress optimization toolkit. 16 modules for performance, security, SEO, and content management.
 
 == Description ==
 
-Dynamic Functionalities is an all-in-one WordPress optimization toolkit with 15+ modules for performance, security, SEO, and content management. Built with modern WordPress coding standards and a clean module-based dashboard. Optimized for performance with lazy-loading, static property caching, and intelligent transients.
+Dynamic Functionalities is an all-in-one WordPress optimization toolkit with 16 modules for performance, security, SEO, and content management. Built with modern WordPress coding standards and a clean module-based dashboard. Optimized for performance with lazy-loading, static property caching, and intelligent transients.
 
 = Performance First Philosophy =
 
-Unlike many all-in-one plugins that slow down your site, Functionalities is designed to be as lightweight as possible:
+Unlike many all-in-one plugins that slow down your site, Dynamic Functionalities is designed to be as lightweight as possible:
 
 * **Modular & Lazy Loaded:** Only loads the code required for active modules
 * **Minimized Database Load:** All module settings are cached in static properties
@@ -71,6 +72,9 @@ Manage URL redirects with high-performance file-based storage. Supports 301, 302
 **Login Security**
 Enhanced login protection: limit login attempts, configurable lockout durations, disable XML-RPC auth, hide login errors.
 
+**Progressive Web App**
+Make your site installable and work offline with service worker support.
+
 == Installation ==
 
 1. Upload the `functionalities` folder to the `/wp-content/plugins/` directory
@@ -83,7 +87,7 @@ All modules are accessed through a unified dashboard. Click any module card to c
 
 = Does this plugin slow down my site? =
 
-No! Functionalities is built with a "Performance First" philosophy. It uses lazy-loading, static caching, and fast-exit checks to minimize any performance impact.
+No! Dynamic Functionalities is built with a "Performance First" philosophy. It uses lazy-loading, static caching, and fast-exit checks to minimize any performance impact.
 
 = Can I use only specific modules? =
 
@@ -91,7 +95,7 @@ Yes, each module can be enabled or disabled independently. Disabled modules don'
 
 = Is the plugin compatible with caching plugins? =
 
-Yes, Functionalities works well with all major caching plugins.
+Yes, Dynamic Functionalities works well with all major caching plugins.
 
 = Does this work with block themes? =
 
