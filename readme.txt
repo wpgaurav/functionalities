@@ -1,10 +1,10 @@
-=== Functionalities ===
-Contributors: gauravtiwari
+=== Dynamic Functionalities ===
+Contributors: developer suspended
 Tags: performance, seo, schema, redirection, utilities
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.0.1
+Stable tag: 1.1.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,7 +12,7 @@ All-in-one WordPress optimization toolkit. 15+ modules for performance, security
 
 == Description ==
 
-Functionalities is an all-in-one WordPress optimization toolkit with 15+ modules for performance, security, SEO, and content management. Built with modern WordPress coding standards and a clean module-based dashboard. Optimized for performance with lazy-loading, static property caching, and intelligent transients.
+Dynamic Functionalities is an all-in-one WordPress optimization toolkit with 15+ modules for performance, security, SEO, and content management. Built with modern WordPress coding standards and a clean module-based dashboard. Optimized for performance with lazy-loading, static property caching, and intelligent transients.
 
 = Performance First Philosophy =
 
@@ -107,10 +107,16 @@ Yes, all features work with both classic and block themes.
 
 == Changelog ==
 
+= 1.1.0 =
+* Renamed to Dynamic Functionalities for WordPress.org
+* Removed: FluentCart licensing module
+* Removed: Premium barriers from all modules
+* All features are now free and open source
+* Added: WordPress.org plugin deploy workflow
+* Added: Progressive Web App module
+
 = 1.0.0 =
-* Major release: Functionalities Pro with license management
-* Added: License activation system for Pro features
-* Added: Automatic updates via license key
+* Initial release with 15+ modules
 * Updated: Modern dashboard UI with improved module cards
 
 = 0.15.5 =
@@ -168,5 +174,5 @@ Yes, all features work with both classic and block themes.
 
 == Upgrade Notice ==
 
-= 1.0.0 =
-Major release with Pro features and license management. Free during early access.
+= 1.1.0 =
+All features are now free. Renamed to Dynamic Functionalities for WordPress.org.

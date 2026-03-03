@@ -82,7 +82,7 @@ jobs:
           cat >> release_notes.md << 'INSTALL'
           ### Installation
 
-          1. Download `functionalities-pro-*.zip` from the assets below
+          1. Download `functionalities-*.zip` from the assets below
           2. Go to **Plugins → Add New → Upload Plugin** in WordPress admin
           3. Upload the zip file and activate
           INSTALL
@@ -92,29 +92,31 @@ jobs:
 
       - name: Create plugin zip
         run: |
-          mkdir -p build/functionalities-pro
+          mkdir -p build/functionalities
 
           rsync -av \
             --exclude='.*' \
             --exclude='build' \
             --exclude='node_modules' \
             --exclude='*.log' \
+            --exclude='*.zip' \
+            --exclude='*.md' \
             --exclude='package-lock.json' \
             --exclude='composer.lock' \
             --exclude='release_notes.md' \
-            ./ build/functionalities-pro/
+            --exclude='build.sh' \
+            ./ build/functionalities/
 
           cd build
-          zip -r functionalities-pro-${{ steps.get_version.outputs.VERSION }}.zip functionalities-pro
-          mv functionalities-pro-${{ steps.get_version.outputs.VERSION }}.zip ../
+          zip -r "../functionalities-${{ steps.get_version.outputs.VERSION }}.zip" functionalities
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: Functionalities Pro v${{ steps.get_version.outputs.VERSION }}
+          name: Dynamic Functionalities v${{ steps.get_version.outputs.VERSION }}
           body_path: release_notes.md
           draft: false
           prerelease: false
-          files: functionalities-pro-${{ steps.get_version.outputs.VERSION }}.zip
+          files: functionalities-${{ steps.get_version.outputs.VERSION }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -291,9 +291,9 @@ class Admin {
 	private static function render_dashboard() : void {
 		?>
 		<div class="wrap functionalities-dashboard">
-			<h1><?php echo \esc_html__( 'Functionalities', 'functionalities' ); ?></h1>
+			<h1><?php echo \esc_html__( 'Dynamic Functionalities', 'functionalities' ); ?></h1>
 			<p class="description">
-				<?php echo \esc_html__( 'Modular site-specific plugin to organize common features with simple toggles.', 'functionalities' ); ?>
+				<?php echo \esc_html__( 'All-in-one WordPress optimization toolkit. 15+ modules for performance, security, SEO, and content management.', 'functionalities' ); ?>
 			</p>
 
 			<div class="functionalities-modules-grid">
@@ -317,16 +317,12 @@ class Admin {
 					<?php echo \esc_html__( 'Help & Support', 'functionalities' ); ?>
 				</h2>
 				<p style="color: #646970; margin-bottom: 15px;">
-					<?php echo \esc_html__( 'Need help with Functionalities? Check out these resources:', 'functionalities' ); ?>
+					<?php echo \esc_html__( 'Need help with Dynamic Functionalities? Check out these resources:', 'functionalities' ); ?>
 				</p>
 				<div style="display: flex; flex-wrap: wrap; gap: 10px;">
-					<a href="https://functionalities.dev/docs" target="_blank" rel="noopener" class="button" style="display: inline-flex; align-items: center; gap: 5px;">
-						<span class="dashicons dashicons-book" style="font-size: 16px; width: 16px; height: 16px;"></span>
-						<?php echo \esc_html__( 'Documentation', 'functionalities' ); ?>
-					</a>
-					<a href="https://functionalities.dev/faq" target="_blank" rel="noopener" class="button" style="display: inline-flex; align-items: center; gap: 5px;">
+					<a href="https://wordpress.org/support/plugin/functionalities/" target="_blank" rel="noopener" class="button" style="display: inline-flex; align-items: center; gap: 5px;">
 						<span class="dashicons dashicons-sos" style="font-size: 16px; width: 16px; height: 16px;"></span>
-						<?php echo \esc_html__( 'FAQ', 'functionalities' ); ?>
+						<?php echo \esc_html__( 'Support', 'functionalities' ); ?>
 					</a>
 					<a href="https://github.com/wpgaurav/functionalities/issues" target="_blank" rel="noopener" class="button" style="display: inline-flex; align-items: center; gap: 5px;">
 						<span class="dashicons dashicons-flag" style="font-size: 16px; width: 16px; height: 16px;"></span>
@@ -341,9 +337,9 @@ class Admin {
 					<?php
 					printf(
 						/* translators: %1$s: Plugin version number, %2$s: Website link */
-						\esc_html__( 'Functionalities v%1$s | Visit %2$s for more information.', 'functionalities' ),
+						\esc_html__( 'Dynamic Functionalities v%1$s | Visit %2$s for more information.', 'functionalities' ),
 						\esc_html( FUNCTIONALITIES_VERSION ),
-						'<a href="https://functionalities.dev" target="_blank" rel="noopener">functionalities.dev</a>'
+						'<a href="https://wordpress.org/plugins/functionalities/" target="_blank" rel="noopener">WordPress.org</a>'
 					);
 					?>
 				</p>

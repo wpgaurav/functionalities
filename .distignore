@@ -1,0 +1,29 @@
+# Directories
+.git
+.github
+node_modules
+vendor
+build
+dist
+releases
+
+# Files
+.gitignore
+.distignore
+.editorconfig
+.DS_Store
+Thumbs.db
+build.sh
+CLAUDE.md
+composer.json
+composer.lock
+package.json
+package-lock.json
+
+# Patterns
+*.md
+*.log
+*.zip
+*.swp
+*.swo
+*~
