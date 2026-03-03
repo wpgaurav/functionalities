@@ -1,6 +1,6 @@
 === Dynamic Functionalities ===
 Contributors: gauravtiwari
-Donate link: https://gauravtiwari.org
+Donate link: https://gauravtiwari.org/donate/
 Tags: performance, security, seo, redirection, cleanup
 Requires at least: 5.8
 Tested up to: 6.9
@@ -9,9 +9,11 @@ Stable tag: 1.1.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Replace 5+ plugins with one. Performance cleanup, login security, redirects, schema markup, link management, content monitoring, and 10 more modules in a single lightweight toolkit.
+Replace 5+ plugins with one lightweight toolkit. 16 modules for performance, security, SEO, redirects, and content management.
 
 == Description ==
+
+### Replace your plugin stack with one lightweight toolkit
 
 Dynamic Functionalities replaces the stack of single-purpose plugins most WordPress sites depend on. Instead of installing separate plugins for performance cleanup, redirect management, login security, schema markup, external link control, and code snippets, you get 16 purpose-built modules in one package that loads less code than most individual plugins.
 

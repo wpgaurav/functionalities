@@ -7120,7 +7120,7 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 		echo '<p class="description">' . \esc_html__( 'Maximum 4 shortcuts. Each needs a name and URL.', 'functionalities' ) . '</p>';
 		echo '<script>
 		jQuery(function($){
-			var idx = ' . $i . ';
+			var idx = ' . \absint( $i ) . ';
 			$("#func-pwa-add-shortcut").on("click",function(){
 				if(idx>=4) return;
 				var html = ' . \wp_json_encode( self::get_shortcut_row_html( '__INDEX__' ) ) . ';
@@ -7150,10 +7150,10 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 		$prefix = 'functionalities_pwa[shortcuts][' . $index . ']';
 		echo '<div class="func-pwa-shortcut-row" style="padding:10px;border:1px solid #ddd;border-radius:4px;margin-bottom:8px;background:#fafafa">';
 		echo '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
-		echo '<input type="text" name="' . \esc_attr( $prefix ) . '[name]" value="' . $name . '" placeholder="' . \esc_attr__( 'Name', 'functionalities' ) . '" class="regular-text">';
-		echo '<input type="url" name="' . \esc_attr( $prefix ) . '[url]" value="' . $url . '" placeholder="' . \esc_attr__( 'URL (e.g. /blog/)', 'functionalities' ) . '" class="regular-text">';
-		echo '<input type="text" name="' . \esc_attr( $prefix ) . '[description]" value="' . $desc . '" placeholder="' . \esc_attr__( 'Description', 'functionalities' ) . '" class="regular-text">';
-		echo '<input type="url" name="' . \esc_attr( $prefix ) . '[icon]" value="' . $icon . '" placeholder="' . \esc_attr__( 'Icon URL (96x96 PNG)', 'functionalities' ) . '" class="regular-text">';
+		echo '<input type="text" name="' . \esc_attr( $prefix ) . '[name]" value="' . \esc_attr( $name ) . '" placeholder="' . \esc_attr__( 'Name', 'functionalities' ) . '" class="regular-text">';
+		echo '<input type="url" name="' . \esc_attr( $prefix ) . '[url]" value="' . \esc_attr( $url ) . '" placeholder="' . \esc_attr__( 'URL (e.g. /blog/)', 'functionalities' ) . '" class="regular-text">';
+		echo '<input type="text" name="' . \esc_attr( $prefix ) . '[description]" value="' . \esc_attr( $desc ) . '" placeholder="' . \esc_attr__( 'Description', 'functionalities' ) . '" class="regular-text">';
+		echo '<input type="url" name="' . \esc_attr( $prefix ) . '[icon]" value="' . \esc_attr( $icon ) . '" placeholder="' . \esc_attr__( 'Icon URL (96x96 PNG)', 'functionalities' ) . '" class="regular-text">';
 		echo '</div>';
 		echo '<button type="button" class="button button-link-delete func-pwa-remove-shortcut" style="margin-top:6px">' . \esc_html__( 'Remove', 'functionalities' ) . '</button>';
 		echo '</div>';
@@ -7190,7 +7190,7 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 		echo '<button type="button" class="button" id="func-pwa-add-screenshot">' . \esc_html__( '+ Add Screenshot', 'functionalities' ) . '</button>';
 		echo '<script>
 		jQuery(function($){
-			var idx = ' . $i . ';
+			var idx = ' . \absint( $i ) . ';
 			$("#func-pwa-add-screenshot").on("click",function(){
 				var html = ' . \wp_json_encode( self::get_screenshot_row_html( '__INDEX__' ) ) . ';
 				html = html.replace(/__INDEX__/g, idx);
@@ -7219,9 +7219,9 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 		$prefix = 'functionalities_pwa[screenshots][' . $index . ']';
 		echo '<div class="func-pwa-screenshot-row" style="padding:10px;border:1px solid #ddd;border-radius:4px;margin-bottom:8px;background:#fafafa">';
 		echo '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
-		echo '<input type="url" name="' . \esc_attr( $prefix ) . '[src]" value="' . $src . '" placeholder="' . \esc_attr__( 'Image URL', 'functionalities' ) . '" class="regular-text">';
-		echo '<input type="text" name="' . \esc_attr( $prefix ) . '[sizes]" value="' . $sizes . '" placeholder="' . \esc_attr__( '1280x720', 'functionalities' ) . '" class="regular-text">';
-		echo '<input type="text" name="' . \esc_attr( $prefix ) . '[label]" value="' . $label . '" placeholder="' . \esc_attr__( 'Label', 'functionalities' ) . '" class="regular-text">';
+		echo '<input type="url" name="' . \esc_attr( $prefix ) . '[src]" value="' . \esc_attr( $src ) . '" placeholder="' . \esc_attr__( 'Image URL', 'functionalities' ) . '" class="regular-text">';
+		echo '<input type="text" name="' . \esc_attr( $prefix ) . '[sizes]" value="' . \esc_attr( $sizes ) . '" placeholder="' . \esc_attr__( '1280x720', 'functionalities' ) . '" class="regular-text">';
+		echo '<input type="text" name="' . \esc_attr( $prefix ) . '[label]" value="' . \esc_attr( $label ) . '" placeholder="' . \esc_attr__( 'Label', 'functionalities' ) . '" class="regular-text">';
 		echo '<select name="' . \esc_attr( $prefix ) . '[form_factor]">';
 		echo '<option value="wide"' . \selected( $form, 'wide', false ) . '>' . \esc_html__( 'Wide (desktop)', 'functionalities' ) . '</option>';
 		echo '<option value="narrow"' . \selected( $form, 'narrow', false ) . '>' . \esc_html__( 'Narrow (mobile)', 'functionalities' ) . '</option>';

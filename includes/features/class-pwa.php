@@ -567,59 +567,62 @@ class PWA {
 		$offline_json = \wp_json_encode( $config['offline_url'] );
 		$precache_js  = implode( ',', array_map( '\\wp_json_encode', $precache ) );
 
-		echo <<<JS
-/* Functionalities PWA Service Worker */
-const CACHE_VERSION={$ver_json};
-const CORE_CACHE=`func-pwa-core-\${CACHE_VERSION}`;
-const RUNTIME_CACHE=`func-pwa-runtime-\${CACHE_VERSION}`;
-const IMAGE_CACHE=`func-pwa-images-\${CACHE_VERSION}`;
-const OFFLINE_URL={$offline_json};
-const PRECACHE_URLS=[{$precache_js}];
+		// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- All values are wp_json_encode'd (safe for JS context).
+		echo '/* Functionalities PWA Service Worker */' . "\n";
+		echo 'const CACHE_VERSION=' . $ver_json . ';' . "\n";
+		echo 'const CORE_CACHE=`func-pwa-core-${CACHE_VERSION}`;' . "\n";
+		echo 'const RUNTIME_CACHE=`func-pwa-runtime-${CACHE_VERSION}`;' . "\n";
+		echo 'const IMAGE_CACHE=`func-pwa-images-${CACHE_VERSION}`;' . "\n";
+		echo 'const OFFLINE_URL=' . $offline_json . ';' . "\n";
+		echo 'const PRECACHE_URLS=[' . $precache_js . '];' . "\n";
+		// phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped
 
-self.addEventListener('install',e=>{
-e.waitUntil(caches.open(CORE_CACHE).then(c=>c.addAll(PRECACHE_URLS)).then(()=>self.skipWaiting()));
-});
+		// Service worker body (static JS, no PHP interpolation).
+		// phpcs:disable Generic.Strings.UnnecessaryStringConcat.Found
+		echo 'self.addEventListener("install",e=>{' .
+			'e.waitUntil(caches.open(CORE_CACHE).then(c=>c.addAll(PRECACHE_URLS)).then(()=>self.skipWaiting()));' .
+			'});' . "\n";
 
-self.addEventListener('activate',e=>{
-e.waitUntil(Promise.all([
-caches.keys().then(keys=>Promise.all(keys.filter(k=>!k.includes(CACHE_VERSION)).map(k=>caches.delete(k)))),
-self.clients.claim(),
-self.registration.navigationPreload?self.registration.navigationPreload.enable():Promise.resolve()
-]));
-});
+		echo 'self.addEventListener("activate",e=>{' .
+			'e.waitUntil(Promise.all([' .
+			'caches.keys().then(keys=>Promise.all(keys.filter(k=>!k.includes(CACHE_VERSION)).map(k=>caches.delete(k)))),' .
+			'self.clients.claim(),' .
+			'self.registration.navigationPreload?self.registration.navigationPreload.enable():Promise.resolve()' .
+			']));' .
+			'});' . "\n";
 
-async function cacheFirst(req){
-const cache=await caches.open(IMAGE_CACHE);
-const cached=await cache.match(req);
-if(cached)return cached;
-try{const res=await fetch(req);if(res&&res.status===200)cache.put(req,res.clone());return res;}
-catch(e){return new Response('',{status:408});}
-}
+		echo 'async function cacheFirst(req){' .
+			'const cache=await caches.open(IMAGE_CACHE);' .
+			'const cached=await cache.match(req);' .
+			'if(cached)return cached;' .
+			'try{const res=await fetch(req);if(res&&res.status===200)cache.put(req,res.clone());return res;}' .
+			'catch(e){return new Response("",{status:408});}' .
+			'}' . "\n";
 
-async function networkFirst(req){
-const cache=await caches.open(RUNTIME_CACHE);
-try{const res=await fetch(req);if(res&&res.status===200)cache.put(req,res.clone());return res;}
-catch(e){const cached=await cache.match(req);if(cached)return cached;
-if(req.mode==='navigate'){const core=await caches.open(CORE_CACHE);const off=await core.match(OFFLINE_URL);if(off)return off;}
-return new Response('Offline',{status:503,headers:{'Content-Type':'text/plain'}});}
-}
+		echo 'async function networkFirst(req){' .
+			'const cache=await caches.open(RUNTIME_CACHE);' .
+			'try{const res=await fetch(req);if(res&&res.status===200)cache.put(req,res.clone());return res;}' .
+			'catch(e){const cached=await cache.match(req);if(cached)return cached;' .
+			'if(req.mode==="navigate"){const core=await caches.open(CORE_CACHE);const off=await core.match(OFFLINE_URL);if(off)return off;}' .
+			'return new Response("Offline",{status:503,headers:{"Content-Type":"text/plain"}});}' .
+			'}' . "\n";
 
-async function staleRevalidate(req){
-const cache=await caches.open(RUNTIME_CACHE);
-const cached=await cache.match(req);
-const net=fetch(req).then(res=>{if(res&&res.status===200)cache.put(req,res.clone());return res;}).catch(()=>cached);
-return cached||net;
-}
+		echo 'async function staleRevalidate(req){' .
+			'const cache=await caches.open(RUNTIME_CACHE);' .
+			'const cached=await cache.match(req);' .
+			'const net=fetch(req).then(res=>{if(res&&res.status===200)cache.put(req,res.clone());return res;}).catch(()=>cached);' .
+			'return cached||net;' .
+			'}' . "\n";
 
-self.addEventListener('fetch',e=>{
-if(e.request.method!=='GET')return;
-const dest=e.request.destination;
-if(e.request.mode==='navigate'){e.respondWith(networkFirst(e.request));return;}
-if(dest==='image'){e.respondWith(cacheFirst(e.request));return;}
-if(dest==='style'||dest==='script'||dest==='font'){e.respondWith(staleRevalidate(e.request));return;}
-e.respondWith(networkFirst(e.request));
-});
-JS;
+		echo 'self.addEventListener("fetch",e=>{' .
+			'if(e.request.method!=="GET")return;' .
+			'const dest=e.request.destination;' .
+			'if(e.request.mode==="navigate"){e.respondWith(networkFirst(e.request));return;}' .
+			'if(dest==="image"){e.respondWith(cacheFirst(e.request));return;}' .
+			'if(dest==="style"||dest==="script"||dest==="font"){e.respondWith(staleRevalidate(e.request));return;}' .
+			'e.respondWith(networkFirst(e.request));' .
+			'});' . "\n";
+		// phpcs:enable Generic.Strings.UnnecessaryStringConcat.Found
 
 		\do_action( 'functionalities_pwa_sw_output' );
 		exit;
@@ -740,8 +743,9 @@ JS;
 		) );
 
 		echo '<script id="functionalities-pwa-js">';
-		echo "(function(){";
-		echo "var c={$config},dp,sk='func_pwa_dismiss';";
+		echo '(function(){';
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $config is wp_json_encode'd output.
+		echo "var c=" . $config . ",dp,sk='func_pwa_dismiss';";
 		echo "function si(on){document.documentElement.classList.toggle('func-pwa-installable',on)}";
 		echo "function pi(){if(!dp)return false;dp.prompt();dp.userChoice.then(function(){localStorage.setItem(sk,Date.now().toString());dp=null;si(false)});return true}";
 		echo "if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register(c.sw,{scope:c.scope}).catch(function(){})})}";
@@ -789,7 +793,7 @@ JS;
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title><?php echo $site_name; ?> &mdash; <?php \esc_html_e( 'Offline', 'functionalities' ); ?></title>
+<title><?php echo \esc_html( $site_name ); ?> &mdash; <?php \esc_html_e( 'Offline', 'functionalities' ); ?></title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#f8fafc;color:#334155;min-height:100vh;display:flex;align-items:center;justify-content:center}
@@ -805,14 +809,14 @@ h1{font-size:1.5rem;color:#0f172a;margin-bottom:.5rem}
 .offline__actions{display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap;margin-bottom:2rem}
 .offline__btn{display:inline-flex;align-items:center;gap:.5rem;padding:.75rem 1.25rem;border-radius:.5rem;font-size:.875rem;font-weight:600;text-decoration:none;cursor:pointer;border:none;transition:transform .15s,box-shadow .15s}
 .offline__btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.1)}
-.offline__btn--primary{background:<?php echo $theme; ?>;color:#fff}
+.offline__btn--primary{background:<?php echo \esc_attr( $theme ); ?>;color:#fff}
 .offline__btn--secondary{background:#fff;color:#334155;border:1px solid #e2e8f0}
 .offline__cached{text-align:left;background:#fff;border:1px solid #e2e8f0;border-radius:.75rem;padding:1.25rem;margin-top:1.5rem;display:none}
 .offline__cached h2{font-size:.875rem;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.75rem}
 .offline__cached ul{list-style:none}
 .offline__cached li{border-top:1px solid #f1f5f9}
 .offline__cached li:first-child{border-top:0}
-.offline__cached a{display:block;padding:.625rem 0;color:<?php echo $theme; ?>;text-decoration:none;font-size:.875rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.offline__cached a{display:block;padding:.625rem 0;color:<?php echo \esc_attr( $theme ); ?>;text-decoration:none;font-size:.875rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .offline__cached a:hover{text-decoration:underline}
 .offline__footer{margin-top:2rem;font-size:.75rem;color:#94a3b8}
 </style>
@@ -838,7 +842,7 @@ h1{font-size:1.5rem;color:#0f172a;margin-bottom:.5rem}
 		<button type="button" class="offline__btn offline__btn--secondary" onclick="history.back()">
 			<?php \esc_html_e( 'Go Back', 'functionalities' ); ?>
 		</button>
-		<a href="<?php echo $home; ?>" class="offline__btn offline__btn--secondary">
+		<a href="<?php echo \esc_url( $home ); ?>" class="offline__btn offline__btn--secondary">
 			<?php \esc_html_e( 'Homepage', 'functionalities' ); ?>
 		</a>
 	</div>
@@ -848,13 +852,13 @@ h1{font-size:1.5rem;color:#0f172a;margin-bottom:.5rem}
 		<ul id="func-pwa-cached-list"></ul>
 	</div>
 
-	<p class="offline__footer"><?php echo $site_name; ?></p>
+	<p class="offline__footer"><?php echo \esc_html( $site_name ); ?></p>
 </div>
 <script>
 window.addEventListener('online',function(){location.reload()});
 (function(){
 if(!('caches' in window))return;
-var ver='<?php echo $cache_ver; ?>';
+var ver='<?php echo \esc_js( $cache_ver ); ?>';
 var names=['func-pwa-runtime-'+ver,'func-pwa-core-'+ver];
 var found=[];
 Promise.all(names.map(function(n){return caches.open(n).then(function(c){return c.keys()}).then(function(reqs){
