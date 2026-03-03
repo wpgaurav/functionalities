@@ -1,7 +1,7 @@
 === Dynamic Functionalities ===
 Contributors: gauravtiwari
 Donate link: https://gauravtiwari.org
-Tags: performance, seo, schema, redirection, utilities
+Tags: performance, security, seo, redirection, cleanup
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
@@ -9,97 +9,116 @@ Stable tag: 1.1.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-All-in-one WordPress optimization toolkit. 16 modules for performance, security, SEO, and content management.
+Replace 5+ plugins with one. Performance cleanup, login security, redirects, schema markup, link management, content monitoring, and 10 more modules in a single lightweight toolkit.
 
 == Description ==
 
-Dynamic Functionalities is an all-in-one WordPress optimization toolkit with 16 modules for performance, security, SEO, and content management. Built with modern WordPress coding standards and a clean module-based dashboard. Optimized for performance with lazy-loading, static property caching, and intelligent transients.
+Dynamic Functionalities replaces the stack of single-purpose plugins most WordPress sites depend on. Instead of installing separate plugins for performance cleanup, redirect management, login security, schema markup, external link control, and code snippets, you get 16 purpose-built modules in one package that loads less code than most individual plugins.
 
-= Performance First Philosophy =
+Every module is independent. Enable what you need, disable what you don't. Disabled modules load zero code.
 
-Unlike many all-in-one plugins that slow down your site, Dynamic Functionalities is designed to be as lightweight as possible:
+= Why Not Just Use Separate Plugins? =
 
-* **Modular & Lazy Loaded:** Only loads the code required for active modules
-* **Minimized Database Load:** All module settings are cached in static properties
-* **Zero Frontend Bloat:** Most modules load no CSS or JS unless explicitly required
-* **Intelligent Filtering:** Content filters use fast-exit checks
-* **Aggressive Caching:** Heavy operations are cached using WordPress Transients
+A typical WordPress site runs 5-10 utility plugins that each load their own CSS, JS, options, and database queries on every page load. Dynamic Functionalities consolidates these into a single plugin with shared infrastructure:
 
-= Available Modules =
+* **One autoloader** instead of 16 separate plugin bootstraps
+* **Shared options caching** across all modules (static properties, not repeated DB calls)
+* **Zero frontend assets** unless a module explicitly requires them
+* **Single admin menu** instead of scattered settings pages
 
-**Link Management**
-Complete external link control with nofollow automation, exception lists, JSON preset file support, and database update tools.
+= What It Replaces =
 
-**Block Cleanup**
-Strip common wp-block classes from frontend output for cleaner HTML markup.
+Here's what you can deactivate after installing Dynamic Functionalities:
 
-**Editor Link Suggestions**
-Limit link suggestions to selected post types in the block editor.
+* **Redirection / Safe Redirect Manager / 301 Redirects** — The Redirect Manager module handles 301, 302, 307, and 308 redirects with file-based storage (no database bloat)
+* **Limit Login Attempts Reloaded / WP Limit Login / Login LockDown** — Login Security module covers login attempt limiting, lockout durations, XML-RPC blocking, and login error hiding
+* **External Links / WP External Links** — Link Management module automates nofollow, new tab behavior, and exception lists with JSON preset support
+* **Schema Pro / Schema & Structured Data** — Schema Settings module adds microdata with itemscope/itemtype support and BreadcrumbList JSON-LD
+* **Insert Headers and Footers / WPCode** — Header & Footer Snippets module handles GA4 integration and custom code injection
+* **Jesuspended / Asset CleanUp / Perfmatters** — Performance & Cleanup module disables emojis, embeds, REST API links, XML-RPC, feeds, Gravatars, heartbeat, and more
+* **SVG Support / Safe SVG** — SVG Icons module lets you upload and insert SVG icons inline in the block editor
+* **Use Any Font / Custom Fonts** — Fonts module registers custom font families with @font-face, WOFF2/WOFF, and variable font support
+* **PWA for WP / Super Progressive Web Apps** — Progressive Web App module makes your site installable with service worker support
 
-**Performance & Cleanup**
-Fine-grained control over WordPress default behaviors: disable emojis, embeds, REST API discovery links, XML-RPC, feeds, Gravatars, and more.
+= Modules That Don't Have Alternatives =
 
-**Header & Footer Snippets**
-Google Analytics 4 integration and custom header/footer code injection.
+Some modules solve problems no other free plugin addresses:
 
-**Schema Settings**
-Add microdata to your site's HTML with itemscope/itemtype support.
+* **Content Integrity** — Monitors posts for structural regressions on update: dropped internal links, word count drops, heading structure changes. Catches accidental content loss before it goes live.
+* **Assumption Detection** — Watches for technical assumptions that silently break: schema collisions from conflicting plugins, duplicate analytics tags, redundant font loading, missing expected elements.
+* **Components** — Define reusable CSS components as selector + rules pairs. Auto-enqueued site-wide without a page builder or theme dependency.
+* **Task Manager** — File-based project management inside WordPress admin. No external service, no database tables, no SaaS subscription.
+* **Block Cleanup** — Strips wp-block classes from frontend HTML for sites that don't need them. Cleaner markup, smaller DOM.
+* **Editor Link Suggestions** — Limits the block editor link autocomplete to specific post types. Stops irrelevant suggestions from cluttering the link picker.
 
-**Components**
-Define reusable CSS components as selector + CSS rules. Auto-enqueued site-wide.
+= Performance First =
 
-**Fonts**
-Register custom font families with @font-face, WOFF2/WOFF support, and variable fonts.
+* **Modular & lazy loaded** — Only active modules run code
+* **Static property caching** — Options are read once per request, not on every hook
+* **Fast-exit content filters** — strpos() checks before any regex or DOM parsing
+* **Transient caching** — Heavy operations (JSON parsing, file I/O) are cached
+* **No frontend bloat** — No CSS or JS loaded unless a module explicitly needs it
 
-**Meta & Copyright**
-Copyright, Dublin Core, licensing, and SEO plugin integration.
+= Developer Friendly =
 
-**SVG Icons**
-Upload custom SVG icons and insert them inline in the block editor.
+* Clean namespaced codebase: `Functionalities\Features\*`, `Functionalities\Admin\*`
+* All hooks prefixed with `functionalities_` for safe filtering
+* Every module exposes filters for customization
+* PSR-4-like autoloader with zero dependencies
+* GPL-2.0-or-later — fork it, extend it, contribute back
 
-**Content Integrity**
-Detect structural regressions when posts are updated: internal link drops, word count regression, heading structure issues.
+= Documentation & Support =
 
-**Assumption Detection**
-Monitor when technical assumptions stop being true: schema collisions, analytics duplication, font redundancy.
-
-**Task Manager**
-Simple, file-based project task management within WordPress admin.
-
-**Redirect Manager**
-Manage URL redirects with high-performance file-based storage. Supports 301, 302, 307, and 308 redirects.
-
-**Login Security**
-Enhanced login protection: limit login attempts, configurable lockout durations, disable XML-RPC auth, hide login errors.
-
-**Progressive Web App**
-Make your site installable and work offline with service worker support.
+* [Training Lessons](https://gauravtiwari.org/circle/course/functionalities-training/lessons) — Step-by-step module walkthroughs
+* [GitHub Issues](https://github.com/wpgaurav/functionalities/issues) — Bug reports and feature requests
+* [WordPress.org Support](https://wordpress.org/support/plugin/functionalities/) — Community support forum
 
 == Installation ==
 
-1. Upload the `functionalities` folder to the `/wp-content/plugins/` directory
-2. Activate the plugin through the 'Plugins' menu in WordPress
-3. Navigate to the new 'Functionalities' menu item to enable and configure your modules
+1. Upload the `functionalities` folder to `/wp-content/plugins/`
+2. Activate through **Plugins > Installed Plugins**
+3. Go to **Functionalities** in the admin sidebar
+4. Enable the modules you need from the dashboard
 
-All modules are accessed through a unified dashboard. Click any module card to configure its settings.
+Each module card shows what it does. Click **Configure** to access its settings. Modules you don't enable load no code at all.
 
 == Frequently Asked Questions ==
 
 = Does this plugin slow down my site? =
 
-No! Dynamic Functionalities is built with a "Performance First" philosophy. It uses lazy-loading, static caching, and fast-exit checks to minimize any performance impact.
+No. Dynamic Functionalities uses lazy-loading, static caching, and fast-exit checks across all modules. Most modules add zero frontend assets. The entire plugin loads less code than many single-purpose alternatives.
 
 = Can I use only specific modules? =
 
-Yes, each module can be enabled or disabled independently. Disabled modules don't load any code.
+Yes. Every module is independent. Enable only what you need. Disabled modules don't register any hooks, load any files, or run any code.
 
-= Is the plugin compatible with caching plugins? =
+= Will this conflict with my existing plugins? =
 
-Yes, Dynamic Functionalities works well with all major caching plugins.
+Most modules work alongside other plugins. If you already have a redirect plugin or login limiter, disable that module in Dynamic Functionalities to avoid overlap. The Assumption Detection module actually helps you find these conflicts.
 
-= Does this work with block themes? =
+= Does it work with caching plugins? =
 
-Yes, all features work with both classic and block themes.
+Yes. Tested with WP Super Cache, W3 Total Cache, LiteSpeed Cache, and FlyingPress. No special configuration needed.
+
+= Does it work with page builders and block themes? =
+
+Yes. All modules work with classic themes, block themes, Elementor, Bricks Builder, GenerateBlocks, and other page builders.
+
+= Is the plugin compatible with Rank Math, Yoast, or other SEO plugins? =
+
+Yes. The Meta & Copyright module detects active SEO plugins and adjusts its behavior to avoid duplicate meta tags. Schema Settings works alongside SEO plugin schemas without conflicts.
+
+= How are redirects stored? =
+
+File-based JSON storage, not database tables. This means redirects load faster and don't bloat your wp_options or create custom tables that survive uninstallation.
+
+= Can I migrate redirects from another plugin? =
+
+The Redirect Manager supports manual entry of 301, 302, 307, and 308 redirects. For bulk migration, export your existing redirects as CSV and add them through the interface.
+
+= What happens if I deactivate the plugin? =
+
+All settings are preserved in the database. Reactivate anytime and everything is restored. If you want a clean removal, use the uninstall process which removes all plugin options.
 
 == Screenshots ==
 
@@ -177,4 +196,4 @@ Yes, all features work with both classic and block themes.
 == Upgrade Notice ==
 
 = 1.1.0 =
-All features are now free. Renamed to Dynamic Functionalities for WordPress.org.
+All features are now free and open source. 16 modules for performance, security, SEO, and content management.
