@@ -1,122 +1,205 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - 'v*'
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+env:
+  PLUGIN_SLUG: functionalities
 
 jobs:
-  release:
-    name: Create Release
+  build:
+    name: Build & Release
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Full history for changelog generation
+          fetch-depth: 0
 
       - name: Get version from tag
         id: get_version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-
-      - name: Get previous tag
-        id: prev_tag
         run: |
-          PREV_TAG=$(git tag --sort=-creatordate | sed -n '2p')
-          echo "PREV_TAG=${PREV_TAG}" >> $GITHUB_OUTPUT
-          echo "Previous tag: ${PREV_TAG}"
+          TAG_VERSION=${GITHUB_REF#refs/tags/}
+          VERSION=${TAG_VERSION#v}
+          echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "TAG=$TAG_VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: Generate release notes
-        id: release_notes
+      - name: Verify version matches plugin
+        env:
+          TAG_VERSION: ${{ steps.get_version.outputs.VERSION }}
         run: |
-          VERSION="${{ steps.get_version.outputs.VERSION }}"
-          PREV_TAG="${{ steps.prev_tag.outputs.PREV_TAG }}"
-
-          # Start building release notes
-          cat > release_notes.md << 'HEADER'
-          ## What's Changed
-          HEADER
-
-          # Try CHANGELOG.md first for curated notes
-          if [ -f "CHANGELOG.md" ]; then
-            CHANGELOG_SECTION=$(awk "/^## \[${VERSION}\]/{found=1; next} /^## \[/{found=0} found" CHANGELOG.md)
-            if [ -n "$CHANGELOG_SECTION" ]; then
-              echo "" >> release_notes.md
-              echo "$CHANGELOG_SECTION" >> release_notes.md
-              echo "" >> release_notes.md
-            fi
+          PLUGIN_VERSION=$(grep "Version:" "${PLUGIN_SLUG}.php" | head -1 | sed 's/.*Version:[[:space:]]*//' | tr -d '[:space:]')
+          if [ "$PLUGIN_VERSION" != "$TAG_VERSION" ]; then
+            echo "::error::Plugin version ($PLUGIN_VERSION) does not match tag version ($TAG_VERSION)"
+            exit 1
           fi
+          echo "Version verified: $PLUGIN_VERSION"
 
-          # Generate commit log between tags
+      # -- Generate Changelog --
+      - name: Generate changelog
+        id: changelog
+        env:
+          TAG: ${{ steps.get_version.outputs.TAG }}
+          VERSION: ${{ steps.get_version.outputs.VERSION }}
+        run: |
+          PREV_TAG=$(git tag --sort=-version:refname | grep -v "^${TAG}$" | head -1)
+
+          CHANGELOG_FILE=$(mktemp)
+
           if [ -n "$PREV_TAG" ]; then
-            echo "### Commits" >> release_notes.md
-            echo "" >> release_notes.md
-            git log ${PREV_TAG}..HEAD --pretty=format:"- %s (\`%h\`)" --no-merges >> release_notes.md
-            echo "" >> release_notes.md
-            echo "" >> release_notes.md
+            echo "Generating changelog: ${PREV_TAG}..${TAG}"
 
-            # Stats
-            COMMIT_COUNT=$(git rev-list ${PREV_TAG}..HEAD --count --no-merges)
-            FILES_CHANGED=$(git diff ${PREV_TAG}..HEAD --stat | tail -1)
-            echo "### Stats" >> release_notes.md
-            echo "" >> release_notes.md
-            echo "- **Commits:** ${COMMIT_COUNT}" >> release_notes.md
-            echo "- **Changes:** ${FILES_CHANGED}" >> release_notes.md
-            echo "" >> release_notes.md
+            SECTION=$(sed -n "/^= ${VERSION} =/,/^= [0-9]/p" readme.txt | sed '$d' | tail -n +2)
+
+            if [ -n "$SECTION" ]; then
+              echo "## What's Changed" >> "$CHANGELOG_FILE"
+              echo "" >> "$CHANGELOG_FILE"
+              echo "$SECTION" | sed 's/^\* /- /' >> "$CHANGELOG_FILE"
+              echo "" >> "$CHANGELOG_FILE"
+            fi
+
+            echo "## Commits" >> "$CHANGELOG_FILE"
+            echo "" >> "$CHANGELOG_FILE"
+            git log "${PREV_TAG}..${TAG}" --pretty=format:"- %s (%h)" --no-merges >> "$CHANGELOG_FILE"
+            echo "" >> "$CHANGELOG_FILE"
+            echo "" >> "$CHANGELOG_FILE"
+            echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREV_TAG}...${TAG}" >> "$CHANGELOG_FILE"
+          else
+            echo "## Initial Release" >> "$CHANGELOG_FILE"
+            echo "" >> "$CHANGELOG_FILE"
+            echo "First release of Dynamic Functionalities v${VERSION}." >> "$CHANGELOG_FILE"
           fi
 
-          # Plugin info
-          PHP_VERSION=$(grep "Requires PHP" functionalities.php | grep -oP '[\d.]+')
-          WP_VERSION=$(grep "Requires at least" functionalities.php | grep -oP '[\d.]+')
+          echo "CHANGELOG_FILE=$CHANGELOG_FILE" >> "$GITHUB_OUTPUT"
 
-          echo "### Plugin Info" >> release_notes.md
-          echo "" >> release_notes.md
-          echo "- **Requires WordPress:** ${WP_VERSION}+" >> release_notes.md
-          echo "- **Requires PHP:** ${PHP_VERSION}+" >> release_notes.md
-          echo "" >> release_notes.md
+          echo "--- Generated changelog ---"
+          cat "$CHANGELOG_FILE"
 
-          # Install instructions
-          cat >> release_notes.md << 'INSTALL'
-          ### Installation
-
-          1. Download `functionalities-*.zip` from the assets below
-          2. Go to **Plugins → Add New → Upload Plugin** in WordPress admin
-          3. Upload the zip file and activate
-          INSTALL
-
-          echo "Release notes generated:"
-          cat release_notes.md
-
-      - name: Create plugin zip
+      # -- Assemble Distribution --
+      - name: Assemble distribution
         run: |
-          mkdir -p build/functionalities
+          mkdir -p "build-release/${PLUGIN_SLUG}"
 
-          rsync -av \
-            --exclude='.*' \
-            --exclude='build' \
-            --exclude='node_modules' \
-            --exclude='*.log' \
-            --exclude='*.zip' \
-            --exclude='*.md' \
-            --exclude='package-lock.json' \
-            --exclude='composer.lock' \
-            --exclude='release_notes.md' \
-            --exclude='build.sh' \
-            ./ build/functionalities/
+          rsync -a \
+            --exclude-from=".distignore" \
+            --exclude="build-release" \
+            . "build-release/${PLUGIN_SLUG}/"
 
-          cd build
-          zip -r "../functionalities-${{ steps.get_version.outputs.VERSION }}.zip" functionalities
+          find build-release -name ".DS_Store" -delete 2>/dev/null || true
+          find build-release -name "*.map" -delete 2>/dev/null || true
+          find build-release -type d -empty -delete 2>/dev/null || true
 
-      - name: Create GitHub Release
+      - name: Verify distribution
+        run: |
+          DIST="build-release/${PLUGIN_SLUG}"
+          MISSING=0
+
+          for f in \
+            "${PLUGIN_SLUG}.php" \
+            "index.php" \
+            "readme.txt" \
+            "uninstall.php" \
+            "includes/admin/class-admin.php" \
+            "includes/admin/class-admin-ui.php"; do
+              if [ ! -f "$DIST/$f" ]; then
+                echo "::error::Missing critical file: $f"
+                MISSING=$((MISSING + 1))
+              fi
+          done
+
+          if [ "$MISSING" -gt 0 ]; then
+            echo "::error::Distribution is incomplete"
+            exit 1
+          fi
+
+          echo "Distribution verified"
+          FILE_COUNT=$(find "$DIST" -type f | wc -l | tr -d ' ')
+          echo "  Files: ${FILE_COUNT}"
+
+      # -- Package & Upload --
+      - name: Create zip file
+        id: zip
+        env:
+          VERSION: ${{ steps.get_version.outputs.VERSION }}
+        run: |
+          cd build-release
+          ZIP_NAME="${PLUGIN_SLUG}-${VERSION}.zip"
+          zip -rq "../${ZIP_NAME}" "${PLUGIN_SLUG}"
+          cd ..
+          echo "ZIP_NAME=${ZIP_NAME}" >> "$GITHUB_OUTPUT"
+
+          ZIP_SIZE=$(du -h "${ZIP_NAME}" | cut -f1)
+          FILE_COUNT=$(zipinfo -t "${ZIP_NAME}" 2>/dev/null | sed 's/[^0-9]*\([0-9]*\) file.*/\1/' || echo "?")
+          echo "ZIP_SIZE=${ZIP_SIZE}" >> "$GITHUB_OUTPUT"
+          echo "FILE_COUNT=${FILE_COUNT}" >> "$GITHUB_OUTPUT"
+
+      - name: Generate checksums
+        env:
+          ZIP_NAME: ${{ steps.zip.outputs.ZIP_NAME }}
+        run: |
+          sha256sum "$ZIP_NAME" > "${ZIP_NAME}.sha256"
+          md5sum "$ZIP_NAME" > "${ZIP_NAME}.md5"
+          echo "SHA256: $(cat "${ZIP_NAME}.sha256")"
+
+      - name: Update release with changelog and assets
         uses: softprops/action-gh-release@v2
         with:
-          name: Dynamic Functionalities v${{ steps.get_version.outputs.VERSION }}
-          body_path: release_notes.md
-          draft: false
-          prerelease: false
-          files: functionalities-${{ steps.get_version.outputs.VERSION }}.zip
+          body_path: ${{ steps.changelog.outputs.CHANGELOG_FILE }}
+          files: |
+            ${{ steps.zip.outputs.ZIP_NAME }}
+            ${{ steps.zip.outputs.ZIP_NAME }}.sha256
+            ${{ steps.zip.outputs.ZIP_NAME }}.md5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.PLUGIN_SLUG }}-${{ steps.get_version.outputs.VERSION }}
+          path: ${{ steps.zip.outputs.ZIP_NAME }}
+          retention-days: 90
+
+      # -- Summary --
+      - name: Job summary
+        env:
+          VERSION: ${{ steps.get_version.outputs.VERSION }}
+          ZIP_NAME: ${{ steps.zip.outputs.ZIP_NAME }}
+          ZIP_SIZE: ${{ steps.zip.outputs.ZIP_SIZE }}
+          FILE_COUNT: ${{ steps.zip.outputs.FILE_COUNT }}
+        run: |
+          echo "## Release v${VERSION}" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Item | Value |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|------|-------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| **Zip** | \`${ZIP_NAME}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| **Size** | ${ZIP_SIZE} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| **Files** | ${FILE_COUNT} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Changelog" >> "$GITHUB_STEP_SUMMARY"
+          cat "${{ steps.changelog.outputs.CHANGELOG_FILE }}" >> "$GITHUB_STEP_SUMMARY"
+
+  # Deploy to WordPress.org
+  deploy:
+    name: Deploy to WordPress.org
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: WordPress.org plugin deploy
+        uses: 10up/action-wordpress-plugin-deploy@stable
+        with:
+          generate-zip: false
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+          SLUG: ${{ env.PLUGIN_SLUG }}
+          VERSION: ${{ github.event.release.tag_name }}
+          ASSETS_DIR: '.wordpress-org'

@@ -1,24 +1,40 @@
-# Directories
+# Development
 .git
 .github
-node_modules
-vendor
-build
-dist
-releases
-
-# Files
 .gitignore
 .distignore
+node_modules
+vendor
+tests
+coverage
+
+# Config
 .editorconfig
-.DS_Store
-Thumbs.db
+.eslintrc.js
+.prettierrc
+phpunit.xml
+phpcs.xml
+phpstan.neon
+
+# Build tools
 build.sh
-CLAUDE.md
-composer.json
-composer.lock
 package.json
 package-lock.json
+composer.json
+composer.lock
+
+# IDE
+.idea/
+.vscode/
+*.sublime-*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude Code
+CLAUDE.md
+.claude/
 
 # Patterns
 *.md
@@ -27,3 +43,7 @@ package-lock.json
 *.swp
 *.swo
 *~
+
+# Misc
+build-release/
+.wordpress-org/
