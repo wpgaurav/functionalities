@@ -288,6 +288,19 @@ class Admin {
 	 *
 	 * @return void
 	 */
+	/**
+	 * Check if a module is enabled.
+	 *
+	 * @param string $slug Module slug (hyphenated).
+	 * @return bool
+	 */
+	private static function is_module_enabled( string $slug ) : bool {
+		$option_name = 'functionalities_' . str_replace( '-', '_', $slug );
+		$opts        = (array) \get_option( $option_name, array() );
+
+		return ! empty( $opts['enabled'] );
+	}
+
 	private static function render_dashboard() : void {
 		?>
 		<div class="wrap functionalities-dashboard">
@@ -297,16 +310,25 @@ class Admin {
 			</p>
 
 			<div class="functionalities-modules-grid">
-				<?php foreach ( self::$modules as $slug => $module ) : ?>
+				<?php foreach ( self::$modules as $slug => $module ) :
+					$is_active = self::is_module_enabled( $slug );
+				?>
 					<div class="functionalities-module-card">
 						<div class="module-card-header">
 							<span class="dashicons <?php echo \esc_attr( $module['icon'] ); ?>"></span>
 							<h2><?php echo \esc_html( $module['title'] ); ?></h2>
 						</div>
 						<p class="module-description"><?php echo \esc_html( $module['description'] ); ?></p>
-						<a href="<?php echo \esc_url( self::get_module_url( $slug ) ); ?>" class="button button-primary">
-							<?php echo \esc_html__( 'Configure', 'functionalities' ); ?>
-						</a>
+						<div style="display:flex;align-items:center;gap:10px;">
+							<a href="<?php echo \esc_url( self::get_module_url( $slug ) ); ?>" class="button button-primary">
+								<?php echo \esc_html__( 'Configure', 'functionalities' ); ?>
+							</a>
+							<?php if ( $is_active ) : ?>
+								<span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:#16a34a;"><span class="dashicons dashicons-yes-alt" style="font-size:14px;width:14px;height:14px;"></span><?php echo \esc_html__( 'Active', 'functionalities' ); ?></span>
+							<?php else : ?>
+								<span style="font-size:12px;color:#94a3b8;"><?php echo \esc_html__( 'Inactive', 'functionalities' ); ?></span>
+							<?php endif; ?>
+						</div>
 					</div>
 				<?php endforeach; ?>
 			</div>
@@ -410,6 +432,7 @@ class Admin {
 			[
 				'sanitize_callback' => [ __CLASS__, 'sanitize_link_management' ],
 				'default' => [
+					'enabled' => false,
 					'nofollow_external' => false,
 					'exceptions' => '',
 					'open_external_new_tab' => false,
@@ -424,6 +447,19 @@ class Admin {
 			\__( 'Link Management Settings', 'functionalities' ),
 			array( __CLASS__, 'section_link_management' ),
 			'functionalities_link_management'
+		);
+
+		\add_settings_field(
+			'enabled',
+			\__( 'Enable Link Management', 'functionalities' ),
+			function() {
+				$o = self::get_link_management_options();
+				$checked = ! empty( $o['enabled'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_link_management[enabled]" value="1" ' . \esc_attr( $checked ) . '> ';
+				echo \esc_html__( 'Enable link management features', 'functionalities' ) . '</label>';
+			},
+			'functionalities_link_management',
+			'functionalities_link_management_section'
 		);
 
 		\add_settings_field(
@@ -495,6 +531,7 @@ class Admin {
 			[
 				'sanitize_callback' => [ __CLASS__, 'sanitize_block_cleanup' ],
 				'default' => [
+					'enabled'                       => false,
 					'remove_heading_block_class'    => false,
 					'remove_list_block_class'       => false,
 					'remove_image_block_class'      => false,
@@ -517,6 +554,19 @@ class Admin {
 			\__( 'Frontend Block Class Cleanup', 'functionalities' ),
 			array( __CLASS__, 'section_block_cleanup' ),
 			'functionalities_block_cleanup'
+		);
+
+		\add_settings_field(
+			'enabled',
+			\__( 'Enable Block Cleanup', 'functionalities' ),
+			function() {
+				$o = self::get_block_cleanup_options();
+				$checked = ! empty( $o['enabled'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_block_cleanup[enabled]" value="1" ' . \esc_attr( $checked ) . '> ';
+				echo \esc_html__( 'Enable block class cleanup on frontend', 'functionalities' ) . '</label>';
+			},
+			'functionalities_block_cleanup',
+			'functionalities_block_cleanup_section'
 		);
 
 		\add_settings_field(
@@ -668,6 +718,7 @@ class Admin {
 			[
 				'sanitize_callback' => [ __CLASS__, 'sanitize_editor_links' ],
 				'default' => [
+					'enabled'      => false,
 					'enable_limit' => false,
 					'post_types'   => self::default_editor_link_post_types(),
 				],
@@ -706,6 +757,19 @@ class Admin {
 		);
 
 		\add_settings_field(
+			'enabled',
+			\__( 'Enable Editor Link Suggestions', 'functionalities' ),
+			function() {
+				$o = self::get_editor_links_options();
+				$checked = ! empty( $o['enabled'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_editor_links[enabled]" value="1" ' . \esc_attr( $checked ) . '> ';
+				echo \esc_html__( 'Enable editor link suggestion filtering', 'functionalities' ) . '</label>';
+			},
+			'functionalities_editor_links',
+			'functionalities_editor_links_section'
+		);
+
+		\add_settings_field(
 			'enable_limit',
 			\__( 'Enable limitation', 'functionalities' ),
 			[ __CLASS__, 'field_el_enable' ],
@@ -727,6 +791,7 @@ class Admin {
 			[
 				'sanitize_callback' => [ __CLASS__, 'sanitize_snippets' ],
 				'default' => [
+					'enabled'          => false,
 					'enable_header'    => false,
 					'header_code'      => '',
 					'enable_body_open' => false,
@@ -774,6 +839,19 @@ class Admin {
 				echo '</div>';
 			},
 			'functionalities_snippets'
+		);
+
+		\add_settings_field(
+			'enabled',
+			\__( 'Enable Header & Footer', 'functionalities' ),
+			function() {
+				$o = self::get_snippets_options();
+				$checked = ! empty( $o['enabled'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_snippets[enabled]" value="1" ' . \esc_attr( $checked ) . '> ';
+				echo \esc_html__( 'Enable header and footer code injection', 'functionalities' ) . '</label>';
+			},
+			'functionalities_snippets',
+			'functionalities_snippets_section'
 		);
 
 		\add_settings_field(
@@ -852,6 +930,7 @@ class Admin {
 			[
 				'sanitize_callback' => [ __CLASS__, 'sanitize_schema' ],
 				'default' => [
+					'enabled'             => false,
 					'enable_site_schema'  => true,
 					'site_itemtype'       => 'WebPage',
 					'enable_header_part'  => true,
@@ -901,6 +980,19 @@ class Admin {
 				echo '</div>';
 			},
 			'functionalities_schema'
+		);
+
+		\add_settings_field(
+			'enabled',
+			\__( 'Enable Schema', 'functionalities' ),
+			function() {
+				$o = self::get_schema_options();
+				$checked = ! empty( $o['enabled'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_schema[enabled]" value="1" ' . \esc_attr( $checked ) . '> ';
+				echo \esc_html__( 'Enable schema microdata output', 'functionalities' ) . '</label>';
+			},
+			'functionalities_schema',
+			'functionalities_schema_section'
 		);
 
 		\add_settings_field(
@@ -1121,6 +1213,7 @@ class Admin {
 			[
 				'sanitize_callback' => [ __CLASS__, 'sanitize_misc' ],
 				'default' => [
+					'enabled'                          => false,
 					'disable_block_widgets'            => false,
 					'load_separate_core_block_assets'  => false,
 					'disable_emojis'                   => false,
@@ -1178,6 +1271,19 @@ class Admin {
 				echo '</div>';
 			},
 			'functionalities_misc'
+		);
+
+		\add_settings_field(
+			'enabled',
+			\__( 'Enable Performance & Cleanup', 'functionalities' ),
+			function() {
+				$o = self::get_misc_options();
+				$checked = ! empty( $o['enabled'] ) ? 'checked' : '';
+				echo '<label><input type="checkbox" name="functionalities_misc[enabled]" value="1" ' . \esc_attr( $checked ) . '> ';
+				echo \esc_html__( 'Enable performance and cleanup features', 'functionalities' ) . '</label>';
+			},
+			'functionalities_misc',
+			'functionalities_misc_section'
 		);
 
 		self::add_misc_field( 'disable_block_widgets', \__( 'Disable block-based widget editor (use classic widgets)', 'functionalities' ) );
@@ -4884,7 +4990,15 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 			$project_data = $projects[ $current_project ];
 		}
 
-		$nonce = \wp_create_nonce( 'functionalities_task_manager' );
+		$nonce    = \wp_create_nonce( 'functionalities_task_manager' );
+		$tm_opts  = (array) \get_option( 'functionalities_task_manager', array( 'enabled' => false ) );
+
+		// Handle enable/disable toggle.
+		if ( isset( $_POST['functionalities_task_manager_toggle'] ) && \wp_verify_nonce( \sanitize_text_field( \wp_unslash( $_POST['_wpnonce'] ?? '' ) ), 'functionalities_task_manager_toggle' ) ) {
+			$tm_opts['enabled'] = ! empty( $_POST['enabled'] );
+			\update_option( 'functionalities_task_manager', $tm_opts );
+			echo '<div class="notice notice-success is-dismissible"><p>' . \esc_html__( 'Settings saved.', 'functionalities' ) . '</p></div>';
+		}
 		?>
 		<div class="wrap functionalities-module functionalities-task-manager">
 			<h1>
@@ -4907,6 +5021,16 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 					<span class="current"><?php echo \esc_html( $module['title'] ); ?></span>
 				<?php endif; ?>
 			</nav>
+
+			<form method="post" style="margin:15px 0;">
+				<?php \wp_nonce_field( 'functionalities_task_manager_toggle' ); ?>
+				<input type="hidden" name="functionalities_task_manager_toggle" value="1" />
+				<label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+					<input type="checkbox" name="enabled" value="1" <?php checked( ! empty( $tm_opts['enabled'] ) ); ?> onchange="this.form.submit()" />
+					<strong><?php echo \esc_html__( 'Enable Task Manager', 'functionalities' ); ?></strong>
+					<span style="color:#646970;font-size:13px;"><?php echo \esc_html__( 'File-based project task management', 'functionalities' ); ?></span>
+				</label>
+			</form>
 
 			<?php if ( ! $project_data ) : ?>
 				<?php self::render_task_manager_overview( $projects, $nonce ); ?>
@@ -6494,6 +6618,14 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 		$redirects = \Functionalities\Features\Redirect_Manager::get_redirects();
 		$stats     = \Functionalities\Features\Redirect_Manager::get_stats();
 		$nonce     = \wp_create_nonce( 'functionalities_redirect_manager' );
+		$rm_opts   = (array) \get_option( 'functionalities_redirect_manager', array( 'enabled' => false ) );
+
+		// Handle enable/disable toggle.
+		if ( isset( $_POST['functionalities_redirect_manager_toggle'] ) && \wp_verify_nonce( \sanitize_text_field( \wp_unslash( $_POST['_wpnonce'] ?? '' ) ), 'functionalities_redirect_manager_toggle' ) ) {
+			$rm_opts['enabled'] = ! empty( $_POST['enabled'] );
+			\update_option( 'functionalities_redirect_manager', $rm_opts );
+			echo '<div class="notice notice-success is-dismissible"><p>' . \esc_html__( 'Settings saved.', 'functionalities' ) . '</p></div>';
+		}
 		?>
 		<div class="wrap functionalities-module functionalities-redirect-manager">
 			<h1>
@@ -6508,6 +6640,16 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 				<span class="separator">›</span>
 				<span class="current"><?php echo \esc_html( $module['title'] ); ?></span>
 			</nav>
+
+			<form method="post" style="margin:15px 0;">
+				<?php \wp_nonce_field( 'functionalities_redirect_manager_toggle' ); ?>
+				<input type="hidden" name="functionalities_redirect_manager_toggle" value="1" />
+				<label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+					<input type="checkbox" name="enabled" value="1" <?php checked( ! empty( $rm_opts['enabled'] ) ); ?> onchange="this.form.submit()" />
+					<strong><?php echo \esc_html__( 'Enable Redirect Manager', 'functionalities' ); ?></strong>
+					<span style="color:#646970;font-size:13px;"><?php echo \esc_html__( 'Create and manage URL redirects', 'functionalities' ); ?></span>
+				</label>
+			</form>
 
 			<div class="feature-info" style="background:#fff;border:1px solid #c3c4c7;padding:20px;margin:20px 0;border-radius:4px;">
 				<h2 style="margin-top:0;"><?php \esc_html_e( 'URL Redirects', 'functionalities' ); ?></h2>

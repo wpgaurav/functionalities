@@ -5,7 +5,7 @@ Tags: performance, security, seo, redirection, cleanup
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.1.1
+Stable tag: 1.2.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -130,6 +130,12 @@ All settings are preserved in the database. Reactivate anytime and everything is
 
 == Changelog ==
 
+= 1.2.0 =
+* Changed: All 16 modules now require explicit activation — no module runs code until enabled
+* Added: Enable/disable toggle to every module settings page
+* Added: Toggle forms for Task Manager, Redirect Manager, and SVG Icons custom pages
+* Fixed: Redirect Manager and Task Manager file paths now set before enabled gate to prevent empty-path errors in admin
+
 = 1.1.1 =
 * Fixed: PHPCS escaping compliance for all output variables
 * Fixed: WordPress.org SVN tag version mismatch
@@ -202,6 +208,9 @@ All settings are preserved in the database. Reactivate anytime and everything is
 * Added: Assumption Detection module
 
 == Upgrade Notice ==
+
+= 1.2.0 =
+All modules now require explicit activation. After updating, visit Functionalities settings and enable the modules you use.
 
 = 1.1.0 =
 All features are now free and open source. 16 modules for performance, security, SEO, and content management.

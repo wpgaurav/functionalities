@@ -41,6 +41,12 @@ class Redirect_Manager {
 	public static function init() : void {
 		self::$redirects_file = WP_CONTENT_DIR . '/functionalities/redirects.json';
 
+		$opts = (array) \get_option( 'functionalities_redirect_manager', array( 'enabled' => false ) );
+
+		if ( empty( $opts['enabled'] ) ) {
+			return;
+		}
+
 		// Handle redirects early on frontend.
 		\add_action( 'template_redirect', array( __CLASS__, 'handle_redirect' ), 1 );
 

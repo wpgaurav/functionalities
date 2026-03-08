@@ -110,6 +110,12 @@ class Snippets {
 	 * @return void
 	 */
 	public static function init() : void {
+		$opts = self::get_options();
+
+		if ( empty( $opts['enabled'] ) ) {
+			return;
+		}
+
 		\add_action( 'wp_head', array( __CLASS__, 'output_head' ), 20 );
 		\add_action( 'wp_body_open', array( __CLASS__, 'output_body_open' ), 20 );
 		\add_action( 'wp_footer', array( __CLASS__, 'output_footer' ), 20 );
@@ -151,6 +157,7 @@ class Snippets {
 		}
 
 		$defaults = array(
+			'enabled'          => false,
 			'enable_header'    => false,
 			'header_code'      => '',
 			'enable_body_open' => false,

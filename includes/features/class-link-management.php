@@ -28,6 +28,12 @@ class Link_Management {
 	 * @return void
 	 */
 	public static function init() : void {
+		$opts = self::get_options();
+
+		if ( empty( $opts['enabled'] ) ) {
+			return;
+		}
+
 		// Load JSON preset immediately (we're already on init hook).
 		self::load_json_preset();
 
@@ -69,6 +75,7 @@ class Link_Management {
 		}
 
 		$defaults = array(
+			'enabled'                       => false,
 			'nofollow_external'             => false,
 			'exceptions'                    => '',
 			'open_external_new_tab'         => false,

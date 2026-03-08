@@ -105,6 +105,12 @@ class Schema {
 	 * @return void
 	 */
 	public static function init() : void {
+		$opts = self::get_options();
+
+		if ( empty( $opts['enabled'] ) ) {
+			return;
+		}
+
 		// Add itemscope/itemtype to html element.
 		\add_filter( 'language_attributes', array( __CLASS__, 'filter_language_attributes' ), 20 );
 
@@ -145,6 +151,7 @@ class Schema {
 		}
 
 		$defaults = array(
+			'enabled'             => false,
 			'enable_site_schema'  => true,
 			'site_itemtype'       => 'WebPage',
 			'enable_header_part'  => true,

@@ -24,6 +24,7 @@ trait Admin_Options {
 	 */
 	public static function get_link_management_options() : array {
 		$defaults = array(
+			'enabled'                     => false,
 			'nofollow_external'           => false,
 			'exceptions'                  => '',
 			'open_external_new_tab'       => false,
@@ -43,6 +44,7 @@ trait Admin_Options {
 	 */
 	public static function get_block_cleanup_options() : array {
 		$defaults = array(
+			'enabled'                       => false,
 			'remove_heading_block_class'    => false,
 			'remove_list_block_class'       => false,
 			'remove_image_block_class'      => false,
@@ -85,6 +87,7 @@ trait Admin_Options {
 	 */
 	public static function get_editor_links_options() : array {
 		$defaults = array(
+			'enabled'      => false,
 			'enable_limit' => false,
 			'post_types'   => self::default_editor_link_post_types(),
 		);
@@ -99,6 +102,7 @@ trait Admin_Options {
 	 */
 	public static function get_snippets_options() : array {
 		$defaults = array(
+			'enabled'          => false,
 			'enable_header'    => false,
 			'header_code'      => '',
 			'enable_body_open' => false,
@@ -119,6 +123,7 @@ trait Admin_Options {
 	 */
 	public static function get_schema_options() : array {
 		$defaults = array(
+			'enabled'            => false,
 			'enable_site_schema' => true,
 			'site_itemtype'      => 'WebPage',
 			'enable_header_part' => true,
@@ -233,6 +238,7 @@ trait Admin_Options {
 	 */
 	public static function get_misc_options() : array {
 		$defaults = array(
+			'enabled'                         => false,
 			'disable_block_widgets'           => false,
 			'load_separate_core_block_assets' => false,
 			'disable_emojis'                  => false,

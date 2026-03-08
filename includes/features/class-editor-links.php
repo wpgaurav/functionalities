@@ -76,6 +76,10 @@ class Editor_Links {
 	public static function init() : void {
 		$opts = self::get_options();
 
+		if ( empty( $opts['enabled'] ) ) {
+			return;
+		}
+
 		// Only add filters if the feature is enabled.
 		if ( empty( $opts['enable_limit'] ) ) {
 			return;
@@ -109,6 +113,7 @@ class Editor_Links {
 		}
 
 		$defaults = array(
+			'enabled'      => false,
 			'enable_limit' => false,
 			'post_types'   => array(),
 		);

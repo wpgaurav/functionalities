@@ -35,6 +35,12 @@ class Task_Manager {
 	public static function init() : void {
 		self::$tasks_dir = WP_CONTENT_DIR . '/functionalities/tasks/';
 
+		$opts = (array) \get_option( 'functionalities_task_manager', array( 'enabled' => false ) );
+
+		if ( empty( $opts['enabled'] ) ) {
+			return;
+		}
+
 		// Only run in admin - no frontend footprint.
 		if ( ! \is_admin() ) {
 			return;

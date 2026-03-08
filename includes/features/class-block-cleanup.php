@@ -100,6 +100,10 @@ class Block_Cleanup {
 	public static function init() : void {
 		$opts = self::get_options();
 
+		if ( empty( $opts['enabled'] ) ) {
+			return;
+		}
+
 		// Only add filter if at least one cleanup option is enabled.
 		$has_enabled_option = ! empty( $opts['remove_heading_block_class'] ) ||
 			! empty( $opts['remove_list_block_class'] ) ||
@@ -166,6 +170,7 @@ class Block_Cleanup {
 		}
 
 		$defaults = array(
+			'enabled'                       => false,
 			'remove_heading_block_class'    => false,
 			'remove_list_block_class'       => false,
 			'remove_image_block_class'      => false,

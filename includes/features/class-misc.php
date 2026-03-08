@@ -98,6 +98,10 @@ class Misc {
 	public static function init() : void {
 		$opts = self::get_options();
 
+		if ( empty( $opts['enabled'] ) ) {
+			return;
+		}
+
 		// Disable block-based widgets.
 		if ( self::is_option_enabled( $opts, 'disable_block_widgets' ) ) {
 			\add_filter( 'gutenberg_use_widgets_block_editor', '__return_false' );
@@ -331,6 +335,7 @@ class Misc {
 		}
 
 		$defaults = array(
+			'enabled'                         => false,
 			'disable_block_widgets'           => false,
 			'load_separate_core_block_assets' => false,
 			'disable_emojis'                  => false,

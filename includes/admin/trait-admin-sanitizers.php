@@ -25,6 +25,7 @@ trait Admin_Sanitizers {
 	 */
 	public static function sanitize_link_management( $input ) : array {
 		$out = array(
+			'enabled'                     => ! empty( $input['enabled'] ),
 			'nofollow_external'           => ! empty( $input['nofollow_external'] ),
 			'exceptions'                  => '',
 			'open_external_new_tab'       => ! empty( $input['open_external_new_tab'] ),
@@ -78,6 +79,7 @@ trait Admin_Sanitizers {
 	 */
 	public static function sanitize_block_cleanup( $input ) : array {
 		return array(
+			'enabled'                       => ! empty( $input['enabled'] ),
 			'remove_heading_block_class'    => ! empty( $input['remove_heading_block_class'] ),
 			'remove_list_block_class'       => ! empty( $input['remove_list_block_class'] ),
 			'remove_image_block_class'      => ! empty( $input['remove_image_block_class'] ),
@@ -104,6 +106,7 @@ trait Admin_Sanitizers {
 	 */
 	public static function sanitize_editor_links( $input ) : array {
 		$out = array(
+			'enabled'      => ! empty( $input['enabled'] ),
 			'enable_limit' => ! empty( $input['enable_limit'] ),
 			'post_types'   => array(),
 		);
@@ -130,6 +133,7 @@ trait Admin_Sanitizers {
 	 */
 	public static function sanitize_snippets( $input ) : array {
 		$out = array(
+			'enabled'          => ! empty( $input['enabled'] ),
 			'enable_header'    => ! empty( $input['enable_header'] ),
 			'header_code'      => '',
 			'enable_body_open' => ! empty( $input['enable_body_open'] ),
@@ -180,6 +184,7 @@ trait Admin_Sanitizers {
 	 */
 	public static function sanitize_schema( $input ) : array {
 		return array(
+			'enabled'            => ! empty( $input['enabled'] ),
 			'enable_site_schema' => ! empty( $input['enable_site_schema'] ),
 			'site_itemtype'      => preg_replace( '/[^A-Za-z]/', '', (string) ( $input['site_itemtype'] ?? 'WebPage' ) ),
 			'enable_header_part' => ! empty( $input['enable_header_part'] ),
@@ -230,6 +235,7 @@ trait Admin_Sanitizers {
 	 */
 	public static function sanitize_misc( $input ) : array {
 		$keys = array(
+			'enabled',
 			'disable_block_widgets',
 			'load_separate_core_block_assets',
 			'disable_emojis',
