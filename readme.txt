@@ -3,9 +3,9 @@ Contributors: gauravtiwari
 Donate link: https://gauravtiwari.org/donate/
 Tags: performance, security, seo, redirection, cleanup
 Requires at least: 5.8
-Tested up to: 6.9
+Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.2.0
+Stable tag: 1.3.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -130,6 +130,12 @@ All settings are preserved in the database. Reactivate anytime and everything is
 
 == Changelog ==
 
+= 1.3.0 =
+* Added: WordPress 7 editor iframe compatibility for Fonts, SVG Icons, Content Regression, and Components modules
+* Added: `enqueue_block_assets` handlers so editor CSS loads inside the WP 7 iframed block editor
+* Fixed: Query string stripping (`remove_query_strings`) no longer strips version tags from admin/editor assets
+* Tested up to WordPress 7.0
+
 = 1.2.0 =
 * Changed: All 16 modules now require explicit activation — no module runs code until enabled
 * Added: Enable/disable toggle to every module settings page
@@ -208,6 +214,9 @@ All settings are preserved in the database. Reactivate anytime and everything is
 * Added: Assumption Detection module
 
 == Upgrade Notice ==
+
+= 1.3.0 =
+WordPress 7 compatibility: editor CSS now loads inside the iframed block editor. Fixes version tag stripping in admin.
 
 = 1.2.0 =
 All modules now require explicit activation. After updating, visit Functionalities settings and enable the modules you use.

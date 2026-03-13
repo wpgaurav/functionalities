@@ -175,7 +175,7 @@ class Misc {
 		}
 
 		// Remove query strings from static resources.
-		if ( self::is_option_enabled( $opts, 'remove_query_strings' ) ) {
+		if ( self::is_option_enabled( $opts, 'remove_query_strings' ) && ! \is_admin() ) {
 			\add_filter( 'script_loader_src', array( __CLASS__, 'remove_ver_query_string' ), 15 );
 			\add_filter( 'style_loader_src', array( __CLASS__, 'remove_ver_query_string' ), 15 );
 		}

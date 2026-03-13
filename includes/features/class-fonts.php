@@ -92,6 +92,7 @@ class Fonts {
 
 		\add_action( 'wp_head', array( __CLASS__, 'print_fonts_css' ), 20 );
 		\add_action( 'admin_head', array( __CLASS__, 'print_fonts_css' ), 20 );
+		\add_action( 'enqueue_block_assets', array( __CLASS__, 'enqueue_editor_fonts' ) );
 	}
 
 	/**
@@ -226,6 +227,42 @@ class Fonts {
 				echo '<link rel="preload" href="' . \esc_url( $item['woff2_url'] ) . '" as="font" type="font/woff2" crossorigin>' . "\n";
 			}
 		}
+	}
+
+	/**
+	 * Enqueue font CSS in the block editor iframe for WP 7 compatibility.
+	 *
+	 * The admin_head hook outputs to the parent frame, but WP 7's iframed
+	 * editor needs fonts loaded via enqueue_block_assets to reach the iframe.
+	 *
+	 * @since 1.3.0
+	 * @return void
+	 */
+	public static function enqueue_editor_fonts() : void {
+		if ( ! \is_admin() ) {
+			return;
+		}
+
+		$opts = self::get_options();
+
+		if ( ! \apply_filters( 'functionalities_fonts_enabled', ! empty( $opts['enabled'] ) ) ) {
+			return;
+		}
+
+		if ( empty( $opts['items'] ) || ! is_array( $opts['items'] ) ) {
+			return;
+		}
+
+		$items = \apply_filters( 'functionalities_fonts_items', $opts['items'] );
+		$css   = self::build_css( $items );
+
+		if ( $css === '' ) {
+			return;
+		}
+
+		\wp_register_style( 'functionalities-fonts-editor', false, array(), FUNCTIONALITIES_VERSION );
+		\wp_enqueue_style( 'functionalities-fonts-editor' );
+		\wp_add_inline_style( 'functionalities-fonts-editor', self::sanitize_css( $css ) );
 	}
 
 	/**

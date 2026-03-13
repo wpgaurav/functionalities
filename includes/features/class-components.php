@@ -106,6 +106,7 @@ class Components {
 		// Output CSS in footer (both frontend and admin).
 		\add_action( 'wp_footer', array( __CLASS__, 'print_footer_link' ), 90 );
 		\add_action( 'admin_footer', array( __CLASS__, 'print_footer_link' ), 90 );
+		\add_action( 'enqueue_block_assets', array( __CLASS__, 'enqueue_editor_components' ) );
 
 		// Regenerate CSS file when settings are updated.
 		\add_action( 'update_option_functionalities_components', array( __CLASS__, 'on_option_update' ), 10, 2 );
@@ -150,6 +151,41 @@ class Components {
 		}
 
 		return self::$options;
+	}
+
+	/**
+	 * Enqueue components CSS in the block editor iframe for WP 7 compatibility.
+	 *
+	 * @since 1.3.0
+	 * @return void
+	 */
+	public static function enqueue_editor_components() : void {
+		if ( ! \is_admin() ) {
+			return;
+		}
+
+		$opts = self::get_options();
+
+		if ( ! \apply_filters( 'functionalities_components_enabled', ! empty( $opts['enabled'] ) ) ) {
+			return;
+		}
+
+		if ( empty( $opts['items'] ) || ! is_array( $opts['items'] ) ) {
+			return;
+		}
+
+		$items = \apply_filters( 'functionalities_components_items', $opts['items'] );
+		$css   = self::build_css( $items );
+		$file  = self::ensure_css_file( $css );
+
+		if ( $file && isset( $file['url'], $file['ver'] ) ) {
+			\wp_enqueue_style( 'functionalities-components', $file['url'], array(), $file['ver'] );
+			return;
+		}
+
+		\wp_register_style( 'functionalities-components', false, array(), FUNCTIONALITIES_VERSION );
+		\wp_enqueue_style( 'functionalities-components' );
+		\wp_add_inline_style( 'functionalities-components', self::sanitize_css( $css ) );
 	}
 
 	/**

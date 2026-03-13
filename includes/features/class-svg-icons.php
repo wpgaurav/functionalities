@@ -162,6 +162,7 @@ class SVG_Icons
 
 		// Register block editor assets.
 		\add_action('enqueue_block_editor_assets', array(__CLASS__, 'enqueue_editor_assets'));
+		\add_action('enqueue_block_assets', array(__CLASS__, 'enqueue_editor_styles'));
 
 		// Register AJAX handlers.
 		\add_action('wp_ajax_functionalities_svg_icon_save', array(__CLASS__, 'ajax_save_icon'));
@@ -345,7 +346,21 @@ class SVG_Icons
 			)
 		);
 
-		// Register editor styles.
+		// CSS loaded via enqueue_editor_styles() on enqueue_block_assets for WP 7 iframe compatibility.
+	}
+
+	/**
+	 * Enqueue editor CSS via enqueue_block_assets for WP 7 iframe compatibility.
+	 *
+	 * @since 1.3.0
+	 * @return void
+	 */
+	public static function enqueue_editor_styles(): void
+	{
+		if (!\is_admin()) {
+			return;
+		}
+
 		\wp_enqueue_style(
 			'functionalities-svg-icons-editor',
 			FUNCTIONALITIES_URL . 'assets/css/svg-icons-editor.css',
@@ -353,7 +368,6 @@ class SVG_Icons
 			FUNCTIONALITIES_VERSION
 		);
 
-		// Add inline styles for editor content area (iframe)
 		$inline_styles = '
 			.func-icon-wrapper {
 				display: inline-flex !important;
