@@ -149,6 +149,7 @@ class Redirect_Manager {
 		$result = file_put_contents( self::$redirects_file, $json );
 		if ( false !== $result ) {
 			self::$redirects_cache = $redirects;
+			self::$index           = null; // Invalidate index so it's rebuilt on next request.
 			\set_transient( 'func_redirects_json', $redirects, 12 * HOUR_IN_SECONDS );
 			return true;
 		}
@@ -187,6 +188,12 @@ class Redirect_Manager {
 			if ( $redirect['from'] === $from_url ) {
 				return false; // Already exists.
 			}
+		}
+
+		// Prevent redirect loops (source === destination).
+		$to_path = self::normalize_path( $to_url );
+		if ( $from_url === $to_path ) {
+			return false;
 		}
 
 		$redirect = array(
@@ -288,12 +295,18 @@ class Redirect_Manager {
 	/**
 	 * Normalize URL path.
 	 *
+	 * Strips scheme/host, query string, and fragment so that
+	 * `/old-page?utm_source=google` correctly matches a rule for `/old-page`.
+	 *
 	 * @param string $path URL path.
 	 * @return string Normalized path.
 	 */
 	private static function normalize_path( string $path ) : string {
 		// Remove domain if present.
 		$path = preg_replace( '#^https?://[^/]+#i', '', $path );
+
+		// Strip query string and fragment.
+		$path = strtok( $path, '?#' );
 
 		// Ensure starts with /.
 		$path = '/' . ltrim( $path, '/' );
@@ -310,7 +323,57 @@ class Redirect_Manager {
 	}
 
 	/**
+	 * Indexed exact-match lookup and wildcard prefixes.
+	 *
+	 * @var array|null
+	 */
+	private static $index = null;
+
+	/**
+	 * Build a hash-map index for O(1) exact matches.
+	 *
+	 * Wildcards are kept in a separate list sorted longest-prefix-first
+	 * so the most specific rule wins.
+	 *
+	 * @return void
+	 */
+	private static function build_index() : void {
+		if ( null !== self::$index ) {
+			return;
+		}
+
+		self::$index = array(
+			'exact'    => array(),
+			'wildcard' => array(),
+		);
+
+		$redirects = self::get_redirects();
+		foreach ( $redirects as $redirect ) {
+			if ( empty( $redirect['enabled'] ) ) {
+				continue;
+			}
+
+			$from = $redirect['from'];
+
+			if ( substr( $from, -1 ) === '*' ) {
+				self::$index['wildcard'][] = $redirect;
+			} else {
+				self::$index['exact'][ $from ] = $redirect;
+			}
+		}
+
+		// Sort wildcards by prefix length descending (most specific first).
+		usort( self::$index['wildcard'], function ( $a, $b ) {
+			return strlen( $b['from'] ) - strlen( $a['from'] );
+		});
+	}
+
+	/**
 	 * Handle redirects on frontend.
+	 *
+	 * Uses an indexed lookup for O(1) exact matches and longest-prefix-first
+	 * ordering for wildcard rules. Query strings are preserved through to the
+	 * destination URL.
 	 *
 	 * @return void
 	 */
@@ -325,26 +388,30 @@ class Redirect_Manager {
 			return;
 		}
 
-		// Get current path.
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitized by normalize_path.
-		$current_path = self::normalize_path( isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '' );
+		$raw_uri      = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+		$current_path = self::normalize_path( $raw_uri );
 
-		foreach ( $redirects as $redirect ) {
-			if ( empty( $redirect['enabled'] ) ) {
-				continue;
-			}
+		// Preserve the original query string so it can be appended to the destination.
+		$query_string = '';
+		$qpos         = strpos( $raw_uri, '?' );
+		if ( false !== $qpos ) {
+			$query_string = substr( $raw_uri, $qpos );
+		}
 
-			$from = $redirect['from'];
+		self::build_index();
 
-			// Check for wildcard match.
-			if ( substr( $from, -1 ) === '*' ) {
-				$prefix = rtrim( $from, '*' );
-				if ( strpos( $current_path, $prefix ) === 0 ) {
-					self::do_redirect( $redirect );
-					return;
-				}
-			} elseif ( $current_path === $from ) {
-				self::do_redirect( $redirect );
+		// O(1) exact match.
+		if ( isset( self::$index['exact'][ $current_path ] ) ) {
+			self::do_redirect( self::$index['exact'][ $current_path ], $query_string );
+			return;
+		}
+
+		// Wildcard match (longest prefix first).
+		foreach ( self::$index['wildcard'] as $redirect ) {
+			$prefix = rtrim( $redirect['from'], '*' );
+			if ( strpos( $current_path, $prefix ) === 0 ) {
+				self::do_redirect( $redirect, $query_string );
 				return;
 			}
 		}
@@ -353,20 +420,54 @@ class Redirect_Manager {
 	/**
 	 * Perform the redirect.
 	 *
-	 * @param array $redirect Redirect data.
+	 * Detects redirect loops (source === destination) and passes the original
+	 * query string through to the destination URL when it has none of its own.
+	 *
+	 * @param array  $redirect     Redirect data.
+	 * @param string $query_string Original query string including leading '?', or empty.
 	 * @return void
 	 */
-	private static function do_redirect( array $redirect ) : void {
-		// Increment hit counter.
-		self::increment_hits( $redirect['id'] );
+	private static function do_redirect( array $redirect, string $query_string = '' ) : void {
+		$destination = $redirect['to'];
+
+		// Append original query string if the destination has none.
+		if ( '' !== $query_string && false === strpos( $destination, '?' ) ) {
+			$destination .= $query_string;
+		}
+
+		// Loop detection: if destination resolves to the same path, bail.
+		$dest_path = self::normalize_path( $destination );
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitized by normalize_path.
+		$current   = self::normalize_path( isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '' );
+		if ( $dest_path === $current ) {
+			return;
+		}
+
+		// Defer hit counting to shutdown to avoid blocking the redirect.
+		self::defer_hit_increment( $redirect['id'] );
 
 		$status = isset( $redirect['type'] ) ? (int) $redirect['type'] : 301;
 
-			// Note: Using wp_redirect instead of wp_safe_redirect because destination
+		// Note: Using wp_redirect instead of wp_safe_redirect because destination
 		// URLs may be external domains, which is valid for redirects.
 		// phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect
-		\wp_redirect( $redirect['to'], $status );
+		\wp_redirect( $destination, $status );
 		exit;
+	}
+
+	/**
+	 * Schedule a hit counter increment on shutdown.
+	 *
+	 * Avoids a full JSON file read/write in the critical redirect path.
+	 * The actual disk write happens after the response is sent.
+	 *
+	 * @param string $id Redirect ID.
+	 * @return void
+	 */
+	private static function defer_hit_increment( string $id ) : void {
+		\register_shutdown_function( function () use ( $id ) {
+			self::increment_hits( $id );
+		});
 	}
 
 	/**
@@ -376,6 +477,10 @@ class Redirect_Manager {
 	 * @return void
 	 */
 	private static function increment_hits( string $id ) : void {
+		// Reset cache so we read fresh data (shutdown context).
+		self::$redirects_cache = null;
+		\delete_transient( 'func_redirects_json' );
+
 		$redirects = self::get_redirects();
 
 		foreach ( $redirects as &$redirect ) {

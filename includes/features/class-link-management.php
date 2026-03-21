@@ -227,7 +227,11 @@ class Link_Management {
 	}
 
 	/**
-	 * Filter content to modify links.
+	 * Filter content to modify links (WordPress filter callback).
+	 *
+	 * Skips processing in admin, feeds, and REST contexts.
+	 * For direct use in themes/plugins (ACF fields, shortcodes, custom templates),
+	 * use {@see process_content()} instead.
 	 *
 	 * @param string $content The content to filter.
 	 * @return string Filtered content.
@@ -239,6 +243,31 @@ class Link_Management {
 			return $content;
 		}
 
+		return self::process_content( $content );
+	}
+
+	/**
+	 * Process arbitrary HTML content to apply link management rules.
+	 *
+	 * Public helper for use in themes and plugins. Works with any HTML string
+	 * regardless of context — ACF fields, shortcode output, custom templates, etc.
+	 *
+	 * Usage:
+	 *   // ACF field
+	 *   echo Link_Management::process_content( get_field( 'my_wysiwyg' ) );
+	 *
+	 *   // Shortcode output
+	 *   echo Link_Management::process_content( do_shortcode( $content ) );
+	 *
+	 *   // Any HTML string
+	 *   echo Link_Management::process_content( $html );
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param string $content HTML content containing links to process.
+	 * @return string Processed content with nofollow/target attributes applied.
+	 */
+	public static function process_content( string $content ) : string {
 		if ( trim( $content ) === '' || false === strpos( $content, '<a' ) ) {
 			return $content;
 		}

@@ -5,7 +5,7 @@ Tags: performance, security, seo, redirection, cleanup
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -37,7 +37,7 @@ Here's what you can deactivate after installing Dynamic Functionalities:
 * **External Links / WP External Links** — Link Management module automates nofollow, new tab behavior, and exception lists with JSON preset support
 * **Schema Pro / Schema & Structured Data** — Schema Settings module adds microdata with itemscope/itemtype support and BreadcrumbList JSON-LD
 * **Insert Headers and Footers / WPCode** — Header & Footer Snippets module handles GA4 integration and custom code injection
-* **Jesuspended / Asset CleanUp / Perfmatters** — Performance & Cleanup module disables emojis, embeds, REST API links, XML-RPC, feeds, Gravatars, heartbeat, and more
+* **Asset CleanUp / Perfmatters** — Performance & Cleanup module disables emojis, embeds, REST API links, XML-RPC, feeds, Gravatars, heartbeat, and more
 * **SVG Support / Safe SVG** — SVG Icons module lets you upload and insert SVG icons inline in the block editor
 * **Use Any Font / Custom Fonts** — Fonts module registers custom font families with @font-face, WOFF2/WOFF, and variable font support
 * **PWA for WP / Super Progressive Web Apps** — Progressive Web App module makes your site installable with service worker support
@@ -130,6 +130,15 @@ All settings are preserved in the database. Reactivate anytime and everything is
 
 == Changelog ==
 
+= 1.3.1 =
+* Added: Public `Link_Management::process_content()` helper for applying nofollow/new-tab rules to ACF fields, shortcode output, and custom templates
+* Fixed: Redirect Manager now strips query strings before matching, so `/old-page?utm=x` correctly matches `/old-page`
+* Improved: Redirect Manager passes original query string through to destination URL
+* Improved: Redirect Manager uses O(1) indexed lookup for exact matches instead of linear scan
+* Improved: Redirect Manager defers hit counter writes to shutdown for faster redirects
+* Added: Redirect loop detection at both creation time and runtime
+* Fixed: Removed filler text from readme plugin alternatives list
+
 = 1.3.0 =
 * Added: WordPress 7 editor iframe compatibility for Fonts, SVG Icons, Content Regression, and Components modules
 * Added: `enqueue_block_assets` handlers so editor CSS loads inside the WP 7 iframed block editor
@@ -214,6 +223,9 @@ All settings are preserved in the database. Reactivate anytime and everything is
 * Added: Assumption Detection module
 
 == Upgrade Notice ==
+
+= 1.3.1 =
+Link Management now works with ACF fields and custom templates via process_content() helper. Redirect Manager fixes query string matching and adds loop detection.
 
 = 1.3.0 =
 WordPress 7 compatibility: editor CSS now loads inside the iframed block editor. Fixes version tag stripping in admin.

@@ -2,7 +2,7 @@
 
 All-in-one WordPress optimization toolkit with 15+ modules for performance, security, SEO, and content management. Built with modern WordPress coding standards and a clean module-based dashboard. Optimized for performance with lazy-loading, static property caching, and intelligent transients.
 
-**Version:** 1.0.0
+**Version:** 1.3.1
 **License:** GPL-2.0-or-later
 **Text Domain:** `functionalities`
 **Pricing:** Free during early access, then $39/year
@@ -430,7 +430,16 @@ Example module definition:
 
 ## Changelog
 
-### 1.0.0 (Current)
+### 1.3.1
+- **Added**: Public `Link_Management::process_content()` helper for nofollow/new-tab on ACF fields, shortcode output, and custom templates.
+- **Fixed**: Redirect Manager now strips query strings before matching (`/old-page?utm=x` matches `/old-page`).
+- **Improved**: Redirect Manager passes original query string through to destination URL.
+- **Improved**: Redirect Manager uses O(1) indexed lookup for exact matches instead of linear scan.
+- **Improved**: Redirect Manager defers hit counter writes to shutdown for faster redirects.
+- **Added**: Redirect loop detection at creation time and runtime.
+- **Fixed**: Removed filler text from readme plugin alternatives list.
+
+### 1.0.0
 This is the first stable release of Functionalities Pro with license-based auto-updates.
 
 - **New**: License-based automatic updates via FluentCart integration.
