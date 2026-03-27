@@ -39,7 +39,7 @@ Here's what you can deactivate after installing Dynamic Functionalities:
 * **Insert Headers and Footers / WPCode** — Header & Footer Snippets module handles GA4 integration and custom code injection
 * **Asset CleanUp / Perfmatters** — Performance & Cleanup module disables emojis, embeds, REST API links, XML-RPC, feeds, Gravatars, heartbeat, and more
 * **SVG Support / Safe SVG** — SVG Icons module lets you upload and insert SVG icons inline in the block editor
-* **Use Any Font / Custom Fonts** — Fonts module registers custom font families with @font-face, WOFF2/WOFF, and variable font support
+* **Use Any Font / Custom Fonts** — Fonts module registers custom font families with @font-face, WOFF2/WOFF, variable font support, and Bricks Builder integration
 * **PWA for WP / Super Progressive Web Apps** — Progressive Web App module makes your site installable with service worker support
 
 = Modules That Don't Have Alternatives =
@@ -104,7 +104,7 @@ Yes. Tested with WP Super Cache, W3 Total Cache, LiteSpeed Cache, and FlyingPres
 
 = Does it work with page builders and block themes? =
 
-Yes. All modules work with classic themes, block themes, Elementor, Bricks Builder, GenerateBlocks, and other page builders.
+Yes. All modules work with classic themes, block themes, Elementor, Bricks Builder, GenerateBlocks, and other page builders. The Fonts module has native Bricks Builder integration — custom fonts appear in the Bricks typography picker and load inside the builder canvas.
 
 = Is the plugin compatible with Rank Math, Yoast, or other SEO plugins? =
 

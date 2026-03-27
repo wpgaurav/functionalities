@@ -154,6 +154,8 @@ Register custom font families with @font-face:
 - WOFF2 and WOFF support
 - Variable fonts support
 - Font-display control (swap, auto, block, fallback, optional)
+- Typography assignments for body and headings via theme.json data layer
+- Native Bricks Builder integration — fonts appear in the Bricks typography picker
 
 **Navigate to:** `?page=functionalities&module=fonts`
 
