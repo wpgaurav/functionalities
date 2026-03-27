@@ -98,21 +98,30 @@ trait Admin_Options {
 	/**
 	 * Get snippets options with defaults.
 	 *
+	 * Handles migration from old single-string format to repeater arrays.
+	 * Persists migration on first admin load so it only runs once.
+	 *
+	 * @since 1.4.0 Updated to repeater format with migration.
+	 *
 	 * @return array Snippets options.
 	 */
 	public static function get_snippets_options() : array {
 		$defaults = array(
-			'enabled'          => false,
-			'enable_header'    => false,
-			'header_code'      => '',
-			'enable_body_open' => false,
-			'body_open_code'   => '',
-			'enable_footer'    => false,
-			'footer_code'      => '',
-			'enable_ga4'       => false,
-			'ga4_id'           => '',
+			'enabled'    => false,
+			'enable_ga4' => false,
+			'ga4_id'     => '',
+			'header'     => array(),
+			'body_open'  => array(),
+			'footer'     => array(),
 		);
 		$opts = (array) \get_option( 'functionalities_snippets', $defaults );
+
+		// Migrate old single-string format to repeater arrays.
+		if ( isset( $opts['header_code'] ) || isset( $opts['enable_header'] ) ) {
+			$opts = \Functionalities\Features\Snippets::migrate_options( $opts );
+			\update_option( 'functionalities_snippets', $opts );
+		}
+
 		return array_merge( $defaults, $opts );
 	}
 

@@ -5,7 +5,7 @@ Tags: performance, security, seo, redirection, cleanup
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.3.1
+Stable tag: 1.4.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -130,6 +130,23 @@ All settings are preserved in the database. Reactivate anytime and everything is
 
 == Changelog ==
 
+= 1.4.0 =
+* Added: Bricks Builder font integration — custom fonts appear in Bricks typography picker and load inside the builder canvas
+* Added: PWA module prefills app name, short name, description, and icons from WordPress Settings and Site Icon
+* Improved: Task Manager UI redesign — external CSS, card-based project grid, improved modals, hover task actions, polished column view
+* Improved: Task Manager consistent spacing across all sections
+
+= 1.3.3 =
+* Improved: Snippets UI — collapsible cards, type badges (CSS/JS/Meta), inline label editing, icon buttons
+* Fixed: Template index replacement no longer corrupts textarea attributes
+* Fixed: kses_with_styles handles empty style tags and regex failures gracefully
+
+= 1.3.2 =
+* Added: Snippets repeater — multiple independently-toggleable code snippets per location (header, body open, footer)
+* Fixed: CSS inside `<style>` tags no longer stripped by `wp_kses()` for non-admin users
+* Removed: Legacy GT Nofollow Manager references and `gtnf_*` filter hooks from Link Management
+* Improved: Auto-migration from single-string snippet format to repeater arrays
+
 = 1.3.1 =
 * Added: Public `Link_Management::process_content()` helper for applying nofollow/new-tab rules to ACF fields, shortcode output, and custom templates
 * Fixed: Redirect Manager now strips query strings before matching, so `/old-page?utm=x` correctly matches `/old-page`
@@ -223,6 +240,15 @@ All settings are preserved in the database. Reactivate anytime and everything is
 * Added: Assumption Detection module
 
 == Upgrade Notice ==
+
+= 1.4.0 =
+Bricks Builder font support. Task Manager redesign: cleaner card-based UI, external CSS, improved modals, hover actions on tasks, and polished column view.
+
+= 1.3.3 =
+Snippets UI polish: collapsible cards with type badges, smoother interactions, and bug fixes.
+
+= 1.3.2 =
+Header & Footer snippets now support multiple code blocks per location with individual toggles. Fixes CSS output for non-admin users. Removes legacy GT Nofollow Manager compatibility.
 
 = 1.3.1 =
 Link Management now works with ACF fields and custom templates via process_content() helper. Redirect Manager fixes query string matching and adds loop detection.

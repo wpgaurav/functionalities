@@ -37,7 +37,7 @@ class Link_Management {
 		// Load JSON preset immediately (we're already on init hook).
 		self::load_json_preset();
 
-		// Apply to content, widgets, and comments (GT Nofollow Manager compatibility).
+		// Apply to content, widgets, and comments.
 		\add_filter( 'the_content', array( __CLASS__, 'filter_content' ), 999 );
 		\add_filter( 'widget_text', array( __CLASS__, 'filter_content' ), 999 );
 		\add_filter( 'comment_text', array( __CLASS__, 'filter_content' ), 999 );
@@ -372,17 +372,11 @@ class Link_Management {
 			$items[] = $line;
 		}
 
-		// Apply developer filters (GT Nofollow Manager compatibility).
+		// Apply developer filters.
 		$opts = self::get_options();
 		if ( ! empty( $opts['enable_developer_filters'] ) ) {
 			$items = \apply_filters( 'functionalities_exception_domains', $items );
 			$items = \apply_filters( 'functionalities_exception_urls', $items );
-
-			// Legacy GT Nofollow Manager filter names for backward compatibility.
-			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Legacy hook name for backward compatibility.
-			$items = \apply_filters( 'gtnf_exception_domains', $items );
-			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Legacy hook name for backward compatibility.
-			$items = \apply_filters( 'gtnf_exception_urls', $items );
 		}
 
 		self::$runtime_exceptions_cache[ $cache_key ] = $items;
@@ -391,7 +385,7 @@ class Link_Management {
 
 	/**
 	 * Bulk update links in database for a specific URL.
-	 * GT Nofollow Manager compatibility feature.
+	 * Bulk update links in database.
 	 *
 	 * @param string $target_url The URL to add nofollow to.
 	 * @return array Results with success count and errors.

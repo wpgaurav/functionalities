@@ -2,10 +2,10 @@
 
 All-in-one WordPress optimization toolkit with 15+ modules for performance, security, SEO, and content management. Built with modern WordPress coding standards and a clean module-based dashboard. Optimized for performance with lazy-loading, static property caching, and intelligent transients.
 
-**Version:** 1.3.1
+**Version:** 1.4.0
 **License:** GPL-2.0-or-later
 **Text Domain:** `functionalities`
-**Pricing:** Free during early access, then $39/year
+**Pricing:** Free
 
 ## Installation
 
@@ -310,11 +310,6 @@ add_filter( 'functionalities_json_preset_path', function( $path ) {
     return get_stylesheet_directory() . '/my-exceptions.json';
 });
 
-// Legacy GT Nofollow Manager compatibility
-add_filter( 'gtnf_exception_domains', function( $domains ) {
-    $domains[] = 'legacy-trusted.com';
-    return $domains;
-});
 ```
 
 ### Database Update Tool
@@ -430,6 +425,23 @@ Example module definition:
 
 ## Changelog
 
+### 1.4.0
+- **Added**: Bricks Builder font integration — custom fonts appear in Bricks typography picker and load inside the builder canvas.
+- **Added**: PWA module prefills app name, short name, description, and icons from WordPress Settings and Site Icon.
+- **Improved**: Task Manager UI redesign — external CSS, card-based project grid, improved modals, hover task actions, polished column view.
+- **Improved**: Task Manager consistent spacing across all sections.
+
+### 1.3.3
+- **Improved**: Snippets UI — collapsible cards, type badges (CSS/JS/Meta), inline label editing, icon buttons.
+- **Fixed**: Template index replacement no longer corrupts textarea attributes.
+- **Fixed**: `kses_with_styles` handles empty style tags and regex failures gracefully.
+
+### 1.3.2
+- **Added**: Snippets repeater — multiple independently-toggleable code snippets per location (header, body open, footer).
+- **Fixed**: CSS inside `<style>` tags no longer stripped by `wp_kses()` for non-admin users.
+- **Removed**: Legacy GT Nofollow Manager references and `gtnf_*` filter hooks from Link Management.
+- **Improved**: Auto-migration from single-string snippet format to repeater arrays.
+
 ### 1.3.1
 - **Added**: Public `Link_Management::process_content()` helper for nofollow/new-tab on ACF fields, shortcode output, and custom templates.
 - **Fixed**: Redirect Manager now strips query strings before matching (`/old-page?utm=x` matches `/old-page`).
@@ -448,7 +460,7 @@ This is the first stable release of Functionalities Pro with license-based auto-
 - **Improved**: Updated plugin branding to Functionalities Pro.
 - **Updated**: Tested up to WordPress 6.9.
 
-**Pricing**: Free during early access period. After early access ends, the plugin will be $39/year for continued updates and support.
+**Pricing**: Free — always.
 
 ### 0.15.6
 - **Fixed**: Additional PHPCS compliance fixes for WordPress.org submission.
@@ -608,7 +620,7 @@ This is the first stable release of Functionalities Pro with license-based auto-
 - Dublin Core metadata and Creative Commons licensing
 
 ### 0.4.0
-- Complete GT Nofollow Manager integration
+- Complete link management integration
 - JSON preset support, database update tool, developer filters
 
 ### 0.3.0

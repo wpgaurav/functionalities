@@ -128,6 +128,35 @@ class PWA {
 		$opts = (array) \get_option( 'functionalities_pwa', $defaults );
 		self::$options = array_merge( $defaults, $opts );
 
+		// Prefill empty fields from WordPress settings.
+		if ( self::$options['app_name'] === '' ) {
+			self::$options['app_name'] = \get_bloginfo( 'name' );
+		}
+		if ( self::$options['short_name'] === '' ) {
+			$name = \get_bloginfo( 'name' );
+			self::$options['short_name'] = mb_strlen( $name ) > 12 ? mb_substr( $name, 0, 12 ) : $name;
+		}
+		if ( self::$options['description'] === '' ) {
+			self::$options['description'] = \get_bloginfo( 'description' );
+		}
+
+		// Prefill icons from the site icon if available.
+		$site_icon_id = (int) \get_option( 'site_icon' );
+		if ( $site_icon_id > 0 ) {
+			if ( self::$options['icon_512'] === '' ) {
+				$icon_512 = \wp_get_attachment_image_url( $site_icon_id, array( 512, 512 ) );
+				if ( $icon_512 ) {
+					self::$options['icon_512'] = $icon_512;
+				}
+			}
+			if ( self::$options['icon_192'] === '' ) {
+				$icon_192 = \wp_get_attachment_image_url( $site_icon_id, array( 192, 192 ) );
+				if ( $icon_192 ) {
+					self::$options['icon_192'] = $icon_192;
+				}
+			}
+		}
+
 		return self::$options;
 	}
 

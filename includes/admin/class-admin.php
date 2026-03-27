@@ -501,7 +501,7 @@ class Admin {
 			'functionalities_link_management_section'
 		);
 
-		// GT Nofollow Manager features.
+		// Advanced features.
 		\add_settings_field(
 			'json_preset_url',
 			\__( 'JSON Preset File Path', 'functionalities' ),
@@ -791,15 +791,12 @@ class Admin {
 			[
 				'sanitize_callback' => [ __CLASS__, 'sanitize_snippets' ],
 				'default' => [
-					'enabled'          => false,
-					'enable_header'    => false,
-					'header_code'      => '',
-					'enable_body_open' => false,
-					'body_open_code'   => '',
-					'enable_footer'    => false,
-					'footer_code'      => '',
-					'enable_ga4'       => false,
-					'ga4_id'           => '',
+					'enabled'    => false,
+					'enable_ga4' => false,
+					'ga4_id'     => '',
+					'header'     => array(),
+					'body_open'  => array(),
+					'footer'     => array(),
 				],
 			]
 		);
@@ -814,8 +811,8 @@ class Admin {
 				echo '<h4 style="margin:0 0 8px">' . \esc_html__( 'What This Module Does', 'functionalities' ) . '</h4>';
 				echo '<ul style="margin:0;padding-left:20px">';
 				echo '<li>' . \esc_html__( 'Native Google Analytics 4 integration - just enter your Measurement ID', 'functionalities' ) . '</li>';
-				echo '<li>' . \esc_html__( 'Custom header code for meta tags, scripts, styles, and tracking codes', 'functionalities' ) . '</li>';
-				echo '<li>' . \esc_html__( 'Custom footer code for chat widgets, tracking pixels, and deferred scripts', 'functionalities' ) . '</li>';
+				echo '<li>' . \esc_html__( 'Multiple snippets per location — each independently toggleable', 'functionalities' ) . '</li>';
+				echo '<li>' . \esc_html__( 'Custom code for meta tags, scripts, styles, and tracking codes', 'functionalities' ) . '</li>';
 				echo '<li>' . \esc_html__( 'Automatically skips admin pages, feeds, and REST API requests', 'functionalities' ) . '</li>';
 				echo '</ul>';
 				echo '</div>';
@@ -877,47 +874,28 @@ class Admin {
 			'functionalities_snippets_section'
 		);
 		\add_settings_field(
-			'enable_header',
-			\__( 'Enable custom header code', 'functionalities' ),
+			'header_snippets',
+			\__( 'Header Snippets', 'functionalities' ),
 			function() {
-				$o = self::get_snippets_options();
-				$checked = ! empty( $o['enable_header'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_snippets[enable_header]" value="1" ' . esc_attr( $checked ) . '> ' . \esc_html__( 'Output below in wp_head', 'functionalities' ) . '</label>';
+				self::field_snippets_repeater( 'header', 'wp_head' );
 			},
 			'functionalities_snippets',
 			'functionalities_snippets_section'
 		);
 		\add_settings_field(
-			'header_code',
-			\__( 'Header code', 'functionalities' ),
+			'body_open_snippets',
+			\__( 'Body Open Snippets', 'functionalities' ),
 			function() {
-				$o = self::get_snippets_options();
-				$val = isset( $o['header_code'] ) ? (string) $o['header_code'] : '';
-				echo '<textarea name="functionalities_snippets[header_code]" rows="6" cols="60" class="large-text code">' . \esc_textarea( $val ) . '</textarea>';
-				echo '<p class="description">' . \esc_html__( 'Allowed: script, style, link, meta, noscript.', 'functionalities' ) . '</p>';
+				self::field_snippets_repeater( 'body_open', 'wp_body_open' );
 			},
 			'functionalities_snippets',
 			'functionalities_snippets_section'
 		);
 		\add_settings_field(
-			'enable_body_open',
-			\__( 'Enable custom body open code', 'functionalities' ),
+			'footer_snippets',
+			\__( 'Footer Snippets', 'functionalities' ),
 			function() {
-				$o = self::get_snippets_options();
-				$checked = ! empty( $o['enable_body_open'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_snippets[enable_body_open]" value="1" ' . esc_attr( $checked ) . '> ' . \esc_html__( 'Output below in wp_body_open', 'functionalities' ) . '</label>';
-			},
-			'functionalities_snippets',
-			'functionalities_snippets_section'
-		);
-		\add_settings_field(
-			'body_open_code',
-			\__( 'Body open code', 'functionalities' ),
-			function() {
-				$o = self::get_snippets_options();
-				$val = isset( $o['body_open_code'] ) ? (string) $o['body_open_code'] : '';
-				echo '<textarea name="functionalities_snippets[body_open_code]" rows="6" cols="60" class="large-text code">' . \esc_textarea( $val ) . '</textarea>';
-				echo '<p class="description">' . \esc_html__( 'Allowed: script, style, div, span, noscript. Useful for GTM noscript tags.', 'functionalities' ) . '</p>';
+				self::field_snippets_repeater( 'footer', 'wp_footer' );
 			},
 			'functionalities_snippets',
 			'functionalities_snippets_section'
@@ -1182,29 +1160,6 @@ class Admin {
 			'functionalities_components',
 			'functionalities_components_section'
 		);
-		\add_settings_field(
-			'enable_footer',
-			\__( 'Enable custom footer code', 'functionalities' ),
-			function() {
-				$o = self::get_snippets_options();
-				$checked = ! empty( $o['enable_footer'] ) ? 'checked' : '';
-				echo '<label><input type="checkbox" name="functionalities_snippets[enable_footer]" value="1" ' . esc_attr( $checked ) . '> ' . \esc_html__( 'Output below in wp_footer', 'functionalities' ) . '</label>';
-			},
-			'functionalities_snippets',
-			'functionalities_snippets_section'
-		);
-		\add_settings_field(
-			'footer_code',
-			\__( 'Footer code', 'functionalities' ),
-			function() {
-				$o = self::get_snippets_options();
-				$val = isset( $o['footer_code'] ) ? (string) $o['footer_code'] : '';
-				echo '<textarea name="functionalities_snippets[footer_code]" rows="6" cols="60" class="large-text code">' . \esc_textarea( $val ) . '</textarea>';
-				echo '<p class="description">' . \esc_html__( 'Allowed: script, style, link, meta, noscript.', 'functionalities' ) . '</p>';
-			},
-			'functionalities_snippets',
-			'functionalities_snippets_section'
-		);
 
 		// Miscellaneous (bloat control)
 		\register_setting(
@@ -1369,6 +1324,13 @@ class Admin {
 			'fonts_items',
 			\__( 'Families', 'functionalities' ),
 			[ __CLASS__, 'field_fonts_items' ],
+			'functionalities_fonts',
+			'functionalities_fonts_section'
+		);
+		\add_settings_field(
+			'fonts_assignments',
+			\__( 'Typography Assignments', 'functionalities' ),
+			[ __CLASS__, 'field_fonts_assignments' ],
 			'functionalities_fonts',
 			'functionalities_fonts_section'
 		);
@@ -3036,7 +2998,7 @@ class Admin {
 			<?php echo \esc_html__( 'Enable developer filters for exception customization', 'functionalities' ); ?>
 		</label>
 		<p class="description">
-			<?php echo \esc_html__( 'Available filters: functionalities_exception_domains, functionalities_exception_urls, gtnf_exception_domains (legacy), gtnf_exception_urls (legacy)', 'functionalities' ); ?>
+			<?php echo \esc_html__( 'Available filters: functionalities_exception_domains, functionalities_exception_urls', 'functionalities' ); ?>
 		</p>
 
 		<div class="functionalities-code-snippets" style="margin-top: 15px; padding: 15px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 4px;">
@@ -3154,32 +3116,6 @@ add_filter( 'functionalities_json_preset_path', function( $default_path ) {
 				</div>
 			</details>
 
-			<details style="margin-bottom: 15px;">
-				<summary style="cursor: pointer; font-weight: 600; padding: 8px 0;">
-					<?php echo \esc_html__( 'Legacy GT Nofollow Manager Compatibility', 'functionalities' ); ?>
-				</summary>
-				<div style="margin-top: 10px;">
-					<p class="description"><?php echo \esc_html__( 'If migrating from GT Nofollow Manager, your existing filter code will still work:', 'functionalities' ); ?></p>
-					<pre class="functionalities-code-block" style="background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px; line-height: 1.5;"><code>&lt;?php
-/**
- * Legacy GT Nofollow Manager filters (still supported).
- * These work identically to the new filters above.
- */
-
-// Legacy domain filter
-add_filter( 'gtnf_exception_domains', function( $domains ) {
-    $domains[] = 'legacy-trusted-site.com';
-    return $domains;
-} );
-
-// Legacy URL filter
-add_filter( 'gtnf_exception_urls', function( $urls ) {
-    $urls[] = 'https://legacy-partner.com/page';
-    return $urls;
-} );</code></pre>
-					<button type="button" class="button button-small functionalities-copy-btn" data-target="legacy-filters"><?php echo \esc_html__( 'Copy Code', 'functionalities' ); ?></button>
-				</div>
-			</details>
 
 		</div>
 
@@ -4631,6 +4567,117 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 	}
 
 	/**
+	 * Render typography assignment fields for the Fonts module.
+	 *
+	 * @since 1.4.0
+	 * @return void
+	 */
+	public static function field_fonts_assignments() : void {
+		$o     = self::get_fonts_options();
+		$items = isset( $o['items'] ) && is_array( $o['items'] ) ? $o['items'] : array();
+		$assign_enabled = ! empty( $o['assign_enabled'] );
+		$body_font      = $o['body_font'] ?? '';
+		$heading_font   = $o['heading_font'] ?? '';
+		$per_heading     = ! empty( $o['per_heading'] );
+		$heading_fonts  = isset( $o['heading_fonts'] ) && is_array( $o['heading_fonts'] ) ? $o['heading_fonts'] : array();
+
+		// Collect available font families.
+		$families = array();
+		foreach ( $items as $item ) {
+			$family = trim( (string) ( $item['family'] ?? '' ) );
+			if ( $family !== '' && ! empty( $item['woff2_url'] ) ) {
+				$families[] = $family;
+			}
+		}
+		$families = array_unique( $families );
+		?>
+		<fieldset>
+			<label>
+				<input type="checkbox" name="functionalities_fonts[assign_enabled]" value="1" <?php checked( $assign_enabled ); ?> id="fc-assign-toggle">
+				<?php \esc_html_e( 'Assign fonts to body text and headings', 'functionalities' ); ?>
+			</label>
+			<p class="description"><?php \esc_html_e( 'When enabled, outputs CSS that sets font-family on body and heading elements at highest priority.', 'functionalities' ); ?></p>
+		</fieldset>
+
+		<div id="fc-assign-fields" style="margin-top: 16px; <?php echo $assign_enabled ? '' : 'display:none;'; ?>">
+			<?php if ( empty( $families ) ) : ?>
+				<p class="description" style="color: #d63638;"><?php \esc_html_e( 'Add at least one font family above before assigning fonts.', 'functionalities' ); ?></p>
+			<?php else : ?>
+			<table class="form-table" role="presentation" style="margin-top: 0;">
+				<tr>
+					<th scope="row"><label for="fc-body-font"><?php \esc_html_e( 'Body / Content Font', 'functionalities' ); ?></label></th>
+					<td>
+						<select name="functionalities_fonts[body_font]" id="fc-body-font">
+							<option value=""><?php \esc_html_e( '— None —', 'functionalities' ); ?></option>
+							<?php foreach ( $families as $f ) : ?>
+								<option value="<?php echo \esc_attr( $f ); ?>" <?php selected( $body_font, $f ); ?>><?php echo \esc_html( $f ); ?></option>
+							<?php endforeach; ?>
+						</select>
+						<p class="description"><?php \esc_html_e( 'Applied to body, p, li, td, input, textarea, select, button.', 'functionalities' ); ?></p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="fc-heading-font"><?php \esc_html_e( 'Headings Font', 'functionalities' ); ?></label></th>
+					<td>
+						<select name="functionalities_fonts[heading_font]" id="fc-heading-font">
+							<option value=""><?php \esc_html_e( '— None —', 'functionalities' ); ?></option>
+							<?php foreach ( $families as $f ) : ?>
+								<option value="<?php echo \esc_attr( $f ); ?>" <?php selected( $heading_font, $f ); ?>><?php echo \esc_html( $f ); ?></option>
+							<?php endforeach; ?>
+						</select>
+						<p class="description"><?php \esc_html_e( 'Applied to h1–h6. Override individual levels below.', 'functionalities' ); ?></p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><?php \esc_html_e( 'Per-Heading Override', 'functionalities' ); ?></th>
+					<td>
+						<label>
+							<input type="checkbox" name="functionalities_fonts[per_heading]" value="1" <?php checked( $per_heading ); ?> id="fc-per-heading-toggle">
+							<?php \esc_html_e( 'Set a different font for each heading level', 'functionalities' ); ?>
+						</label>
+						<div id="fc-per-heading-fields" style="margin-top: 12px; <?php echo $per_heading ? '' : 'display:none;'; ?>">
+							<?php for ( $level = 1; $level <= 6; $level++ ) :
+								$val = $heading_fonts[ 'h' . $level ] ?? '';
+								?>
+								<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+									<label style="width: 30px; font-weight: 600; font-size: 13px;">H<?php echo (int) $level; ?></label>
+									<select name="functionalities_fonts[heading_fonts][h<?php echo (int) $level; ?>]" style="min-width: 200px;">
+										<option value=""><?php \esc_html_e( '— Use default heading font —', 'functionalities' ); ?></option>
+										<?php foreach ( $families as $f ) : ?>
+											<option value="<?php echo \esc_attr( $f ); ?>" <?php selected( $val, $f ); ?>><?php echo \esc_html( $f ); ?></option>
+										<?php endforeach; ?>
+									</select>
+								</div>
+							<?php endfor; ?>
+						</div>
+					</td>
+				</tr>
+			</table>
+			<?php endif; ?>
+		</div>
+
+		<script>
+		(function() {
+			var toggle = document.getElementById('fc-assign-toggle');
+			var fields = document.getElementById('fc-assign-fields');
+			if (toggle && fields) {
+				toggle.addEventListener('change', function() {
+					fields.style.display = this.checked ? '' : 'none';
+				});
+			}
+			var perToggle = document.getElementById('fc-per-heading-toggle');
+			var perFields = document.getElementById('fc-per-heading-fields');
+			if (perToggle && perFields) {
+				perToggle.addEventListener('change', function() {
+					perFields.style.display = this.checked ? '' : 'none';
+				});
+			}
+		})();
+		</script>
+		<?php
+	}
+
+	/**
 	 * Render section description for Meta & Copyright.
 	 *
 	 * @return void
@@ -5022,13 +5069,13 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 				<?php endif; ?>
 			</nav>
 
-			<form method="post" style="margin:15px 0;">
+			<form method="post">
 				<?php \wp_nonce_field( 'functionalities_task_manager_toggle' ); ?>
 				<input type="hidden" name="functionalities_task_manager_toggle" value="1" />
-				<label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+				<label class="tm-enable-toggle">
 					<input type="checkbox" name="enabled" value="1" <?php checked( ! empty( $tm_opts['enabled'] ) ); ?> onchange="this.form.submit()" />
 					<strong><?php echo \esc_html__( 'Enable Task Manager', 'functionalities' ); ?></strong>
-					<span style="color:#646970;font-size:13px;"><?php echo \esc_html__( 'File-based project task management', 'functionalities' ); ?></span>
+					<span><?php echo \esc_html__( 'File-based project task management', 'functionalities' ); ?></span>
 				</label>
 			</form>
 
@@ -5039,459 +5086,6 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 			<?php endif; ?>
 		</div>
 
-		<style>
-		.functionalities-task-manager .projects-grid {
-			display: grid;
-			grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-			gap: 20px;
-			margin-top: 20px;
-		}
-		.functionalities-task-manager .project-card {
-			background: #fff;
-			border: 1px solid #c3c4c7;
-			border-radius: 4px;
-			padding: 20px;
-		}
-		.functionalities-task-manager .project-card h3 {
-			margin: 0 0 10px;
-			display: flex;
-			align-items: center;
-			gap: 8px;
-		}
-		.functionalities-task-manager .project-stats {
-			color: #646970;
-			font-size: 13px;
-			margin-bottom: 15px;
-		}
-		.functionalities-task-manager .progress-bar {
-			background: #dcdcde;
-			border-radius: 3px;
-			height: 8px;
-			margin: 10px 0;
-			overflow: hidden;
-		}
-		.functionalities-task-manager .progress-bar-fill {
-			background: #2271b1;
-			height: 100%;
-			transition: width 0.3s;
-		}
-		.functionalities-task-manager .project-actions {
-			display: flex;
-			gap: 8px;
-			flex-wrap: wrap;
-		}
-		.functionalities-task-manager .new-project-form {
-			background: #fff;
-			border: 1px solid #c3c4c7;
-			border-radius: 4px;
-			padding: 20px;
-			margin-bottom: 20px;
-			display: flex;
-			gap: 10px;
-			align-items: flex-end;
-		}
-		.functionalities-task-manager .new-project-form label {
-			flex: 1;
-		}
-		.functionalities-task-manager .task-list {
-			background: #fff;
-			border: 1px solid #c3c4c7;
-			border-radius: 4px;
-			margin-top: 20px;
-		}
-		.functionalities-task-manager .project-filters select {
-			min-width: 150px;
-		}
-		.functionalities-task-manager .task-item {
-			display: flex;
-			align-items: flex-start;
-			padding: 12px 15px;
-			border-bottom: 1px solid #f0f0f1;
-			gap: 12px;
-			transition: background-color 0.2s;
-		}
-		.functionalities-task-manager .task-item:hover {
-			background-color: #f6f7f7;
-		}
-		.functionalities-task-manager .task-item.ui-sortable-helper {
-			background: #fff;
-			box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-			border: 1px solid #c3c4c7;
-		}
-		.functionalities-task-manager .task-item:last-child {
-			border-bottom: none;
-		}
-		.functionalities-task-manager .task-drag-handle {
-			color: #c3c4c7;
-			cursor: move;
-			padding-top: 2px;
-			display: flex;
-		}
-		.functionalities-task-manager .task-item:hover .task-drag-handle {
-			color: #646970;
-		}
-		.functionalities-task-manager .task-item.completed .task-text {
-			text-decoration: line-through;
-			color: #646970;
-		}
-		.functionalities-task-manager .task-checkbox {
-			margin-top: 3px !important;
-			flex-shrink: 0;
-			cursor: pointer;
-		}
-		.functionalities-task-manager .task-content {
-			flex: 1;
-			min-width: 0;
-		}
-		.functionalities-task-manager .task-text {
-			margin: 0 0 4px;
-			word-break: break-word;
-		}
-		.functionalities-task-manager .task-meta {
-			display: flex;
-			flex-wrap: wrap;
-			gap: 8px;
-			font-size: 12px;
-		}
-		.functionalities-task-manager .task-tag {
-			background: #f0f6fc;
-			color: #2271b1;
-			padding: 2px 8px;
-			border-radius: 3px;
-			cursor: pointer;
-		}
-		.functionalities-task-manager .task-tag:hover {
-			background: #2271b1;
-			color: #fff;
-		}
-		.functionalities-task-manager .task-priority {
-			font-weight: bold;
-			padding: 2px 8px;
-			border-radius: 3px;
-		}
-		.functionalities-task-manager .task-priority.p1 { background: #fcf0f1; color: #d63638; }
-		.functionalities-task-manager .task-priority.p2 { background: #fcf9e8; color: #996800; }
-		.functionalities-task-manager .task-priority.p3 { background: #f0f6fc; color: #2271b1; }
-		.functionalities-task-manager .task-notes {
-			color: #646970;
-			font-size: 12px;
-			margin-top: 4px;
-			font-style: italic;
-		}
-		.functionalities-task-manager .task-actions {
-			flex-shrink: 0;
-			display: flex;
-			gap: 5px;
-		}
-		.functionalities-task-manager .task-actions button {
-			padding: 2px 8px;
-			font-size: 12px;
-		}
-		.functionalities-task-manager .add-task-form {
-			padding: 15px;
-			background: #f6f7f7;
-			border-bottom: 1px solid #c3c4c7;
-		}
-		.functionalities-task-manager .add-task-form input[type="text"] {
-			width: 100%;
-			margin-bottom: 8px;
-		}
-		.functionalities-task-manager .add-task-form textarea {
-			width: 100%;
-			height: 60px;
-			margin-bottom: 8px;
-		}
-		.functionalities-task-manager .add-task-hint {
-			color: #646970;
-			font-size: 12px;
-			margin-bottom: 10px;
-		}
-		.functionalities-task-manager .project-header {
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			flex-wrap: wrap;
-			gap: 15px;
-			margin-bottom: 20px;
-		}
-		.functionalities-task-manager .project-toolbar {
-			display: flex;
-			gap: 10px;
-			flex-wrap: wrap;
-		}
-		.functionalities-task-manager .feature-info {
-			background: #fff;
-			border: 1px solid #c3c4c7;
-			border-radius: 4px;
-			padding: 20px;
-			margin-bottom: 20px;
-		}
-		.functionalities-task-manager .feature-list {
-			display: grid;
-			grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-			gap: 15px;
-			margin-top: 15px;
-		}
-		.functionalities-task-manager .feature-item {
-			display: flex;
-			gap: 10px;
-			align-items: flex-start;
-		}
-		.functionalities-task-manager .feature-item .dashicons {
-			color: #2271b1;
-			flex-shrink: 0;
-		}
-		.functionalities-task-manager .empty-state {
-			padding: 40px 20px;
-			text-align: center;
-			color: #646970;
-		}
-		.functionalities-task-manager .modal-overlay {
-			display: none;
-			position: fixed;
-			top: 0;
-			left: 0;
-			right: 0;
-			bottom: 0;
-			background: rgba(0,0,0,0.5);
-			z-index: 100000;
-			align-items: center;
-			justify-content: center;
-		}
-		.functionalities-task-manager .modal-overlay.active {
-			display: flex;
-		}
-		.functionalities-task-manager .modal-content {
-			background: #fff;
-			border-radius: 4px;
-			padding: 20px;
-			max-width: 500px;
-			width: 90%;
-			max-height: 80vh;
-			overflow-y: auto;
-		}
-		.functionalities-task-manager .modal-content h3 {
-			margin-top: 0;
-		}
-		.functionalities-task-manager .import-area {
-			width: 100%;
-			height: 200px;
-			font-family: monospace;
-			font-size: 12px;
-		}
-		/* Responsive breakpoints for task manager */
-		@media screen and (max-width: 782px) {
-			.functionalities-task-manager .projects-grid {
-				grid-template-columns: 1fr;
-			}
-			.functionalities-task-manager .feature-list {
-				grid-template-columns: 1fr;
-			}
-			.functionalities-task-manager .project-header {
-				flex-direction: column;
-				align-items: flex-start;
-			}
-			.functionalities-task-manager .project-toolbar {
-				width: 100%;
-			}
-			.functionalities-task-manager .new-project-form {
-				flex-direction: column;
-				align-items: stretch;
-			}
-			.functionalities-task-manager .task-item {
-				flex-wrap: wrap;
-			}
-			.functionalities-task-manager .task-actions {
-				width: 100%;
-				justify-content: flex-end;
-				margin-top: 8px;
-			}
-		}
-		@media screen and (min-width: 783px) and (max-width: 1024px) {
-			.functionalities-task-manager .projects-grid {
-				grid-template-columns: repeat(2, 1fr);
-			}
-			.functionalities-task-manager .feature-list {
-				grid-template-columns: repeat(2, 1fr);
-			}
-		}
-		@media screen and (min-width: 1025px) {
-			.functionalities-task-manager .projects-grid {
-				grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-			}
-			.functionalities-task-manager .feature-list {
-				grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-			}
-		}
-		/* View Mode Toggle */
-		.functionalities-task-manager .view-mode-btn {
-			background: transparent;
-			border: none;
-			padding: 6px 10px;
-			cursor: pointer;
-			border-radius: 3px;
-			color: #50575e;
-			transition: all 0.15s ease;
-		}
-		.functionalities-task-manager .view-mode-btn:hover {
-			background: rgba(0,0,0,0.08);
-		}
-		.functionalities-task-manager .view-mode-btn.active {
-			background: #fff;
-			color: #2271b1;
-			box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-		}
-		/* Post Search Dropdown */
-		.functionalities-task-manager .post-search-dropdown {
-			display: none;
-			position: absolute;
-			top: 100%;
-			left: 0;
-			right: 0;
-			background: #fff;
-			border: 1px solid #c3c4c7;
-			border-radius: 0 0 4px 4px;
-			box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-			z-index: 1000;
-			max-height: 250px;
-			overflow-y: auto;
-		}
-		.functionalities-task-manager .post-search-dropdown.active {
-			display: block;
-		}
-		.functionalities-task-manager .post-search-item {
-			padding: 10px 12px;
-			cursor: pointer;
-			border-bottom: 1px solid #f0f0f0;
-			display: flex;
-			align-items: center;
-			gap: 8px;
-		}
-		.functionalities-task-manager .post-search-item:last-child {
-			border-bottom: none;
-		}
-		.functionalities-task-manager .post-search-item:hover,
-		.functionalities-task-manager .post-search-item.selected {
-			background: #f0f6fc;
-		}
-		.functionalities-task-manager .post-search-item .post-title {
-			flex: 1;
-			font-weight: 500;
-		}
-		.functionalities-task-manager .post-search-item .post-status {
-			font-size: 11px;
-			padding: 2px 6px;
-			border-radius: 3px;
-			text-transform: uppercase;
-		}
-		.functionalities-task-manager .post-search-item .post-status.publish {
-			background: #d4edda;
-			color: #155724;
-		}
-		.functionalities-task-manager .post-search-item .post-status.draft {
-			background: #fff3cd;
-			color: #856404;
-		}
-		.functionalities-task-manager .post-search-loading {
-			padding: 15px;
-			text-align: center;
-			color: #646970;
-		}
-		.functionalities-task-manager .post-search-empty {
-			padding: 15px;
-			text-align: center;
-			color: #646970;
-		}
-		/* Post Mention in Tasks */
-		.functionalities-task-manager .task-post-link {
-			color: #2271b1;
-			text-decoration: none;
-			font-weight: 500;
-			background: #f0f6fc;
-			padding: 1px 6px;
-			border-radius: 3px;
-		}
-		.functionalities-task-manager .task-post-link:hover {
-			text-decoration: underline;
-			background: #e5f0fa;
-		}
-		/* Columns View */
-		.functionalities-task-manager .tasks-columns-view {
-			display: none;
-			gap: 15px;
-			padding: 15px;
-			background: #f6f7f7;
-		}
-		.functionalities-task-manager .tasks-columns-view.active {
-			display: grid;
-			grid-template-columns: repeat(4, 1fr);
-		}
-		.functionalities-task-manager .priority-column {
-			background: #fff;
-			border: 1px solid #c3c4c7;
-			border-radius: 4px;
-			min-height: 200px;
-		}
-		.functionalities-task-manager .priority-column-header {
-			padding: 12px 15px;
-			border-bottom: 1px solid #c3c4c7;
-			font-weight: 600;
-			display: flex;
-			align-items: center;
-			gap: 8px;
-		}
-		.functionalities-task-manager .priority-column-header .count {
-			background: #dcdcde;
-			padding: 2px 8px;
-			border-radius: 10px;
-			font-size: 11px;
-			font-weight: normal;
-		}
-		.functionalities-task-manager .priority-column.p1 .priority-column-header {
-			background: linear-gradient(135deg, #fff5f5 0%, #ffe3e3 100%);
-			border-bottom-color: #ffc9c9;
-		}
-		.functionalities-task-manager .priority-column.p2 .priority-column-header {
-			background: linear-gradient(135deg, #fff9e6 0%, #fff3cd 100%);
-			border-bottom-color: #ffe69c;
-		}
-		.functionalities-task-manager .priority-column.p3 .priority-column-header {
-			background: linear-gradient(135deg, #e7f5ff 0%, #d0ebff 100%);
-			border-bottom-color: #a5d8ff;
-		}
-		.functionalities-task-manager .priority-column.p0 .priority-column-header {
-			background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-		}
-		.functionalities-task-manager .priority-column-tasks {
-			padding: 10px;
-			max-height: 500px;
-			overflow-y: auto;
-		}
-		.functionalities-task-manager .priority-column-tasks .task-item {
-			margin-bottom: 8px;
-			padding: 10px;
-			border-radius: 4px;
-		}
-		.functionalities-task-manager .priority-column-tasks .task-item:last-child {
-			margin-bottom: 0;
-		}
-		.functionalities-task-manager .priority-column-empty {
-			padding: 20px;
-			text-align: center;
-			color: #adb5bd;
-			font-size: 13px;
-		}
-		@media screen and (max-width: 1200px) {
-			.functionalities-task-manager .tasks-columns-view.active {
-				grid-template-columns: repeat(2, 1fr);
-			}
-		}
-		@media screen and (max-width: 782px) {
-			.functionalities-task-manager .tasks-columns-view.active {
-				grid-template-columns: 1fr;
-			}
-		}
-		</style>
 		<?php
 	}
 
@@ -5504,58 +5098,58 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 	 */
 	private static function render_task_manager_overview( array $projects, string $nonce ) : void {
 		?>
-		<div class="feature-info">
-			<h2 style="margin-top: 0; display: flex; align-items: center; gap: 8px;">
+		<div class="tm-feature-info">
+			<h2>
 				<span class="dashicons dashicons-info-outline"></span>
 				<?php \esc_html_e( 'About Task Manager', 'functionalities' ); ?>
 			</h2>
 			<p><?php \esc_html_e( 'A lightweight, file-based task management system with zero frontend footprint. Tasks are stored as JSON files in your wp-content directory.', 'functionalities' ); ?></p>
-			<div class="feature-list">
-				<div class="feature-item">
+			<div class="tm-feature-grid">
+				<div class="tm-feature-item">
 					<span class="dashicons dashicons-yes"></span>
 					<div>
 						<strong><?php \esc_html_e( 'Check/Uncheck Tasks', 'functionalities' ); ?></strong>
-						<p style="margin: 4px 0 0; color: #646970; font-size: 13px;"><?php \esc_html_e( 'Click the checkbox to mark tasks complete or pending.', 'functionalities' ); ?></p>
+						<p><?php \esc_html_e( 'Click the checkbox to mark tasks complete or pending.', 'functionalities' ); ?></p>
 					</div>
 				</div>
-				<div class="feature-item">
+				<div class="tm-feature-item">
 					<span class="dashicons dashicons-tag"></span>
 					<div>
 						<strong><?php \esc_html_e( 'Tags with #hashtags', 'functionalities' ); ?></strong>
-						<p style="margin: 4px 0 0; color: #646970; font-size: 13px;"><?php \esc_html_e( 'Add #tag to tasks for categorization. Example: "Review code #urgent #frontend"', 'functionalities' ); ?></p>
+						<p><?php \esc_html_e( 'Add #tag to tasks for categorization. Example: "Review code #urgent #frontend"', 'functionalities' ); ?></p>
 					</div>
 				</div>
-				<div class="feature-item">
+				<div class="tm-feature-item">
 					<span class="dashicons dashicons-flag"></span>
 					<div>
 						<strong><?php \esc_html_e( 'Priority Levels (!1, !2, !3)', 'functionalities' ); ?></strong>
-						<p style="margin: 4px 0 0; color: #646970; font-size: 13px;"><?php \esc_html_e( 'Add !1 (high), !2 (medium), or !3 (low) priority. Example: "Fix bug !1"', 'functionalities' ); ?></p>
+						<p><?php \esc_html_e( 'Add !1 (high), !2 (medium), or !3 (low) priority. Example: "Fix bug !1"', 'functionalities' ); ?></p>
 					</div>
 				</div>
-				<div class="feature-item">
+				<div class="tm-feature-item">
 					<span class="dashicons dashicons-edit"></span>
 					<div>
 						<strong><?php \esc_html_e( 'Notes for Each Task', 'functionalities' ); ?></strong>
-						<p style="margin: 4px 0 0; color: #646970; font-size: 13px;"><?php \esc_html_e( 'Add detailed notes and context to any task.', 'functionalities' ); ?></p>
+						<p><?php \esc_html_e( 'Add detailed notes and context to any task.', 'functionalities' ); ?></p>
 					</div>
 				</div>
-				<div class="feature-item">
+				<div class="tm-feature-item">
 					<span class="dashicons dashicons-download"></span>
 					<div>
 						<strong><?php \esc_html_e( 'Export & Import', 'functionalities' ); ?></strong>
-						<p style="margin: 4px 0 0; color: #646970; font-size: 13px;"><?php \esc_html_e( 'Export projects as JSON for backup or sharing. Import projects from JSON.', 'functionalities' ); ?></p>
+						<p><?php \esc_html_e( 'Export projects as JSON for backup or sharing. Import projects from JSON.', 'functionalities' ); ?></p>
 					</div>
 				</div>
-				<div class="feature-item">
+				<div class="tm-feature-item">
 					<span class="dashicons dashicons-dashboard"></span>
 					<div>
 						<strong><?php \esc_html_e( 'Dashboard Widget', 'functionalities' ); ?></strong>
-						<p style="margin: 4px 0 0; color: #646970; font-size: 13px;"><?php \esc_html_e( 'Show any project as a dashboard widget for quick access.', 'functionalities' ); ?></p>
+						<p><?php \esc_html_e( 'Show any project as a dashboard widget for quick access.', 'functionalities' ); ?></p>
 					</div>
 				</div>
 			</div>
-			<p style="margin-bottom: 0; padding-top: 15px; border-top: 1px solid #f0f0f1; color: #646970; font-size: 13px;">
-				<span class="dashicons dashicons-portfolio" style="font-size: 16px; width: 16px; height: 16px; vertical-align: text-bottom;"></span>
+			<p class="tm-storage-note">
+				<span class="dashicons dashicons-portfolio"></span>
 				<?php
 				printf(
 					/* translators: %s: directory path */
@@ -5566,39 +5160,36 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 			</p>
 		</div>
 
-		<div class="new-project-form">
+		<div class="tm-new-project">
 			<label>
-				<strong><?php \esc_html_e( 'New Project', 'functionalities' ); ?></strong><br>
-				<input type="text" id="new-project-name" placeholder="<?php \esc_attr_e( 'Enter project name...', 'functionalities' ); ?>" style="margin-top: 5px; width: 300px;">
+				<strong><?php \esc_html_e( 'New Project', 'functionalities' ); ?></strong>
+				<input type="text" id="new-project-name" placeholder="<?php \esc_attr_e( 'Enter project name...', 'functionalities' ); ?>">
 			</label>
 			<button type="button" id="create-project-btn" class="button button-primary">
 				<?php \esc_html_e( 'Create Project', 'functionalities' ); ?>
 			</button>
 			<button type="button" id="import-project-btn" class="button">
-				<span class="dashicons dashicons-upload" style="font-size: 16px; width: 16px; height: 16px; vertical-align: text-bottom; margin-right: 3px;"></span>
 				<?php \esc_html_e( 'Import JSON', 'functionalities' ); ?>
 			</button>
 		</div>
 
 		<?php if ( empty( $projects ) ) : ?>
-			<div class="project-card">
-				<div class="empty-state">
-					<span class="dashicons dashicons-welcome-add-page" style="font-size: 48px; width: 48px; height: 48px; color: #c3c4c7;"></span>
-					<h3><?php \esc_html_e( 'No Projects Yet', 'functionalities' ); ?></h3>
-					<p><?php \esc_html_e( 'Create your first project to start managing tasks.', 'functionalities' ); ?></p>
-				</div>
+			<div class="tm-empty-state">
+				<span class="dashicons dashicons-welcome-add-page"></span>
+				<h3><?php \esc_html_e( 'No Projects Yet', 'functionalities' ); ?></h3>
+				<p><?php \esc_html_e( 'Create your first project to start managing tasks.', 'functionalities' ); ?></p>
 			</div>
 		<?php else : ?>
-			<div class="projects-grid">
+			<div class="tm-projects-grid">
 				<?php foreach ( $projects as $slug => $project ) :
 					$stats = \Functionalities\Features\Task_Manager::get_stats( $project );
 					?>
-					<div class="project-card" data-project="<?php echo \esc_attr( $slug ); ?>">
+					<div class="tm-project-card" data-project="<?php echo \esc_attr( $slug ); ?>">
 						<h3>
 							<span class="dashicons dashicons-portfolio"></span>
 							<?php echo \esc_html( $project['name'] ); ?>
 						</h3>
-						<div class="project-stats">
+						<div class="tm-project-stats">
 							<?php
 							printf(
 								/* translators: 1: completed count, 2: total count */
@@ -5608,10 +5199,10 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 							);
 							?>
 						</div>
-						<div class="progress-bar">
-							<div class="progress-bar-fill" style="width: <?php echo \esc_attr( $stats['percent'] ); ?>%;"></div>
+						<div class="tm-progress-bar">
+							<div class="tm-progress-fill" style="width: <?php echo \esc_attr( $stats['percent'] ); ?>%;"></div>
 						</div>
-						<div class="project-actions">
+						<div class="tm-project-actions">
 							<a href="<?php echo \esc_url( \admin_url( 'admin.php?page=functionalities&module=task-manager&project=' . $slug ) ); ?>" class="button button-primary">
 								<?php \esc_html_e( 'Open', 'functionalities' ); ?>
 							</a>
@@ -5623,10 +5214,10 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 							</button>
 						</div>
 						<?php if ( ! empty( $project['show_widget'] ) ) : ?>
-							<p style="margin: 10px 0 0; font-size: 12px; color: #2271b1;">
-								<span class="dashicons dashicons-dashboard" style="font-size: 14px; width: 14px; height: 14px;"></span>
+							<div class="tm-widget-badge">
+								<span class="dashicons dashicons-dashboard"></span>
 								<?php \esc_html_e( 'Shown on Dashboard', 'functionalities' ); ?>
-							</p>
+							</div>
 						<?php endif; ?>
 					</div>
 				<?php endforeach; ?>
@@ -5634,12 +5225,12 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 		<?php endif; ?>
 
 		<!-- Import Modal -->
-		<div class="modal-overlay" id="import-modal">
-			<div class="modal-content">
+		<div class="tm-modal-overlay" id="import-modal">
+			<div class="tm-modal">
 				<h3><?php \esc_html_e( 'Import Project', 'functionalities' ); ?></h3>
 				<p><?php \esc_html_e( 'Paste the JSON content exported from another project:', 'functionalities' ); ?></p>
-				<textarea class="import-area" id="import-json-content" placeholder='{"name": "My Project", "tasks": [...]}'></textarea>
-				<div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px;">
+				<textarea class="tm-import-area" id="import-json-content" placeholder='{"name": "My Project", "tasks": [...]}'></textarea>
+				<div class="tm-modal-actions">
 					<button type="button" class="button" id="cancel-import-btn"><?php \esc_html_e( 'Cancel', 'functionalities' ); ?></button>
 					<button type="button" class="button button-primary" id="confirm-import-btn"><?php \esc_html_e( 'Import', 'functionalities' ); ?></button>
 				</div>
@@ -5647,12 +5238,12 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 		</div>
 
 		<!-- Export Modal -->
-		<div class="modal-overlay" id="export-modal">
-			<div class="modal-content">
+		<div class="tm-modal-overlay" id="export-modal">
+			<div class="tm-modal">
 				<h3><?php \esc_html_e( 'Export Project', 'functionalities' ); ?></h3>
 				<p><?php \esc_html_e( 'Copy this JSON to save or share your project:', 'functionalities' ); ?></p>
-				<textarea class="import-area" id="export-json-content" readonly></textarea>
-				<div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px;">
+				<textarea class="tm-import-area" id="export-json-content" readonly></textarea>
+				<div class="tm-modal-actions">
 					<button type="button" class="button" id="close-export-btn"><?php \esc_html_e( 'Close', 'functionalities' ); ?></button>
 					<button type="button" class="button button-primary" id="copy-export-btn"><?php \esc_html_e( 'Copy to Clipboard', 'functionalities' ); ?></button>
 				</div>
@@ -5781,7 +5372,7 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 			});
 
 			// Close modals on overlay click
-			$('.modal-overlay').on('click', function(e) {
+			$('.tm-modal-overlay').on('click', function(e) {
 				if (e.target === this) {
 					$(this).removeClass('active');
 				}
@@ -5808,71 +5399,69 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 	private static function render_task_manager_project( array $project, string $nonce ) : void {
 		$stats = \Functionalities\Features\Task_Manager::get_stats( $project );
 		?>
-		<div class="project-header">
+		<div class="tm-project-header">
 			<div>
-				<h2 style="margin: 0;">
+				<h2>
 					<?php echo \esc_html( $project['name'] ); ?>
-					<span style="font-weight: normal; color: #646970; font-size: 14px;">
+					<span class="tm-task-count">
 						(<?php printf( '%d/%d', (int) $stats['completed'], (int) $stats['total'] ); ?>)
 					</span>
 				</h2>
-				<div class="progress-bar" style="width: 200px; margin-top: 8px;">
-					<div class="progress-bar-fill" id="project-progress" style="width: <?php echo \esc_attr( $stats['percent'] ); ?>%;"></div>
+				<div class="tm-progress-bar tm-header-progress">
+					<div class="tm-progress-fill" id="project-progress" style="width: <?php echo \esc_attr( $stats['percent'] ); ?>%;"></div>
 				</div>
 			</div>
-		<div class="project-toolbar">
-				<div class="view-mode-toggle" style="display: flex; gap: 4px; background: #dcdcde; border-radius: 4px; padding: 2px;">
-					<button type="button" class="view-mode-btn active" data-view="list" title="<?php \esc_attr_e( 'List View', 'functionalities' ); ?>">
-						<span class="dashicons dashicons-list-view" style="font-size: 16px; width: 16px; height: 16px; line-height: 16px;"></span>
+			<div class="tm-toolbar">
+				<div class="tm-view-toggle">
+					<button type="button" class="tm-view-btn active" data-view="list" title="<?php \esc_attr_e( 'List View', 'functionalities' ); ?>">
+						<span class="dashicons dashicons-list-view"></span>
 					</button>
-					<button type="button" class="view-mode-btn" data-view="columns" title="<?php \esc_attr_e( 'Column View', 'functionalities' ); ?>">
-						<span class="dashicons dashicons-columns" style="font-size: 16px; width: 16px; height: 16px; line-height: 16px;"></span>
+					<button type="button" class="tm-view-btn" data-view="columns" title="<?php \esc_attr_e( 'Column View', 'functionalities' ); ?>">
+						<span class="dashicons dashicons-columns"></span>
 					</button>
 				</div>
-				<label style="display: flex; align-items: center; gap: 5px;">
+				<label class="tm-widget-label">
 					<input type="checkbox" id="show-widget-toggle" <?php checked( ! empty( $project['show_widget'] ) ); ?>>
 					<?php \esc_html_e( 'Show on Dashboard', 'functionalities' ); ?>
 				</label>
 				<button type="button" class="button" id="import-drafts-btn">
-					<span class="dashicons dashicons-upload" style="font-size: 16px; width: 16px; height: 16px; vertical-align: text-bottom;"></span>
 					<?php \esc_html_e( 'Import Drafts', 'functionalities' ); ?>
 				</button>
 				<button type="button" class="button" id="export-this-project-btn">
-					<span class="dashicons dashicons-download" style="font-size: 16px; width: 16px; height: 16px; vertical-align: text-bottom;"></span>
 					<?php \esc_html_e( 'Export', 'functionalities' ); ?>
 				</button>
 			</div>
 		</div>
 
-		<div class="task-list">
-			<div class="project-filters" style="padding: 15px; border-bottom: 1px solid #c3c4c7; background: #fff; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
-				<div style="flex: 1; min-width: 200px; position: relative;">
-					<span class="dashicons dashicons-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #646970;"></span>
-					<input type="text" id="task-search" placeholder="<?php \esc_attr_e( 'Search tasks...', 'functionalities' ); ?>" style="width: 100%; padding-left: 35px;">
+		<div class="tm-task-list">
+			<div class="tm-filters">
+				<div class="tm-search-wrap">
+					<span class="dashicons dashicons-search"></span>
+					<input type="text" id="task-search" placeholder="<?php \esc_attr_e( 'Search tasks...', 'functionalities' ); ?>">
 				</div>
 				<select id="filter-priority">
 					<option value="all"><?php \esc_html_e( 'All Priorities', 'functionalities' ); ?></option>
-					<option value="1"><?php \esc_html_e( 'High Priority (!1)', 'functionalities' ); ?></option>
-					<option value="2"><?php \esc_html_e( 'Medium Priority (!2)', 'functionalities' ); ?></option>
-					<option value="3"><?php \esc_html_e( 'Low Priority (!3)', 'functionalities' ); ?></option>
+					<option value="1"><?php \esc_html_e( 'High (!1)', 'functionalities' ); ?></option>
+					<option value="2"><?php \esc_html_e( 'Medium (!2)', 'functionalities' ); ?></option>
+					<option value="3"><?php \esc_html_e( 'Low (!3)', 'functionalities' ); ?></option>
 				</select>
 				<select id="filter-status">
 					<option value="all"><?php \esc_html_e( 'All Status', 'functionalities' ); ?></option>
 					<option value="pending"><?php \esc_html_e( 'Pending', 'functionalities' ); ?></option>
 					<option value="completed"><?php \esc_html_e( 'Completed', 'functionalities' ); ?></option>
 				</select>
-				<button type="button" class="button" id="clear-completed-btn" style="color: #d63638;">
-					<span class="dashicons dashicons-dismiss" style="font-size: 16px; width: 16px; height: 16px; vertical-align: text-bottom;"></span>
+				<button type="button" class="button tm-clear-completed" id="clear-completed-btn">
+					<span class="dashicons dashicons-dismiss"></span>
 					<?php \esc_html_e( 'Clear Completed', 'functionalities' ); ?>
 				</button>
 			</div>
 
-			<div class="add-task-form">
-				<div class="add-task-input-wrapper" style="position: relative;">
+			<div class="tm-add-task">
+				<div class="tm-add-task-input-wrap">
 					<input type="text" id="new-task-text" placeholder="<?php \esc_attr_e( 'Add a new task... (use @post to link, #tag for tags, !1/!2/!3 for priority)', 'functionalities' ); ?>">
 					<div id="post-search-dropdown" class="post-search-dropdown"></div>
 				</div>
-				<div class="add-task-hint">
+				<div class="tm-add-task-hint">
 					<?php \esc_html_e( 'Examples: "Review @my-post-title !1" or "Update documentation #docs !3" — Type @ to search posts', 'functionalities' ); ?>
 				</div>
 				<textarea id="new-task-notes" placeholder="<?php \esc_attr_e( 'Optional notes...', 'functionalities' ); ?>"></textarea>
@@ -5883,7 +5472,7 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 
 			<div id="tasks-container">
 				<?php if ( empty( $project['tasks'] ) ) : ?>
-					<div class="empty-state">
+					<div class="tm-empty-state">
 						<p><?php \esc_html_e( 'No tasks yet. Add your first task above.', 'functionalities' ); ?></p>
 					</div>
 				<?php else : ?>
@@ -5915,10 +5504,10 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 							</div>
 							<div class="task-actions">
 								<button type="button" class="button edit-task-btn" title="<?php \esc_attr_e( 'Edit', 'functionalities' ); ?>">
-									<span class="dashicons dashicons-edit" style="font-size: 14px; width: 14px; height: 14px; vertical-align: middle;"></span>
+									<span class="dashicons dashicons-edit"></span>
 								</button>
 								<button type="button" class="button delete-task-btn" title="<?php \esc_attr_e( 'Delete', 'functionalities' ); ?>">
-									<span class="dashicons dashicons-trash" style="font-size: 14px; width: 14px; height: 14px; vertical-align: middle;"></span>
+									<span class="dashicons dashicons-trash"></span>
 								</button>
 							</div>
 						</div>
@@ -5928,64 +5517,64 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 		</div>
 
 		<!-- Columns View (for priority-based display) -->
-		<div id="tasks-columns-view" class="tasks-columns-view">
-			<div class="priority-column p1">
-				<div class="priority-column-header">
-					<span style="color: #d63638;">!1</span> <?php \esc_html_e( 'High Priority', 'functionalities' ); ?>
-					<span class="count" id="count-p1">0</span>
+		<div id="tasks-columns-view" class="tm-columns-view">
+			<div class="tm-column p1">
+				<div class="tm-column-header">
+					<span style="color: #d63638;">!1</span> <?php \esc_html_e( 'High', 'functionalities' ); ?>
+					<span class="tm-column-count" id="count-p1">0</span>
 				</div>
-				<div class="priority-column-tasks" data-priority="1"></div>
+				<div class="tm-column-tasks" data-priority="1"></div>
 			</div>
-			<div class="priority-column p2">
-				<div class="priority-column-header">
-					<span style="color: #dba617;">!2</span> <?php \esc_html_e( 'Medium Priority', 'functionalities' ); ?>
-					<span class="count" id="count-p2">0</span>
+			<div class="tm-column p2">
+				<div class="tm-column-header">
+					<span style="color: #dba617;">!2</span> <?php \esc_html_e( 'Medium', 'functionalities' ); ?>
+					<span class="tm-column-count" id="count-p2">0</span>
 				</div>
-				<div class="priority-column-tasks" data-priority="2"></div>
+				<div class="tm-column-tasks" data-priority="2"></div>
 			</div>
-			<div class="priority-column p3">
-				<div class="priority-column-header">
-					<span style="color: #2271b1;">!3</span> <?php \esc_html_e( 'Low Priority', 'functionalities' ); ?>
-					<span class="count" id="count-p3">0</span>
+			<div class="tm-column p3">
+				<div class="tm-column-header">
+					<span style="color: #2271b1;">!3</span> <?php \esc_html_e( 'Low', 'functionalities' ); ?>
+					<span class="tm-column-count" id="count-p3">0</span>
 				</div>
-				<div class="priority-column-tasks" data-priority="3"></div>
+				<div class="tm-column-tasks" data-priority="3"></div>
 			</div>
-			<div class="priority-column p0">
-				<div class="priority-column-header">
+			<div class="tm-column p0">
+				<div class="tm-column-header">
 					<?php \esc_html_e( 'No Priority', 'functionalities' ); ?>
-					<span class="count" id="count-p0">0</span>
+					<span class="tm-column-count" id="count-p0">0</span>
 				</div>
-				<div class="priority-column-tasks" data-priority="0"></div>
+				<div class="tm-column-tasks" data-priority="0"></div>
 			</div>
 		</div>
 
 		<!-- Edit Task Modal -->
-		<div class="modal-overlay" id="edit-task-modal">
-			<div class="modal-content">
+		<div class="tm-modal-overlay" id="edit-task-modal">
+			<div class="tm-modal">
 				<h3><?php \esc_html_e( 'Edit Task', 'functionalities' ); ?></h3>
 				<input type="hidden" id="edit-task-id">
-				<p>
-					<label><strong><?php \esc_html_e( 'Task', 'functionalities' ); ?></strong></label><br>
-					<input type="text" id="edit-task-text" style="width: 100%;">
-				</p>
-				<p>
-					<label><strong><?php \esc_html_e( 'Notes', 'functionalities' ); ?></strong></label><br>
-					<textarea id="edit-task-notes" style="width: 100%; height: 80px;"></textarea>
-				</p>
-				<p>
-					<label><strong><?php \esc_html_e( 'Priority', 'functionalities' ); ?></strong></label><br>
+				<div class="tm-modal-field">
+					<label for="edit-task-text"><?php \esc_html_e( 'Task', 'functionalities' ); ?></label>
+					<input type="text" id="edit-task-text">
+				</div>
+				<div class="tm-modal-field">
+					<label for="edit-task-notes"><?php \esc_html_e( 'Notes', 'functionalities' ); ?></label>
+					<textarea id="edit-task-notes"></textarea>
+				</div>
+				<div class="tm-modal-field">
+					<label for="edit-task-priority"><?php \esc_html_e( 'Priority', 'functionalities' ); ?></label>
 					<select id="edit-task-priority">
 						<option value="0"><?php \esc_html_e( 'No priority', 'functionalities' ); ?></option>
 						<option value="1"><?php \esc_html_e( '!1 - High', 'functionalities' ); ?></option>
 						<option value="2"><?php \esc_html_e( '!2 - Medium', 'functionalities' ); ?></option>
 						<option value="3"><?php \esc_html_e( '!3 - Low', 'functionalities' ); ?></option>
 					</select>
-				</p>
-				<p>
-					<label><strong><?php \esc_html_e( 'Tags', 'functionalities' ); ?></strong></label><br>
-					<input type="text" id="edit-task-tags" style="width: 100%;" placeholder="<?php \esc_attr_e( 'Comma-separated: urgent, frontend, bug', 'functionalities' ); ?>">
-				</p>
-				<div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px;">
+				</div>
+				<div class="tm-modal-field">
+					<label for="edit-task-tags"><?php \esc_html_e( 'Tags', 'functionalities' ); ?></label>
+					<input type="text" id="edit-task-tags" placeholder="<?php \esc_attr_e( 'Comma-separated: urgent, frontend, bug', 'functionalities' ); ?>">
+				</div>
+				<div class="tm-modal-actions">
 					<button type="button" class="button" id="cancel-edit-btn"><?php \esc_html_e( 'Cancel', 'functionalities' ); ?></button>
 					<button type="button" class="button button-primary" id="save-edit-btn"><?php \esc_html_e( 'Save', 'functionalities' ); ?></button>
 				</div>
@@ -5993,12 +5582,12 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 		</div>
 
 		<!-- Export Modal -->
-		<div class="modal-overlay" id="export-modal">
-			<div class="modal-content">
+		<div class="tm-modal-overlay" id="export-modal">
+			<div class="tm-modal">
 				<h3><?php \esc_html_e( 'Export Project', 'functionalities' ); ?></h3>
 				<p><?php \esc_html_e( 'Copy this JSON to save or share your project:', 'functionalities' ); ?></p>
-				<textarea class="import-area" id="export-json-content" readonly></textarea>
-				<div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px;">
+				<textarea class="tm-import-area" id="export-json-content" readonly></textarea>
+				<div class="tm-modal-actions">
 					<button type="button" class="button" id="close-export-btn"><?php \esc_html_e( 'Close', 'functionalities' ); ?></button>
 					<button type="button" class="button button-primary" id="copy-export-btn"><?php \esc_html_e( 'Copy to Clipboard', 'functionalities' ); ?></button>
 				</div>
@@ -6232,7 +5821,7 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 							if (wasCompleted) completedTasks--;
 							updateProgress();
 							if ($('.task-item').length === 0) {
-								$('#tasks-container').html('<div class="empty-state"><p><?php echo \esc_js( \__( 'No tasks yet. Add your first task above.', 'functionalities' ) ); ?></p></div>');
+								$('#tasks-container').html('<div class="tm-empty-state"><p><?php echo \esc_js( \__( 'No tasks yet. Add your first task above.', 'functionalities' ) ); ?></p></div>');
 							}
 						});
 					} else {
@@ -6384,7 +5973,7 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 			});
 
 			// Close modals on overlay click
-			$('.modal-overlay').on('click', function(e) {
+			$('.tm-modal-overlay').on('click', function(e) {
 				if (e.target === this) {
 					$(this).removeClass('active');
 				}
@@ -6395,27 +5984,27 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 			// ========================================
 			var currentViewMode = 'list';
 
-			$('.view-mode-btn').on('click', function() {
+			$('.tm-view-btn').on('click', function() {
 				var viewMode = $(this).data('view');
 				if (viewMode === currentViewMode) return;
 
 				currentViewMode = viewMode;
-				$('.view-mode-btn').removeClass('active');
+				$('.tm-view-btn').removeClass('active');
 				$(this).addClass('active');
 
 				if (viewMode === 'columns') {
-					$('.task-list').hide();
+					$('.tm-task-list').hide();
 					$('#tasks-columns-view').addClass('active');
 					populateColumnsView();
 				} else {
 					$('#tasks-columns-view').removeClass('active');
-					$('.task-list').show();
+					$('.tm-task-list').show();
 				}
 			});
 
 			function populateColumnsView() {
 				// Clear all columns
-				$('.priority-column-tasks').empty();
+				$('.tm-column-tasks').empty();
 
 				// Counters for each priority
 				var counts = { p0: 0, p1: 0, p2: 0, p3: 0 };
@@ -6433,7 +6022,7 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 					$clone.show(); // Show in case filtered
 
 					// Add to appropriate column
-					$('.priority-column-tasks[data-priority="' + priority + '"]').append($clone);
+					$('.tm-column-tasks[data-priority="' + priority + '"]').append($clone);
 					counts['p' + priority]++;
 				});
 
@@ -6444,9 +6033,9 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 				$('#count-p3').text(counts.p3);
 
 				// Add empty states
-				$('.priority-column-tasks').each(function() {
+				$('.tm-column-tasks').each(function() {
 					if ($(this).children().length === 0) {
-						$(this).html('<div class="priority-column-empty"><?php echo \esc_js( \__( 'No tasks', 'functionalities' ) ); ?></div>');
+						$(this).html('<div class="tm-column-empty"><?php echo \esc_js( \__( 'No tasks', 'functionalities' ) ); ?></div>');
 					}
 				});
 			}
@@ -6599,7 +6188,7 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 
 			// Hide dropdown when clicking outside
 			$(document).on('click', function(e) {
-				if (!$(e.target).closest('.add-task-input-wrapper').length) {
+				if (!$(e.target).closest('.tm-add-task-input-wrap').length) {
 					hideDropdown();
 				}
 			});
@@ -7241,6 +6830,157 @@ add_filter( 'gtnf_exception_urls', function( $urls ) {
 			echo '<p class="description">' . \esc_html( $desc ) . '</p>';
 		}
 		echo '</div>';
+	}
+
+	/**
+	 * Render snippets repeater field for a given location.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param string $location  Location key: header, body_open, or footer.
+	 * @param string $hook_name WordPress hook name for description.
+	 * @return void
+	 */
+	public static function field_snippets_repeater( string $location, string $hook_name ) : void {
+		$o     = self::get_snippets_options();
+		$items = ! empty( $o[ $location ] ) && \is_array( $o[ $location ] ) ? $o[ $location ] : array();
+		$cid   = 'func-snippets-' . $location;
+
+		echo '<div id="' . \esc_attr( $cid ) . '">';
+		$i = 0;
+		foreach ( $items as $item ) {
+			self::render_snippet_row( $location, $i, $item );
+			$i++;
+		}
+		echo '</div>';
+
+		echo '<button type="button" class="button func-snippets-add" data-location="' . \esc_attr( $location ) . '" data-container="' . \esc_attr( $cid ) . '">';
+		echo \esc_html__( '+ Add Snippet', 'functionalities' ) . '</button>';
+		echo '<p class="description">' . \sprintf(
+			/* translators: %s: WordPress hook name */
+			\esc_html__( 'Output in %s. Each snippet can be individually toggled.', 'functionalities' ),
+			'<code>' . \esc_html( $hook_name ) . '</code>'
+		) . '</p>';
+
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Inline JS for repeater template, encoded via wp_json_encode.
+		echo '<script>
+		jQuery(function($){
+			var idx = ' . \absint( $i ) . ';
+			var loc = ' . \wp_json_encode( $location ) . ';
+			var cid = ' . \wp_json_encode( $cid ) . ';
+			var tpl = ' . \wp_json_encode( self::get_snippet_row_html( $location, '__INDEX__' ) ) . ';
+			var $c = $("#"+cid);
+
+			$(".func-snippets-add[data-location=\""+loc+"\"]").on("click",function(){
+				var html = tpl.replace(/__INDEX__/g, idx);
+				$c.append(html);
+				var $row = $c.children().last();
+				$row.addClass("is-open is-enabled");
+				var ta = $row.find("textarea")[0];
+				if(ta && typeof window.funcFsWrapTextarea==="function"){
+					window.funcFsWrapTextarea(ta);
+				}
+				if(ta) ta.focus();
+				idx++;
+			});
+
+			$c.on("click",".func-snippet-remove",function(){
+				var $row = $(this).closest(".func-snippet-row");
+				$row.slideUp(150, function(){ $row.remove(); });
+			});
+
+			$c.on("click",".func-snippet-expand",function(){
+				$(this).closest(".func-snippet-row").toggleClass("is-open");
+			});
+
+			$c.on("change",".func-snippet-toggle input",function(){
+				$(this).closest(".func-snippet-row").toggleClass("is-enabled", this.checked);
+			});
+		});
+		</script>';
+	}
+
+	/**
+	 * Render a single snippet repeater row.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param string $location Location key.
+	 * @param int    $index    Row index.
+	 * @param array  $data     Snippet data (label, code, enabled).
+	 * @return void
+	 */
+	private static function render_snippet_row( string $location, int $index, array $data ) : void {
+		$label   = $data['label'] ?? '';
+		$code    = $data['code'] ?? '';
+		$enabled = ! empty( $data['enabled'] );
+		$prefix  = 'functionalities_snippets[' . $location . '][' . $index . ']';
+		$has_code = '' !== $code;
+
+		echo '<div class="func-snippet-row' . ( $enabled ? ' is-enabled' : '' ) . '">';
+
+		// Header bar — always visible.
+		echo '<div class="func-snippet-row-header">';
+		echo '<label class="func-snippet-toggle"><input type="checkbox" name="' . \esc_attr( $prefix ) . '[enabled]" value="1" ' . \checked( $enabled, true, false ) . '></label>';
+		echo '<input type="text" name="' . \esc_attr( $prefix ) . '[label]" value="' . \esc_attr( $label ) . '" placeholder="' . \esc_attr__( 'Label this snippet…', 'functionalities' ) . '" class="func-snippet-label">';
+		if ( $has_code ) {
+			echo '<span class="func-snippet-badge">' . \esc_html( self::snippet_type_badge( $code ) ) . '</span>';
+		}
+		echo '<button type="button" class="func-snippet-expand" title="' . \esc_attr__( 'Expand / Collapse', 'functionalities' ) . '"><span class="dashicons dashicons-arrow-down-alt2"></span></button>';
+		echo '<button type="button" class="func-snippet-remove" title="' . \esc_attr__( 'Remove snippet', 'functionalities' ) . '"><span class="dashicons dashicons-trash"></span></button>';
+		echo '</div>';
+
+		// Body — collapsible.
+		echo '<div class="func-snippet-body">';
+		echo '<textarea name="' . \esc_attr( $prefix ) . '[code]" rows="6" cols="60" class="large-text code" placeholder="' . \esc_attr__( 'Paste your <script>, <style>, <meta>, or <link> tag here…', 'functionalities' ) . '">' . \esc_textarea( $code ) . '</textarea>';
+		echo '</div>';
+
+		echo '</div>';
+	}
+
+	/**
+	 * Detect snippet type from code for badge display.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param string $code Snippet code.
+	 * @return string Badge label.
+	 */
+	private static function snippet_type_badge( string $code ) : string {
+		$code_lower = strtolower( ltrim( $code ) );
+		if ( 0 === strpos( $code_lower, '<style' ) ) {
+			return 'CSS';
+		}
+		if ( 0 === strpos( $code_lower, '<script' ) ) {
+			return 'JS';
+		}
+		if ( 0 === strpos( $code_lower, '<link' ) ) {
+			return 'Link';
+		}
+		if ( 0 === strpos( $code_lower, '<meta' ) ) {
+			return 'Meta';
+		}
+		if ( 0 === strpos( $code_lower, '<noscript' ) ) {
+			return 'NoScript';
+		}
+		return 'HTML';
+	}
+
+	/**
+	 * Get snippet row HTML template for JavaScript.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param string $location Location key.
+	 * @param string $index    Placeholder index string.
+	 * @return string HTML template with placeholder index.
+	 */
+	private static function get_snippet_row_html( string $location, string $index ) : string {
+		$sentinel = 89714;
+		ob_start();
+		self::render_snippet_row( $location, $sentinel, array( 'enabled' => true ) );
+		$html = ob_get_clean();
+		return str_replace( (string) $sentinel, $index, $html );
 	}
 
 	/**

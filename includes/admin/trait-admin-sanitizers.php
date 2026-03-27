@@ -128,20 +128,22 @@ trait Admin_Sanitizers {
 	/**
 	 * Sanitize snippets settings.
 	 *
+	 * Processes repeater arrays for header, body_open, and footer locations.
+	 * Each snippet item has: label (text), code (HTML), enabled (bool).
+	 *
+	 * @since 1.4.0 Updated for repeater array format.
+	 *
 	 * @param array $input Raw input data.
 	 * @return array Sanitized data.
 	 */
 	public static function sanitize_snippets( $input ) : array {
 		$out = array(
-			'enabled'          => ! empty( $input['enabled'] ),
-			'enable_header'    => ! empty( $input['enable_header'] ),
-			'header_code'      => '',
-			'enable_body_open' => ! empty( $input['enable_body_open'] ),
-			'body_open_code'   => '',
-			'enable_footer'    => ! empty( $input['enable_footer'] ),
-			'footer_code'      => '',
-			'enable_ga4'       => ! empty( $input['enable_ga4'] ),
-			'ga4_id'           => '',
+			'enabled'    => ! empty( $input['enabled'] ),
+			'enable_ga4' => ! empty( $input['enable_ga4'] ),
+			'ga4_id'     => '',
+			'header'     => array(),
+			'body_open'  => array(),
+			'footer'     => array(),
 		);
 
 		$ga4 = isset( $input['ga4_id'] ) ? (string) $input['ga4_id'] : '';
@@ -160,19 +162,28 @@ trait Admin_Sanitizers {
 			'span'     => array( 'id' => true, 'class' => true, 'style' => true ),
 		);
 
-		$raw_header    = isset( $input['header_code'] ) ? (string) $input['header_code'] : '';
-		$raw_body_open = isset( $input['body_open_code'] ) ? (string) $input['body_open_code'] : '';
-		$raw_footer    = isset( $input['footer_code'] ) ? (string) $input['footer_code'] : '';
+		foreach ( array( 'header', 'body_open', 'footer' ) as $location ) {
+			if ( empty( $input[ $location ] ) || ! \is_array( $input[ $location ] ) ) {
+				continue;
+			}
+			foreach ( $input[ $location ] as $item ) {
+				$code = isset( $item['code'] ) ? (string) $item['code'] : '';
+				if ( '' === $code ) {
+					continue;
+				}
 
-		if ( \current_user_can( 'unfiltered_html' ) ) {
-			$out['header_code']    = $raw_header;
-			$out['body_open_code'] = $raw_body_open;
-			$out['footer_code']    = $raw_footer;
-		} else {
-			$out['header_code']    = \wp_kses( $raw_header, $allowed_tags );
-			$out['body_open_code'] = \wp_kses( $raw_body_open, $allowed_tags );
-			$out['footer_code']    = \wp_kses( $raw_footer, $allowed_tags );
+				if ( ! \current_user_can( 'unfiltered_html' ) ) {
+					$code = \Functionalities\Features\Snippets::kses_with_styles( $code, $allowed_tags );
+				}
+
+				$out[ $location ][] = array(
+					'label'   => \sanitize_text_field( $item['label'] ?? '' ),
+					'code'    => $code,
+					'enabled' => ! empty( $item['enabled'] ),
+				);
+			}
 		}
+
 		return $out;
 	}
 
@@ -304,8 +315,13 @@ trait Admin_Sanitizers {
 	 */
 	public static function sanitize_fonts( $input ) : array {
 		$out = array(
-			'enabled' => ! empty( $input['enabled'] ),
-			'items'   => array(),
+			'enabled'        => ! empty( $input['enabled'] ),
+			'items'          => array(),
+			'assign_enabled' => ! empty( $input['assign_enabled'] ),
+			'body_font'      => '',
+			'heading_font'   => '',
+			'per_heading'    => ! empty( $input['per_heading'] ),
+			'heading_fonts'  => array(),
 		);
 		if ( isset( $input['items'] ) && is_array( $input['items'] ) ) {
 			foreach ( $input['items'] as $it ) {
@@ -334,6 +350,23 @@ trait Admin_Sanitizers {
 				);
 			}
 		}
+
+		// Sanitize typography assignment fields.
+		if ( isset( $input['body_font'] ) ) {
+			$out['body_font'] = \sanitize_text_field( (string) $input['body_font'] );
+		}
+		if ( isset( $input['heading_font'] ) ) {
+			$out['heading_font'] = \sanitize_text_field( (string) $input['heading_font'] );
+		}
+		if ( ! empty( $input['heading_fonts'] ) && is_array( $input['heading_fonts'] ) ) {
+			foreach ( $input['heading_fonts'] as $tag => $family ) {
+				$tag = \sanitize_key( $tag );
+				if ( in_array( $tag, array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ), true ) ) {
+					$out['heading_fonts'][ $tag ] = \sanitize_text_field( (string) $family );
+				}
+			}
+		}
+
 		return $out;
 	}
 

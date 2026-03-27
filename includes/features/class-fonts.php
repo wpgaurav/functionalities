@@ -93,6 +93,13 @@ class Fonts {
 		\add_action( 'wp_head', array( __CLASS__, 'print_fonts_css' ), 20 );
 		\add_action( 'admin_head', array( __CLASS__, 'print_fonts_css' ), 20 );
 		\add_action( 'enqueue_block_assets', array( __CLASS__, 'enqueue_editor_fonts' ) );
+
+		// Typography assignments via theme.json data layer.
+		\add_filter( 'wp_theme_json_data_theme', array( __CLASS__, 'inject_typography_theme_json' ) );
+
+		// Bricks Builder support.
+		\add_action( 'wp_enqueue_scripts', array( __CLASS__, 'bricks_enqueue_fonts' ) );
+		\add_action( 'init', array( __CLASS__, 'bricks_register_fonts' ), 99 );
 	}
 
 	/**
@@ -135,8 +142,13 @@ class Fonts {
 		}
 
 		$defaults = array(
-			'enabled' => false,
-			'items'   => array(),
+			'enabled'        => false,
+			'items'          => array(),
+			'assign_enabled' => false,
+			'body_font'      => '',
+			'heading_font'   => '',
+			'per_heading'    => false,
+			'heading_fonts'  => array(),
 		);
 		$opts = (array) \get_option( 'functionalities_fonts', $defaults );
 		self::$options = array_merge( $defaults, $opts );
@@ -266,6 +278,103 @@ class Fonts {
 	}
 
 	/**
+	 * Register custom fonts in Bricks Builder.
+	 *
+	 * Injects font families into Bricks' Custom_Fonts cache so they appear
+	 * in the builder's font picker under "Custom Fonts" and generate
+	 * @font-face rules that Bricks loads automatically.
+	 *
+	 * @since 1.4.0
+	 * @return void
+	 */
+	public static function bricks_register_fonts() : void {
+		if ( ! defined( 'BRICKS_VERSION' ) || ! class_exists( '\Bricks\Custom_Fonts' ) ) {
+			return;
+		}
+
+		$opts = self::get_options();
+
+		if ( ! \apply_filters( 'functionalities_fonts_enabled', ! empty( $opts['enabled'] ) ) ) {
+			return;
+		}
+
+		if ( empty( $opts['items'] ) || ! is_array( $opts['items'] ) ) {
+			return;
+		}
+
+		$items = \apply_filters( 'functionalities_fonts_items', $opts['items'] );
+
+		// Trigger Bricks to load its own custom fonts first.
+		$existing = \Bricks\Custom_Fonts::get_custom_fonts();
+		if ( ! is_array( $existing ) ) {
+			$existing = array();
+		}
+
+		foreach ( $items as $item ) {
+			$family = trim( (string) ( $item['family'] ?? '' ) );
+			$woff2  = trim( (string) ( $item['woff2_url'] ?? '' ) );
+			if ( $family === '' || $woff2 === '' ) {
+				continue;
+			}
+
+			// Build @font-face CSS rule for Bricks to load.
+			$font_face_css = self::build_css( array( $item ) );
+
+			// Key must equal family name — Bricks uses the key as the CSS font-family value.
+			$existing[ $family ] = array(
+				'id'        => $family,
+				'family'    => $family,
+				'fontFaces' => $font_face_css,
+			);
+		}
+
+		// Write back into Bricks' static cache.
+		\Bricks\Custom_Fonts::$fonts = $existing;
+	}
+
+	/**
+	 * Enqueue font CSS inside Bricks Builder canvas.
+	 *
+	 * Bricks renders its builder inside an iframe that fires wp_enqueue_scripts.
+	 * This ensures @font-face rules are available in the builder preview.
+	 *
+	 * @since 1.4.0
+	 * @return void
+	 */
+	public static function bricks_enqueue_fonts() : void {
+		// Only run inside Bricks builder context.
+		if ( ! defined( 'BRICKS_VERSION' ) ) {
+			return;
+		}
+
+		// Skip if not in builder — fonts already load via wp_head on the frontend.
+		if ( ! function_exists( 'bricks_is_builder' ) || ! bricks_is_builder() ) {
+			return;
+		}
+
+		$opts = self::get_options();
+
+		if ( ! \apply_filters( 'functionalities_fonts_enabled', ! empty( $opts['enabled'] ) ) ) {
+			return;
+		}
+
+		if ( empty( $opts['items'] ) || ! is_array( $opts['items'] ) ) {
+			return;
+		}
+
+		$items = \apply_filters( 'functionalities_fonts_items', $opts['items'] );
+		$css   = self::build_css( $items );
+
+		if ( $css === '' ) {
+			return;
+		}
+
+		\wp_register_style( 'functionalities-fonts-bricks', false, array(), FUNCTIONALITIES_VERSION );
+		\wp_enqueue_style( 'functionalities-fonts-bricks' );
+		\wp_add_inline_style( 'functionalities-fonts-bricks', self::sanitize_css( $css ) );
+	}
+
+	/**
 	 * Build @font-face CSS from font items.
 	 *
 	 * Generates properly formatted @font-face rules for each configured font,
@@ -277,6 +386,150 @@ class Fonts {
 	 * @param array $items Array of font definitions.
 	 * @return string Generated CSS containing @font-face rules.
 	 */
+	/**
+	 * Inject font families and typography assignments into the theme.json data layer.
+	 *
+	 * Uses the `wp_theme_json_data_theme` filter to register custom font families
+	 * (with fontFace definitions) and assign body/heading typography — the native
+	 * WordPress way to make fonts available in the block editor and frontend.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param \WP_Theme_JSON_Data $theme_json The theme.json data object.
+	 * @return \WP_Theme_JSON_Data Modified theme.json data.
+	 */
+	public static function inject_typography_theme_json( $theme_json ) {
+		$opts = self::get_options();
+
+		if ( ! \apply_filters( 'functionalities_fonts_enabled', ! empty( $opts['enabled'] ) ) ) {
+			return $theme_json;
+		}
+
+		if ( empty( $opts['items'] ) || ! is_array( $opts['items'] ) ) {
+			return $theme_json;
+		}
+
+		$items = \apply_filters( 'functionalities_fonts_items', $opts['items'] );
+
+		// Build fontFamilies array grouped by family name.
+		$families_map = array();
+		foreach ( $items as $item ) {
+			$family = trim( (string) ( $item['family'] ?? '' ) );
+			$woff2  = trim( (string) ( $item['woff2_url'] ?? '' ) );
+			if ( $family === '' || $woff2 === '' ) {
+				continue;
+			}
+
+			$slug = sanitize_title( $family );
+
+			if ( ! isset( $families_map[ $slug ] ) ) {
+				$families_map[ $slug ] = array(
+					'name'       => $family,
+					'slug'       => $slug,
+					'fontFamily' => '"' . $family . '", sans-serif',
+					'fontFace'   => array(),
+				);
+			}
+
+			$face = array(
+				'fontFamily' => $family,
+				'fontStyle'  => trim( (string) ( $item['style'] ?? 'normal' ) ),
+				'fontDisplay' => trim( (string) ( $item['display'] ?? 'swap' ) ),
+				'src'        => array( $woff2 ),
+			);
+
+			$woff = trim( (string) ( $item['woff_url'] ?? '' ) );
+			if ( $woff !== '' ) {
+				$face['src'][] = $woff;
+			}
+
+			// Weight: variable range or static.
+			$is_variable  = ! empty( $item['is_variable'] );
+			$weight_range = trim( (string) ( $item['weight_range'] ?? '' ) );
+			$weight       = trim( (string) ( $item['weight'] ?? '' ) );
+
+			if ( $is_variable || $weight_range !== '' ) {
+				$face['fontWeight'] = $weight_range !== '' ? $weight_range : '100 900';
+			} elseif ( $weight !== '' ) {
+				$face['fontWeight'] = $weight;
+			}
+
+			$families_map[ $slug ]['fontFace'][] = $face;
+		}
+
+		if ( empty( $families_map ) ) {
+			return $theme_json;
+		}
+
+		$font_families = array_values( $families_map );
+
+		$new_data = array(
+			'version'  => 3,
+			'settings' => array(
+				'typography' => array(
+					'fontFamilies' => $font_families,
+				),
+			),
+		);
+
+		// Typography assignments: body and heading fonts.
+		if ( ! empty( $opts['assign_enabled'] ) ) {
+			$body_font     = trim( (string) ( $opts['body_font'] ?? '' ) );
+			$heading_font  = trim( (string) ( $opts['heading_font'] ?? '' ) );
+			$per_heading   = ! empty( $opts['per_heading'] );
+			$heading_fonts = isset( $opts['heading_fonts'] ) && is_array( $opts['heading_fonts'] ) ? $opts['heading_fonts'] : array();
+
+			$styles = array();
+
+			if ( $body_font !== '' ) {
+				$body_slug = sanitize_title( $body_font );
+				$styles['typography'] = array(
+					'fontFamily' => 'var(--wp--preset--font-family--' . $body_slug . ')',
+				);
+			}
+
+			// Heading element styles.
+			$elements = array();
+
+			if ( $heading_font !== '' ) {
+				$heading_slug = sanitize_title( $heading_font );
+				$elements['heading'] = array(
+					'typography' => array(
+						'fontFamily' => 'var(--wp--preset--font-family--' . $heading_slug . ')',
+					),
+				);
+			}
+
+			// Per-heading overrides.
+			if ( $per_heading && ! empty( $heading_fonts ) ) {
+				for ( $i = 1; $i <= 6; $i++ ) {
+					$key  = 'h' . $i;
+					$font = trim( (string) ( $heading_fonts[ $key ] ?? '' ) );
+					if ( $font !== '' ) {
+						$font_slug = sanitize_title( $font );
+						$elements[ $key ] = array(
+							'typography' => array(
+								'fontFamily' => 'var(--wp--preset--font-family--' . $font_slug . ')',
+							),
+						);
+					}
+				}
+			}
+
+			if ( ! empty( $styles ) || ! empty( $elements ) ) {
+				$new_data['styles'] = array();
+				if ( ! empty( $styles ) ) {
+					$new_data['styles']['typography'] = $styles['typography'];
+				}
+				if ( ! empty( $elements ) ) {
+					$new_data['styles']['elements'] = $elements;
+				}
+			}
+		}
+
+		return $theme_json->update_with( $new_data );
+	}
+
 	protected static function build_css( array $items ) : string {
 		$parts = array();
 

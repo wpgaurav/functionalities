@@ -68,6 +68,9 @@
     }
   }
 
+  // Expose for dynamic repeater textareas.
+  window.funcFsWrapTextarea = wrapTextarea;
+
   function init(){
     document.querySelectorAll('textarea').forEach(wrapTextarea);
     document.addEventListener('keydown', onKeydown);

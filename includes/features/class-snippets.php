@@ -3,12 +3,13 @@
  * Header & Footer Snippets Module.
  *
  * Enables insertion of custom code snippets in the site header and footer,
- * including built-in Google Analytics 4 integration.
+ * including built-in Google Analytics 4 integration. Supports multiple
+ * independently-toggleable snippets per location via repeater fields.
  *
  * @package    Functionalities
  * @subpackage Features
  * @since      0.2.0
- * @version    0.8.0
+ * @version    1.4.0
  */
 
 namespace Functionalities\Features;
@@ -27,8 +28,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  * ## Features
  *
  * - Google Analytics 4 (GA4) integration with measurement ID
- * - Custom header code injection (scripts, styles, meta tags)
- * - Custom footer code injection (scripts, tracking pixels)
+ * - Multiple header snippets with per-snippet enable toggle
+ * - Multiple footer snippets with per-snippet enable toggle
+ * - Multiple body open snippets with per-snippet enable toggle
  * - Automatic frontend-only output (skips admin, feeds, REST)
  *
  * ## Filters
@@ -62,16 +64,28 @@ if ( ! defined( 'ABSPATH' ) ) {
  * }, 10, 2 );
  *
  * ### functionalities_snippets_header_code
- * Filters the custom header code before output.
+ * Filters each header snippet's code before output.
  *
  * @since 0.8.0
- * @param string $code The header code to output.
+ * @since 1.4.0 Fires per-snippet; receives snippet array as second param.
+ * @param string $code    The snippet code to output.
+ * @param array  $snippet The full snippet array (label, code, enabled).
  *
  * ### functionalities_snippets_footer_code
- * Filters the custom footer code before output.
+ * Filters each footer snippet's code before output.
  *
  * @since 0.8.0
- * @param string $code The footer code to output.
+ * @since 1.4.0 Fires per-snippet; receives snippet array as second param.
+ * @param string $code    The snippet code to output.
+ * @param array  $snippet The full snippet array (label, code, enabled).
+ *
+ * ### functionalities_snippets_body_open_code
+ * Filters each body open snippet's code before output.
+ *
+ * @since 0.13.0
+ * @since 1.4.0 Fires per-snippet; receives snippet array as second param.
+ * @param string $code    The snippet code to output.
+ * @param array  $snippet The full snippet array (label, code, enabled).
  *
  * ## Actions
  *
@@ -100,9 +114,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Snippets {
 
 	/**
+	 * Cached options.
+	 *
+	 * @var array|null
+	 */
+	private static $options = null;
+
+	/**
 	 * Initialize the snippets module.
 	 *
-	 * Registers hooks for outputting code in wp_head and wp_footer.
+	 * Registers hooks for outputting code in wp_head, wp_body_open, and wp_footer.
 	 * Uses priority 20 to allow theme output to complete first.
 	 *
 	 * @since 0.2.0
@@ -124,30 +145,11 @@ class Snippets {
 	/**
 	 * Get module options with defaults.
 	 *
-	 * @since 0.2.0
-	 *
-	 * @return array {
-	 *     Snippets options.
-	 *
-	 *     @type bool   $enable_header Whether header code is enabled.
-	 *     @type string $header_code   Custom header code content.
-	 *     @type bool   $enable_footer Whether footer code is enabled.
-	 *     @type string $footer_code   Custom footer code content.
-	 *     @type bool   $enable_ga4    Whether GA4 tracking is enabled.
-	 *     @type string $ga4_id        GA4 measurement ID (G-XXXXXXXXXX).
-	 * }
-	 */
-	/**
-	 * Cached options.
-	 *
-	 * @var array
-	 */
-	private static $options = null;
-
-	/**
-	 * Get module options with defaults.
+	 * Handles in-memory migration from old single-string format to the
+	 * new repeater array format. Does NOT persist to database from frontend.
 	 *
 	 * @since 0.2.0
+	 * @since 1.4.0 Updated to repeater array format with in-memory migration.
 	 *
 	 * @return array Options array.
 	 */
@@ -157,19 +159,65 @@ class Snippets {
 		}
 
 		$defaults = array(
-			'enabled'          => false,
-			'enable_header'    => false,
-			'header_code'      => '',
-			'enable_body_open' => false,
-			'body_open_code'   => '',
-			'enable_footer'    => false,
-			'footer_code'      => '',
-			'enable_ga4'       => false,
-			'ga4_id'           => '',
+			'enabled'    => false,
+			'enable_ga4' => false,
+			'ga4_id'     => '',
+			'header'     => array(),
+			'body_open'  => array(),
+			'footer'     => array(),
 		);
 		$opts = (array) \get_option( 'functionalities_snippets', $defaults );
+
+		// In-memory migration from old single-string format.
+		if ( isset( $opts['header_code'] ) || isset( $opts['enable_header'] ) ) {
+			$opts = self::migrate_options( $opts );
+		}
+
 		self::$options = array_merge( $defaults, $opts );
 		return self::$options;
+	}
+
+	/**
+	 * Migrate old single-string option format to repeater arrays.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param array $opts Old-format options.
+	 * @return array New-format options.
+	 */
+	public static function migrate_options( array $opts ) : array {
+		$migrated = array(
+			'enabled'    => ! empty( $opts['enabled'] ),
+			'enable_ga4' => ! empty( $opts['enable_ga4'] ),
+			'ga4_id'     => $opts['ga4_id'] ?? '',
+			'header'     => array(),
+			'body_open'  => array(),
+			'footer'     => array(),
+		);
+
+		if ( ! empty( $opts['header_code'] ) ) {
+			$migrated['header'][] = array(
+				'label'   => 'Header Code (migrated)',
+				'code'    => (string) $opts['header_code'],
+				'enabled' => ! empty( $opts['enable_header'] ),
+			);
+		}
+		if ( ! empty( $opts['body_open_code'] ) ) {
+			$migrated['body_open'][] = array(
+				'label'   => 'Body Open Code (migrated)',
+				'code'    => (string) $opts['body_open_code'],
+				'enabled' => ! empty( $opts['enable_body_open'] ),
+			);
+		}
+		if ( ! empty( $opts['footer_code'] ) ) {
+			$migrated['footer'][] = array(
+				'label'   => 'Footer Code (migrated)',
+				'code'    => (string) $opts['footer_code'],
+				'enabled' => ! empty( $opts['enable_footer'] ),
+			);
+		}
+
+		return $migrated;
 	}
 
 	/**
@@ -183,7 +231,6 @@ class Snippets {
 	 * @return bool True if snippets should be output.
 	 */
 	protected static function should_output() : bool {
-		// Skip in admin, feeds, and REST requests.
 		$is_rest = \defined( 'REST_REQUEST' ) && \constant( 'REST_REQUEST' );
 		if ( \is_admin() || \is_feed() || $is_rest ) {
 			return false;
@@ -200,13 +247,58 @@ class Snippets {
 	}
 
 	/**
+	 * Output snippets for a given location.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param string $location   Location key: header, body_open, or footer.
+	 * @param string $filter     Filter name for each snippet's code.
+	 * @param string $comment    HTML comment label.
+	 * @return void
+	 */
+	private static function output_snippets( string $location, string $filter, string $comment ) : void {
+		$opts     = self::get_options();
+		$snippets = ! empty( $opts[ $location ] ) && \is_array( $opts[ $location ] ) ? $opts[ $location ] : array();
+		$parts    = array();
+
+		foreach ( $snippets as $snippet ) {
+			if ( empty( $snippet['enabled'] ) || empty( $snippet['code'] ) ) {
+				continue;
+			}
+
+			/**
+			 * Filters a snippet's code before output.
+			 *
+			 * @since 0.8.0
+			 * @since 1.4.0 Fires per-snippet with snippet array as second param.
+			 *
+			 * @param string $code    The snippet code.
+			 * @param array  $snippet The full snippet array.
+			 */
+			$code = \apply_filters( $filter, (string) $snippet['code'], $snippet );
+
+			if ( ! empty( $code ) ) {
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped via escape_snippet() with unfiltered_html cap check and kses_with_styles fallback.
+				$parts[] = self::escape_snippet( $code );
+			}
+		}
+
+		if ( ! empty( $parts ) ) {
+			echo "\n<!-- Functionalities: " . \esc_html( $comment ) . " -->\n";
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Each part escaped above via escape_snippet().
+			echo implode( "\n", $parts );
+			echo "\n";
+		}
+	}
+
+	/**
 	 * Output header snippets.
 	 *
-	 * Outputs GA4 tracking code and custom header code in the wp_head hook.
-	 * GA4 is output first as it often needs to load early for accurate tracking.
+	 * Outputs GA4 tracking code and custom header snippets in the wp_head hook.
 	 *
 	 * @since 0.2.0
 	 * @since 0.8.0 Added filters and actions for extensibility.
+	 * @since 1.4.0 Updated to iterate snippet arrays.
 	 *
 	 * @return void
 	 */
@@ -217,72 +309,37 @@ class Snippets {
 
 		$opts = self::get_options();
 
-		/**
-		 * Fires before header snippets are output.
-		 *
-		 * @since 0.8.0
-		 */
+		/** @since 0.8.0 */
 		\do_action( 'functionalities_before_header_snippets' );
 
 		// Output Google Analytics 4.
 		if ( ! empty( $opts['enable_ga4'] ) && ! empty( $opts['ga4_id'] ) ) {
-			// Sanitize the GA4 ID to only allow valid characters.
 			$ga4_id = preg_replace( '/[^A-Z0-9\-]/', '', strtoupper( (string) $opts['ga4_id'] ) );
 
-			/**
-			 * Filters whether GA4 tracking should be output.
-			 *
-			 * @since 0.8.0
-			 *
-			 * @param bool   $enabled Whether GA4 is enabled.
-			 * @param string $ga4_id  The sanitized GA4 measurement ID.
-			 */
+			/** @since 0.8.0 */
 			$ga4_enabled = \apply_filters( 'functionalities_snippets_ga4_enabled', true, $ga4_id );
 
 			if ( $ga4_enabled && $ga4_id !== '' ) {
 				echo "\n<!-- Functionalities: GA4 -->\n";
 				// phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedScript -- GA4 script must be inline with dynamic ID.
-				echo '<script async src="https://www.googletagmanager.com/gtag/js?id=' . esc_attr( $ga4_id ) . '"></script>' . "\n";
+				echo '<script async src="https://www.googletagmanager.com/gtag/js?id=' . \esc_attr( $ga4_id ) . '"></script>' . "\n";
 				echo '<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}';
-				echo "gtag('js',new Date());gtag('config','" . esc_js( $ga4_id ) . "');</script>\n";
+				echo "gtag('js',new Date());gtag('config','" . \esc_js( $ga4_id ) . "');</script>\n";
 			}
 		}
 
-		// Output custom header code.
-		if ( ! empty( $opts['enable_header'] ) && ! empty( $opts['header_code'] ) ) {
-			/**
-			 * Filters the custom header code before output.
-			 *
-			 * @since 0.8.0
-			 *
-			 * @param string $code The header code to output.
-			 */
-			$header_code = \apply_filters( 'functionalities_snippets_header_code', (string) $opts['header_code'] );
+		self::output_snippets( 'header', 'functionalities_snippets_header_code', 'Custom Header Code' );
 
-			if ( ! empty( $header_code ) ) {
-				echo "\n<!-- Functionalities: Custom Header Code -->\n";
-				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped via escape_snippet() with unfiltered_html cap check and wp_kses fallback.
-				echo self::escape_snippet( $header_code );
-				echo "\n";
-			}
-		}
-
-		/**
-		 * Fires after header snippets are output.
-		 *
-		 * @since 0.8.0
-		 */
+		/** @since 0.8.0 */
 		\do_action( 'functionalities_after_header_snippets' );
 	}
 
 	/**
 	 * Output footer snippets.
 	 *
-	 * Outputs custom footer code in the wp_footer hook. Useful for
-	 * tracking pixels, chat widgets, and deferred scripts.
-	 *
 	 * @since 0.2.0
 	 * @since 0.8.0 Added filters and actions for extensibility.
+	 * @since 1.4.0 Updated to iterate snippet arrays.
 	 *
 	 * @return void
 	 */
@@ -291,50 +348,20 @@ class Snippets {
 			return;
 		}
 
-		$opts = self::get_options();
-
-		// Skip if footer code is not enabled.
-		if ( empty( $opts['enable_footer'] ) || empty( $opts['footer_code'] ) ) {
-			return;
-		}
-
-		/**
-		 * Fires before footer snippets are output.
-		 *
-		 * @since 0.8.0
-		 */
+		/** @since 0.8.0 */
 		\do_action( 'functionalities_before_footer_snippets' );
 
-		/**
-		 * Filters the custom footer code before output.
-		 *
-		 * @since 0.8.0
-		 *
-		 * @param string $code The footer code to output.
-		 */
-		$footer_code = \apply_filters( 'functionalities_snippets_footer_code', (string) $opts['footer_code'] );
+		self::output_snippets( 'footer', 'functionalities_snippets_footer_code', 'Custom Footer Code' );
 
-		if ( ! empty( $footer_code ) ) {
-			echo "\n<!-- Functionalities: Custom Footer Code -->\n";
-			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped via escape_snippet() with unfiltered_html cap check and wp_kses fallback.
-			echo self::escape_snippet( $footer_code );
-			echo "\n";
-		}
-
-		/**
-		 * Fires after footer snippets are output.
-		 *
-		 * @since 0.8.0
-		 */
+		/** @since 0.8.0 */
 		\do_action( 'functionalities_after_footer_snippets' );
 	}
 
 	/**
 	 * Output body open snippets.
 	 *
-	 * Outputs custom code in the wp_body_open hook.
-	 *
 	 * @since 0.13.0
+	 * @since 1.4.0 Updated to iterate snippet arrays.
 	 *
 	 * @return void
 	 */
@@ -343,39 +370,18 @@ class Snippets {
 			return;
 		}
 
-		$opts = self::get_options();
-
-		if ( empty( $opts['enable_body_open'] ) || empty( $opts['body_open_code'] ) ) {
-			return;
-		}
-
-		/**
-		 * Filters the custom body open code before output.
-		 *
-		 * @since 0.13.0
-		 *
-		 * @param string $code The body open code.
-		 */
-		$body_open_code = \apply_filters( 'functionalities_snippets_body_open_code', (string) $opts['body_open_code'] );
-
-		if ( empty( $body_open_code ) ) {
-			return;
-		}
-
-		echo "\n<!-- Functionalities: Custom Body Open Code -->\n";
-		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped via escape_snippet() with unfiltered_html cap check and wp_kses fallback.
-		echo self::escape_snippet( $body_open_code );
-		echo "\n";
+		self::output_snippets( 'body_open', 'functionalities_snippets_body_open_code', 'Custom Body Open Code' );
 	}
 
 	/**
 	 * Escape a code snippet for safe output.
 	 *
-	 * Users with `unfiltered_html` capability stored raw content;
-	 * others had content filtered via wp_kses() on save.
-	 * This applies late escaping at output time.
+	 * Users with `unfiltered_html` capability get raw output; others
+	 * get content filtered via kses_with_styles() which preserves CSS
+	 * inside `<style>` tags while filtering HTML.
 	 *
 	 * @since 1.0.1
+	 * @since 1.4.0 Uses kses_with_styles() to preserve CSS content.
 	 *
 	 * @param string $code The snippet code.
 	 * @return string Escaped snippet.
@@ -385,7 +391,7 @@ class Snippets {
 			return $code;
 		}
 
-		return \wp_kses(
+		return self::kses_with_styles(
 			$code,
 			array(
 				'script'   => array(
@@ -435,5 +441,64 @@ class Snippets {
 				),
 			)
 		);
+	}
+
+	/**
+	 * Run wp_kses() while preserving CSS content inside `<style>` tags.
+	 *
+	 * Standard wp_kses() can mangle CSS content because it is designed for
+	 * HTML, not CSS selectors (e.g., `>` child combinators, `@media` rules).
+	 * This method extracts `<style>` blocks, validates only their tag
+	 * attributes via wp_kses(), preserves CSS content (stripping only null
+	 * bytes), and reassembles after filtering the rest.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param string $code         The code containing HTML and possibly `<style>` blocks.
+	 * @param array  $allowed_tags Allowed tags array for wp_kses().
+	 * @return string Filtered code with CSS preserved.
+	 */
+	public static function kses_with_styles( string $code, array $allowed_tags ): string {
+		$style_blocks = array();
+		$prefix       = '___FUNC_STYLE_';
+
+		// Extract <style> blocks before wp_kses processing.
+		$style_allowed = isset( $allowed_tags['style'] ) ? $allowed_tags['style'] : array( 'type' => true, 'media' => true );
+		$code_without_styles = preg_replace_callback(
+			'/<style(\s[^>]*)?>(.*?)<\/style>/is',
+			function ( $matches ) use ( &$style_blocks, $prefix, $style_allowed ) {
+				$index = count( $style_blocks );
+
+				// Validate the <style> tag attributes through wp_kses.
+				$attrs    = isset( $matches[1] ) ? $matches[1] : '';
+				$tag_html = \wp_kses(
+					'<style' . $attrs . '></style>',
+					array( 'style' => $style_allowed )
+				);
+				$open_tag = preg_replace( '/<\/style>$/', '', $tag_html );
+
+				// Strip null bytes from CSS content but preserve everything else.
+				$css_content = isset( $matches[2] ) ? \wp_kses_no_null( $matches[2] ) : '';
+
+				$style_blocks[] = $open_tag . $css_content . '</style>';
+				return $prefix . $index . '___';
+			},
+			$code
+		);
+
+		// If regex failed, fall back to standard wp_kses.
+		if ( null === $code_without_styles ) {
+			return \wp_kses( $code, $allowed_tags );
+		}
+
+		// Run wp_kses on the remaining non-style HTML.
+		$escaped = \wp_kses( $code_without_styles, $allowed_tags );
+
+		// Restore style blocks.
+		foreach ( $style_blocks as $i => $block ) {
+			$escaped = str_replace( $prefix . $i . '___', $block, $escaped );
+		}
+
+		return $escaped;
 	}
 }
