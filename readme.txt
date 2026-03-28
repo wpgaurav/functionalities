@@ -71,7 +71,7 @@ Some modules solve problems no other free plugin addresses:
 
 = Documentation & Support =
 
-* [Training Lessons](https://gauravtiwari.org/circle/course/functionalities-training/lessons) — Step-by-step module walkthroughs
+* [Training](https://gauravtiwari.org/course/functionalities-training/) — Step-by-step module walkthroughs
 * [GitHub Issues](https://github.com/wpgaurav/functionalities/issues) — Bug reports and feature requests
 * [WordPress.org Support](https://wordpress.org/support/plugin/functionalities/) — Community support forum
 
