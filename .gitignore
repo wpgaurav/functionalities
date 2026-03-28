@@ -1,5 +1,5 @@
 # Distribution files
-*.zip - allowing release zips in repo
+*.zip
 
 # OS files
 .DS_Store
@@ -25,12 +25,9 @@ yarn-error.log*
 # Build files
 /build/
 /dist/
-assets/.DS_Store
 
 # AI assistant guidelines (keep local)
 CLAUDE.md
 
 # Local release builds
 releases/
-assets/.DS_Store
-functionalities-1.0.2.zip
