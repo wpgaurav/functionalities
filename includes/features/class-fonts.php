@@ -76,6 +76,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Fonts {
 
+	use \Functionalities\Traits\CSS_Sanitizer;
+
 	/**
 	 * Initialize the fonts module.
 	 *
@@ -602,22 +604,4 @@ class Fonts {
 	 * @param string $css The CSS to sanitize.
 	 * @return string Sanitized CSS.
 	 */
-	protected static function sanitize_css( string $css ) : string {
-		// Remove any HTML tags.
-		$css = wp_strip_all_tags( $css );
-
-		// Remove style closing tags that could break out of style context.
-		$css = preg_replace( '/<\/style\s*>/i', '', $css );
-
-		// Remove JavaScript expressions (legacy IE).
-		$css = preg_replace( '/expression\s*\([^)]*\)/i', '', $css );
-
-		// Remove JavaScript URLs.
-		$css = preg_replace( '/javascript\s*:/i', '', $css );
-
-		// Remove behavior property (legacy IE).
-		$css = preg_replace( '/behavior\s*:\s*url\s*\([^)]*\)/i', '', $css );
-
-		return $css;
-	}
 }

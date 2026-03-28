@@ -65,6 +65,22 @@ class Redirect_Manager {
 	}
 
 	/**
+	 * Get the WP_Filesystem instance.
+	 *
+	 * @return \WP_Filesystem_Base|false Filesystem instance or false on failure.
+	 */
+	private static function get_filesystem() {
+		global $wp_filesystem;
+		if ( ! function_exists( 'WP_Filesystem' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
+		if ( ! WP_Filesystem() ) {
+			return false;
+		}
+		return $wp_filesystem;
+	}
+
+	/**
 	 * Get or create the redirects directory.
 	 *
 	 * @return string|false Directory path or false on failure.
@@ -78,7 +94,10 @@ class Redirect_Manager {
 			// Security files.
 			$index_file = $dir . '/index.php';
 			if ( ! file_exists( $index_file ) ) {
-				file_put_contents( $index_file, '<?php // Silence is golden.' );
+				$fs = self::get_filesystem();
+				if ( $fs ) {
+					$fs->put_contents( $index_file, '<?php // Silence is golden.', FS_CHMOD_FILE );
+				}
 			}
 		}
 		return $dir;
@@ -146,8 +165,9 @@ class Redirect_Manager {
 
 		$json = wp_json_encode( $data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
 
-		$result = file_put_contents( self::$redirects_file, $json );
-		if ( false !== $result ) {
+		$fs     = self::get_filesystem();
+		$result = $fs ? $fs->put_contents( self::$redirects_file, $json, FS_CHMOD_FILE ) : false;
+		if ( false !== $result && $result ) {
 			self::$redirects_cache = $redirects;
 			self::$index           = null; // Invalidate index so it's rebuilt on next request.
 			\set_transient( 'func_redirects_json', $redirects, 12 * HOUR_IN_SECONDS );

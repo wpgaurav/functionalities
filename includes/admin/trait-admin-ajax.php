@@ -108,10 +108,18 @@ trait Admin_Ajax {
 		// Format JSON nicely.
 		$formatted_content = wp_json_encode( $decoded, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
 
-		// Write file.
-		$result = file_put_contents( $file_path, $formatted_content );
+		// Write file via WP_Filesystem.
+		global $wp_filesystem;
+		if ( ! function_exists( 'WP_Filesystem' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
+		if ( ! WP_Filesystem() || ! $wp_filesystem ) {
+			\wp_send_json_error( array( 'message' => \__( 'Could not initialize filesystem.', 'functionalities' ) ) );
+			return;
+		}
+		$result = $wp_filesystem->put_contents( $file_path, $formatted_content, FS_CHMOD_FILE );
 
-		if ( false === $result ) {
+		if ( ! $result ) {
 			\wp_send_json_error( array( 'message' => \__( 'Failed to write file.', 'functionalities' ) ) );
 		}
 
@@ -125,6 +133,30 @@ trait Admin_Ajax {
 				'path'    => $file_path,
 			)
 		);
+	}
+
+	/**
+	 * AJAX handler for toggling delete-data-on-uninstall option.
+	 *
+	 * @return void
+	 */
+	public static function ajax_toggle_delete_data() : void {
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonces don't require sanitization for verification.
+		$nonce = isset( $_POST['nonce'] ) ? wp_unslash( $_POST['nonce'] ) : '';
+		if ( ! $nonce || ! \wp_verify_nonce( $nonce, 'functionalities_delete_data_toggle' ) ) {
+			\wp_send_json_error( array( 'message' => \__( 'Security check failed.', 'functionalities' ) ) );
+			return;
+		}
+
+		if ( ! \current_user_can( 'manage_options' ) ) {
+			\wp_send_json_error( array( 'message' => \__( 'Insufficient permissions.', 'functionalities' ) ) );
+			return;
+		}
+
+		$enabled = ! empty( $_POST['enabled'] );
+		\update_option( 'functionalities_delete_data_on_uninstall', $enabled );
+
+		\wp_send_json_success( array( 'enabled' => $enabled ) );
 	}
 
 	/**

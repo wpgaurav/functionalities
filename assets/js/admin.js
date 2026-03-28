@@ -16,6 +16,7 @@
 		initRunDetection();
 		initMediaUploads();
 		initColorPickers();
+		initDeleteDataToggle();
 	});
 
 	/**
@@ -120,6 +121,32 @@
 		if ($.fn.wpColorPicker) {
 			$('.func-color-field').wpColorPicker();
 		}
+	}
+
+	/**
+	 * Initialize delete-data-on-uninstall checkbox toggle.
+	 */
+	function initDeleteDataToggle() {
+		var $checkbox = $('#functionalities-delete-data');
+
+		if (!$checkbox.length || typeof functionalitiesAdmin === 'undefined') {
+			return;
+		}
+
+		$checkbox.on('change', function() {
+			var enabled = $(this).is(':checked');
+			var nonce = $('#functionalities_delete_data_nonce').val();
+
+			$.ajax({
+				url: functionalitiesAdmin.ajaxUrl,
+				type: 'POST',
+				data: {
+					action: 'functionalities_toggle_delete_data',
+					nonce: nonce,
+					enabled: enabled ? 1 : 0
+				}
+			});
+		});
 	}
 
 })(jQuery);

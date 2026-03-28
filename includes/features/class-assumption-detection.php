@@ -881,8 +881,7 @@ class Assumption_Detection {
 
 		// Make a HEAD request to check accessibility.
 		$response = \wp_remote_head( $rest_url, array(
-			'timeout'   => 5,
-			'sslverify' => false,
+			'timeout' => 5,
 		) );
 
 		if ( ! \is_wp_error( $response ) ) {
@@ -914,8 +913,7 @@ class Assumption_Detection {
 		$oembed_url = \rest_url( 'oembed/1.0/embed' ) . '?url=' . urlencode( $home_url );
 
 		$oembed_response = \wp_remote_get( $oembed_url, array(
-			'timeout'   => 5,
-			'sslverify' => false,
+			'timeout' => 5,
 		) );
 
 		if ( ! \is_wp_error( $oembed_response ) ) {
@@ -1117,8 +1115,7 @@ class Assumption_Detection {
 
 		// Make a request to the home URL to check headers.
 		$response = \wp_remote_head( \home_url(), array(
-			'timeout'   => 5,
-			'sslverify' => false,
+			'timeout' => 5,
 		) );
 
 		if ( \is_wp_error( $response ) ) {

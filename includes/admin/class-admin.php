@@ -56,6 +56,9 @@ class Admin {
 
 		// AJAX handler for running assumption detection.
 		\add_action( 'wp_ajax_functionalities_run_detection', array( __CLASS__, 'ajax_run_detection' ) );
+
+		// AJAX handler for delete-data-on-uninstall toggle.
+		\add_action( 'wp_ajax_functionalities_toggle_delete_data', array( __CLASS__, 'ajax_toggle_delete_data' ) );
 	}
 
 	/**
@@ -331,6 +334,29 @@ class Admin {
 						</div>
 					</div>
 				<?php endforeach; ?>
+			</div>
+
+			<div class="functionalities-data-section" style="margin-top: 30px; padding: 20px; background: #fff; border: 1px solid #c3c4c7; border-radius: 4px;">
+				<h2 style="margin-top: 0; display: flex; align-items: center; gap: 8px;">
+					<span class="dashicons dashicons-database" style="font-size: 24px; width: 24px; height: 24px;"></span>
+					<?php echo \esc_html__( 'Data Management', 'functionalities' ); ?>
+				</h2>
+				<label style="display: flex; align-items: flex-start; gap: 8px; cursor: pointer;">
+					<input
+						type="checkbox"
+						id="functionalities-delete-data"
+						<?php checked( \get_option( 'functionalities_delete_data_on_uninstall', false ) ); ?>
+						style="margin-top: 2px;"
+					>
+					<span>
+						<?php echo \esc_html__( 'Delete all plugin data when uninstalling', 'functionalities' ); ?>
+						<br>
+						<span style="color: #646970; font-size: 12px;">
+							<?php echo \esc_html__( 'Removes all options, post metadata, transients, and files created by this plugin. This cannot be undone.', 'functionalities' ); ?>
+						</span>
+					</span>
+				</label>
+				<?php \wp_nonce_field( 'functionalities_delete_data_toggle', 'functionalities_delete_data_nonce' ); ?>
 			</div>
 
 			<div class="functionalities-help-section" style="margin-top: 30px; padding: 20px; background: #fff; border: 1px solid #c3c4c7; border-radius: 4px;">

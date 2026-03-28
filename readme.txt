@@ -5,7 +5,7 @@ Tags: performance, security, seo, redirection, cleanup
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.4.0
+Stable tag: 1.4.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -120,7 +120,11 @@ The Redirect Manager supports manual entry of 301, 302, 307, and 308 redirects. 
 
 = What happens if I deactivate the plugin? =
 
-All settings are preserved in the database. Reactivate anytime and everything is restored. If you want a clean removal, use the uninstall process which removes all plugin options.
+All settings are preserved in the database. Reactivate anytime and everything is restored.
+
+= How do I completely remove all plugin data? =
+
+Before uninstalling, go to the Functionalities dashboard and check **"Delete all plugin data when uninstalling"** under Data Management. This removes all options, post metadata, transients, and files created by the plugin. Without this checkbox, only the generated CSS file is removed — your settings are preserved in case you reinstall.
 
 == Screenshots ==
 
@@ -129,6 +133,14 @@ All settings are preserved in the database. Reactivate anytime and everything is
 3. Assumption Detection module
 
 == Changelog ==
+
+= 1.4.1 =
+* Added: Opt-in "Delete all plugin data when uninstalling" checkbox on the dashboard — removes all options, post metadata, transients, and files on uninstall
+* Fixed: Replaced all direct file_put_contents calls with WP_Filesystem API across Task Manager, Redirect Manager, and JSON file creation
+* Fixed: Extracted duplicate CSS sanitization into a shared trait used by Components and Fonts modules
+* Fixed: Removed sslverify => false from loopback HTTP requests in Assumption Detection
+* Fixed: Disabled debug console logging in SVG Icons editor script
+* Fixed: Removed dead code in admin UI script
 
 = 1.4.0 =
 * Added: Bricks Builder font integration — custom fonts appear in Bricks typography picker and load inside the builder canvas
@@ -240,6 +252,9 @@ All settings are preserved in the database. Reactivate anytime and everything is
 * Added: Assumption Detection module
 
 == Upgrade Notice ==
+
+= 1.4.1 =
+Code quality and plugin review compliance: WP_Filesystem for all file writes, comprehensive uninstall cleanup (opt-in), shared CSS sanitization trait, and minor fixes.
 
 = 1.4.0 =
 Bricks Builder font support. Task Manager redesign: cleaner card-based UI, external CSS, improved modals, hover actions on tasks, and polished column view.

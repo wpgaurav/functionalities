@@ -18,12 +18,6 @@
     return btn;
   }
 
-  function closeAnyActive(){
-    const active=document.querySelector('.func-fs-active');
-    if(!active) return;
-    closeFs(active);
-  }
-
   function openFs(wrap){
     // Close any other active instance first
     const current=document.querySelector('.func-fs-active');

@@ -11,7 +11,7 @@
 	'use strict';
 
 	// Debug logging helper
-	var DEBUG = true;
+	var DEBUG = false;
 	var log = function (message, data) {
 		if (DEBUG && console && console.log) {
 			if (data !== undefined) {

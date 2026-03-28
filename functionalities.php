@@ -3,7 +3,7 @@
  * Plugin Name:       Dynamic Functionalities
  * Plugin URI:        https://functionalities.dev
  * Description:       All-in-one WordPress optimization toolkit. 15+ modules for performance, security, SEO, and content management.
- * Version:           1.4.0
+ * Version:           1.4.1
  * Author:            Gaurav Tiwari
  * Author URI:        https://gauravtiwari.org
  * License:           GPL-2.0-or-later
@@ -19,7 +19,7 @@ if (!defined('ABSPATH')) {
 
 // Define constants.
 if (!defined('FUNCTIONALITIES_VERSION')) {
-	define('FUNCTIONALITIES_VERSION', '1.4.0');
+	define('FUNCTIONALITIES_VERSION', '1.4.1');
 }
 if (!defined('FUNCTIONALITIES_FILE')) {
 	define('FUNCTIONALITIES_FILE', __FILE__);
@@ -39,14 +39,18 @@ spl_autoload_register(function (string $class) {
 	$parts = explode('\\', $class);
 	array_shift($parts); // Remove Functionalities
 
-	$filename = 'class-' . strtolower(str_replace('_', '-', (string) end($parts))) . '.php';
-	
 	$subpath = '';
 	if (count($parts) > 1) {
 		$subpath = strtolower((string) $parts[0]) . '/';
 	}
 
-	$file = FUNCTIONALITIES_DIR . 'includes/' . $subpath . $filename;
+	$basename = strtolower(str_replace('_', '-', (string) end($parts)));
+
+	// Try class- prefix first, then trait- prefix.
+	$file = FUNCTIONALITIES_DIR . 'includes/' . $subpath . 'class-' . $basename . '.php';
+	if (!file_exists($file)) {
+		$file = FUNCTIONALITIES_DIR . 'includes/' . $subpath . 'trait-' . $basename . '.php';
+	}
 
 	if (file_exists($file)) {
 		require_once $file;

@@ -65,6 +65,22 @@ class Task_Manager {
 	}
 
 	/**
+	 * Get the WP_Filesystem instance.
+	 *
+	 * @return \WP_Filesystem_Base|false Filesystem instance or false on failure.
+	 */
+	private static function get_filesystem() {
+		global $wp_filesystem;
+		if ( ! function_exists( 'WP_Filesystem' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
+		if ( ! WP_Filesystem() ) {
+			return false;
+		}
+		return $wp_filesystem;
+	}
+
+	/**
 	 * Get the tasks directory, creating it if needed.
 	 *
 	 * @return string|false Directory path or false on failure.
@@ -74,10 +90,15 @@ class Task_Manager {
 			if ( ! wp_mkdir_p( self::$tasks_dir ) ) {
 				return false;
 			}
+
+			$fs = self::get_filesystem();
+
 			// Add index.php for security.
 			$index_file = self::$tasks_dir . 'index.php';
 			if ( ! file_exists( $index_file ) ) {
-				$result = file_put_contents( $index_file, '<?php // Silence is golden.' );
+				$result = $fs
+					? $fs->put_contents( $index_file, '<?php // Silence is golden.', FS_CHMOD_FILE )
+					: false;
 				if ( false === $result && defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 					// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Intentional debug logging when WP_DEBUG is enabled.
 					error_log( 'Functionalities: Failed to create index.php in tasks directory.' );
@@ -86,7 +107,9 @@ class Task_Manager {
 			// Add .htaccess for Apache servers.
 			$htaccess_file = self::$tasks_dir . '.htaccess';
 			if ( ! file_exists( $htaccess_file ) ) {
-				file_put_contents( $htaccess_file, "Order deny,allow\nDeny from all" );
+				if ( $fs ) {
+					$fs->put_contents( $htaccess_file, "Order deny,allow\nDeny from all", FS_CHMOD_FILE );
+				}
 			}
 		}
 		return self::$tasks_dir;
@@ -210,7 +233,12 @@ class Task_Manager {
 
 		$json = wp_json_encode( $data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
 
-		return false !== file_put_contents( $file, $json );
+		$fs = self::get_filesystem();
+		if ( $fs ) {
+			return $fs->put_contents( $file, $json, FS_CHMOD_FILE );
+		}
+
+		return false;
 	}
 
 	/**
