@@ -152,15 +152,7 @@ trait Admin_Sanitizers {
 			$out['ga4_id'] = $ga4;
 		}
 
-		$allowed_tags = array(
-			'script'   => array( 'src' => true, 'type' => true, 'async' => true, 'defer' => true, 'crossorigin' => true, 'integrity' => true, 'data-*' => true ),
-			'style'    => array( 'type' => true, 'media' => true ),
-			'link'     => array( 'rel' => true, 'href' => true, 'as' => true, 'crossorigin' => true, 'media' => true, 'type' => true ),
-			'meta'     => array( 'name' => true, 'content' => true, 'property' => true, 'http-equiv' => true ),
-			'noscript' => array(),
-			'div'      => array( 'id' => true, 'class' => true, 'style' => true ),
-			'span'     => array( 'id' => true, 'class' => true, 'style' => true ),
-		);
+		$allowed_tags = \Functionalities\Features\Snippets::snippet_allowed_tags();
 
 		foreach ( array( 'header', 'body_open', 'footer' ) as $location ) {
 			if ( empty( $input[ $location ] ) || ! \is_array( $input[ $location ] ) ) {

@@ -9,7 +9,7 @@
  * @package    Functionalities
  * @subpackage Features
  * @since      0.2.0
- * @version    1.4.0
+ * @version    1.4.2
  */
 
 namespace Functionalities\Features;
@@ -374,6 +374,75 @@ class Snippets {
 	}
 
 	/**
+	 * Allowed HTML tags and attributes for code snippets.
+	 *
+	 * Single source of truth used by both escape_snippet() (output) and
+	 * sanitize_snippets() (save) to ensure consistent filtering.
+	 *
+	 * @since 1.4.2
+	 *
+	 * @return array Allowed tags array for wp_kses().
+	 */
+	public static function snippet_allowed_tags(): array {
+		return array(
+			'script'   => array(
+				'type'        => true,
+				'src'         => true,
+				'async'       => true,
+				'defer'       => true,
+				'id'          => true,
+				'crossorigin' => true,
+				'integrity'   => true,
+				'nonce'       => true,
+				'nomodule'    => true,
+				'data-*'      => true,
+			),
+			'noscript' => array(),
+			'style'    => array(
+				'type'  => true,
+				'media' => true,
+				'id'    => true,
+				'nonce' => true,
+				'data-*' => true,
+			),
+			'link'     => array(
+				'rel'         => true,
+				'href'        => true,
+				'type'        => true,
+				'media'       => true,
+				'as'          => true,
+				'crossorigin' => true,
+				'id'          => true,
+				'data-*'      => true,
+			),
+			'meta'     => array(
+				'name'       => true,
+				'content'    => true,
+				'charset'    => true,
+				'http-equiv' => true,
+				'property'   => true,
+			),
+			'img'      => array(
+				'src'     => true,
+				'alt'     => true,
+				'width'   => true,
+				'height'  => true,
+				'loading' => true,
+			),
+			'iframe'   => array(
+				'src'             => true,
+				'width'           => true,
+				'height'          => true,
+				'frameborder'     => true,
+				'allow'           => true,
+				'allowfullscreen' => true,
+				'loading'         => true,
+				'style'           => true,
+			),
+		);
+	}
+
+	/**
 	 * Escape a code snippet for safe output.
 	 *
 	 * Users with `unfiltered_html` capability get raw output; others
@@ -391,56 +460,7 @@ class Snippets {
 			return $code;
 		}
 
-		return self::kses_with_styles(
-			$code,
-			array(
-				'script'   => array(
-					'type'        => true,
-					'src'         => true,
-					'async'       => true,
-					'defer'       => true,
-					'id'          => true,
-					'crossorigin' => true,
-					'integrity'   => true,
-					'nonce'       => true,
-				),
-				'noscript' => array(),
-				'style'    => array(
-					'type'  => true,
-					'media' => true,
-				),
-				'link'     => array(
-					'rel'   => true,
-					'href'  => true,
-					'type'  => true,
-					'media' => true,
-				),
-				'meta'     => array(
-					'name'       => true,
-					'content'    => true,
-					'charset'    => true,
-					'http-equiv' => true,
-					'property'   => true,
-				),
-				'img'      => array(
-					'src'     => true,
-					'alt'     => true,
-					'width'   => true,
-					'height'  => true,
-					'loading' => true,
-				),
-				'iframe'   => array(
-					'src'             => true,
-					'width'           => true,
-					'height'          => true,
-					'frameborder'     => true,
-					'allow'           => true,
-					'allowfullscreen' => true,
-					'loading'         => true,
-					'style'           => true,
-				),
-			)
-		);
+		return self::kses_with_styles( $code, self::snippet_allowed_tags() );
 	}
 
 	/**

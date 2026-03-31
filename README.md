@@ -2,7 +2,7 @@
 
 All-in-one WordPress optimization toolkit with 15+ modules for performance, security, SEO, and content management. Built with modern WordPress coding standards and a clean module-based dashboard. Optimized for performance with lazy-loading, static property caching, and intelligent transients.
 
-**Version:** 1.4.0
+**Version:** 1.4.2
 **License:** GPL-2.0-or-later
 **Text Domain:** `functionalities`
 **Pricing:** Free
@@ -426,6 +426,17 @@ Example module definition:
 ---
 
 ## Changelog
+
+### 1.4.2
+- **Fixed**: `wp_kses` now preserves `data-*` attributes on `<script>`, `<style>`, and `<link>` tags in Header & Footer snippets.
+- **Fixed**: `async`, `defer`, `nomodule`, `id`, `nonce`, `crossorigin`, and `as` attributes no longer stripped from snippet tags for non-admin users.
+- **Fixed**: Unified allowed-tags list between snippet output and save sanitization to prevent attribute drift.
+
+### 1.4.1
+- **Added**: Opt-in "Delete all plugin data when uninstalling" checkbox on the dashboard.
+- **Fixed**: Replaced all direct `file_put_contents` calls with `WP_Filesystem` API.
+- **Fixed**: Extracted duplicate CSS sanitization into a shared trait.
+- **Fixed**: Removed `sslverify => false` from loopback HTTP requests.
 
 ### 1.4.0
 - **Added**: Bricks Builder font integration — custom fonts appear in Bricks typography picker and load inside the builder canvas.

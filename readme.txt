@@ -5,7 +5,7 @@ Tags: performance, security, seo, redirection, cleanup
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.4.1
+Stable tag: 1.4.2
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -134,6 +134,12 @@ Before uninstalling, go to the Functionalities dashboard and check **"Delete all
 
 == Changelog ==
 
+= 1.4.2 =
+* Fixed: `wp_kses` now preserves `data-*` attributes on `<script>`, `<style>`, and `<link>` tags in Header & Footer snippets
+* Fixed: `async`, `defer`, `nomodule`, `id`, `nonce`, `crossorigin`, and `as` attributes no longer stripped from snippet tags for non-admin users
+* Fixed: Unified allowed-tags list between snippet output and save sanitization to prevent attribute drift
+* Fixed: README.md version was outdated (still showed 1.4.0)
+
 = 1.4.1 =
 * Added: Opt-in "Delete all plugin data when uninstalling" checkbox on the dashboard — removes all options, post metadata, transients, and files on uninstall
 * Fixed: Replaced all direct file_put_contents calls with WP_Filesystem API across Task Manager, Redirect Manager, and JSON file creation
@@ -252,6 +258,9 @@ Before uninstalling, go to the Functionalities dashboard and check **"Delete all
 * Added: Assumption Detection module
 
 == Upgrade Notice ==
+
+= 1.4.2 =
+Fixes `data-*` and other attributes being stripped from script/style/link tags in Header & Footer snippets for non-admin users.
 
 = 1.4.1 =
 Code quality and plugin review compliance: WP_Filesystem for all file writes, comprehensive uninstall cleanup (opt-in), shared CSS sanitization trait, and minor fixes.
