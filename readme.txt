@@ -5,7 +5,7 @@ Tags: performance, security, seo, redirection, cleanup
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.4.2
+Stable tag: 1.4.3
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -134,6 +134,11 @@ Before uninstalling, go to the Functionalities dashboard and check **"Delete all
 
 == Changelog ==
 
+= 1.4.3 =
+* Fixed: Link Management `process_content()` now skips HTML containing Vue.js directives (`v-cloak`, `v-if`, `v-show`, `:class`, `@click`, `{{ }}`)
+* Fixed: DOMDocument re-parsing was corrupting Vue/React template syntax in themes like MyListing, causing explore pages to flash and disappear
+* Improved: Early-exit check prevents unnecessary DOM parsing on content with JavaScript framework directives
+
 = 1.4.2 =
 * Fixed: `wp_kses` now preserves `data-*` attributes on `<script>`, `<style>`, and `<link>` tags in Header & Footer snippets
 * Fixed: `async`, `defer`, `nomodule`, `id`, `nonce`, `crossorigin`, and `as` attributes no longer stripped from snippet tags for non-admin users
@@ -258,6 +263,9 @@ Before uninstalling, go to the Functionalities dashboard and check **"Delete all
 * Added: Assumption Detection module
 
 == Upgrade Notice ==
+
+= 1.4.3 =
+Fixes Link Management breaking pages that use Vue.js (MyListing explore page, etc.). DOMDocument no longer corrupts Vue/React template directives.
 
 = 1.4.2 =
 Fixes `data-*` and other attributes being stripped from script/style/link tags in Header & Footer snippets for non-admin users.

@@ -272,6 +272,12 @@ class Link_Management {
 			return $content;
 		}
 
+		// Skip content containing Vue.js directives — DOMDocument corrupts them.
+		// Common patterns: v-cloak, v-if, v-show, v-for, :class, @click, {{ }}.
+		if ( preg_match( '/\bv-(?:cloak|if|show|for|bind|on|model|html|text)\b|:[a-z]+="|@[a-z.]+="|{{.+?}}/s', $content ) ) {
+			return $content;
+		}
+
 		$opts              = self::get_options();
 		$manual_exceptions = self::parse_exceptions( (string) $opts['exceptions'] );
 		$exceptions        = array_unique( array_merge( $manual_exceptions, self::$cached_exceptions ) );
