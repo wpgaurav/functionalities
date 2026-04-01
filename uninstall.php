@@ -83,7 +83,7 @@ $functionalities_meta_keys = array(
 );
 
 foreach ( $functionalities_meta_keys as $functionalities_meta_key ) {
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Uninstall cleanup requires direct query.
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Uninstall cleanup requires direct meta_key query; runs once on uninstall only.
 	$wpdb->delete( $wpdb->postmeta, array( 'meta_key' => $functionalities_meta_key ) );
 }
 

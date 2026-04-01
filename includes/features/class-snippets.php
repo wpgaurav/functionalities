@@ -275,6 +275,7 @@ class Snippets {
 			 * @param string $code    The snippet code.
 			 * @param array  $snippet The full snippet array.
 			 */
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound -- $filter is always prefixed: functionalities_snippets_header_code, functionalities_snippets_footer_code, functionalities_snippets_body_open_code.
 			$code = \apply_filters( $filter, (string) $snippet['code'], $snippet );
 
 			if ( ! empty( $code ) ) {
