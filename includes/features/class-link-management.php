@@ -22,6 +22,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Link_Management {
 
+	use \Functionalities\Traits\Has_Dom_Parser;
+
 	/**
 	 * Initialize link management features.
 	 *
@@ -272,9 +274,8 @@ class Link_Management {
 			return $content;
 		}
 
-		// Skip content containing Vue.js directives — DOMDocument corrupts them.
-		// Common patterns: v-cloak, v-if, v-show, v-for, :class, @click, {{ }}.
-		if ( preg_match( '/\bv-(?:cloak|if|show|for|bind|on|model|html|text)\b|:[a-z]+="|@[a-z.]+="|{{.+?}}/s', $content ) ) {
+		// Skip content containing JS-framework directives — DOMDocument corrupts them.
+		if ( self::content_has_js_framework_directives( $content ) ) {
 			return $content;
 		}
 

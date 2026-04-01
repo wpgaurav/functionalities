@@ -94,6 +94,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Schema {
 
+	use \Functionalities\Traits\Has_Dom_Parser;
+
 	/**
 	 * Initialize the schema module.
 	 *
@@ -336,6 +338,11 @@ class Schema {
 
 		/** This filter is documented in class-schema.php */
 		if ( ! \apply_filters( 'functionalities_schema_enabled', ! empty( $opts['enable_article'] ) ) ) {
+			return $content;
+		}
+
+		// Skip content containing JS-framework directives — DOMDocument corrupts them.
+		if ( self::content_has_js_framework_directives( $content ) ) {
 			return $content;
 		}
 

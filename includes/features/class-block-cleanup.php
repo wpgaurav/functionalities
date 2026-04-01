@@ -85,6 +85,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Block_Cleanup {
 
+	use \Functionalities\Traits\Has_Dom_Parser;
+
 	/**
 	 * Initialize the block cleanup module.
 	 *
@@ -226,6 +228,11 @@ class Block_Cleanup {
 		 */
 		$enabled = \apply_filters( 'functionalities_block_cleanup_enabled', true );
 		if ( ! $enabled ) {
+			return $content;
+		}
+
+		// Skip content containing JS-framework directives — DOMDocument corrupts them.
+		if ( self::content_has_js_framework_directives( $content ) ) {
 			return $content;
 		}
 
