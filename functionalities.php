@@ -3,7 +3,7 @@
  * Plugin Name:       Dynamic Functionalities
  * Plugin URI:        https://functionalities.dev
  * Description:       All-in-one WordPress optimization toolkit. 15+ modules for performance, security, SEO, and content management.
- * Version:           1.4.3
+ * Version:           1.4.4
  * Author:            Gaurav Tiwari
  * Author URI:        https://gauravtiwari.org
  * License:           GPL-2.0-or-later
@@ -19,7 +19,7 @@ if (!defined('ABSPATH')) {
 
 // Define constants.
 if (!defined('FUNCTIONALITIES_VERSION')) {
-	define('FUNCTIONALITIES_VERSION', '1.4.3');
+	define('FUNCTIONALITIES_VERSION', '1.4.4');
 }
 if (!defined('FUNCTIONALITIES_FILE')) {
 	define('FUNCTIONALITIES_FILE', __FILE__);

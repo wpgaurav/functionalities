@@ -5,7 +5,7 @@ Tags: performance, security, seo, redirection, cleanup
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.4.3
+Stable tag: 1.4.4
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -133,6 +133,12 @@ Before uninstalling, go to the Functionalities dashboard and check **"Delete all
 3. Assumption Detection module
 
 == Changelog ==
+
+= 1.4.4 =
+* Fixed: Schema module `filter_article()` now skips content with Vue/Alpine.js directives — prevents DOMDocument from corrupting JS framework templates
+* Fixed: Block Cleanup module `filter_content_cleanup()` now skips content with JS framework directives
+* Refactored: Extracted Vue-safe DOMDocument guard into shared `Has_Dom_Parser` trait used by Link Management, Schema, and Block Cleanup
+* All three `the_content` filters that use DOMDocument (priorities 12, 14, 999) are now protected against JS framework corruption
 
 = 1.4.3 =
 * Fixed: Link Management `process_content()` now skips HTML containing Vue.js directives (`v-cloak`, `v-if`, `v-show`, `:class`, `@click`, `{{ }}`)
@@ -263,6 +269,9 @@ Before uninstalling, go to the Functionalities dashboard and check **"Delete all
 * Added: Assumption Detection module
 
 == Upgrade Notice ==
+
+= 1.4.4 =
+Extends Vue/Alpine.js protection to Schema and Block Cleanup modules. All DOMDocument-based content filters now skip JS framework content.
 
 = 1.4.3 =
 Fixes Link Management breaking pages that use Vue.js (MyListing explore page, etc.). DOMDocument no longer corrupts Vue/React template directives.
