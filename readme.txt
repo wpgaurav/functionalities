@@ -5,7 +5,7 @@ Tags: performance, security, seo, redirection, cleanup
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.4.4
+Stable tag: 1.4.5
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -133,6 +133,10 @@ Before uninstalling, go to the Functionalities dashboard and check **"Delete all
 3. Assumption Detection module
 
 == Changelog ==
+
+= 1.4.5 =
+* Added: WOFF and WOFF2 font file uploads now supported in the WordPress media library
+* Security: Font uploads validated via binary magic-byte signatures to prevent malicious file uploads
 
 = 1.4.4 =
 * Fixed: Schema module `filter_article()` now skips content with Vue/Alpine.js directives — prevents DOMDocument from corrupting JS framework templates
@@ -269,6 +273,9 @@ Before uninstalling, go to the Functionalities dashboard and check **"Delete all
 * Added: Assumption Detection module
 
 == Upgrade Notice ==
+
+= 1.4.5 =
+Enables WOFF/WOFF2 font uploads in the media library with magic-byte validation for security.
 
 = 1.4.4 =
 Extends Vue/Alpine.js protection to Schema and Block Cleanup modules. All DOMDocument-based content filters now skip JS framework content.

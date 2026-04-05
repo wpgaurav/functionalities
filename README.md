@@ -2,7 +2,7 @@
 
 All-in-one WordPress optimization toolkit with 15+ modules for performance, security, SEO, and content management. Built with modern WordPress coding standards and a clean module-based dashboard. Optimized for performance with lazy-loading, static property caching, and intelligent transients.
 
-**Version:** 1.4.4
+**Version:** 1.4.5
 **License:** GPL-2.0-or-later
 **Text Domain:** `functionalities`
 **Pricing:** Free

@@ -102,6 +102,10 @@ class Fonts {
 		// Bricks Builder support.
 		\add_action( 'wp_enqueue_scripts', array( __CLASS__, 'bricks_enqueue_fonts' ) );
 		\add_action( 'init', array( __CLASS__, 'bricks_register_fonts' ), 99 );
+
+		// Allow WOFF/WOFF2 uploads in the media library.
+		\add_filter( 'upload_mimes', array( __CLASS__, 'allow_font_mimes' ) );
+		\add_filter( 'wp_check_filetype_and_ext', array( __CLASS__, 'verify_font_filetype' ), 10, 5 );
 	}
 
 	/**
@@ -604,4 +608,79 @@ class Fonts {
 	 * @param string $css The CSS to sanitize.
 	 * @return string Sanitized CSS.
 	 */
+
+	/**
+	 * Add WOFF and WOFF2 to allowed upload MIME types.
+	 *
+	 * Enables font file uploads through the WordPress media library
+	 * so users can upload fonts directly from the Fonts admin UI.
+	 *
+	 * @since 1.4.5
+	 *
+	 * @param array $mimes Associative array of allowed MIME types.
+	 * @return array Modified MIME types with font formats added.
+	 */
+	public static function allow_font_mimes( array $mimes ) : array {
+		if ( ! \current_user_can( 'upload_files' ) ) {
+			return $mimes;
+		}
+
+		$mimes['woff']  = 'font/woff';
+		$mimes['woff2'] = 'font/woff2';
+
+		return $mimes;
+	}
+
+	/**
+	 * Verify WOFF/WOFF2 file type and extension on upload.
+	 *
+	 * WordPress may fail to detect the real MIME type of font files
+	 * via finfo/getimagesize. This callback validates font files by
+	 * checking their binary magic bytes (signature) to ensure the
+	 * uploaded file is genuinely a WOFF or WOFF2 font.
+	 *
+	 * @since 1.4.5
+	 *
+	 * @param array       $wp_check Array of file data (ext, type, proper_filename).
+	 * @param string      $file     Full path to the file.
+	 * @param string      $filename The name of the file.
+	 * @param string[]    $mimes    Allowed MIME types keyed by extension.
+	 * @param string|false $real_mime The real MIME type or false.
+	 * @return array Modified file check data.
+	 */
+	public static function verify_font_filetype( $wp_check, $file, $filename, $mimes, $real_mime = false ) {
+		if ( ! empty( $wp_check['ext'] ) && ! empty( $wp_check['type'] ) ) {
+			return $wp_check;
+		}
+
+		$ext = strtolower( pathinfo( $filename, PATHINFO_EXTENSION ) );
+
+		if ( 'woff' !== $ext && 'woff2' !== $ext ) {
+			return $wp_check;
+		}
+
+		// Validate binary signature (magic bytes).
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading local temp file.
+		$header = file_get_contents( $file, false, null, 0, 8 );
+		if ( false === $header || strlen( $header ) < 4 ) {
+			return $wp_check;
+		}
+
+		$valid = false;
+
+		if ( 'woff2' === $ext ) {
+			// WOFF2 signature: 0x774F4632 ("wOF2").
+			$valid = ( substr( $header, 0, 4 ) === 'wOF2' );
+		} elseif ( 'woff' === $ext ) {
+			// WOFF signature: 0x774F4646 ("wOFF").
+			$valid = ( substr( $header, 0, 4 ) === 'wOFF' );
+		}
+
+		if ( $valid ) {
+			$wp_check['ext']  = $ext;
+			$wp_check['type'] = 'woff2' === $ext ? 'font/woff2' : 'font/woff';
+		}
+
+		return $wp_check;
+	}
 }
