@@ -4,6 +4,30 @@
  * @package Functionalities
  */
 
+/* ----------------------------------------
+ * WordPress 7.0 button-icon override
+ *
+ * WP 7.0 ships .wp-core-ui .button .dashicons (and -primary/-secondary)
+ * with `line-height: 1.9`, which pushes dashicons inside our buttons way
+ * off the vertical baseline. Match-or-beat the core selector specificity
+ * (3 classes) and reset to a flex-friendly line-height.
+ * --------------------------------------- */
+.wp-core-ui .functionalities-module .button .dashicons,
+.wp-core-ui .functionalities-module .button-primary .dashicons,
+.wp-core-ui .functionalities-module .button-secondary .dashicons,
+.wp-core-ui .functionalities-dashboard .button .dashicons,
+.wp-core-ui .functionalities-dashboard .button-primary .dashicons,
+.wp-core-ui .functionalities-dashboard .button-secondary .dashicons,
+.wp-core-ui .functionalities-help-section .button .dashicons,
+.wp-core-ui .functionalities-help-section .button-primary .dashicons,
+.wp-core-ui .functionalities-help-section .button-secondary .dashicons {
+	line-height: 1;
+	vertical-align: middle;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
 /* Dashboard */
 .functionalities-dashboard {
 	max-width: 1400px;
@@ -650,11 +674,15 @@
    ======================================== */
 
 /* Consistent section spacing */
+.functionalities-task-manager form { margin: 0; }
 .functionalities-task-manager .tm-enable-toggle,
 .functionalities-task-manager .tm-feature-info,
 .functionalities-task-manager .tm-new-project,
 .functionalities-task-manager .tm-empty-state {
-	margin-bottom: 1rem;
+	margin: 0 0 1.25rem;
+}
+.functionalities-task-manager .tm-projects-grid {
+	margin-top: 0;
 }
 
 /* Overview — Projects Grid */
@@ -704,7 +732,7 @@
 	background: #e9ecef;
 	border-radius: 4px;
 	height: 6px;
-	margin: 0.5rem 0 1rem;
+	margin: 0.5rem 0 0.75rem;
 	overflow: hidden;
 }
 
@@ -726,7 +754,7 @@
 	display: flex;
 	align-items: center;
 	gap: 0.25rem;
-	margin-top: 0.75rem;
+	margin: 0 0 0.75rem;
 	font-size: 12px;
 	color: #2271b1;
 }

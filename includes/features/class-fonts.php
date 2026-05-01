@@ -106,6 +106,24 @@ class Fonts {
 		// Allow WOFF/WOFF2 uploads in the media library.
 		\add_filter( 'upload_mimes', array( __CLASS__, 'allow_font_mimes' ) );
 		\add_filter( 'wp_check_filetype_and_ext', array( __CLASS__, 'verify_font_filetype' ), 10, 5 );
+
+		// Invalidate the per-request options cache when the Fonts option is updated mid-request,
+		// so any subsequent call (Bricks register, theme.json, output) sees the fresh value.
+		\add_action( 'update_option_functionalities_fonts', array( __CLASS__, 'flush_options_cache' ) );
+		\add_action( 'add_option_functionalities_fonts', array( __CLASS__, 'flush_options_cache' ) );
+	}
+
+	/**
+	 * Invalidate the static options cache.
+	 *
+	 * Called automatically when the `functionalities_fonts` option is added or updated.
+	 *
+	 * @since 1.4.6
+	 *
+	 * @return void
+	 */
+	public static function flush_options_cache() : void {
+		self::$options = null;
 	}
 
 	/**
@@ -449,6 +467,11 @@ class Fonts {
 				$face['src'][] = $woff;
 			}
 
+			$unicode = trim( (string) ( $item['unicode_range'] ?? '' ) );
+			if ( $unicode !== '' ) {
+				$face['unicodeRange'] = $unicode;
+			}
+
 			// Weight: variable range or static.
 			$is_variable  = ! empty( $item['is_variable'] );
 			$weight_range = trim( (string) ( $item['weight_range'] ?? '' ) );
@@ -548,6 +571,7 @@ class Fonts {
 			$is_variable  = ! empty( $item['is_variable'] );
 			$woff2        = trim( (string) ( $item['woff2_url'] ?? '' ) );
 			$woff         = trim( (string) ( $item['woff_url'] ?? '' ) );
+			$unicode      = trim( (string) ( $item['unicode_range'] ?? '' ) );
 
 			// Skip if required fields are missing.
 			if ( $family === '' || $woff2 === '' ) {
@@ -571,6 +595,9 @@ class Fonts {
 				$weight_prop = 'font-weight:' . $weight . ';';
 			}
 
+			// Optional unicode-range (character subset).
+			$unicode_prop = $unicode !== '' ? 'unicode-range:' . $unicode . ';' : '';
+
 			// Build the @font-face rule.
 			$parts[] = '@font-face{' .
 				'font-family:"' . $family . '";' .
@@ -578,6 +605,7 @@ class Fonts {
 				'font-display:' . ( $display ?: 'swap' ) . ';' .
 				$weight_prop .
 				'src:' . $src . ';' .
+				$unicode_prop .
 			'}';
 		}
 

@@ -300,6 +300,50 @@ trait Admin_Sanitizers {
 	}
 
 	/**
+	 * Sanitize a CSS unicode-range value.
+	 *
+	 * Accepts a comma-separated list of unicode-range tokens such as:
+	 *   U+26, U+0-7F, U+0025-00FF, U+4??, U+0370-03FF
+	 *
+	 * Each token is validated individually; invalid tokens are dropped.
+	 * Hex digits are upper-cased for canonical output.
+	 *
+	 * @since 1.4.6
+	 *
+	 * @param string $value Raw unicode-range value.
+	 * @return string Sanitized value, or empty string if nothing valid remains.
+	 */
+	protected static function sanitize_unicode_range( string $value ) : string {
+		$value = trim( $value );
+		if ( $value === '' ) {
+			return '';
+		}
+
+		$tokens = preg_split( '/\s*,\s*/', $value );
+		$valid  = array();
+
+		foreach ( (array) $tokens as $token ) {
+			$token = trim( $token );
+			if ( $token === '' ) {
+				continue;
+			}
+
+			// Single codepoint or range:    U+1F, U+1F-FF, U+0370-03FF
+			// Wildcard codepoint:           U+4??, U+1F??
+			if ( preg_match( '/^U\+([0-9A-F]{1,6})(?:-([0-9A-F]{1,6}))?$/i', $token, $m ) ) {
+				$valid[] = 'U+' . strtoupper( $m[1] ) . ( ! empty( $m[2] ) ? '-' . strtoupper( $m[2] ) : '' );
+				continue;
+			}
+
+			if ( preg_match( '/^U\+([0-9A-F?]{1,6})$/i', $token, $m ) && strpos( $m[1], '?' ) !== false ) {
+				$valid[] = 'U+' . strtoupper( $m[1] );
+			}
+		}
+
+		return implode( ', ', $valid );
+	}
+
+	/**
 	 * Sanitize fonts settings.
 	 *
 	 * @param array $input Raw input data.
@@ -326,19 +370,21 @@ trait Admin_Sanitizers {
 				$preload      = ! empty( $it['preload'] );
 				$woff2        = isset( $it['woff2_url'] ) ? trim( (string) $it['woff2_url'] ) : '';
 				$woff         = isset( $it['woff_url'] ) ? trim( (string) $it['woff_url'] ) : '';
+				$unicode      = isset( $it['unicode_range'] ) ? trim( (string) $it['unicode_range'] ) : '';
 				if ( $family === '' || $woff2 === '' ) {
 					continue;
 				}
 				$out['items'][] = array(
-					'family'       => \sanitize_text_field( $family ),
-					'style'        => self::sanitize_font_style( $style ),
-					'display'      => in_array( $display, array( 'auto', 'block', 'swap', 'fallback', 'optional' ), true ) ? $display : 'swap',
-					'weight'       => preg_replace( '/[^0-9]/', '', $weight ),
-					'weight_range' => preg_replace( '/[^0-9\s]/', '', $weight_range ),
-					'is_variable'  => (bool) $is_variable,
-					'preload'      => (bool) $preload,
-					'woff2_url'    => \esc_url_raw( $woff2 ),
-					'woff_url'     => \esc_url_raw( $woff ),
+					'family'        => \sanitize_text_field( $family ),
+					'style'         => self::sanitize_font_style( $style ),
+					'display'       => in_array( $display, array( 'auto', 'block', 'swap', 'fallback', 'optional' ), true ) ? $display : 'swap',
+					'weight'        => preg_replace( '/[^0-9]/', '', $weight ),
+					'weight_range'  => preg_replace( '/[^0-9\s]/', '', $weight_range ),
+					'is_variable'   => (bool) $is_variable,
+					'preload'       => (bool) $preload,
+					'woff2_url'     => \esc_url_raw( $woff2 ),
+					'woff_url'      => \esc_url_raw( $woff ),
+					'unicode_range' => self::sanitize_unicode_range( $unicode ),
 				);
 			}
 		}
@@ -377,6 +423,7 @@ trait Admin_Sanitizers {
 			'disable_xmlrpc_auth'           => ! empty( $input['disable_xmlrpc_auth'] ),
 			'disable_application_passwords' => ! empty( $input['disable_application_passwords'] ),
 			'hide_login_errors'             => ! empty( $input['hide_login_errors'] ),
+			'trust_proxy_headers'           => ! empty( $input['trust_proxy_headers'] ),
 			'custom_logo_url'               => \esc_url_raw( $input['custom_logo_url'] ?? '' ),
 			'custom_background_color'       => \sanitize_hex_color( $input['custom_background_color'] ?? '' ) ?: '',
 			'custom_form_background'        => \sanitize_hex_color( $input['custom_form_background'] ?? '' ) ?: '',

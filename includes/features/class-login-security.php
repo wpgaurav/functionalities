@@ -110,6 +110,7 @@ class Login_Security {
 			'disable_xmlrpc_auth'          => true,
 			'disable_application_passwords' => false,
 			'hide_login_errors'            => true,
+			'trust_proxy_headers'          => false,
 			'custom_logo_url'              => '',
 			'custom_background_color'      => '',
 			'custom_form_background'       => '',
@@ -122,22 +123,43 @@ class Login_Security {
 	/**
 	 * Get client IP address.
 	 *
-	 * @return string IP address.
+	 * Defaults to REMOTE_ADDR (the actual TCP peer). Proxy/CDN headers
+	 * (HTTP_X_FORWARDED_FOR, HTTP_CLIENT_IP) are only consulted when the
+	 * site admin opts in via the "Trust proxy headers" setting — these
+	 * headers are trivially spoofable on direct connections and were
+	 * previously usable to spoof or evade lockouts.
+	 *
+	 * @since 0.3.0
+	 * @since 1.4.6 Proxy headers are now opt-in via `trust_proxy_headers`.
+	 *
+	 * @return string IP address (validated, or empty string on failure).
 	 */
 	private static function get_client_ip() : string {
-		$ip = '';
+		$ip   = '';
+		$opts = self::get_options();
 
-		// phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Sanitized below with sanitize_text_field.
-		if ( ! empty( $_SERVER['HTTP_CLIENT_IP'] ) ) {
-			$ip = \wp_unslash( $_SERVER['HTTP_CLIENT_IP'] );
-		} elseif ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
-			$ip = explode( ',', \wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) )[0];
-		} elseif ( ! empty( $_SERVER['REMOTE_ADDR'] ) ) {
+		// phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Sanitized via sanitize_text_field + filter_var below.
+		if ( ! empty( $opts['trust_proxy_headers'] ) ) {
+			$candidate = '';
+			if ( ! empty( $_SERVER['HTTP_CLIENT_IP'] ) ) {
+				$candidate = \wp_unslash( $_SERVER['HTTP_CLIENT_IP'] );
+			} elseif ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
+				// Take the first hop — when behind a single trusted proxy this is the originating client.
+				$candidate = explode( ',', \wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) )[0];
+			}
+			$candidate = trim( \sanitize_text_field( $candidate ) );
+			// Only accept proxy-supplied values when they parse as a real IP.
+			if ( $candidate !== '' && false !== filter_var( $candidate, FILTER_VALIDATE_IP ) ) {
+				$ip = $candidate;
+			}
+		}
+
+		if ( $ip === '' && ! empty( $_SERVER['REMOTE_ADDR'] ) ) {
 			$ip = \wp_unslash( $_SERVER['REMOTE_ADDR'] );
 		}
 		// phpcs:enable
 
-		return sanitize_text_field( trim( $ip ) );
+		return trim( \sanitize_text_field( $ip ) );
 	}
 
 	/**

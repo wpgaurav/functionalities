@@ -481,13 +481,27 @@ class Snippets {
 	 */
 	public static function kses_with_styles( string $code, array $allowed_tags ): string {
 		$style_blocks = array();
-		$prefix       = '___FUNC_STYLE_';
+
+		// Per-call random token so a snippet body containing a literal placeholder
+		// cannot collide with the substitution markers injected below.
+		// Format: ___FUNC_STYLE_{random}_{index}___
+		$token = function_exists( '\wp_generate_password' )
+			? \wp_generate_password( 16, false, false )
+			: substr( md5( (string) mt_rand() . microtime() ), 0, 16 );
+		$prefix = '___FUNC_STYLE_' . $token . '_';
+		$suffix = '___';
+
+		// Extremely unlikely, but if the user's code already contains our random prefix,
+		// fall back to plain wp_kses rather than risk corrupting the output.
+		if ( false !== strpos( $code, $prefix ) ) {
+			return \wp_kses( $code, $allowed_tags );
+		}
 
 		// Extract <style> blocks before wp_kses processing.
 		$style_allowed = isset( $allowed_tags['style'] ) ? $allowed_tags['style'] : array( 'type' => true, 'media' => true );
 		$code_without_styles = preg_replace_callback(
 			'/<style(\s[^>]*)?>(.*?)<\/style>/is',
-			function ( $matches ) use ( &$style_blocks, $prefix, $style_allowed ) {
+			function ( $matches ) use ( &$style_blocks, $prefix, $suffix, $style_allowed ) {
 				$index = count( $style_blocks );
 
 				// Validate the <style> tag attributes through wp_kses.
@@ -502,7 +516,7 @@ class Snippets {
 				$css_content = isset( $matches[2] ) ? \wp_kses_no_null( $matches[2] ) : '';
 
 				$style_blocks[] = $open_tag . $css_content . '</style>';
-				return $prefix . $index . '___';
+				return $prefix . $index . $suffix;
 			},
 			$code
 		);
@@ -517,7 +531,7 @@ class Snippets {
 
 		// Restore style blocks.
 		foreach ( $style_blocks as $i => $block ) {
-			$escaped = str_replace( $prefix . $i . '___', $block, $escaped );
+			$escaped = str_replace( $prefix . $i . $suffix, $block, $escaped );
 		}
 
 		return $escaped;

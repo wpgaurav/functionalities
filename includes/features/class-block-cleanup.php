@@ -328,8 +328,12 @@ class Block_Cleanup {
 			}
 
 			// Find all elements with this class.
-			$escaped_class = addcslashes( $class, '"' );
-			$nodes = $xpath->query( '//*[contains(concat(" ", normalize-space(@class), " "), " ' . $escaped_class . ' ")]' );
+			// XPath 1.0 has no string-escape syntax, so we build the literal via xpath_string_literal()
+			// which uses concat() when the value contains both quote types. addcslashes() was incorrect
+			// here — XPath does not interpret backslash escapes, so a class containing a quote produced
+			// malformed XPath and a silent query failure.
+			$needle = self::xpath_string_literal( ' ' . $class . ' ' );
+			$nodes  = $xpath->query( '//*[contains(concat(" ", normalize-space(@class), " "), ' . $needle . ')]' );
 			self::strip_class_from_nodes( $nodes, $class );
 		}
 
@@ -371,6 +375,39 @@ class Block_Cleanup {
 	 * @param string             $class The class name to remove.
 	 * @return void
 	 */
+	/**
+	 * Build a safely-quoted XPath 1.0 string literal.
+	 *
+	 * XPath 1.0 has no escape syntax inside string literals — a literal with
+	 * both `'` and `"` must be assembled with `concat()`. This helper picks
+	 * the simplest safe form for the given input.
+	 *
+	 * @since 1.4.6
+	 *
+	 * @param string $value Raw string value to embed in an XPath expression.
+	 * @return string Quoted XPath literal (e.g. `"foo"`, `'foo"bar'`, or `concat('a', "'", 'b')`).
+	 */
+	protected static function xpath_string_literal( string $value ) : string {
+		if ( false === strpos( $value, "'" ) ) {
+			return "'" . $value . "'";
+		}
+		if ( false === strpos( $value, '"' ) ) {
+			return '"' . $value . '"';
+		}
+
+		// Both quote types present: split on `'` and concat with literal `'` glue.
+		// Each piece is wrapped in single quotes (safe — pieces no longer contain `'`),
+		// and the glue is a double-quoted literal containing one apostrophe.
+		$parts = array();
+		foreach ( explode( "'", $value ) as $i => $piece ) {
+			if ( $i > 0 ) {
+				$parts[] = '"\'"';
+			}
+			$parts[] = "'" . $piece . "'";
+		}
+		return 'concat(' . implode( ',', $parts ) . ')';
+	}
+
 	protected static function strip_class_from_nodes( $nodes, string $class ) : void {
 		if ( ! ( $nodes instanceof \DOMNodeList ) ) {
 			return;

@@ -359,6 +359,14 @@ class Admin {
 				<?php \wp_nonce_field( 'functionalities_delete_data_toggle', 'functionalities_delete_data_nonce' ); ?>
 			</div>
 
+			<style>
+				.functionalities-help-section .functionalities-help-section__buttons{display:flex;flex-wrap:wrap;gap:10px;}
+				.functionalities-help-section a.functionalities-help-btn.button{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:#fff;color:#2271b1;border:1px solid #2271b1;border-radius:4px;font-weight:500;text-decoration:none;line-height:1.4;box-shadow:none;}
+				.functionalities-help-section a.functionalities-help-btn.button:hover,
+				.functionalities-help-section a.functionalities-help-btn.button:focus{background:#f0f6fc;color:#0a4b78;border-color:#0a4b78;box-shadow:none;}
+				.functionalities-help-section a.functionalities-help-btn.button:focus{outline:2px solid #2271b1;outline-offset:1px;}
+				.functionalities-help-section a.functionalities-help-btn.button .dashicons{font-size:16px;width:16px;height:16px;line-height:1;color:inherit;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;}
+			</style>
 			<div class="functionalities-help-section" style="margin-top: 30px; padding: 20px; background: #fff; border: 1px solid #c3c4c7; border-radius: 4px;">
 				<h2 style="margin-top: 0; display: flex; align-items: center; gap: 8px;">
 					<span class="dashicons dashicons-editor-help" style="font-size: 24px; width: 24px; height: 24px;"></span>
@@ -367,17 +375,17 @@ class Admin {
 				<p style="color: #646970; margin-bottom: 15px;">
 					<?php echo \esc_html__( 'Need help with Dynamic Functionalities? Check out these resources:', 'functionalities' ); ?>
 				</p>
-				<div style="display: flex; flex-wrap: wrap; gap: 10px;">
-					<a href="https://gauravtiwari.org/circle/course/functionalities-training/lessons" target="_blank" rel="noopener" class="button" style="display: inline-flex; align-items: center; gap: 5px;">
-						<span class="dashicons dashicons-book" style="font-size: 16px; width: 16px; height: 16px;"></span>
+				<div class="functionalities-help-section__buttons">
+					<a href="https://gauravtiwari.org/circle/course/functionalities-training/lessons" target="_blank" rel="noopener" class="button functionalities-help-btn">
+						<span class="dashicons dashicons-book"></span>
 						<?php echo \esc_html__( 'Documentation', 'functionalities' ); ?>
 					</a>
-					<a href="https://wordpress.org/support/plugin/functionalities/" target="_blank" rel="noopener" class="button" style="display: inline-flex; align-items: center; gap: 5px;">
-						<span class="dashicons dashicons-sos" style="font-size: 16px; width: 16px; height: 16px;"></span>
+					<a href="https://wordpress.org/support/plugin/functionalities/" target="_blank" rel="noopener" class="button functionalities-help-btn">
+						<span class="dashicons dashicons-sos"></span>
 						<?php echo \esc_html__( 'Support', 'functionalities' ); ?>
 					</a>
-					<a href="https://github.com/wpgaurav/functionalities/issues" target="_blank" rel="noopener" class="button" style="display: inline-flex; align-items: center; gap: 5px;">
-						<span class="dashicons dashicons-flag" style="font-size: 16px; width: 16px; height: 16px;"></span>
+					<a href="https://github.com/wpgaurav/functionalities/issues" target="_blank" rel="noopener" class="button functionalities-help-btn">
+						<span class="dashicons dashicons-flag"></span>
 						<?php echo \esc_html__( 'Report Issues', 'functionalities' ); ?>
 					</a>
 				</div>
@@ -1375,6 +1383,7 @@ class Admin {
 					'disable_xmlrpc_auth'           => true,
 					'disable_application_passwords' => false,
 					'hide_login_errors'             => true,
+					'trust_proxy_headers'           => false,
 					'custom_logo_url'               => '',
 					'custom_background_color'       => '',
 					'custom_form_background'        => '',
@@ -1436,6 +1445,11 @@ class Admin {
 		\add_settings_field( 'hide_login_errors', \__( 'Hide Login Errors', 'functionalities' ), function() {
 			$o = self::get_login_security_options();
 			echo '<label><input type="checkbox" name="functionalities_login_security[hide_login_errors]" value="1" ' . checked( ! empty( $o['hide_login_errors'] ), true, false ) . '> ' . \esc_html__( 'Show generic error instead of specific username/password errors', 'functionalities' ) . '</label>';
+		}, 'functionalities_login_security', 'functionalities_login_security_section' );
+		\add_settings_field( 'trust_proxy_headers', \__( 'Trust Proxy Headers', 'functionalities' ), function() {
+			$o = self::get_login_security_options();
+			echo '<label><input type="checkbox" name="functionalities_login_security[trust_proxy_headers]" value="1" ' . checked( ! empty( $o['trust_proxy_headers'] ), true, false ) . '> ' . \esc_html__( 'Read client IP from X-Forwarded-For / Client-IP headers', 'functionalities' ) . '</label>';
+			echo '<p class="description">' . \esc_html__( 'Only enable when this site sits behind a trusted reverse proxy or CDN (Cloudflare, nginx, etc.). With this OFF, lockouts are keyed by REMOTE_ADDR and cannot be spoofed via headers — the secure default.', 'functionalities' ) . '</p>';
 		}, 'functionalities_login_security', 'functionalities_login_security_section' );
 		\add_settings_field( 'custom_logo_url', \__( 'Custom Logo URL', 'functionalities' ), function() {
 			$o = self::get_login_security_options();
@@ -4251,6 +4265,7 @@ add_filter( 'functionalities_json_preset_path', function( $default_path ) {
 					$preload = ! empty( $it['preload'] );
 					$woff2 = esc_attr( $it['woff2_url'] ?? '' );
 					$woff  = esc_attr( $it['woff_url'] ?? '' );
+					$unicode_range = esc_attr( $it['unicode_range'] ?? '' );
 				?>
 				<div class="fc-font-card" data-index="<?php echo (int) $i; ?>">
 					<div class="fc-font-card__header">
@@ -4325,6 +4340,13 @@ add_filter( 'functionalities_json_preset_path', function( $default_path ) {
 								<input type="url" class="fc-font-form__input fc-font-form__input--url fc-font-url" name="functionalities_fonts[items][<?php echo (int) $i; ?>][woff_url]" value="<?php echo \esc_url( $woff ); ?>" placeholder="https://...">
 								<button type="button" class="fc-font-form__upload-btn fc-upload-font" data-format="woff"><?php esc_html_e( 'Upload', 'functionalities' ); ?></button>
 							</div>
+						</div>
+						<div class="fc-font-form__group" style="margin-top: 16px;">
+							<label class="fc-font-form__label"><?php esc_html_e( 'Character Range (unicode-range)', 'functionalities' ); ?></label>
+							<input type="text" class="fc-font-form__input fc-unicode-range" name="functionalities_fonts[items][<?php echo (int) $i; ?>][unicode_range]" value="<?php echo \esc_attr( $unicode_range ); ?>" placeholder="U+0000-00FF, U+0131, U+2000-206F" list="fc-unicode-presets">
+							<p class="description" style="margin-top:6px;color:#64748b;font-size:12px;">
+								<?php esc_html_e( 'Limit which characters trigger this font download. Leave empty to apply to all characters. Comma-separated tokens like U+26, U+0-7F, U+4??.', 'functionalities' ); ?>
+							</p>
 						</div>
 						<div class="fc-font-form__actions">
 							<button type="button" class="fc-font-form__btn fc-font-form__btn--done"><?php esc_html_e( 'Done', 'functionalities' ); ?></button>
@@ -4409,6 +4431,13 @@ add_filter( 'functionalities_json_preset_path', function( $default_path ) {
 							<button type="button" class="fc-font-form__upload-btn fc-upload-font" data-format="woff"><?php esc_html_e( 'Upload', 'functionalities' ); ?></button>
 						</div>
 					</div>
+					<div class="fc-font-form__group" style="margin-top: 16px;">
+						<label class="fc-font-form__label"><?php esc_html_e( 'Character Range (unicode-range)', 'functionalities' ); ?></label>
+						<input type="text" class="fc-font-form__input fc-unicode-range" name="functionalities_fonts[items][__INDEX__][unicode_range]" value="" placeholder="U+0000-00FF, U+0131, U+2000-206F" list="fc-unicode-presets">
+						<p class="description" style="margin-top:6px;color:#64748b;font-size:12px;">
+							<?php esc_html_e( 'Limit which characters trigger this font download. Leave empty to apply to all characters. Comma-separated tokens like U+26, U+0-7F, U+4??.', 'functionalities' ); ?>
+						</p>
+					</div>
 					<div class="fc-font-form__actions">
 						<button type="button" class="fc-font-form__btn fc-font-form__btn--done"><?php esc_html_e( 'Done', 'functionalities' ); ?></button>
 						<button type="button" class="fc-font-form__btn fc-font-form__btn--cancel"><?php esc_html_e( 'Cancel', 'functionalities' ); ?></button>
@@ -4416,6 +4445,14 @@ add_filter( 'functionalities_json_preset_path', function( $default_path ) {
 				</div>
 			</div>
 		</template>
+		<datalist id="fc-unicode-presets">
+			<option value="U+0000-00FF" label="<?php esc_attr_e( 'Basic Latin + Latin-1', 'functionalities' ); ?>">
+			<option value="U+0100-024F, U+1E00-1EFF" label="<?php esc_attr_e( 'Latin Extended', 'functionalities' ); ?>">
+			<option value="U+0370-03FF" label="<?php esc_attr_e( 'Greek', 'functionalities' ); ?>">
+			<option value="U+0400-04FF, U+0500-052F" label="<?php esc_attr_e( 'Cyrillic', 'functionalities' ); ?>">
+			<option value="U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9, U+20AB" label="<?php esc_attr_e( 'Vietnamese', 'functionalities' ); ?>">
+			<option value="U+2000-206F, U+2070-209F, U+20A0-20CF, U+2100-214F" label="<?php esc_attr_e( 'Punctuation, sub/super, currency, letterlike', 'functionalities' ); ?>">
+		</datalist>
 
 		<script>
 		(function() {
@@ -4434,7 +4471,8 @@ add_filter( 'functionalities_json_preset_path', function( $default_path ) {
 			function updateCardTitle(card) {
 				var familyInput = card.querySelector('input[name*="[family]"]');
 				var titleEl = card.querySelector('.fc-font-card__title');
-				var styleSelect = card.querySelector('select[name*="[style]"]');
+				// Style is a free-text input, not a <select>. Match either to stay forward-compatible.
+				var styleField = card.querySelector('input[name*="[style]"], select[name*="[style]"]');
 				var varCheck = card.querySelector('input[name*="[is_variable]"]');
 				var preCheck = card.querySelector('input[name*="[preload]"]');
 				var metaEl = card.querySelector('.fc-font-card__meta');
@@ -4444,15 +4482,29 @@ add_filter( 'functionalities_json_preset_path', function( $default_path ) {
 				}
 
 				// Update badges
-				if (metaEl && styleSelect) {
-					var badges = '<span class="fc-font-card__badge">' + styleSelect.value + '</span>';
+				if (metaEl && styleField) {
+					var styleValue = (styleField.value || 'normal').trim() || 'normal';
+					// Only render the bare keyword (normal / italic / oblique) in the badge so values
+					// like "oblique -12deg 0deg" don't blow up the card header.
+					var styleBadge = styleValue.split(/\s+/)[0];
+					var badges = '<span class="fc-font-card__badge"></span>';
+					var badgeNode = document.createElement('span');
+					badgeNode.className = 'fc-font-card__badge';
+					badgeNode.textContent = styleBadge;
+					metaEl.innerHTML = '';
+					metaEl.appendChild(badgeNode);
 					if (varCheck && varCheck.checked) {
-						badges += '<span class="fc-font-card__badge fc-font-card__badge--variable"><?php echo esc_js( __( 'Variable', 'functionalities' ) ); ?></span>';
+						var v = document.createElement('span');
+						v.className = 'fc-font-card__badge fc-font-card__badge--variable';
+						v.textContent = '<?php echo esc_js( __( 'Variable', 'functionalities' ) ); ?>';
+						metaEl.appendChild(v);
 					}
 					if (preCheck && preCheck.checked) {
-						badges += '<span class="fc-font-card__badge fc-font-card__badge--preload"><?php echo esc_js( __( 'Preload', 'functionalities' ) ); ?></span>';
+						var p = document.createElement('span');
+						p.className = 'fc-font-card__badge fc-font-card__badge--preload';
+						p.textContent = '<?php echo esc_js( __( 'Preload', 'functionalities' ) ); ?>';
+						metaEl.appendChild(p);
 					}
-					metaEl.innerHTML = badges;
 				}
 			}
 
@@ -5228,6 +5280,12 @@ add_filter( 'functionalities_json_preset_path', function( $default_path ) {
 						<div class="tm-progress-bar">
 							<div class="tm-progress-fill" style="width: <?php echo \esc_attr( $stats['percent'] ); ?>%;"></div>
 						</div>
+						<?php if ( ! empty( $project['show_widget'] ) ) : ?>
+							<div class="tm-widget-badge">
+								<span class="dashicons dashicons-dashboard"></span>
+								<?php \esc_html_e( 'Shown on Dashboard', 'functionalities' ); ?>
+							</div>
+						<?php endif; ?>
 						<div class="tm-project-actions">
 							<a href="<?php echo \esc_url( \admin_url( 'admin.php?page=functionalities&module=task-manager&project=' . $slug ) ); ?>" class="button button-primary">
 								<?php \esc_html_e( 'Open', 'functionalities' ); ?>
@@ -5239,12 +5297,6 @@ add_filter( 'functionalities_json_preset_path', function( $default_path ) {
 								<?php \esc_html_e( 'Delete', 'functionalities' ); ?>
 							</button>
 						</div>
-						<?php if ( ! empty( $project['show_widget'] ) ) : ?>
-							<div class="tm-widget-badge">
-								<span class="dashicons dashicons-dashboard"></span>
-								<?php \esc_html_e( 'Shown on Dashboard', 'functionalities' ); ?>
-							</div>
-						<?php endif; ?>
 					</div>
 				<?php endforeach; ?>
 			</div>

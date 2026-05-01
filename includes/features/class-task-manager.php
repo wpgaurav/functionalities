@@ -35,18 +35,13 @@ class Task_Manager {
 	public static function init() : void {
 		self::$tasks_dir = WP_CONTENT_DIR . '/functionalities/tasks/';
 
-		$opts = (array) \get_option( 'functionalities_task_manager', array( 'enabled' => false ) );
-
-		if ( empty( $opts['enabled'] ) ) {
-			return;
-		}
-
 		// Only run in admin - no frontend footprint.
 		if ( ! \is_admin() ) {
 			return;
 		}
 
-		// AJAX handlers.
+		// AJAX handlers must always be registered in admin so existing projects
+		// remain manageable (export/delete) even if the module is toggled off.
 		\add_action( 'wp_ajax_functionalities_task_create_project', array( __CLASS__, 'ajax_create_project' ) );
 		\add_action( 'wp_ajax_functionalities_task_delete_project', array( __CLASS__, 'ajax_delete_project' ) );
 		\add_action( 'wp_ajax_functionalities_task_add', array( __CLASS__, 'ajax_add_task' ) );
@@ -60,7 +55,13 @@ class Task_Manager {
 		\add_action( 'wp_ajax_functionalities_task_search_posts', array( __CLASS__, 'ajax_search_posts' ) );
 		\add_action( 'wp_ajax_functionalities_task_import_drafts', array( __CLASS__, 'ajax_import_drafts' ) );
 
-		// Dashboard widgets.
+		$opts = (array) \get_option( 'functionalities_task_manager', array( 'enabled' => false ) );
+
+		if ( empty( $opts['enabled'] ) ) {
+			return;
+		}
+
+		// Dashboard widgets only register when the module is enabled.
 		\add_action( 'wp_dashboard_setup', array( __CLASS__, 'register_dashboard_widgets' ) );
 	}
 

@@ -5,7 +5,7 @@ Tags: performance, security, seo, redirection, cleanup
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.4.5
+Stable tag: 1.4.6
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -133,6 +133,20 @@ Before uninstalling, go to the Functionalities dashboard and check **"Delete all
 3. Assumption Detection module
 
 == Changelog ==
+
+= 1.4.6 =
+* Added: Character range (`unicode-range`) support per font in the Fonts module — limit which characters trigger a font download for faster page loads
+* Added: Quick-pick presets in the admin UI for common subsets (Latin, Latin Extended, Greek, Cyrillic, Vietnamese, Punctuation/Symbols)
+* Added: `unicode-range` is also emitted into the theme.json `fontFace` data layer so it propagates to the block editor
+* Security: Login Security no longer trusts `X-Forwarded-For` / `Client-IP` headers by default — these were spoofable on direct connections, allowing IP-based lockouts to be evaded or weaponized. Sites behind a trusted reverse proxy or CDN can opt in via the new "Trust Proxy Headers" setting.
+* Security: Login Security now validates client IPs through `FILTER_VALIDATE_IP` when proxy headers are in use, dropping malformed values rather than hashing them into transient keys.
+* Fixed: Block Cleanup XPath query now safely escapes class names via a proper XPath 1.0 string-literal builder (`addcslashes` was the wrong escape function and silently failed on classes containing quotes).
+* Fixed: Snippets `kses_with_styles()` placeholder collision — `<style>` extraction now uses a per-call random token so a snippet body containing the literal placeholder string can no longer corrupt the output.
+* Fixed: Fonts module admin badge now reflects the Style field (free-text input) instead of looking for a `<select>` that doesn't exist.
+* Fixed: Fonts module options static cache is invalidated automatically on `update_option_functionalities_fonts`, preventing stale font lists when the option is updated mid-request.
+* Fixed: Task Manager AJAX handlers (Export, Delete, etc.) now register whenever in admin, so existing projects remain manageable even when the module is toggled off.
+* Fixed: Task Manager card layout — widget badge now sits above the action row, so Open/Export/Delete align consistently across cards.
+* Fixed: Help & Support buttons now have higher CSS specificity to defeat WP 7.0's button reset.
 
 = 1.4.5 =
 * Added: WOFF and WOFF2 font file uploads now supported in the WordPress media library
