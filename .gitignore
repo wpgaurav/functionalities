@@ -26,8 +26,9 @@ yarn-error.log*
 /build/
 /dist/
 
-# AI assistant guidelines (keep local)
+# AI assistant guidelines / working notes (keep local)
 CLAUDE.md
+IMPROVEMENTS.md
 
 # Local release builds
 releases/

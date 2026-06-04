@@ -5,7 +5,7 @@ Tags: performance, security, seo, redirection, cleanup
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.4.6
+Stable tag: 1.4.7
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -133,6 +133,14 @@ Before uninstalling, go to the Functionalities dashboard and check **"Delete all
 3. Assumption Detection module
 
 == Changelog ==
+
+= 1.4.7 =
+* Added: When "Assign fonts to body text and headings" is enabled, the block editor canvas now receives explicit `.editor-styles-wrapper` font-family rules (the assigned family plus a system-font fallback) for body and headings, so the editor matches the front end even when the theme.json typography assignment doesn't reach the iframe.
+* Fixed: Custom fonts now render inside the block editor canvas. The editor is an iframe (WP 6.3+/7.x) that ignores src-less inline styles, so `@font-face` is now injected through the editor `styles` setting — the same channel the Font Library and `add_editor_style()` use.
+* Fixed: Variable-font weight ranges with an out-of-spec low bound (e.g. `1 900`) are normalized to `100 900`. WordPress was silently dropping these faces — and their entry in the editor font picker — when validating theme.json.
+* Fixed: Components module CSS now reaches the block editor canvas reliably via the editor `styles` setting. The previous inline fallback could not cross into the WP 7 iframe when the generated CSS file was unavailable.
+* Changed: Removed the redundant `admin_head` font print. It reached only the parent admin document, never the editor iframe, and is superseded by the editor `styles` channel.
+* Housekeeping: Documented a single source-of-truth matrix for the font-loading paths and removed stale per-file `@version` docblocks that had drifted from the plugin version.
 
 = 1.4.6 =
 * Added: Character range (`unicode-range`) support per font in the Fonts module — limit which characters trigger a font download for faster page loads

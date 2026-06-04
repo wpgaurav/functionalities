@@ -18,7 +18,6 @@
  *
  * @package Functionalities\Features
  * @since 0.9.0
- * @version 0.9.5
  */
 
 namespace Functionalities\Features;

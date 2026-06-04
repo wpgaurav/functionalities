@@ -8,7 +8,6 @@
  * @package    Functionalities
  * @subpackage Features
  * @since      0.2.0
- * @version    0.9.2
  */
 
 namespace Functionalities\Features;

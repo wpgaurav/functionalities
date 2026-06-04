@@ -8,7 +8,6 @@
  * @package    Functionalities
  * @subpackage Features
  * @since      0.3.0
- * @version    0.8.0
  */
 
 namespace Functionalities\Features;
@@ -72,6 +71,28 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 0.8.0
  *
+ * ## Loading paths (single source of truth)
+ *
+ * Every path below renders @font-face from the SAME build_css() output, so the
+ * markup can't drift between contexts. Only the theme.json path builds its own
+ * structured fontFace array (WP requires data, not a CSS string) — the shared
+ * normalize_weight_range() keeps its weights in step with build_css().
+ *
+ * | Context                      | Hook / filter                | Channel                          |
+ * |------------------------------|------------------------------|----------------------------------|
+ * | Front end                    | wp_head (print_fonts_css)    | inline <style> via build_css()   |
+ * | Front end (preload)          | wp_head (preload_fonts)      | <link rel=preload>               |
+ * | Block editor canvas (iframe) | block_editor_settings_all    | styles[] css via build_css()     |
+ * | Block editor font picker     | wp_theme_json_data_theme     | theme.json fontFamilies/fontFace |
+ * | Bricks builder canvas        | wp_enqueue_scripts           | inline <style> via build_css()   |
+ * | Bricks font picker           | init (bricks_register_fonts) | Custom_Fonts cache via build_css |
+ *
+ * The block editor canvas is an iframe (WP 6.3+/7.x): a src-less enqueued inline
+ * style does NOT cross into it, which is why the canvas uses the editor `styles`
+ * setting. There is deliberately no admin_head path — it reaches only the parent
+ * admin document, never the editor iframe, so it was dead weight once the
+ * block_editor_settings_all channel landed (1.4.7).
+ *
  * @since 0.3.0
  */
 class Fonts {
@@ -79,10 +100,23 @@ class Fonts {
 	use \Functionalities\Traits\CSS_Sanitizer;
 
 	/**
+	 * System-font fallback stack appended after an assigned family.
+	 *
+	 * Keeps text readable in the editor canvas before the web font loads (or if
+	 * it fails). Mirrors WordPress's own "system font" preset.
+	 *
+	 * @since 1.4.7
+	 *
+	 * @var string
+	 */
+	const ASSIGN_FONT_FALLBACK = 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", Arial, sans-serif';
+
+	/**
 	 * Initialize the fonts module.
 	 *
-	 * Registers hooks for outputting @font-face CSS in wp_head
-	 * and admin_head for both frontend and admin contexts.
+	 * Wires the font-loading paths documented in the "Loading paths" matrix in
+	 * the class header: front-end print + preload, the block editor canvas and
+	 * picker, and Bricks.
 	 *
 	 * @since 0.3.0
 	 *
@@ -92,9 +126,11 @@ class Fonts {
 		// Preload fonts early.
 		\add_action( 'wp_head', array( __CLASS__, 'preload_fonts' ), 1 );
 
+		// Front-end @font-face. The block editor canvas (an iframe) is served by
+		// add_editor_settings_fonts() below; an admin_head print would reach only
+		// the parent admin document, never the iframe, so there is no such path.
 		\add_action( 'wp_head', array( __CLASS__, 'print_fonts_css' ), 20 );
-		\add_action( 'admin_head', array( __CLASS__, 'print_fonts_css' ), 20 );
-		\add_action( 'enqueue_block_assets', array( __CLASS__, 'enqueue_editor_fonts' ) );
+		\add_filter( 'block_editor_settings_all', array( __CLASS__, 'add_editor_settings_fonts' ) );
 
 		// Typography assignments via theme.json data layer.
 		\add_filter( 'wp_theme_json_data_theme', array( __CLASS__, 'inject_typography_theme_json' ) );
@@ -266,39 +302,122 @@ class Fonts {
 	}
 
 	/**
-	 * Enqueue font CSS in the block editor iframe for WP 7 compatibility.
+	 * Inject custom @font-face CSS into the block editor's style settings.
 	 *
-	 * The admin_head hook outputs to the parent frame, but WP 7's iframed
-	 * editor needs fonts loaded via enqueue_block_assets to reach the iframe.
+	 * The editor canvas is iframed (WP 6.3+/7.x). The reliable way to get custom
+	 * @font-face rules into that iframe is the editor `styles` setting — the same
+	 * channel the Font Library and add_editor_style() feed, which WordPress copies
+	 * verbatim into the iframe document. This replaces two weaker approaches:
 	 *
-	 * @since 1.3.0
-	 * @return void
+	 *   - A src-less enqueued inline style (`wp_register_style( $h, false )` +
+	 *     `wp_add_inline_style`) is not reliably carried into the iframe; the
+	 *     plugin's own SVG-icons feature works only because it anchors to a real
+	 *     CSS file.
+	 *   - theme.json `fontFamilies` (see inject_typography_theme_json) registers
+	 *     the fonts in the picker, but WP silently DROPS any `fontFace` that fails
+	 *     its sanitiser — e.g. a variable weight range such as "1 900" — so faces
+	 *     can go missing in the canvas.
+	 *
+	 * build_css() emits every configured face verbatim, so all fonts load in the
+	 * editor regardless of theme.json validation. @font-face is an at-rule with no
+	 * selector, so the editor's style scoper leaves it intact.
+	 *
+	 * When the body/heading assignment is active, the assignment font-family rules
+	 * (see build_assignment_css) ride this same channel. The editor scopes their
+	 * selectors to .editor-styles-wrapper for us, so the assigned fonts render in
+	 * the canvas even when the theme.json typography assignment doesn't reach it.
+	 *
+	 * @since 1.4.7
+	 *
+	 * @param array $settings Block editor settings (from block_editor_settings_all).
+	 * @return array Modified settings.
 	 */
-	public static function enqueue_editor_fonts() : void {
-		if ( ! \is_admin() ) {
-			return;
-		}
-
+	public static function add_editor_settings_fonts( $settings ) {
 		$opts = self::get_options();
 
 		if ( ! \apply_filters( 'functionalities_fonts_enabled', ! empty( $opts['enabled'] ) ) ) {
-			return;
+			return $settings;
 		}
 
 		if ( empty( $opts['items'] ) || ! is_array( $opts['items'] ) ) {
-			return;
+			return $settings;
 		}
 
 		$items = \apply_filters( 'functionalities_fonts_items', $opts['items'] );
 		$css   = self::build_css( $items );
 
-		if ( $css === '' ) {
-			return;
+		// Style the editor canvas directly when body/heading assignment is on.
+		$assignment = self::build_assignment_css( $opts );
+		if ( $assignment !== '' ) {
+			$css = trim( $css . "\n" . $assignment );
 		}
 
-		\wp_register_style( 'functionalities-fonts-editor', false, array(), FUNCTIONALITIES_VERSION );
-		\wp_enqueue_style( 'functionalities-fonts-editor' );
-		\wp_add_inline_style( 'functionalities-fonts-editor', self::sanitize_css( $css ) );
+		$css = self::sanitize_css( $css );
+
+		if ( $css === '' ) {
+			return $settings;
+		}
+
+		if ( empty( $settings['styles'] ) || ! is_array( $settings['styles'] ) ) {
+			$settings['styles'] = array();
+		}
+
+		$settings['styles'][] = array( 'css' => $css );
+
+		return $settings;
+	}
+
+	/**
+	 * Build font-family CSS for the body/heading assignment.
+	 *
+	 * Emits plain `font-family` declarations (the assigned family plus a system
+	 * fallback) for body text and headings, mirroring the theme.json typography
+	 * assignment so the editor canvas matches the front end. Selectors are left
+	 * UNSCOPED on purpose: when this rides the block_editor_settings_all `styles`
+	 * channel the editor scopes them to .editor-styles-wrapper itself (`body`
+	 * maps to the wrapper, `h1`…`h6` to `.editor-styles-wrapper h1`…).
+	 *
+	 * Returns an empty string unless assignment is enabled and at least one font
+	 * is chosen.
+	 *
+	 * @since 1.4.7
+	 *
+	 * @param array $opts Fonts options.
+	 * @return string Assignment CSS, or '' when nothing to assign.
+	 */
+	protected static function build_assignment_css( array $opts ) : string {
+		if ( empty( $opts['assign_enabled'] ) ) {
+			return '';
+		}
+
+		$fallback = self::ASSIGN_FONT_FALLBACK;
+		$parts    = array();
+
+		// Body / content font. Mirrors the admin's documented scope; form controls
+		// are listed explicitly because they don't inherit font-family.
+		$body_font = trim( (string) ( $opts['body_font'] ?? '' ) );
+		if ( $body_font !== '' ) {
+			$parts[] = 'body,p,li,td,input,textarea,select,button{font-family:"' . $body_font . '",' . $fallback . ';}';
+		}
+
+		// Default headings font (h1–h6).
+		$heading_font = trim( (string) ( $opts['heading_font'] ?? '' ) );
+		if ( $heading_font !== '' ) {
+			$parts[] = 'h1,h2,h3,h4,h5,h6{font-family:"' . $heading_font . '",' . $fallback . ';}';
+		}
+
+		// Per-heading overrides — emitted after the default so they win on equal specificity.
+		if ( ! empty( $opts['per_heading'] ) && ! empty( $opts['heading_fonts'] ) && is_array( $opts['heading_fonts'] ) ) {
+			for ( $i = 1; $i <= 6; $i++ ) {
+				$key  = 'h' . $i;
+				$font = trim( (string) ( $opts['heading_fonts'][ $key ] ?? '' ) );
+				if ( $font !== '' ) {
+					$parts[] = $key . '{font-family:"' . $font . '",' . $fallback . ';}';
+				}
+			}
+		}
+
+		return implode( "\n", $parts );
 	}
 
 	/**
@@ -478,7 +597,7 @@ class Fonts {
 			$weight       = trim( (string) ( $item['weight'] ?? '' ) );
 
 			if ( $is_variable || $weight_range !== '' ) {
-				$face['fontWeight'] = $weight_range !== '' ? $weight_range : '100 900';
+				$face['fontWeight'] = self::normalize_weight_range( $weight_range !== '' ? $weight_range : '100 900' );
 			} elseif ( $weight !== '' ) {
 				$face['fontWeight'] = $weight;
 			}
@@ -559,6 +678,45 @@ class Fonts {
 		return $theme_json->update_with( $new_data );
 	}
 
+	/**
+	 * Normalize a variable-font weight range to weights WordPress accepts.
+	 *
+	 * Variable fonts can advertise an axis such as "1 900", but WordPress's
+	 * theme.json sanitiser silently DROPS any fontFace whose fontWeight falls
+	 * below its floor — empirically a low bound of 1 is rejected while 100 is
+	 * kept — taking the face (and its font-picker entry) with it. Clamping each
+	 * numeric bound to [100, 1000] keeps real ranges intact ("100 800" →
+	 * unchanged) while rescuing out-of-range ones ("1 900" → "100 900").
+	 * Empty or non-numeric input (e.g. a keyword) is returned untouched.
+	 *
+	 * Applied in both build_css() and inject_typography_theme_json() so the CSS
+	 * output and the theme.json picker registration never disagree.
+	 *
+	 * @since 1.4.7
+	 *
+	 * @param string $range A single weight ("400") or space-separated range ("1 900").
+	 * @return string Normalized weight or range.
+	 */
+	protected static function normalize_weight_range( string $range ) : string {
+		$range = trim( $range );
+		if ( $range === '' ) {
+			return '';
+		}
+
+		$parts      = preg_split( '/\s+/', $range );
+		$normalized = array();
+
+		foreach ( (array) $parts as $part ) {
+			if ( ! is_numeric( $part ) ) {
+				// Leave keywords (normal, bold) or anything unexpected as-is.
+				return $range;
+			}
+			$normalized[] = (string) max( 100, min( 1000, (int) $part ) );
+		}
+
+		return implode( ' ', $normalized );
+	}
+
 	protected static function build_css( array $items ) : string {
 		$parts = array();
 
@@ -587,8 +745,9 @@ class Fonts {
 			// Determine weight property.
 			$weight_prop = '';
 			if ( $is_variable || $weight_range !== '' ) {
-				// Variable font with weight range.
-				$range       = $weight_range !== '' ? $weight_range : '100 900';
+				// Variable font with weight range; clamp to weights theme.json accepts
+				// so the front end, editor canvas, and picker all agree.
+				$range       = self::normalize_weight_range( $weight_range !== '' ? $weight_range : '100 900' );
 				$weight_prop = 'font-weight:' . $range . ';';
 			} elseif ( $weight !== '' ) {
 				// Static font with single weight.

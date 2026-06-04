@@ -8,7 +8,6 @@
  * @package    Functionalities
  * @subpackage Features
  * @since      0.3.0
- * @version    0.8.0
  */
 
 namespace Functionalities\Features;
@@ -108,7 +107,10 @@ class Components {
 		// Output CSS in footer (both frontend and admin).
 		\add_action( 'wp_footer', array( __CLASS__, 'print_footer_link' ), 90 );
 		\add_action( 'admin_footer', array( __CLASS__, 'print_footer_link' ), 90 );
-		\add_action( 'enqueue_block_assets', array( __CLASS__, 'enqueue_editor_components' ) );
+
+		// Serve the block editor canvas (an iframe) via the editor `styles`
+		// setting — the only channel guaranteed to reach the iframe.
+		\add_filter( 'block_editor_settings_all', array( __CLASS__, 'add_editor_settings_components' ) );
 
 		// Regenerate CSS file when settings are updated.
 		\add_action( 'update_option_functionalities_components', array( __CLASS__, 'on_option_update' ), 10, 2 );
@@ -156,38 +158,49 @@ class Components {
 	}
 
 	/**
-	 * Enqueue components CSS in the block editor iframe for WP 7 compatibility.
+	 * Inject component CSS into the block editor's style settings.
 	 *
-	 * @since 1.3.0
-	 * @return void
+	 * The editor canvas is iframed (WP 6.3+/7.x). Feeding CSS through the editor
+	 * `styles` setting — the channel add_editor_style() and the Font Library use —
+	 * is the reliable way into that iframe: WordPress copies it in verbatim and
+	 * scopes the selectors to the content wrapper.
+	 *
+	 * This replaces an enqueue_block_assets path that only reached the iframe when
+	 * a generated CSS file existed; its inline fallback used a src-less style handle
+	 * (wp_register_style( $h, false ) + wp_add_inline_style) that does NOT cross
+	 * into the iframe, so component CSS silently vanished in the editor whenever the
+	 * uploads file could not be written.
+	 *
+	 * @since 1.4.7
+	 *
+	 * @param array $settings Block editor settings (from block_editor_settings_all).
+	 * @return array Modified settings.
 	 */
-	public static function enqueue_editor_components() : void {
-		if ( ! \is_admin() ) {
-			return;
-		}
-
+	public static function add_editor_settings_components( $settings ) {
 		$opts = self::get_options();
 
 		if ( ! \apply_filters( 'functionalities_components_enabled', ! empty( $opts['enabled'] ) ) ) {
-			return;
+			return $settings;
 		}
 
 		if ( empty( $opts['items'] ) || ! is_array( $opts['items'] ) ) {
-			return;
+			return $settings;
 		}
 
 		$items = \apply_filters( 'functionalities_components_items', $opts['items'] );
-		$css   = self::build_css( $items );
-		$file  = self::ensure_css_file( $css );
+		$css   = self::sanitize_css( self::build_css( $items ) );
 
-		if ( $file && isset( $file['url'], $file['ver'] ) ) {
-			\wp_enqueue_style( 'functionalities-components', $file['url'], array(), $file['ver'] );
-			return;
+		if ( $css === '' ) {
+			return $settings;
 		}
 
-		\wp_register_style( 'functionalities-components', false, array(), FUNCTIONALITIES_VERSION );
-		\wp_enqueue_style( 'functionalities-components' );
-		\wp_add_inline_style( 'functionalities-components', self::sanitize_css( $css ) );
+		if ( empty( $settings['styles'] ) || ! is_array( $settings['styles'] ) ) {
+			$settings['styles'] = array();
+		}
+
+		$settings['styles'][] = array( 'css' => $css );
+
+		return $settings;
 	}
 
 	/**
