@@ -73,6 +73,7 @@ spl_autoload_register(
 );
 
 \add_action( 'updated_option', array( '\Functionalities\Core\Module_Registry', 'handle_option_update' ), 10, 3 );
+\add_action( 'added_option', array( '\Functionalities\Core\Module_Registry', 'handle_option_add' ), 10, 2 );
 
 // Activation hook.
 \register_activation_hook(

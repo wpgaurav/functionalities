@@ -135,6 +135,7 @@ Before uninstalling, go to the Functionalities dashboard and check **"Delete all
 == Changelog ==
 
 = 1.4.8 =
+* Fixed: Fresh PWA settings now register rewrite endpoints immediately, and the offline application shell returns a cacheable success response so service-worker precaching can complete.
 * Added: True lazy module registry. A frontend request with all modules disabled loads no feature class files; enabling one module loads only that feature and shared dependencies.
 * Added: Versioned settings export/import with dry-run differences, module validation, default custom-code redaction, and an explicit code opt-in.
 * Added: Privacy-conscious diagnostics download with software versions, enabled modules, writable-path status, and rewrite-rule health. Task content, redirects, users, secrets, and site URLs are excluded.

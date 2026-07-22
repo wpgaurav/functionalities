@@ -40,6 +40,8 @@ final class ModuleRegistryTest extends TestCase {
 
 		$this->assertSame( array( 'class-pwa.php' ), $result['features'] );
 		$this->assertContains( 'init', $result['hooks'] );
+		$this->assertContains( 'added_option', $result['hooks'] );
+		$this->assertContains( 'updated_option', $result['hooks'] );
 	}
 
 	/**
