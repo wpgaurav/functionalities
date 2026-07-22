@@ -846,7 +846,9 @@ class PWA {
 			ob_end_clean();
 		}
 
-		\status_header( 503 );
+		// This application shell is fetched during service-worker installation.
+		// cache.addAll() rejects non-2xx responses, so it must be cacheable.
+		\status_header( 200 );
 		\nocache_headers();
 
 		?>

@@ -153,6 +153,20 @@ class Module_Registry {
 	}
 
 	/**
+	 * React when settings are saved for the first time.
+	 *
+	 * WordPress fires added_option instead of updated_option when an option did
+	 * not previously exist, which is the normal fresh-install PWA path.
+	 *
+	 * @param string $option Option name.
+	 * @param mixed  $value  New value.
+	 * @return void
+	 */
+	public static function handle_option_add( string $option, $value ): void {
+		self::handle_option_update( $option, null, $value );
+	}
+
+	/**
 	 * Build one normalized definition.
 	 *
 	 * @param string $title       English title.
