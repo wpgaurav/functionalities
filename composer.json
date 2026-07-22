@@ -1,0 +1,31 @@
+{
+  "name": "wpgaurav/functionalities",
+  "description": "Development tooling for the Dynamic Functionalities WordPress plugin.",
+  "type": "wordpress-plugin",
+  "license": "GPL-2.0-or-later",
+  "require-dev": {
+    "dealerdirect/phpcodesniffer-composer-installer": "^1.1",
+    "phpcompatibility/phpcompatibility-wp": "^2.1.8",
+    "phpunit/phpunit": "^9.6.31",
+    "wp-coding-standards/wpcs": "^3.4"
+  },
+  "config": {
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    },
+    "platform": {
+      "php": "7.4.0"
+    },
+    "sort-packages": true
+  },
+  "scripts": {
+    "lint": "@php tests/php-lint.php",
+    "phpcs": "@php -d error_reporting=8191 vendor/bin/phpcs",
+    "test": "phpunit",
+    "check": [
+      "@lint",
+      "@phpcs",
+      "@test"
+    ]
+  }
+}

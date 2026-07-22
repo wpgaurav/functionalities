@@ -1,8 +1,8 @@
 # Dynamic Functionalities
 
-All-in-one WordPress optimization toolkit with 15+ modules for performance, security, SEO, and content management. Built with modern WordPress coding standards and a clean module-based dashboard. Optimized for performance with lazy-loading, static property caching, and intelligent transients.
+All-in-one WordPress optimization toolkit with 16 modules for performance, security, SEO, and content management. Built with modern WordPress coding standards and a clean module-based dashboard. Optimized for performance with modular initialization, static property caching, and intelligent transients.
 
-**Version:** 1.4.7
+**Version:** 1.4.8
 **License:** GPL-2.0-or-later
 **Text Domain:** `functionalities`
 **Pricing:** Free
@@ -19,18 +19,8 @@ All-in-one WordPress optimization toolkit with 15+ modules for performance, secu
 All modules are accessed through a unified dashboard at `wp-admin/admin.php?page=functionalities`. Click any module card to configure its settings.
 
 Learn more on [Functionalities Site](https://functionalities.dev)
----
 
-## Performance & Footprint
-
-This plugin is built with a "Performance First" philosophy. Unlike many all-in-one plugins that slow down your site, Functionalities is designed to be as lightweight as possible:
-
-- **Modular & Lazy Loaded:** Using a custom autoloader, the plugin only loads the code required for active modules. If a feature is disabled, its code is never even included in memory.
-- **Minimized Database Load:** All module settings are cached in static properties. This ensures that `get_option()` is called at most once per module per request, regardless of how many times a feature is accessed.
-- **Zero Frontend Bloat:** Most modules are "Zero Footprint" on the frontend, meaning they load no CSS or JS unless explicitly required (like the Components or Fonts modules).
-- **Intelligent Filtering:** Content filters (`the_content`, etc.) use `strpos()` fast-exit checks. If the specific markers or tags for a feature aren't present in your content, the plugin exits immediately without running expensive regular expressions or DOM parsing.
-- **Efficient HTML Processing:** We use targeted regex for lightweight tasks (like Schema injection) and only resort to `DOMDocument` when structural manipulation is strictly necessary, ensuring maximum speed.
-- **Aggressive Caching:** Heavy operations—such as reading JSON exception lists, calculating file hashes, or managing redirects—are cached using WordPress Transients or versioned options to minimize Disk I/O.
+See the [public roadmap](ROADMAP.md) for planned fixes and features.
 
 ---
 
@@ -38,7 +28,7 @@ This plugin is built with a "Performance First" philosophy. Unlike many all-in-o
 
 This plugin is built with a "Performance First" philosophy. Unlike many all-in-one plugins that slow down your site, Functionalities is designed to be as lightweight as possible:
 
-- **Modular & Lazy Loaded:** Using a custom autoloader, the plugin only loads the code required for active modules. If a feature is disabled, its code is never even included in memory.
+- **Modular Initialization:** Each module checks its enabled state before registering its feature hooks. Disabled modules add no frontend assets or feature behavior.
 - **Minimized Database Load:** All module settings are cached in static properties. This ensures that `get_option()` is called at most once per module per request, regardless of how many times a feature is accessed.
 - **Zero Frontend Bloat:** Most modules are "Zero Footprint" on the frontend, meaning they load no CSS or JS unless explicitly required (like the Components or Fonts modules).
 - **Intelligent Filtering:** Content filters (`the_content`, etc.) use `strpos()` fast-exit checks. If the specific markers or tags for a feature aren't present in your content, the plugin exits immediately without running expensive regular expressions or DOM parsing.
@@ -254,6 +244,8 @@ Manage URL redirects directly from WordPress admin with high-performance file-ba
 - File-based JSON storage for zero database overhead during redirects
 - Integrated hit counter for tracking redirect usage
 - Normalized path matching
+- CSV import/export with a validated dry-run preview
+- Optional bounded 404 aggregation without visitor identifiers or full referrers
 
 **Navigate to:** `?page=functionalities&module=redirect-manager`
 
@@ -271,6 +263,21 @@ Enhanced login protection and security measures for your WordPress site.
 - Custom login page logo and background styling
 
 **Navigate to:** `?page=functionalities&module=login-security`
+
+---
+
+### Progressive Web App
+
+Make the site installable with a web app manifest, service worker, offline fallback, and optional install prompt.
+
+**Features:**
+- Configurable app name, colors, icons, display mode, and orientation
+- Offline page and versioned runtime caching
+- App shortcuts, screenshots, and advanced manifest fields
+- Optional install prompt and Web Share Target support
+- Root-level manifest and service worker endpoints
+
+**Navigate to:** `?page=functionalities&module=pwa`
 
 ---
 
@@ -373,6 +380,8 @@ functionalities/
 │   │   └── svg-icons-editor.css
 │   └── js/
 │       ├── admin.js
+│       ├── admin-redirects.js
+│       ├── admin-tools.js
 │       ├── admin-ui.js
 │       ├── content-regression.js
 │       └── svg-icons-editor.js
@@ -380,7 +389,15 @@ functionalities/
 │   ├── admin/
 │   │   ├── class-admin.php
 │   │   ├── class-admin-ui.php
-│   │   └── class-module-docs.php
+│   │   ├── class-module-controller.php
+│   │   ├── class-module-docs.php
+│   │   ├── class-redirect-manager-controller.php
+│   │   ├── class-settings-portability-controller.php
+│   │   ├── class-site-health-controller.php
+│   │   ├── class-svg-icons-controller.php
+│   │   └── class-task-manager-controller.php
+│   ├── core/
+│   │   └── class-module-registry.php
 │   ├── features/
 │   │   ├── class-assumption-detection.php
 │   │   ├── class-block-cleanup.php
@@ -392,11 +409,14 @@ functionalities/
 │   │   ├── class-login-security.php
 │   │   ├── class-meta.php
 │   │   ├── class-misc.php
+│   │   ├── class-pwa.php
 │   │   ├── class-redirect-manager.php
 │   │   ├── class-schema.php
 │   │   ├── class-snippets.php
 │   │   ├── class-svg-icons.php
 │   │   └── class-task-manager.php
+│   └── storage/
+│       └── class-atomic-json-store.php
 ├── languages/
 ├── exception-urls.json.sample
 ├── functionalities.php
@@ -409,9 +429,23 @@ functionalities/
 ## Adding New Modules
 
 1. Create a feature class in `includes/features/class-your-module.php`
-2. Add module definition in `Admin::define_modules()`
-3. Register settings in `Admin::register_settings()`
-4. Initialize in `functionalities.php`
+2. Add its definition to `Core\Module_Registry::get_definitions()`
+3. Register its settings in the module controller
+4. Add focused tests for defaults and any pure helpers
+
+## Local development checks
+
+```bash
+composer install
+composer lint
+composer phpcs
+composer test
+node --check assets/js/admin.js
+bash -n build.sh
+./build.sh
+```
+
+The pull-request workflow runs PHP syntax checks on PHP 7.4 through 8.5, coding standards, PHPUnit, JavaScript and shell syntax, version consistency, and distribution ZIP assertions.
 
 Example module definition:
 

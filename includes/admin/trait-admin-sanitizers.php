@@ -23,7 +23,7 @@ trait Admin_Sanitizers {
 	 * @param array $input Raw input data.
 	 * @return array Sanitized data.
 	 */
-	public static function sanitize_link_management( $input ) : array {
+	public static function sanitize_link_management( $input ): array {
 		$out = array(
 			'enabled'                     => ! empty( $input['enabled'] ),
 			'nofollow_external'           => ! empty( $input['nofollow_external'] ),
@@ -77,7 +77,7 @@ trait Admin_Sanitizers {
 	 * @param array $input Raw input data.
 	 * @return array Sanitized data.
 	 */
-	public static function sanitize_block_cleanup( $input ) : array {
+	public static function sanitize_block_cleanup( $input ): array {
 		return array(
 			'enabled'                       => ! empty( $input['enabled'] ),
 			'remove_heading_block_class'    => ! empty( $input['remove_heading_block_class'] ),
@@ -104,7 +104,7 @@ trait Admin_Sanitizers {
 	 * @param array $input Raw input data.
 	 * @return array Sanitized data.
 	 */
-	public static function sanitize_editor_links( $input ) : array {
+	public static function sanitize_editor_links( $input ): array {
 		$out = array(
 			'enabled'      => ! empty( $input['enabled'] ),
 			'enable_limit' => ! empty( $input['enable_limit'] ),
@@ -136,7 +136,7 @@ trait Admin_Sanitizers {
 	 * @param array $input Raw input data.
 	 * @return array Sanitized data.
 	 */
-	public static function sanitize_snippets( $input ) : array {
+	public static function sanitize_snippets( $input ): array {
 		$out = array(
 			'enabled'    => ! empty( $input['enabled'] ),
 			'enable_ga4' => ! empty( $input['enable_ga4'] ),
@@ -185,7 +185,7 @@ trait Admin_Sanitizers {
 	 * @param array $input Raw input data.
 	 * @return array Sanitized data.
 	 */
-	public static function sanitize_schema( $input ) : array {
+	public static function sanitize_schema( $input ): array {
 		return array(
 			'enabled'            => ! empty( $input['enabled'] ),
 			'enable_site_schema' => ! empty( $input['enable_site_schema'] ),
@@ -207,7 +207,7 @@ trait Admin_Sanitizers {
 	 * @param array $input Raw input data.
 	 * @return array Sanitized data.
 	 */
-	public static function sanitize_components( $input ) : array {
+	public static function sanitize_components( $input ): array {
 		$out = array(
 			'enabled' => ! empty( $input['enabled'] ),
 			'items'   => array(),
@@ -236,7 +236,7 @@ trait Admin_Sanitizers {
 	 * @param array $input Raw input data.
 	 * @return array Sanitized data.
 	 */
-	public static function sanitize_misc( $input ) : array {
+	public static function sanitize_misc( $input ): array {
 		$keys = array(
 			'enabled',
 			'disable_block_widgets',
@@ -262,7 +262,7 @@ trait Admin_Sanitizers {
 			'enable_prism_admin',
 			'enable_textarea_fullscreen',
 		);
-		$out = array();
+		$out  = array();
 		foreach ( $keys as $k ) {
 			$out[ $k ] = ! empty( $input[ $k ] );
 		}
@@ -279,7 +279,7 @@ trait Admin_Sanitizers {
 	 * @param string $style The font-style value to sanitize.
 	 * @return string Sanitized font-style value, defaults to 'normal' if invalid.
 	 */
-	protected static function sanitize_font_style( string $style ) : string {
+	protected static function sanitize_font_style( string $style ): string {
 		$style = trim( strtolower( $style ) );
 
 		// Simple keyword values.
@@ -313,7 +313,7 @@ trait Admin_Sanitizers {
 	 * @param string $value Raw unicode-range value.
 	 * @return string Sanitized value, or empty string if nothing valid remains.
 	 */
-	protected static function sanitize_unicode_range( string $value ) : string {
+	protected static function sanitize_unicode_range( string $value ): string {
 		$value = trim( $value );
 		if ( $value === '' ) {
 			return '';
@@ -349,7 +349,7 @@ trait Admin_Sanitizers {
 	 * @param array $input Raw input data.
 	 * @return array Sanitized data.
 	 */
-	public static function sanitize_fonts( $input ) : array {
+	public static function sanitize_fonts( $input ): array {
 		$out = array(
 			'enabled'        => ! empty( $input['enabled'] ),
 			'items'          => array(),
@@ -414,7 +414,7 @@ trait Admin_Sanitizers {
 	 * @param array $input Raw input.
 	 * @return array Sanitized output.
 	 */
-	public static function sanitize_login_security( $input ) : array {
+	public static function sanitize_login_security( $input ): array {
 		return array(
 			'enabled'                       => ! empty( $input['enabled'] ),
 			'limit_login_attempts'          => ! empty( $input['limit_login_attempts'] ),
@@ -436,19 +436,19 @@ trait Admin_Sanitizers {
 	 * @param array $input Raw input.
 	 * @return array Sanitized output.
 	 */
-	public static function sanitize_meta( $input ) : array {
+	public static function sanitize_meta( $input ): array {
 		$out = array(
-			'enabled'                 => ! empty( $input['enabled'] ),
-			'enable_copyright_meta'   => ! empty( $input['enable_copyright_meta'] ),
-			'enable_dublin_core'      => ! empty( $input['enable_dublin_core'] ),
-			'enable_license_metabox'  => ! empty( $input['enable_license_metabox'] ),
+			'enabled'                   => ! empty( $input['enabled'] ),
+			'enable_copyright_meta'     => ! empty( $input['enable_copyright_meta'] ),
+			'enable_dublin_core'        => ! empty( $input['enable_dublin_core'] ),
+			'enable_license_metabox'    => ! empty( $input['enable_license_metabox'] ),
 			'enable_schema_integration' => ! empty( $input['enable_schema_integration'] ),
-			'default_license'         => \sanitize_key( $input['default_license'] ?? 'all-rights-reserved' ),
-			'default_license_url'     => \esc_url_raw( $input['default_license_url'] ?? '' ),
-			'post_types'              => array(),
-			'copyright_holder_type'   => \sanitize_key( $input['copyright_holder_type'] ?? 'author' ),
-			'custom_copyright_holder' => \sanitize_text_field( $input['custom_copyright_holder'] ?? '' ),
-			'dc_language'             => \sanitize_text_field( $input['dc_language'] ?? '' ),
+			'default_license'           => \sanitize_key( $input['default_license'] ?? 'all-rights-reserved' ),
+			'default_license_url'       => \esc_url_raw( $input['default_license_url'] ?? '' ),
+			'post_types'                => array(),
+			'copyright_holder_type'     => \sanitize_key( $input['copyright_holder_type'] ?? 'author' ),
+			'custom_copyright_holder'   => \sanitize_text_field( $input['custom_copyright_holder'] ?? '' ),
+			'dc_language'               => \sanitize_text_field( $input['dc_language'] ?? '' ),
 		);
 
 		if ( isset( $input['post_types'] ) && is_array( $input['post_types'] ) ) {
@@ -472,7 +472,7 @@ trait Admin_Sanitizers {
 	 * @param array $input Raw input.
 	 * @return array Sanitized output.
 	 */
-	public static function sanitize_content_regression( $input ) : array {
+	public static function sanitize_content_regression( $input ): array {
 		$out = array(
 			'enabled'                    => ! empty( $input['enabled'] ),
 			'post_types'                 => array(),
@@ -514,7 +514,8 @@ trait Admin_Sanitizers {
 	 * @param array $input Raw input.
 	 * @return array Sanitized output.
 	 */
-	public static function sanitize_assumption_detection( $input ) : array {
+	public static function sanitize_assumption_detection( $input ): array {
+		$schedule = isset( $input['scan_schedule'] ) ? \sanitize_key( $input['scan_schedule'] ) : 'daily';
 		return array(
 			'enabled'                         => ! empty( $input['enabled'] ),
 			'detect_schema_collision'         => ! empty( $input['detect_schema_collision'] ),
@@ -530,6 +531,8 @@ trait Admin_Sanitizers {
 			'detect_missing_security_headers' => ! empty( $input['detect_missing_security_headers'] ),
 			'detect_debug_exposure'           => ! empty( $input['detect_debug_exposure'] ),
 			'detect_cron_issues'              => ! empty( $input['detect_cron_issues'] ),
+			'scan_schedule'                   => in_array( $schedule, array( 'hourly', 'twicedaily', 'daily', 'weekly' ), true ) ? $schedule : 'daily',
+			'email_notifications'             => ! empty( $input['email_notifications'] ),
 		);
 	}
 
@@ -539,7 +542,7 @@ trait Admin_Sanitizers {
 	 * @param array $input Raw input data.
 	 * @return array Sanitized data.
 	 */
-	public static function sanitize_pwa( $input ) : array {
+	public static function sanitize_pwa( $input ): array {
 		$allowed_displays     = array( 'standalone', 'fullscreen', 'minimal-ui', 'browser' );
 		$allowed_orientations = array( 'any', 'portrait', 'landscape', 'portrait-primary', 'landscape-primary' );
 		$allowed_positions    = array( 'bottom', 'top', 'center' );
@@ -639,7 +642,7 @@ trait Admin_Sanitizers {
 				if ( '' === $src ) {
 					continue;
 				}
-				$form_factor = \sanitize_text_field( $ss['form_factor'] ?? 'wide' );
+				$form_factor   = \sanitize_text_field( $ss['form_factor'] ?? 'wide' );
 				$screenshots[] = array(
 					'src'         => $src,
 					'sizes'       => \sanitize_text_field( $ss['sizes'] ?? '' ),

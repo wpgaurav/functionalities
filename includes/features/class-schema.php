@@ -105,7 +105,7 @@ class Schema {
 	 *
 	 * @return void
 	 */
-	public static function init() : void {
+	public static function init(): void {
 		$opts = self::get_options();
 
 		if ( empty( $opts['enabled'] ) ) {
@@ -146,25 +146,25 @@ class Schema {
 	 *
 	 * @return array Options array.
 	 */
-	protected static function get_options() : array {
+	protected static function get_options(): array {
 		if ( null !== self::$options ) {
 			return self::$options;
 		}
 
-		$defaults = array(
-			'enabled'             => false,
-			'enable_site_schema'  => true,
-			'site_itemtype'       => 'WebPage',
-			'enable_header_part'  => true,
-			'enable_footer_part'  => true,
-			'enable_article'      => true,
-			'article_itemtype'    => 'Article',
-			'add_headline'        => true,
-			'add_dates'           => true,
-			'add_author'          => true,
-			'enable_breadcrumbs'  => false,
+		$defaults      = array(
+			'enabled'            => false,
+			'enable_site_schema' => true,
+			'site_itemtype'      => 'WebPage',
+			'enable_header_part' => true,
+			'enable_footer_part' => true,
+			'enable_article'     => true,
+			'article_itemtype'   => 'Article',
+			'add_headline'       => true,
+			'add_dates'          => true,
+			'add_author'         => true,
+			'enable_breadcrumbs' => false,
 		);
-		$opts = (array) \get_option( 'functionalities_schema', $defaults );
+		$opts          = (array) \get_option( 'functionalities_schema', $defaults );
 		self::$options = array_merge( $defaults, $opts );
 		return self::$options;
 	}
@@ -181,7 +181,7 @@ class Schema {
 	 * @param string $output The language attributes string.
 	 * @return string Modified attributes string.
 	 */
-	public static function filter_language_attributes( string $output ) : string {
+	public static function filter_language_attributes( string $output ): string {
 		$opts = self::get_options();
 
 		/**
@@ -236,7 +236,7 @@ class Schema {
 	 *
 	 * @return void
 	 */
-	public static function start_buffer() : void {
+	public static function start_buffer(): void {
 		if ( \is_admin() || \is_feed() ) {
 			return;
 		}
@@ -294,7 +294,7 @@ class Schema {
 	 * @param string $html The complete page HTML.
 	 * @return string Modified HTML with schema attributes.
 	 */
-	public static function buffer_callback( string $html ) : string {
+	public static function buffer_callback( string $html ): string {
 		$opts = self::get_options();
 
 		$enable_header = ! empty( $opts['enable_header_part'] );
@@ -328,7 +328,7 @@ class Schema {
 	 * @param string $content The post content.
 	 * @return string Modified content with schema attributes.
 	 */
-	public static function filter_article( string $content ) : string {
+	public static function filter_article( string $content ): string {
 		if ( trim( $content ) === '' || ! \is_singular() ) {
 			return $content;
 		}
@@ -453,7 +453,7 @@ class Schema {
 	 * @since 0.13.0
 	 * @return void
 	 */
-	public static function output_breadcrumbs() : void {
+	public static function output_breadcrumbs(): void {
 		if ( ! \is_singular() || \is_front_page() ) {
 			return;
 		}
@@ -493,7 +493,7 @@ class Schema {
 				foreach ( $ancestors as $ancestor_id ) {
 					$items[] = array(
 						'@type'    => 'ListItem',
-						'position' => $pos ++,
+						'position' => $pos++,
 						'name'     => \get_the_title( $ancestor_id ),
 						'item'     => \get_permalink( $ancestor_id ),
 					);

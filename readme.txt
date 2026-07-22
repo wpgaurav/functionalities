@@ -5,7 +5,7 @@ Tags: performance, security, seo, redirection, cleanup
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.4.7
+Stable tag: 1.4.8
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -133,6 +133,20 @@ Before uninstalling, go to the Functionalities dashboard and check **"Delete all
 3. Assumption Detection module
 
 == Changelog ==
+
+= 1.4.8 =
+* Added: True lazy module registry. A frontend request with all modules disabled loads no feature class files; enabling one module loads only that feature and shared dependencies.
+* Added: Versioned settings export/import with dry-run differences, module validation, default custom-code redaction, and an explicit code opt-in.
+* Added: Privacy-conscious diagnostics download with software versions, enabled modules, writable-path status, and rewrite-rule health. Task content, redirects, users, secrets, and site URLs are excluded.
+* Added: Redirect CSV import/export with common column aliases, all-or-nothing dry runs, and duplicate, wildcard, loop, and chain validation.
+* Added: Opt-in bounded 404 monitor with retention, row caps, path exclusions, bot/admin/API filtering, referrer-origin-only storage, purge, ignore, and redirect-prefill actions.
+* Added: Assumption Detection Site Health status, configurable scheduled scans, stale/failed scan distinction, and opt-in deduplicated email summaries.
+* Added: Content Integrity snapshot differences for links, headings, H1s, and word count, plus bounded audit metadata for baseline actions.
+* Added: Pull-request CI across PHP 7.4 through 8.5, WordPress Coding Standards, PHPUnit coverage, JavaScript/shell checks, version consistency, and distribution assertions.
+* Changed: Admin bootstrap is now a small router with dedicated module, portability, and Site Health controllers.
+* Fixed: Task Manager and Redirect Manager JSON updates now use locking, verified same-directory temporary files, and atomic replacement to prevent lost concurrent writes.
+* Fixed: Invalid JSON and storage failures preserve the last known file and surface an actionable admin error instead of silently appearing empty.
+* Fixed: SVG Icons is disabled on fresh installs, matching the explicit-activation policy used by every module.
 
 = 1.4.7 =
 * Added: When "Assign fonts to body text and headings" is enabled, the block editor canvas now receives explicit `.editor-styles-wrapper` font-family rules (the assigned family plus a system-font fallback) for body and headings, so the editor matches the front end even when the theme.json typography assignment doesn't reach the iframe.
@@ -295,6 +309,9 @@ Before uninstalling, go to the Functionalities dashboard and check **"Delete all
 * Added: Assumption Detection module
 
 == Upgrade Notice ==
+
+= 1.4.8 =
+Adds safe settings portability, CSV redirects, an opt-in 404 monitor, native Site Health signals, true lazy module loading, atomic file storage, and pull-request quality gates. Existing option names, admin URLs, hooks, and JSON formats remain compatible.
 
 = 1.4.5 =
 Enables WOFF/WOFF2 font uploads in the media library with magic-byte validation for security.

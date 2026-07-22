@@ -103,7 +103,7 @@ class Components {
 	 *
 	 * @return void
 	 */
-	public static function init() : void {
+	public static function init(): void {
 		// Output CSS in footer (both frontend and admin).
 		\add_action( 'wp_footer', array( __CLASS__, 'print_footer_link' ), 90 );
 		\add_action( 'admin_footer', array( __CLASS__, 'print_footer_link' ), 90 );
@@ -132,17 +132,17 @@ class Components {
 	 *
 	 * @return array Options array.
 	 */
-	protected static function get_options() : array {
+	protected static function get_options(): array {
 		if ( null !== self::$options ) {
 			return self::$options;
 		}
 
-		$defaults = array(
+		$defaults      = array(
 			'enabled' => false,
 			'items'   => array(),
 			'css_ver' => '',
 		);
-		$opts = (array) \get_option( 'functionalities_components', $defaults );
+		$opts          = (array) \get_option( 'functionalities_components', $defaults );
 		self::$options = array_merge( $defaults, $opts );
 
 		// Load default components if none configured.
@@ -214,7 +214,7 @@ class Components {
 	 *
 	 * @return void
 	 */
-	public static function print_footer_link() : void {
+	public static function print_footer_link(): void {
 		$opts = self::get_options();
 
 		/**
@@ -280,7 +280,7 @@ class Components {
 	 * @param array $items Array of component definitions.
 	 * @return string Generated CSS string.
 	 */
-	protected static function build_css( array $items ) : string {
+	protected static function build_css( array $items ): string {
 		$parts = array();
 
 		foreach ( $items as $item ) {
@@ -325,7 +325,7 @@ class Components {
 	 * @param string $css The CSS content to write.
 	 * @return array|null File info array on success, null on failure.
 	 */
-	protected static function ensure_css_file( string $css ) : ?array {
+	protected static function ensure_css_file( string $css ): ?array {
 		if ( null !== self::$css_file_info ) {
 			return self::$css_file_info;
 		}
@@ -341,11 +341,11 @@ class Components {
 
 		// Avoid md5_file on every request. Check if file exists first.
 		$file_exists = is_file( $file );
-		
+
 		// If we have a cached version in options, compare with current hash.
-		$opts = self::get_options();
+		$opts         = self::get_options();
 		$needs_update = ! $file_exists || ( ! empty( $opts['css_ver'] ) && $opts['css_ver'] !== $hash );
-		
+
 		// If no cached version in options but file exists, we might still want to check once.
 		if ( ! $needs_update && $file_exists && empty( $opts['css_ver'] ) ) {
 			if ( md5_file( $file ) !== $hash ) {
@@ -366,15 +366,8 @@ class Components {
 			}
 
 			global $wp_filesystem;
-			if ( ! WP_Filesystem() ) {
-				$bytes = file_put_contents( $file, $sanitized_css );
-				if ( false === $bytes ) {
-					return null;
-				}
-			} else {
-				if ( ! $wp_filesystem->put_contents( $file, $sanitized_css, FS_CHMOD_FILE ) ) {
-					return null;
-				}
+			if ( ! WP_Filesystem() || ! $wp_filesystem->put_contents( $file, $sanitized_css, FS_CHMOD_FILE ) ) {
+				return null;
 			}
 
 			// Update the version in options to avoid future checks.
@@ -408,7 +401,7 @@ class Components {
 	 * @param mixed $value     New option value.
 	 * @return void
 	 */
-	public static function on_option_update( $old_value, $value ) : void {
+	public static function on_option_update( $old_value, $value ): void {
 		$opts = is_array( $value ) ? $value : array();
 
 		if ( empty( $opts['enabled'] ) || empty( $opts['items'] ) || ! is_array( $opts['items'] ) ) {

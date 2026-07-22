@@ -41,7 +41,7 @@ class Login_Security {
 	 *
 	 * @return void
 	 */
-	public static function init() : void {
+	public static function init(): void {
 		$opts = self::get_options();
 
 		if ( empty( $opts['enabled'] ) ) {
@@ -97,25 +97,25 @@ class Login_Security {
 	 *
 	 * @return array Options.
 	 */
-	public static function get_options() : array {
+	public static function get_options(): array {
 		if ( null !== self::$options ) {
 			return self::$options;
 		}
 
-		$defaults = array(
-			'enabled'                      => false,
-			'limit_login_attempts'         => true,
-			'max_attempts'                 => 5,
-			'lockout_duration'             => 15, // minutes
-			'disable_xmlrpc_auth'          => true,
+		$defaults      = array(
+			'enabled'                       => false,
+			'limit_login_attempts'          => true,
+			'max_attempts'                  => 5,
+			'lockout_duration'              => 15, // minutes
+			'disable_xmlrpc_auth'           => true,
 			'disable_application_passwords' => false,
-			'hide_login_errors'            => true,
-			'trust_proxy_headers'          => false,
-			'custom_logo_url'              => '',
-			'custom_background_color'      => '',
-			'custom_form_background'       => '',
+			'hide_login_errors'             => true,
+			'trust_proxy_headers'           => false,
+			'custom_logo_url'               => '',
+			'custom_background_color'       => '',
+			'custom_form_background'        => '',
 		);
-		$opts = (array) \get_option( 'functionalities_login_security', $defaults );
+		$opts          = (array) \get_option( 'functionalities_login_security', $defaults );
 		self::$options = array_merge( $defaults, $opts );
 		return self::$options;
 	}
@@ -134,7 +134,7 @@ class Login_Security {
 	 *
 	 * @return string IP address (validated, or empty string on failure).
 	 */
-	private static function get_client_ip() : string {
+	private static function get_client_ip(): string {
 		$ip   = '';
 		$opts = self::get_options();
 
@@ -175,7 +175,7 @@ class Login_Security {
 			return $user;
 		}
 
-		$ip = self::get_client_ip();
+		$ip          = self::get_client_ip();
 		$lockout_key = self::LOCKOUT_PREFIX . md5( $ip );
 
 		if ( \get_transient( $lockout_key ) ) {
@@ -199,15 +199,15 @@ class Login_Security {
 	 * @param string $username Username that failed.
 	 * @return void
 	 */
-	public static function record_failed_attempt( $username ) : void {
-		$opts = self::get_options();
-		$ip = self::get_client_ip();
+	public static function record_failed_attempt( $username ): void {
+		$opts         = self::get_options();
+		$ip           = self::get_client_ip();
 		$attempts_key = self::ATTEMPTS_PREFIX . md5( $ip );
-		$lockout_key = self::LOCKOUT_PREFIX . md5( $ip );
+		$lockout_key  = self::LOCKOUT_PREFIX . md5( $ip );
 
 		// Get current attempts.
 		$attempts = (int) \get_transient( $attempts_key );
-		$attempts++;
+		++$attempts;
 
 		// Store attempts for 1 hour.
 		\set_transient( $attempts_key, $attempts, HOUR_IN_SECONDS );
@@ -233,8 +233,8 @@ class Login_Security {
 	 * @param \WP_User $user     User object.
 	 * @return void
 	 */
-	public static function clear_attempts( $username, $user ) : void {
-		$ip = self::get_client_ip();
+	public static function clear_attempts( $username, $user ): void {
+		$ip           = self::get_client_ip();
 		$attempts_key = self::ATTEMPTS_PREFIX . md5( $ip );
 		\delete_transient( $attempts_key );
 	}
@@ -245,11 +245,11 @@ class Login_Security {
 	 * @param string $error Original error.
 	 * @return string Modified error.
 	 */
-	public static function custom_login_error( $error ) : string {
-		$opts = self::get_options();
-		$ip = self::get_client_ip();
+	public static function custom_login_error( $error ): string {
+		$opts         = self::get_options();
+		$ip           = self::get_client_ip();
 		$attempts_key = self::ATTEMPTS_PREFIX . md5( $ip );
-		$attempts = (int) \get_transient( $attempts_key );
+		$attempts     = (int) \get_transient( $attempts_key );
 		$max_attempts = isset( $opts['max_attempts'] ) ? (int) $opts['max_attempts'] : 5;
 
 		$remaining = $max_attempts - $attempts;
@@ -270,7 +270,7 @@ class Login_Security {
 	 * @param string $error Original error.
 	 * @return string Generic error.
 	 */
-	public static function generic_login_error( $error ) : string {
+	public static function generic_login_error( $error ): string {
 		// Check if it's a lockout message.
 		if ( strpos( $error, 'Too many failed login attempts' ) !== false ) {
 			return $error;
@@ -292,7 +292,7 @@ class Login_Security {
 	 * @param int    $attempts Number of attempts.
 	 * @return void
 	 */
-	private static function log_lockout( $ip, $username, $attempts ) : void {
+	private static function log_lockout( $ip, $username, $attempts ): void {
 		$logs = \get_option( 'functionalities_login_lockouts', array() );
 
 		$logs[] = array(
@@ -314,7 +314,7 @@ class Login_Security {
 	 * @param int $limit Number of entries.
 	 * @return array Log entries.
 	 */
-	public static function get_lockout_log( int $limit = 20 ) : array {
+	public static function get_lockout_log( int $limit = 20 ): array {
 		$logs = \get_option( 'functionalities_login_lockouts', array() );
 		return array_slice( array_reverse( $logs ), 0, $limit );
 	}
@@ -324,7 +324,7 @@ class Login_Security {
 	 *
 	 * @return bool True on success.
 	 */
-	public static function clear_lockout_log() : bool {
+	public static function clear_lockout_log(): bool {
 		return \delete_option( 'functionalities_login_lockouts' );
 	}
 
@@ -334,7 +334,7 @@ class Login_Security {
 	 * @param array $methods XML-RPC methods.
 	 * @return array Filtered methods.
 	 */
-	public static function disable_xmlrpc_methods( $methods ) : array {
+	public static function disable_xmlrpc_methods( $methods ): array {
 		// Remove authentication-related methods.
 		unset( $methods['wp.getUsersBlogs'] );
 		unset( $methods['wp.getCategories'] );
@@ -354,8 +354,8 @@ class Login_Security {
 	 *
 	 * @return void
 	 */
-	public static function custom_login_logo() : void {
-		$opts = self::get_options();
+	public static function custom_login_logo(): void {
+		$opts     = self::get_options();
 		$logo_url = esc_url( $opts['custom_logo_url'] );
 		if ( empty( $logo_url ) ) {
 			return;
@@ -379,10 +379,10 @@ class Login_Security {
 	 *
 	 * @return void
 	 */
-	public static function custom_login_styles() : void {
-		$opts = self::get_options();
+	public static function custom_login_styles(): void {
+		$opts     = self::get_options();
 		$bg_color = sanitize_hex_color( $opts['custom_background_color'] ?? '' );
-		$form_bg = sanitize_hex_color( $opts['custom_form_background'] ?? '' );
+		$form_bg  = sanitize_hex_color( $opts['custom_form_background'] ?? '' );
 
 		if ( empty( $bg_color ) && empty( $form_bg ) ) {
 			return;
@@ -408,7 +408,7 @@ class Login_Security {
 	 *
 	 * @return string Home URL.
 	 */
-	public static function login_logo_url() : string {
+	public static function login_logo_url(): string {
 		return \home_url();
 	}
 
@@ -417,7 +417,7 @@ class Login_Security {
 	 *
 	 * @return string Site name.
 	 */
-	public static function login_logo_title() : string {
+	public static function login_logo_title(): string {
 		return \get_bloginfo( 'name' );
 	}
 
@@ -427,7 +427,7 @@ class Login_Security {
 	 * @param string $ip IP address (optional, uses current if not provided).
 	 * @return bool True if locked out.
 	 */
-	public static function is_locked_out( string $ip = '' ) : bool {
+	public static function is_locked_out( string $ip = '' ): bool {
 		if ( empty( $ip ) ) {
 			$ip = self::get_client_ip();
 		}
@@ -441,7 +441,7 @@ class Login_Security {
 	 * @param string $ip IP address (optional).
 	 * @return int Current attempts.
 	 */
-	public static function get_attempts( string $ip = '' ) : int {
+	public static function get_attempts( string $ip = '' ): int {
 		if ( empty( $ip ) ) {
 			$ip = self::get_client_ip();
 		}
@@ -455,9 +455,9 @@ class Login_Security {
 	 * @param string $ip IP address.
 	 * @return bool True on success.
 	 */
-	public static function unlock_ip( string $ip ) : bool {
+	public static function unlock_ip( string $ip ): bool {
 		$attempts_key = self::ATTEMPTS_PREFIX . md5( $ip );
-		$lockout_key = self::LOCKOUT_PREFIX . md5( $ip );
+		$lockout_key  = self::LOCKOUT_PREFIX . md5( $ip );
 
 		\delete_transient( $attempts_key );
 		\delete_transient( $lockout_key );

@@ -35,7 +35,7 @@ trait Has_Dom_Parser {
 	 * @param string $content HTML content to inspect.
 	 * @return bool True if JS-framework directives are detected.
 	 */
-	protected static function content_has_js_framework_directives( string $content ) : bool {
+	protected static function content_has_js_framework_directives( string $content ): bool {
 		return (bool) preg_match(
 			'/\bv-(?:cloak|if|show|for|bind|on|model|html|text)\b|:[a-z]+="|@[a-z.]+="|{{.+?}}/s',
 			$content

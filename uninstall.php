@@ -63,6 +63,8 @@ $functionalities_options = array(
 	'functionalities_assumptions_ignored',
 	'functionalities_inline_css_baseline',
 	'functionalities_assumptions_last_run',
+	'functionalities_assumption_audit',
+	'functionalities_assumption_scan_summary',
 	// Login security data.
 	'functionalities_login_lockouts',
 	// Uninstall preference itself.
@@ -79,6 +81,7 @@ global $wpdb;
 $functionalities_meta_keys = array(
 	'_functionalities_content_snapshot',
 	'_functionalities_regression_settings',
+	'_functionalities_content_audit',
 	'_gt_content_license',
 );
 
@@ -103,6 +106,9 @@ delete_transient( 'func_redirects_json' );
 
 // Assumption detection schedule transient.
 delete_transient( 'functionalities_run_assumption_detection' );
+
+// Scheduled assumption scan.
+wp_clear_scheduled_hook( 'functionalities_assumption_background_scan' );
 
 // --- Filesystem data ---
 $functionalities_data_dir = WP_CONTENT_DIR . '/functionalities';

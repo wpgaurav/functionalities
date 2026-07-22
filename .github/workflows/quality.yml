@@ -1,0 +1,74 @@
+name: Quality
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  php-syntax:
+    name: PHP ${{ matrix.php }} syntax
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['7.4', '8.0', '8.1', '8.2', '8.3', '8.4', '8.5']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+      - run: php tests/php-lint.php
+
+  quality:
+    name: Coding standards and tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          tools: composer:v2
+      - run: composer install --no-interaction --prefer-dist
+      - run: composer phpcs
+      - run: composer test
+      - run: |
+          for file in $(find assets -name '*.js' -type f); do
+            node --check "$file"
+          done
+      - run: bash -n build.sh
+
+  package:
+    name: Distribution package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: ./build.sh
+      - run: |
+          version=$(grep -m1 'Version:' functionalities.php | awk '{print $NF}')
+          zip="functionalities-${version}.zip"
+          test -s "$zip"
+          unzip -t "$zip"
+          for required in \
+            functionalities/functionalities.php \
+            functionalities/readme.txt \
+            functionalities/uninstall.php \
+            functionalities/includes/admin/class-admin.php \
+            functionalities/includes/admin/class-module-controller.php \
+            functionalities/includes/admin/class-settings-portability-controller.php \
+            functionalities/includes/admin/class-site-health-controller.php \
+            functionalities/includes/core/class-module-registry.php \
+            functionalities/includes/storage/class-atomic-json-store.php \
+            functionalities/assets/js/admin-redirects.js \
+            functionalities/assets/js/admin-tools.js; do
+            unzip -Z1 "$zip" | grep -qx "$required"
+          done
+          if unzip -Z1 "$zip" | grep -Eq '(^|/)(tests|vendor|node_modules|\.git|\.github)/|composer\.(json|lock)$|\.md$'; then
+            echo 'Development files leaked into the distribution.' >&2
+            exit 1
+          fi

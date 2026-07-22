@@ -3,7 +3,7 @@
  * Plugin Name:       Dynamic Functionalities
  * Plugin URI:        https://functionalities.dev
  * Description:       All-in-one WordPress optimization toolkit. 15+ modules for performance, security, SEO, and content management.
- * Version:           1.4.7
+ * Version:           1.4.8
  * Author:            Gaurav Tiwari
  * Author URI:        https://gauravtiwari.org
  * License:           GPL-2.0-or-later
@@ -13,96 +13,110 @@
  * Requires PHP:      7.4
  */
 
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
 // Define constants.
-if (!defined('FUNCTIONALITIES_VERSION')) {
-	define('FUNCTIONALITIES_VERSION', '1.4.7');
+if ( ! defined( 'FUNCTIONALITIES_VERSION' ) ) {
+	define( 'FUNCTIONALITIES_VERSION', '1.4.8' );
 }
-if (!defined('FUNCTIONALITIES_FILE')) {
-	define('FUNCTIONALITIES_FILE', __FILE__);
+if ( ! defined( 'FUNCTIONALITIES_FILE' ) ) {
+	define( 'FUNCTIONALITIES_FILE', __FILE__ );
 }
-if (!defined('FUNCTIONALITIES_DIR')) {
-	define('FUNCTIONALITIES_DIR', plugin_dir_path(__FILE__));
+if ( ! defined( 'FUNCTIONALITIES_DIR' ) ) {
+	define( 'FUNCTIONALITIES_DIR', plugin_dir_path( __FILE__ ) );
 }
-if (!defined('FUNCTIONALITIES_URL')) {
-	define('FUNCTIONALITIES_URL', plugin_dir_url(__FILE__));
+if ( ! defined( 'FUNCTIONALITIES_URL' ) ) {
+	define( 'FUNCTIONALITIES_URL', plugin_dir_url( __FILE__ ) );
 }
 // Simple autoloader for plugin classes.
-spl_autoload_register(function (string $class) {
-	if (strpos($class, 'Functionalities\\') !== 0) {
-		return;
+spl_autoload_register(
+	function ( string $class ) {
+		if ( strpos( $class, 'Functionalities\\' ) !== 0 ) {
+			return;
+		}
+
+		$parts = explode( '\\', $class );
+		array_shift( $parts ); // Remove Functionalities
+
+		$subpath = '';
+		if ( count( $parts ) > 1 ) {
+			$subpath = strtolower( (string) $parts[0] ) . '/';
+		}
+
+		$basename = strtolower( str_replace( '_', '-', (string) end( $parts ) ) );
+
+		// Try class- prefix first, then trait- prefix.
+		$file = FUNCTIONALITIES_DIR . 'includes/' . $subpath . 'class-' . $basename . '.php';
+		if ( ! file_exists( $file ) ) {
+			$file = FUNCTIONALITIES_DIR . 'includes/' . $subpath . 'trait-' . $basename . '.php';
+		}
+
+		if ( file_exists( $file ) ) {
+			require_once $file;
+		}
 	}
+);
 
-	$parts = explode('\\', $class);
-	array_shift($parts); // Remove Functionalities
+// Initialize admin and only the modules required for this request.
+\add_action(
+	'plugins_loaded',
+	function () {
+		if ( \is_admin() ) {
+			\Functionalities\Admin\Admin::init();
+		}
+		\Functionalities\Admin\Site_Health_Controller::init();
+		\add_action( 'init', array( '\Functionalities\Core\Module_Registry', 'boot' ), 5 );
+	},
+	10
+);
 
-	$subpath = '';
-	if (count($parts) > 1) {
-		$subpath = strtolower((string) $parts[0]) . '/';
-	}
-
-	$basename = strtolower(str_replace('_', '-', (string) end($parts)));
-
-	// Try class- prefix first, then trait- prefix.
-	$file = FUNCTIONALITIES_DIR . 'includes/' . $subpath . 'class-' . $basename . '.php';
-	if (!file_exists($file)) {
-		$file = FUNCTIONALITIES_DIR . 'includes/' . $subpath . 'trait-' . $basename . '.php';
-	}
-
-	if (file_exists($file)) {
-		require_once $file;
-	}
-});
-
-// Initialize plugin on init hook.
-\add_action('init', function () {
-	\Functionalities\Admin\Admin::init();
-	\Functionalities\Features\Link_Management::init();
-	\Functionalities\Features\Block_Cleanup::init();
-	\Functionalities\Features\Editor_Links::init();
-	\Functionalities\Features\Misc::init();
-	\Functionalities\Features\Snippets::init();
-	\Functionalities\Features\Schema::init();
-	\Functionalities\Features\Components::init();
-	\Functionalities\Features\Fonts::init();
-	\Functionalities\Features\Meta::init();
-	\Functionalities\Features\Content_Regression::init();
-	\Functionalities\Features\Assumption_Detection::init();
-	\Functionalities\Features\Task_Manager::init();
-	\Functionalities\Features\Redirect_Manager::init();
-	\Functionalities\Features\Login_Security::init();
-	\Functionalities\Features\SVG_Icons::init();
-	\Functionalities\Features\PWA::init();
-}, 10);
+\add_action( 'updated_option', array( '\Functionalities\Core\Module_Registry', 'handle_option_update' ), 10, 3 );
 
 // Activation hook.
-\register_activation_hook(__FILE__, function () {
-	if (function_exists('flush_rewrite_rules')) {
-		\flush_rewrite_rules();
+\register_activation_hook(
+	__FILE__,
+	function () {
+		if ( \Functionalities\Core\Module_Registry::is_enabled( 'pwa' ) ) {
+			\Functionalities\Core\Module_Registry::boot_module( 'pwa' );
+		}
+		if ( function_exists( 'flush_rewrite_rules' ) ) {
+			\flush_rewrite_rules();
+		}
 	}
-});
+);
 
 // Quick Settings link on the Plugins screen.
-\add_filter('plugin_action_links_' . \plugin_basename(__FILE__), function (array $links): array {
-	$url = \admin_url('admin.php?page=functionalities');
-	$links[] = '<a href="' . \esc_url($url) . '">' . \esc_html__('Settings', 'functionalities') . '</a>';
-	return $links;
-});
+\add_filter(
+	'plugin_action_links_' . \plugin_basename( __FILE__ ),
+	function ( array $links ): array {
+		$url     = \admin_url( 'admin.php?page=functionalities' );
+		$links[] = '<a href="' . \esc_url( $url ) . '">' . \esc_html__( 'Settings', 'functionalities' ) . '</a>';
+		return $links;
+	}
+);
 
 // Add meta links on the Plugins screen (row meta).
-\add_filter('plugin_row_meta', function (array $links, string $file): array {
-	if (\plugin_basename(__FILE__) === $file) {
-		$links[] = '<a href="https://wordpress.org/support/plugin/functionalities/" target="_blank" rel="noopener">' . \esc_html__('Support', 'functionalities') . '</a>';
-		$links[] = '<a href="https://github.com/wpgaurav/functionalities/issues" target="_blank" rel="noopener">' . \esc_html__('Report Issues', 'functionalities') . '</a>';
-	}
-	return $links;
-}, 10, 2);
+\add_filter(
+	'plugin_row_meta',
+	function ( array $links, string $file ): array {
+		if ( \plugin_basename( __FILE__ ) === $file ) {
+			$links[] = '<a href="https://wordpress.org/support/plugin/functionalities/" target="_blank" rel="noopener">' . \esc_html__( 'Support', 'functionalities' ) . '</a>';
+			$links[] = '<a href="https://github.com/wpgaurav/functionalities/issues" target="_blank" rel="noopener">' . \esc_html__( 'Report Issues', 'functionalities' ) . '</a>';
+		}
+		return $links;
+	},
+	10,
+	2
+);
 
-\register_deactivation_hook(__FILE__, function () {
-	if (function_exists('flush_rewrite_rules')) {
-		\flush_rewrite_rules();
+\register_deactivation_hook(
+	__FILE__,
+	function () {
+		\wp_clear_scheduled_hook( 'functionalities_assumption_background_scan' );
+		if ( function_exists( 'flush_rewrite_rules' ) ) {
+			\flush_rewrite_rules();
+		}
 	}
-});
+);

@@ -22,7 +22,7 @@ trait Admin_Ajax {
 	 *
 	 * @return void
 	 */
-	public static function ajax_update_database() : void {
+	public static function ajax_update_database(): void {
 		// Verify nonce.
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonces don't require sanitization for verification.
 		$nonce = isset( $_POST['nonce'] ) ? wp_unslash( $_POST['nonce'] ) : '';
@@ -55,7 +55,7 @@ trait Admin_Ajax {
 	 *
 	 * @return void
 	 */
-	public static function ajax_create_json_file() : void {
+	public static function ajax_create_json_file(): void {
 		// Verify nonce.
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonces don't require sanitization for verification.
 		$nonce = isset( $_POST['nonce'] ) ? wp_unslash( $_POST['nonce'] ) : '';
@@ -140,7 +140,7 @@ trait Admin_Ajax {
 	 *
 	 * @return void
 	 */
-	public static function ajax_toggle_delete_data() : void {
+	public static function ajax_toggle_delete_data(): void {
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonces don't require sanitization for verification.
 		$nonce = isset( $_POST['nonce'] ) ? wp_unslash( $_POST['nonce'] ) : '';
 		if ( ! $nonce || ! \wp_verify_nonce( $nonce, 'functionalities_delete_data_toggle' ) ) {
@@ -164,7 +164,7 @@ trait Admin_Ajax {
 	 *
 	 * @return void
 	 */
-	public static function ajax_run_detection() : void {
+	public static function ajax_run_detection(): void {
 		// Verify nonce.
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonces don't require sanitization for verification.
 		$nonce = isset( $_POST['nonce'] ) ? wp_unslash( $_POST['nonce'] ) : '';

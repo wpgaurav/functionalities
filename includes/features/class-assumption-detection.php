@@ -64,7 +64,7 @@ class Assumption_Detection {
 	 *
 	 * @return void
 	 */
-	public static function init() : void {
+	public static function init(): void {
 		$opts = self::get_options();
 
 		if ( empty( $opts['enabled'] ) ) {
@@ -99,28 +99,30 @@ class Assumption_Detection {
 	 *
 	 * @return array Options array.
 	 */
-	public static function get_options() : array {
+	public static function get_options(): array {
 		if ( null !== self::$options ) {
 			return self::$options;
 		}
 
-		$defaults = array(
-			'enabled'                       => false,
-			'detect_schema_collision'       => true,
-			'detect_analytics_dupe'         => true,
-			'detect_font_redundancy'        => true,
-			'detect_inline_css_growth'      => true,
-			'inline_css_threshold_kb'       => 50,
-			'detect_jquery_conflicts'       => true,
-			'detect_meta_duplication'       => true,
-			'detect_rest_exposure'          => true,
-			'detect_lazy_load_conflict'     => true,
-			'detect_mixed_content'          => true,
+		$defaults      = array(
+			'enabled'                         => false,
+			'detect_schema_collision'         => true,
+			'detect_analytics_dupe'           => true,
+			'detect_font_redundancy'          => true,
+			'detect_inline_css_growth'        => true,
+			'inline_css_threshold_kb'         => 50,
+			'detect_jquery_conflicts'         => true,
+			'detect_meta_duplication'         => true,
+			'detect_rest_exposure'            => true,
+			'detect_lazy_load_conflict'       => true,
+			'detect_mixed_content'            => true,
 			'detect_missing_security_headers' => true,
-			'detect_debug_exposure'         => true,
-			'detect_cron_issues'            => true,
+			'detect_debug_exposure'           => true,
+			'detect_cron_issues'              => true,
+			'scan_schedule'                   => 'daily',
+			'email_notifications'             => false,
 		);
-		$opts = (array) \get_option( 'functionalities_assumption_detection', $defaults );
+		$opts          = (array) \get_option( 'functionalities_assumption_detection', $defaults );
 		self::$options = array_merge( $defaults, $opts );
 		return self::$options;
 	}
@@ -130,7 +132,7 @@ class Assumption_Detection {
 	 *
 	 * @return void
 	 */
-	public static function schedule_detection() : void {
+	public static function schedule_detection(): void {
 		\set_transient( 'functionalities_run_assumption_detection', true, HOUR_IN_SECONDS );
 	}
 
@@ -139,14 +141,14 @@ class Assumption_Detection {
 	 *
 	 * @return void
 	 */
-	public static function run_detection() : void {
-		$opts = self::get_options();
+	public static function run_detection(): void {
+		$opts     = self::get_options();
 		$warnings = array();
-		$ignored = self::get_ignored_assumptions();
+		$ignored  = self::get_ignored_assumptions();
 
 		// Check if we need to run detection.
-		$should_run = \get_transient( 'functionalities_run_assumption_detection' );
-		$last_run = \get_option( 'functionalities_assumptions_last_run', 0 );
+		$should_run     = \get_transient( 'functionalities_run_assumption_detection' );
+		$last_run       = \get_option( 'functionalities_assumptions_last_run', 0 );
 		$cache_duration = 6 * HOUR_IN_SECONDS;
 
 		// Only run if scheduled or cache expired.
@@ -160,69 +162,72 @@ class Assumption_Detection {
 		// Run detectors.
 		if ( ! empty( $opts['detect_schema_collision'] ) ) {
 			$schema_warnings = self::detect_schema_collisions();
-			$warnings = array_merge( $warnings, $schema_warnings );
+			$warnings        = array_merge( $warnings, $schema_warnings );
 		}
 
 		if ( ! empty( $opts['detect_analytics_dupe'] ) ) {
 			$analytics_warnings = self::detect_analytics_duplication();
-			$warnings = array_merge( $warnings, $analytics_warnings );
+			$warnings           = array_merge( $warnings, $analytics_warnings );
 		}
 
 		if ( ! empty( $opts['detect_font_redundancy'] ) ) {
 			$font_warnings = self::detect_font_redundancy();
-			$warnings = array_merge( $warnings, $font_warnings );
+			$warnings      = array_merge( $warnings, $font_warnings );
 		}
 
 		if ( ! empty( $opts['detect_inline_css_growth'] ) ) {
 			$css_warnings = self::detect_inline_css_growth( $opts );
-			$warnings = array_merge( $warnings, $css_warnings );
+			$warnings     = array_merge( $warnings, $css_warnings );
 		}
 
 		if ( ! empty( $opts['detect_jquery_conflicts'] ) ) {
 			$jquery_warnings = self::detect_jquery_conflicts();
-			$warnings = array_merge( $warnings, $jquery_warnings );
+			$warnings        = array_merge( $warnings, $jquery_warnings );
 		}
 
 		if ( ! empty( $opts['detect_meta_duplication'] ) ) {
 			$meta_warnings = self::detect_meta_duplication();
-			$warnings = array_merge( $warnings, $meta_warnings );
+			$warnings      = array_merge( $warnings, $meta_warnings );
 		}
 
 		if ( ! empty( $opts['detect_rest_exposure'] ) ) {
 			$rest_warnings = self::detect_rest_exposure();
-			$warnings = array_merge( $warnings, $rest_warnings );
+			$warnings      = array_merge( $warnings, $rest_warnings );
 		}
 
 		if ( ! empty( $opts['detect_lazy_load_conflict'] ) ) {
 			$lazy_warnings = self::detect_lazy_load_conflicts();
-			$warnings = array_merge( $warnings, $lazy_warnings );
+			$warnings      = array_merge( $warnings, $lazy_warnings );
 		}
 
 		if ( ! empty( $opts['detect_mixed_content'] ) ) {
 			$mixed_warnings = self::detect_mixed_content();
-			$warnings = array_merge( $warnings, $mixed_warnings );
+			$warnings       = array_merge( $warnings, $mixed_warnings );
 		}
 
 		if ( ! empty( $opts['detect_missing_security_headers'] ) ) {
 			$header_warnings = self::detect_missing_security_headers();
-			$warnings = array_merge( $warnings, $header_warnings );
+			$warnings        = array_merge( $warnings, $header_warnings );
 		}
 
 		if ( ! empty( $opts['detect_debug_exposure'] ) ) {
 			$debug_warnings = self::detect_debug_exposure();
-			$warnings = array_merge( $warnings, $debug_warnings );
+			$warnings       = array_merge( $warnings, $debug_warnings );
 		}
 
 		if ( ! empty( $opts['detect_cron_issues'] ) ) {
 			$cron_warnings = self::detect_cron_issues();
-			$warnings = array_merge( $warnings, $cron_warnings );
+			$warnings      = array_merge( $warnings, $cron_warnings );
 		}
 
 		// Filter out ignored warnings.
-		$warnings = array_filter( $warnings, function( $warning ) use ( $ignored ) {
-			$hash = self::get_warning_hash( $warning );
-			return ! isset( $ignored[ $hash ] ) || $ignored[ $hash ]['expires'] < time();
-		} );
+		$warnings = array_filter(
+			$warnings,
+			function ( $warning ) use ( $ignored ) {
+				$hash = self::get_warning_hash( $warning );
+				return ! isset( $ignored[ $hash ] ) || $ignored[ $hash ]['expires'] < time();
+			}
+		);
 
 		// Store results.
 		\update_option( self::OPTION_KEY, $warnings );
@@ -234,11 +239,11 @@ class Assumption_Detection {
 	 *
 	 * @return array Array of warnings.
 	 */
-	public static function detect_schema_collisions() : array {
+	public static function detect_schema_collisions(): array {
 		$warnings = array();
 
 		// Use cached frontend output.
-		$output = self::get_frontend_output();
+		$output      = self::get_frontend_output();
 		$full_output = $output['full'];
 
 		// Find all JSON-LD scripts.
@@ -272,7 +277,7 @@ class Assumption_Detection {
 					}
 
 					// Try to identify the source.
-					$source = self::identify_schema_source( $item );
+					$source                  = self::identify_schema_source( $item );
 					$schema_types[ $type ][] = $source;
 				}
 			}
@@ -284,25 +289,25 @@ class Assumption_Detection {
 				$unique_sources = array_unique( $sources );
 				if ( count( $unique_sources ) > 1 ) {
 					$warnings[] = array(
-						'type'      => 'schema_collision',
-						'message'   => sprintf(
+						'type'     => 'schema_collision',
+						'message'  => sprintf(
 							/* translators: 1: schema type, 2: source list */
 							\__( 'Multiple sources are outputting %1$s schema (%2$s).', 'functionalities' ),
 							$type,
 							implode( ' + ', $unique_sources )
 						),
-						'location'  => sprintf(
+						'location' => sprintf(
 							/* translators: %s: source list */
 							\__( 'Found in page &lt;head&gt; output from: %s', 'functionalities' ),
 							implode( ', ', $unique_sources )
 						),
-						'reason'    => \__( 'Multiple schema sources cause duplicate structured data in search results, potentially confusing search engines and diluting SEO benefits. Only one source should output each schema type.', 'functionalities' ),
-						'details'   => array(
+						'reason'   => \__( 'Multiple schema sources cause duplicate structured data in search results, potentially confusing search engines and diluting SEO benefits. Only one source should output each schema type.', 'functionalities' ),
+						'details'  => array(
 							'schema_type' => $type,
 							'sources'     => $sources,
 							'count'       => count( $sources ),
 						),
-						'detected'  => time(),
+						'detected' => time(),
 					);
 				}
 			}
@@ -317,9 +322,9 @@ class Assumption_Detection {
 	 * @param array $item Schema item.
 	 * @return string Source identifier.
 	 */
-	protected static function identify_schema_source( array $item ) : string {
+	protected static function identify_schema_source( array $item ): string {
 		// Check for known plugin patterns.
-		$json = json_encode( $item );
+		$json = wp_json_encode( $item );
 
 		if ( strpos( $json, 'rank-math' ) !== false || strpos( $json, 'rankMath' ) !== false ) {
 			return 'Rank Math';
@@ -357,11 +362,11 @@ class Assumption_Detection {
 	 *
 	 * @return array Array of warnings.
 	 */
-	public static function detect_analytics_duplication() : array {
+	public static function detect_analytics_duplication(): array {
 		$warnings = array();
 
 		// Use cached frontend output.
-		$output = self::get_frontend_output();
+		$output      = self::get_frontend_output();
 		$full_output = $output['full'];
 
 		// Also check enqueued scripts.
@@ -377,15 +382,15 @@ class Assumption_Detection {
 
 		// Patterns to detect.
 		$analytics_patterns = array(
-			'ga4' => array(
+			'ga4'      => array(
 				'pattern' => '/["\']?(G-[A-Z0-9]+)["\']?/i',
 				'name'    => 'Google Analytics 4',
 			),
-			'ua' => array(
+			'ua'       => array(
 				'pattern' => '/["\']?(UA-\d+-\d+)["\']?/i',
 				'name'    => 'Universal Analytics',
 			),
-			'gtm' => array(
+			'gtm'      => array(
 				'pattern' => '/["\']?(GTM-[A-Z0-9]+)["\']?/i',
 				'name'    => 'Google Tag Manager',
 			),
@@ -409,29 +414,29 @@ class Assumption_Detection {
 						$locations = self::find_script_locations( $full_output, $id );
 
 						$warnings[] = array(
-							'type'      => 'analytics_duplication',
-							'message'   => sprintf(
+							'type'     => 'analytics_duplication',
+							'message'  => sprintf(
 								/* translators: 1: analytics name, 2: ID, 3: count */
 								\__( '%1$s (%2$s) is loaded %3$d times from different sources.', 'functionalities' ),
 								$config['name'],
 								$id,
 								$count
 							),
-							'location'  => ! empty( $locations )
+							'location' => ! empty( $locations )
 								? sprintf(
 									/* translators: %s: location list */
 									\__( 'Detected in: %s', 'functionalities' ),
 									implode( ', ', $locations )
 								)
 								: \__( 'Found in page HTML output', 'functionalities' ),
-							'reason'    => \__( 'Duplicate tracking codes cause inflated pageview counts, skewed session data, and can slow page load. Each analytics property should only be initialized once per page.', 'functionalities' ),
-							'details'   => array(
+							'reason'   => \__( 'Duplicate tracking codes cause inflated pageview counts, skewed session data, and can slow page load. Each analytics property should only be initialized once per page.', 'functionalities' ),
+							'details'  => array(
 								'analytics_type' => $config['name'],
 								'tracking_id'    => $id,
 								'count'          => $count,
 								'locations'      => $locations,
 							),
-							'detected'  => time(),
+							'detected' => time(),
 						);
 					}
 				}
@@ -448,7 +453,7 @@ class Assumption_Detection {
 	 * @param string $id     Tracking ID.
 	 * @return array Location descriptions.
 	 */
-	protected static function find_script_locations( string $output, string $id ) : array {
+	protected static function find_script_locations( string $output, string $id ): array {
 		$locations = array();
 
 		// Check for gtag.js.
@@ -474,11 +479,11 @@ class Assumption_Detection {
 	 *
 	 * @return array Array of warnings.
 	 */
-	public static function detect_font_redundancy() : array {
+	public static function detect_font_redundancy(): array {
 		$warnings = array();
 
 		// Use cached frontend output.
-		$output = self::get_frontend_output();
+		$output      = self::get_frontend_output();
 		$head_output = $output['head'];
 
 		// Check enqueued styles.
@@ -539,25 +544,25 @@ class Assumption_Detection {
 		foreach ( $fonts_found as $family => $sources ) {
 			if ( count( $sources ) > 1 ) {
 				$warnings[] = array(
-					'type'      => 'font_redundancy',
-					'message'   => sprintf(
+					'type'     => 'font_redundancy',
+					'message'  => sprintf(
 						/* translators: 1: font family, 2: count */
 						\__( 'Font family "%1$s" is loaded from %2$d different sources.', 'functionalities' ),
 						$family,
 						count( $sources )
 					),
-					'location'  => sprintf(
+					'location' => sprintf(
 						/* translators: %s: source list */
 						\__( 'Loaded via: %s', 'functionalities' ),
 						implode( ', ', array_unique( $sources ) )
 					),
-					'reason'    => \__( 'Loading the same font from multiple sources wastes bandwidth and increases page load time. Consolidate font loading to a single source.', 'functionalities' ),
-					'details'   => array(
+					'reason'   => \__( 'Loading the same font from multiple sources wastes bandwidth and increases page load time. Consolidate font loading to a single source.', 'functionalities' ),
+					'details'  => array(
 						'font_family' => $family,
 						'sources'     => $sources,
 						'count'       => count( $sources ),
 					),
-					'detected'  => time(),
+					'detected' => time(),
 				);
 			}
 		}
@@ -571,11 +576,11 @@ class Assumption_Detection {
 	 * @param array $opts Module options.
 	 * @return array Array of warnings.
 	 */
-	public static function detect_inline_css_growth( array $opts ) : array {
+	public static function detect_inline_css_growth( array $opts ): array {
 		$warnings = array();
 
 		// Use cached frontend output.
-		$output = self::get_frontend_output();
+		$output      = self::get_frontend_output();
 		$head_output = $output['head'];
 
 		// Find all inline styles.
@@ -586,11 +591,11 @@ class Assumption_Detection {
 		);
 
 		$total_size = 0;
-		$sources = array();
+		$sources    = array();
 
 		if ( ! empty( $style_matches[1] ) ) {
 			foreach ( $style_matches[1] as $css ) {
-				$size = strlen( $css );
+				$size        = strlen( $css );
 				$total_size += $size;
 
 				// Categorize by common patterns.
@@ -608,7 +613,7 @@ class Assumption_Detection {
 		$baseline = \get_option( self::CSS_BASELINE_KEY, array() );
 
 		// Calculate size in KB.
-		$size_kb = round( $total_size / 1024, 1 );
+		$size_kb      = round( $total_size / 1024, 1 );
 		$threshold_kb = (float) $opts['inline_css_threshold_kb'];
 
 		// Store current size.
@@ -623,9 +628,9 @@ class Assumption_Detection {
 		}
 
 		// Calculate rolling average.
-		$sizes = array_column( $baseline['history'], 'size' );
+		$sizes    = array_column( $baseline['history'], 'size' );
 		$avg_size = count( $sizes ) > 1 ? array_sum( $sizes ) / count( $sizes ) : $total_size;
-		$avg_kb = round( $avg_size / 1024, 1 );
+		$avg_kb   = round( $avg_size / 1024, 1 );
 
 		\update_option( self::CSS_BASELINE_KEY, $baseline );
 
@@ -638,54 +643,54 @@ class Assumption_Detection {
 			}
 
 			$warnings[] = array(
-				'type'      => 'inline_css_growth',
-				'message'   => sprintf(
+				'type'     => 'inline_css_growth',
+				'message'  => sprintf(
 					/* translators: 1: current size, 2: threshold */
 					\__( 'Inline CSS output is %1$s KB (threshold: %2$s KB).', 'functionalities' ),
 					$size_kb,
 					$threshold_kb
 				),
-				'location'  => ! empty( $sources_list )
+				'location' => ! empty( $sources_list )
 					? sprintf(
 						/* translators: %s: source breakdown */
 						\__( 'Breakdown: %s', 'functionalities' ),
 						implode( ', ', $sources_list )
 					)
 					: \__( 'In page &lt;head&gt; section', 'functionalities' ),
-				'reason'    => \__( 'Large inline CSS blocks the initial page render and cannot be cached by browsers. Consider moving styles to external stylesheets or reducing unused CSS.', 'functionalities' ),
-				'details'   => array(
-					'current_size_kb'  => $size_kb,
-					'threshold_kb'     => $threshold_kb,
-					'average_size_kb'  => $avg_kb,
-					'sources'          => $sources,
+				'reason'   => \__( 'Large inline CSS blocks the initial page render and cannot be cached by browsers. Consider moving styles to external stylesheets or reducing unused CSS.', 'functionalities' ),
+				'details'  => array(
+					'current_size_kb' => $size_kb,
+					'threshold_kb'    => $threshold_kb,
+					'average_size_kb' => $avg_kb,
+					'sources'         => $sources,
 				),
-				'detected'  => time(),
+				'detected' => time(),
 			);
 		}
 
 		// Check for sharp increase.
 		if ( count( $sizes ) > 5 && $size_kb > $avg_kb * 1.5 ) {
 			$increase_percent = round( ( $size_kb / $avg_kb - 1 ) * 100 );
-			$warnings[] = array(
-				'type'      => 'inline_css_spike',
-				'message'   => sprintf(
+			$warnings[]       = array(
+				'type'     => 'inline_css_spike',
+				'message'  => sprintf(
 					/* translators: 1: average size, 2: current size */
 					\__( 'Inline CSS increased from %1$s KB average to %2$s KB.', 'functionalities' ),
 					$avg_kb,
 					$size_kb
 				),
-				'location'  => \__( 'In page &lt;head&gt; section &lt;style&gt; tags', 'functionalities' ),
-				'reason'    => sprintf(
+				'location' => \__( 'In page &lt;head&gt; section &lt;style&gt; tags', 'functionalities' ),
+				'reason'   => sprintf(
 					/* translators: %d: percentage increase */
 					\__( 'A %d%% spike in inline CSS suggests a plugin, theme update, or content change added significant styles. This may indicate CSS bloat from unused features.', 'functionalities' ),
 					$increase_percent
 				),
-				'details'   => array(
-					'current_size_kb' => $size_kb,
-					'average_size_kb' => $avg_kb,
+				'details'  => array(
+					'current_size_kb'  => $size_kb,
+					'average_size_kb'  => $avg_kb,
 					'increase_percent' => $increase_percent,
 				),
-				'detected'  => time(),
+				'detected' => time(),
 			);
 		}
 
@@ -701,7 +706,7 @@ class Assumption_Detection {
 	 * @since 0.9.2
 	 * @return array Array of warnings.
 	 */
-	public static function detect_jquery_conflicts() : array {
+	public static function detect_jquery_conflicts(): array {
 		$warnings = array();
 
 		// Check registered scripts.
@@ -726,9 +731,9 @@ class Assumption_Detection {
 
 				// Determine source type.
 				if ( strpos( $src, 'ajax.googleapis.com' ) !== false ||
-					 strpos( $src, 'cdnjs.cloudflare.com' ) !== false ||
-					 strpos( $src, 'code.jquery.com' ) !== false ||
-					 strpos( $src, 'cdn.jsdelivr.net' ) !== false ) {
+					strpos( $src, 'cdnjs.cloudflare.com' ) !== false ||
+					strpos( $src, 'code.jquery.com' ) !== false ||
+					strpos( $src, 'cdn.jsdelivr.net' ) !== false ) {
 					$source_type = 'CDN';
 				} elseif ( strpos( $src, 'wp-includes' ) !== false ) {
 					$source_type = 'WordPress Core';
@@ -741,7 +746,7 @@ class Assumption_Detection {
 					'source'  => $source_type,
 					'src'     => $src,
 				);
-				$jquery_sources[] = $source_type;
+				$jquery_sources[]          = $source_type;
 			}
 		}
 
@@ -790,28 +795,28 @@ class Assumption_Detection {
 	 * @since 0.9.2
 	 * @return array Array of warnings.
 	 */
-	public static function detect_meta_duplication() : array {
+	public static function detect_meta_duplication(): array {
 		$warnings = array();
 
 		// Use cached frontend output.
-		$output = self::get_frontend_output();
+		$output      = self::get_frontend_output();
 		$head_output = $output['head'];
 
 		// Meta tags to check for duplicates.
 		$meta_patterns = array(
-			'viewport' => array(
+			'viewport'       => array(
 				'pattern' => '/<meta[^>]*name=["\']viewport["\'][^>]*>/i',
 				'label'   => 'viewport',
 			),
-			'robots' => array(
+			'robots'         => array(
 				'pattern' => '/<meta[^>]*name=["\']robots["\'][^>]*>/i',
 				'label'   => 'robots',
 			),
-			'description' => array(
+			'description'    => array(
 				'pattern' => '/<meta[^>]*name=["\']description["\'][^>]*>/i',
 				'label'   => 'description',
 			),
-			'og:title' => array(
+			'og:title'       => array(
 				'pattern' => '/<meta[^>]*property=["\']og:title["\'][^>]*>/i',
 				'label'   => 'og:title',
 			),
@@ -819,11 +824,11 @@ class Assumption_Detection {
 				'pattern' => '/<meta[^>]*property=["\']og:description["\'][^>]*>/i',
 				'label'   => 'og:description',
 			),
-			'og:image' => array(
+			'og:image'       => array(
 				'pattern' => '/<meta[^>]*property=["\']og:image["\'][^>]*>/i',
 				'label'   => 'og:image',
 			),
-			'twitter:card' => array(
+			'twitter:card'   => array(
 				'pattern' => '/<meta[^>]*name=["\']twitter:card["\'][^>]*>/i',
 				'label'   => 'twitter:card',
 			),
@@ -872,16 +877,19 @@ class Assumption_Detection {
 	 * @since 0.9.2
 	 * @return array Array of warnings.
 	 */
-	public static function detect_rest_exposure() : array {
+	public static function detect_rest_exposure(): array {
 		$warnings = array();
 
 		// Check if users endpoint is accessible.
 		$rest_url = \rest_url( 'wp/v2/users' );
 
 		// Make a HEAD request to check accessibility.
-		$response = \wp_remote_head( $rest_url, array(
-			'timeout' => 5,
-		) );
+		$response = \wp_remote_head(
+			$rest_url,
+			array(
+				'timeout' => 5,
+			)
+		);
 
 		if ( ! \is_wp_error( $response ) ) {
 			$status_code = \wp_remote_retrieve_response_code( $response );
@@ -908,12 +916,15 @@ class Assumption_Detection {
 		}
 
 		// Check for exposed oEmbed data.
-		$home_url = \home_url();
-		$oembed_url = \rest_url( 'oembed/1.0/embed' ) . '?url=' . urlencode( $home_url );
+		$home_url   = \home_url();
+		$oembed_url = \rest_url( 'oembed/1.0/embed' ) . '?url=' . rawurlencode( $home_url );
 
-		$oembed_response = \wp_remote_get( $oembed_url, array(
-			'timeout' => 5,
-		) );
+		$oembed_response = \wp_remote_get(
+			$oembed_url,
+			array(
+				'timeout' => 5,
+			)
+		);
 
 		if ( ! \is_wp_error( $oembed_response ) ) {
 			$body = \wp_remote_retrieve_body( $oembed_response );
@@ -949,24 +960,24 @@ class Assumption_Detection {
 	 * @since 0.9.2
 	 * @return array Array of warnings.
 	 */
-	public static function detect_lazy_load_conflicts() : array {
+	public static function detect_lazy_load_conflicts(): array {
 		$warnings = array();
 
 		// Use cached frontend output.
-		$output = self::get_frontend_output();
+		$output      = self::get_frontend_output();
 		$full_output = $output['full'];
 
 		// Known lazy loading libraries and patterns.
 		$lazy_patterns = array(
-			'native' => array(
+			'native'           => array(
 				'pattern' => '/loading=["\']lazy["\']/i',
 				'name'    => 'Native Browser Lazy Loading',
 			),
-			'lazysizes' => array(
+			'lazysizes'        => array(
 				'pattern' => '/lazysizes(?:\.min)?\.js/i',
 				'name'    => 'lazysizes.js',
 			),
-			'lozad' => array(
+			'lozad'            => array(
 				'pattern' => '/lozad(?:\.min)?\.js/i',
 				'name'    => 'lozad.js',
 			),
@@ -974,23 +985,23 @@ class Assumption_Detection {
 				'pattern' => '/vanilla-lazyload|lazyload(?:\.min)?\.js/i',
 				'name'    => 'vanilla-lazyload',
 			),
-			'wp_rocket' => array(
+			'wp_rocket'        => array(
 				'pattern' => '/wp-rocket.*lazyload|rocket-lazyload/i',
 				'name'    => 'WP Rocket Lazy Load',
 			),
-			'jetpack' => array(
+			'jetpack'          => array(
 				'pattern' => '/jetpack.*lazy|lazy-images/i',
 				'name'    => 'Jetpack Lazy Images',
 			),
-			'a3_lazy' => array(
+			'a3_lazy'          => array(
 				'pattern' => '/a3-lazy-load/i',
 				'name'    => 'a3 Lazy Load',
 			),
-			'smush' => array(
+			'smush'            => array(
 				'pattern' => '/smush.*lazy|wp-smush-lazy/i',
 				'name'    => 'Smush Lazy Load',
 			),
-			'perfmatters' => array(
+			'perfmatters'      => array(
 				'pattern' => '/perfmatters.*lazy/i',
 				'name'    => 'Perfmatters Lazy Load',
 			),
@@ -1050,7 +1061,7 @@ class Assumption_Detection {
 	 * @since 0.9.2
 	 * @return array Array of warnings.
 	 */
-	public static function detect_mixed_content() : array {
+	public static function detect_mixed_content(): array {
 		$warnings = array();
 
 		// Only check if site is HTTPS.
@@ -1059,7 +1070,7 @@ class Assumption_Detection {
 		}
 
 		// Use cached frontend output.
-		$output = self::get_frontend_output();
+		$output      = self::get_frontend_output();
 		$head_output = $output['head'];
 
 		$http_resources = array();
@@ -1109,19 +1120,22 @@ class Assumption_Detection {
 	 * @since 0.9.2
 	 * @return array Array of warnings.
 	 */
-	public static function detect_missing_security_headers() : array {
+	public static function detect_missing_security_headers(): array {
 		$warnings = array();
 
 		// Make a request to the home URL to check headers.
-		$response = \wp_remote_head( \home_url(), array(
-			'timeout' => 5,
-		) );
+		$response = \wp_remote_head(
+			\home_url(),
+			array(
+				'timeout' => 5,
+			)
+		);
 
 		if ( \is_wp_error( $response ) ) {
 			return $warnings;
 		}
 
-		$headers = \wp_remote_retrieve_headers( $response );
+		$headers       = \wp_remote_retrieve_headers( $response );
 		$headers_array = $headers instanceof \Requests_Utility_CaseInsensitiveDictionary
 			? $headers->getAll()
 			: (array) $headers;
@@ -1131,9 +1145,9 @@ class Assumption_Detection {
 
 		// Check for critical security headers.
 		$security_headers = array(
-			'x-content-type-options'  => 'X-Content-Type-Options',
-			'x-frame-options'         => 'X-Frame-Options',
-			'x-xss-protection'        => 'X-XSS-Protection',
+			'x-content-type-options'    => 'X-Content-Type-Options',
+			'x-frame-options'           => 'X-Frame-Options',
+			'x-xss-protection'          => 'X-XSS-Protection',
 			'strict-transport-security' => 'Strict-Transport-Security (HSTS)',
 		);
 
@@ -1169,9 +1183,9 @@ class Assumption_Detection {
 	 * @since 0.9.2
 	 * @return array Array of warnings.
 	 */
-	public static function detect_debug_exposure() : array {
+	public static function detect_debug_exposure(): array {
 		$warnings = array();
-		$issues = array();
+		$issues   = array();
 
 		// Check WP_DEBUG.
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
@@ -1219,9 +1233,9 @@ class Assumption_Detection {
 	 * @since 0.9.2
 	 * @return array Array of warnings.
 	 */
-	public static function detect_cron_issues() : array {
+	public static function detect_cron_issues(): array {
 		$warnings = array();
-		$issues = array();
+		$issues   = array();
 
 		// Check if WP-Cron is disabled.
 		if ( defined( 'DISABLE_WP_CRON' ) && DISABLE_WP_CRON ) {
@@ -1229,9 +1243,9 @@ class Assumption_Detection {
 		}
 
 		// Check for stuck cron jobs (jobs more than 1 hour overdue).
-		$crons = \_get_cron_array();
+		$crons        = \_get_cron_array();
 		$current_time = time();
-		$stuck_jobs = 0;
+		$stuck_jobs   = 0;
 
 		if ( is_array( $crons ) ) {
 			foreach ( $crons as $timestamp => $cron ) {
@@ -1281,7 +1295,7 @@ class Assumption_Detection {
 	 *
 	 * @return array Detected assumptions.
 	 */
-	public static function get_detected_assumptions() : array {
+	public static function get_detected_assumptions(): array {
 		return (array) \get_option( self::OPTION_KEY, array() );
 	}
 
@@ -1290,7 +1304,7 @@ class Assumption_Detection {
 	 *
 	 * @return array Ignored assumptions with expiry timestamps.
 	 */
-	public static function get_ignored_assumptions() : array {
+	public static function get_ignored_assumptions(): array {
 		return (array) \get_option( self::IGNORED_KEY, array() );
 	}
 
@@ -1300,7 +1314,7 @@ class Assumption_Detection {
 	 * @param array $warning Warning data.
 	 * @return string Hash.
 	 */
-	public static function get_warning_hash( array $warning ) : string {
+	public static function get_warning_hash( array $warning ): string {
 		$key_parts = array( $warning['type'] );
 
 		if ( isset( $warning['details']['schema_type'] ) ) {
@@ -1331,7 +1345,7 @@ class Assumption_Detection {
 	 *
 	 * @return void
 	 */
-	public static function ajax_ignore_assumption() : void {
+	public static function ajax_ignore_assumption(): void {
 		\check_ajax_referer( 'functionalities_assumptions', 'nonce' );
 
 		if ( ! \current_user_can( 'manage_options' ) ) {
@@ -1344,12 +1358,13 @@ class Assumption_Detection {
 			\wp_send_json_error( array( 'message' => \__( 'Invalid request.', 'functionalities' ) ) );
 		}
 
-		$ignored = self::get_ignored_assumptions();
+		$ignored          = self::get_ignored_assumptions();
 		$ignored[ $hash ] = array(
-			'expires' => PHP_INT_MAX, // Never expires.
+			'expires'    => PHP_INT_MAX, // Never expires.
 			'ignored_at' => time(),
 		);
 		\update_option( self::IGNORED_KEY, $ignored );
+		self::record_audit( 'ignore', $hash );
 
 		\wp_send_json_success();
 	}
@@ -1359,7 +1374,7 @@ class Assumption_Detection {
 	 *
 	 * @return void
 	 */
-	public static function ajax_acknowledge_assumption() : void {
+	public static function ajax_acknowledge_assumption(): void {
 		\check_ajax_referer( 'functionalities_assumptions', 'nonce' );
 
 		if ( ! \current_user_can( 'manage_options' ) ) {
@@ -1374,10 +1389,14 @@ class Assumption_Detection {
 
 		// Remove from detected list.
 		$detected = self::get_detected_assumptions();
-		$detected = array_filter( $detected, function( $warning ) use ( $hash ) {
-			return self::get_warning_hash( $warning ) !== $hash;
-		} );
+		$detected = array_filter(
+			$detected,
+			function ( $warning ) use ( $hash ) {
+				return self::get_warning_hash( $warning ) !== $hash;
+			}
+		);
 		\update_option( self::OPTION_KEY, array_values( $detected ) );
+		self::record_audit( 'acknowledge', $hash );
 
 		\wp_send_json_success();
 	}
@@ -1387,7 +1406,7 @@ class Assumption_Detection {
 	 *
 	 * @return void
 	 */
-	public static function ajax_snooze_assumption() : void {
+	public static function ajax_snooze_assumption(): void {
 		\check_ajax_referer( 'functionalities_assumptions', 'nonce' );
 
 		if ( ! \current_user_can( 'manage_options' ) ) {
@@ -1401,12 +1420,13 @@ class Assumption_Detection {
 			\wp_send_json_error( array( 'message' => \__( 'Invalid request.', 'functionalities' ) ) );
 		}
 
-		$ignored = self::get_ignored_assumptions();
+		$ignored          = self::get_ignored_assumptions();
 		$ignored[ $hash ] = array(
-			'expires' => time() + ( $days * DAY_IN_SECONDS ),
+			'expires'    => time() + ( $days * DAY_IN_SECONDS ),
 			'snoozed_at' => time(),
 		);
 		\update_option( self::IGNORED_KEY, $ignored );
+		self::record_audit( 'snooze', $hash, array( 'days' => $days ) );
 
 		\wp_send_json_success();
 	}
@@ -1416,14 +1436,17 @@ class Assumption_Detection {
 	 *
 	 * @return int Warning count.
 	 */
-	public static function get_warning_count() : int {
+	public static function get_warning_count(): int {
 		$detected = self::get_detected_assumptions();
-		$ignored = self::get_ignored_assumptions();
+		$ignored  = self::get_ignored_assumptions();
 
-		$active = array_filter( $detected, function( $warning ) use ( $ignored ) {
-			$hash = self::get_warning_hash( $warning );
-			return ! isset( $ignored[ $hash ] ) || $ignored[ $hash ]['expires'] < time();
-		} );
+		$active = array_filter(
+			$detected,
+			function ( $warning ) use ( $ignored ) {
+				$hash = self::get_warning_hash( $warning );
+				return ! isset( $ignored[ $hash ] ) || $ignored[ $hash ]['expires'] < time();
+			}
+		);
 
 		return count( $active );
 	}
@@ -1433,7 +1456,7 @@ class Assumption_Detection {
 	 *
 	 * @return array Detected warnings.
 	 */
-	public static function force_run_detection() : array {
+	public static function force_run_detection(): array {
 		// Clear the cache to ensure fresh detection.
 		self::$frontend_output_cache = null;
 
@@ -1444,6 +1467,28 @@ class Assumption_Detection {
 	}
 
 	/**
+	 * Append bounded action metadata without storing page content or URLs.
+	 *
+	 * @param string $action Action name.
+	 * @param string $hash   Finding hash.
+	 * @param array  $meta   Additional non-content metadata.
+	 * @return void
+	 */
+	private static function record_audit( string $action, string $hash, array $meta = array() ): void {
+		$audit   = (array) \get_option( 'functionalities_assumption_audit', array() );
+		$audit[] = array_merge(
+			array(
+				'action'    => $action,
+				'hash'      => $hash,
+				'user_id'   => \get_current_user_id(),
+				'timestamp' => time(),
+			),
+			$meta
+		);
+		\update_option( 'functionalities_assumption_audit', array_slice( $audit, -100 ), false );
+	}
+
+	/**
 	 * Safely capture frontend output (wp_head and wp_footer).
 	 *
 	 * This method caches the output to avoid multiple expensive calls
@@ -1451,12 +1496,12 @@ class Assumption_Detection {
 	 *
 	 * @return array Array with 'head' and 'footer' keys.
 	 */
-	protected static function get_frontend_output() : array {
+	protected static function get_frontend_output(): array {
 		if ( null !== self::$frontend_output_cache ) {
 			return self::$frontend_output_cache;
 		}
 
-		$head_output = '';
+		$head_output   = '';
 		$footer_output = '';
 
 		// Suppress any output during capture.
@@ -1506,7 +1551,7 @@ class Assumption_Detection {
 	 *
 	 * @return void
 	 */
-	public static function clear_cache() : void {
+	public static function clear_cache(): void {
 		self::$frontend_output_cache = null;
 	}
 }

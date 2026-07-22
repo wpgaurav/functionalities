@@ -28,11 +28,18 @@ class Task_Manager {
 	private static $tasks_dir = '';
 
 	/**
+	 * Last storage error by project slug.
+	 *
+	 * @var array
+	 */
+	private static $storage_errors = array();
+
+	/**
 	 * Initialize the feature.
 	 *
 	 * @return void
 	 */
-	public static function init() : void {
+	public static function init(): void {
 		self::$tasks_dir = WP_CONTENT_DIR . '/functionalities/tasks/';
 
 		// Only run in admin - no frontend footprint.
@@ -122,7 +129,7 @@ class Task_Manager {
 	 * @param string $slug The slug to validate.
 	 * @return bool True if valid.
 	 */
-	private static function is_valid_slug( string $slug ) : bool {
+	private static function is_valid_slug( string $slug ): bool {
 		// Only allow alphanumeric, hyphens, and underscores.
 		return (bool) preg_match( '/^[a-z0-9_-]+$/i', $slug );
 	}
@@ -132,7 +139,7 @@ class Task_Manager {
 	 *
 	 * @return array List of project data.
 	 */
-	public static function get_projects() : array {
+	public static function get_projects(): array {
 		$dir = self::get_tasks_dir();
 		if ( ! $dir || ! is_dir( $dir ) ) {
 			return array();
@@ -146,21 +153,27 @@ class Task_Manager {
 		}
 
 		foreach ( $files as $file ) {
-			$content = file_get_contents( $file );
-			$data    = json_decode( $content, true );
+			$result = \Functionalities\Storage\Atomic_JSON_Store::read( $file );
+			$data   = $result['success'] ? $result['data'] : array();
 
 			if ( $data && isset( $data['name'] ) ) {
 				$slug              = basename( $file, '.json' );
 				$data['slug']      = $slug;
 				$data['file_path'] = $file;
 				$projects[ $slug ] = $data;
+				unset( self::$storage_errors[ $slug ] );
+			} elseif ( ! $result['success'] ) {
+				self::$storage_errors[ basename( $file, '.json' ) ] = $result['error'];
 			}
 		}
 
 		// Sort by name.
-		uasort( $projects, function( $a, $b ) {
-			return strcasecmp( $a['name'], $b['name'] );
-		});
+		uasort(
+			$projects,
+			function ( $a, $b ) {
+				return strcasecmp( $a['name'], $b['name'] );
+			}
+		);
 
 		return $projects;
 	}
@@ -171,7 +184,7 @@ class Task_Manager {
 	 * @param string $slug Project slug.
 	 * @return array|null Project data or null if not found.
 	 */
-	public static function get_project( string $slug ) : ?array {
+	public static function get_project( string $slug ): ?array {
 		$dir = self::get_tasks_dir();
 		if ( ! $dir ) {
 			return null;
@@ -195,19 +208,17 @@ class Task_Manager {
 			}
 		}
 
-		$content = file_get_contents( $file );
-		if ( false === $content ) {
+		$result = \Functionalities\Storage\Atomic_JSON_Store::read( $file );
+		if ( ! $result['success'] ) {
+			self::$storage_errors[ $safe_slug ] = $result['error'];
 			return null;
 		}
-
-		$data = json_decode( $content, true );
-		if ( json_last_error() !== JSON_ERROR_NONE ) {
-			return null;
-		}
+		$data = $result['data'];
 
 		if ( $data && isset( $data['name'] ) ) {
 			$data['slug']      = $safe_slug;
 			$data['file_path'] = $file;
+			unset( self::$storage_errors[ $safe_slug ] );
 			return $data;
 		}
 
@@ -221,7 +232,7 @@ class Task_Manager {
 	 * @param array  $data Project data.
 	 * @return bool True on success.
 	 */
-	public static function save_project( string $slug, array $data ) : bool {
+	public static function save_project( string $slug, array $data ): bool {
 		$dir = self::get_tasks_dir();
 		if ( ! $dir ) {
 			return false;
@@ -232,14 +243,96 @@ class Task_Manager {
 		// Update modified timestamp.
 		$data['modified'] = current_time( 'mysql' );
 
-		$json = wp_json_encode( $data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
-
-		$fs = self::get_filesystem();
-		if ( $fs ) {
-			return $fs->put_contents( $file, $json, FS_CHMOD_FILE );
+		$result = \Functionalities\Storage\Atomic_JSON_Store::write( $file, $data );
+		if ( $result['success'] ) {
+			unset( self::$storage_errors[ $slug ] );
+			return true;
 		}
 
+		self::$storage_errors[ $slug ] = $result['error'];
 		return false;
+	}
+
+	/**
+	 * Atomically mutate one project.
+	 *
+	 * @param string   $slug    Project slug.
+	 * @param callable $mutator Project-data mutator.
+	 * @return array Storage result.
+	 */
+	private static function mutate_project( string $slug, callable $mutator ): array {
+		$dir = self::get_tasks_dir();
+		if ( ! $dir || ! self::is_valid_slug( $slug ) ) {
+			return array(
+				'success' => false,
+				'data'    => array(),
+				'error'   => 'invalid_project',
+				'exists'  => false,
+			);
+		}
+
+		$safe_slug = sanitize_file_name( $slug );
+		$file      = $dir . $safe_slug . '.json';
+		$result    = \Functionalities\Storage\Atomic_JSON_Store::update(
+			$file,
+			static function ( array $project, bool $exists ) use ( $mutator ) {
+				if ( ! $exists || empty( $project['name'] ) ) {
+					return false;
+				}
+
+				$next = call_user_func( $mutator, $project );
+				if ( ! is_array( $next ) ) {
+					return false;
+				}
+
+				$next['modified'] = current_time( 'mysql' );
+				unset( $next['slug'], $next['file_path'] );
+				return $next;
+			},
+			array()
+		);
+
+		if ( $result['success'] ) {
+			unset( self::$storage_errors[ $safe_slug ] );
+		} else {
+			self::$storage_errors[ $safe_slug ] = $result['error'];
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Return storage errors detected while reading or writing projects.
+	 *
+	 * @return array
+	 */
+	public static function get_storage_errors(): array {
+		return self::$storage_errors;
+	}
+
+	/**
+	 * Create a project file only when the target does not already exist.
+	 *
+	 * @param string $slug Project slug.
+	 * @param array  $data Project data.
+	 * @return bool
+	 */
+	private static function create_project_file( string $slug, array $data ): bool {
+		$dir  = self::get_tasks_dir();
+		$file = $dir ? $dir . sanitize_file_name( $slug ) . '.json' : '';
+		if ( ! $dir || ! self::is_valid_slug( $slug ) ) {
+			return false;
+		}
+
+		$result = \Functionalities\Storage\Atomic_JSON_Store::update(
+			$file,
+			static function ( array $current, bool $exists ) use ( $data ) {
+				return $exists ? false : $data;
+			},
+			array()
+		);
+
+		return $result['success'];
 	}
 
 	/**
@@ -249,27 +342,21 @@ class Task_Manager {
 	 * @return array|false Project data or false on failure.
 	 */
 	public static function create_project( string $name ) {
-		$slug = sanitize_title( $name );
-
-		// Ensure unique slug.
-		$original_slug = $slug;
-		$counter       = 1;
-		while ( self::get_project( $slug ) ) {
-			$slug = $original_slug . '-' . $counter;
-			$counter++;
-		}
-
 		$data = array(
-			'name'          => $name,
-			'created'       => current_time( 'mysql' ),
-			'modified'      => current_time( 'mysql' ),
-			'show_widget'   => false,
-			'tasks'         => array(),
+			'name'        => $name,
+			'created'     => current_time( 'mysql' ),
+			'modified'    => current_time( 'mysql' ),
+			'show_widget' => false,
+			'tasks'       => array(),
 		);
 
-		if ( self::save_project( $slug, $data ) ) {
-			$data['slug'] = $slug;
-			return $data;
+		$original_slug = sanitize_title( $name );
+		for ( $counter = 0; $counter < 100; ++$counter ) {
+			$slug = 0 === $counter ? $original_slug : $original_slug . '-' . $counter;
+			if ( self::create_project_file( $slug, $data ) ) {
+				$data['slug'] = $slug;
+				return $data;
+			}
 		}
 
 		return false;
@@ -281,7 +368,7 @@ class Task_Manager {
 	 * @param string $slug Project slug.
 	 * @return bool True on success.
 	 */
-	public static function delete_project( string $slug ) : bool {
+	public static function delete_project( string $slug ): bool {
 		$project = self::get_project( $slug );
 		if ( ! $project ) {
 			return false;
@@ -296,7 +383,7 @@ class Task_Manager {
 	 *
 	 * @return string Unique ID.
 	 */
-	private static function generate_task_id() : string {
+	private static function generate_task_id(): string {
 		return 'task_' . substr( md5( uniqid( '', true ) ), 0, 12 );
 	}
 
@@ -306,7 +393,7 @@ class Task_Manager {
 	 * @param string $text Task text.
 	 * @return array Array with 'text' (cleaned) and 'tags'.
 	 */
-	public static function extract_tags( string $text ) : array {
+	public static function extract_tags( string $text ): array {
 		$tags = array();
 		preg_match_all( '/#([a-zA-Z0-9_-]+)/', $text, $matches );
 
@@ -326,7 +413,7 @@ class Task_Manager {
 	 * @param string $text Task text.
 	 * @return array Array with 'text' (cleaned) and 'priority'.
 	 */
-	public static function extract_priority( string $text ) : array {
+	public static function extract_priority( string $text ): array {
 		$priority = 0;
 		if ( preg_match( '/!([1-3])/', $text, $match ) ) {
 			$priority = (int) $match[1];
@@ -348,11 +435,6 @@ class Task_Manager {
 	 * @return array|false Task data or false on failure.
 	 */
 	public static function add_task( string $project_slug, string $text, string $notes = '' ) {
-		$project = self::get_project( $project_slug );
-		if ( ! $project ) {
-			return false;
-		}
-
 		// Extract tags and priority from text.
 		$tag_data      = self::extract_tags( $text );
 		$priority_data = self::extract_priority( $tag_data['text'] );
@@ -367,9 +449,16 @@ class Task_Manager {
 			'created'   => current_time( 'mysql' ),
 		);
 
-		$project['tasks'][] = $task;
+		$result = self::mutate_project(
+			$project_slug,
+			static function ( array $project ) use ( $task ) {
+				$project['tasks']   = isset( $project['tasks'] ) && is_array( $project['tasks'] ) ? $project['tasks'] : array();
+				$project['tasks'][] = $task;
+				return $project;
+			}
+		);
 
-		if ( self::save_project( $project_slug, $project ) ) {
+		if ( $result['success'] ) {
 			return $task;
 		}
 
@@ -385,53 +474,55 @@ class Task_Manager {
 	 * @return array|false Updated task or false on failure.
 	 */
 	public static function update_task( string $project_slug, string $task_id, array $updates ) {
-		$project = self::get_project( $project_slug );
-		if ( ! $project ) {
-			return false;
-		}
-
-		foreach ( $project['tasks'] as &$task ) {
-			if ( $task['id'] === $task_id ) {
-				// Handle text updates (may contain new tags/priority).
-				if ( isset( $updates['text'] ) ) {
-					$tag_data      = self::extract_tags( $updates['text'] );
-					$priority_data = self::extract_priority( $tag_data['text'] );
-
-					$task['text'] = $priority_data['text'];
-
-					// Merge new tags.
-					if ( ! empty( $tag_data['tags'] ) ) {
-						$task['tags'] = array_unique( array_merge( $task['tags'] ?? array(), $tag_data['tags'] ) );
+		$updated = false;
+		$result  = self::mutate_project(
+			$project_slug,
+			static function ( array $project ) use ( $task_id, $updates, &$updated ) {
+				foreach ( $project['tasks'] as &$task ) {
+					if ( ! isset( $task['id'] ) || $task_id !== $task['id'] ) {
+						continue;
 					}
 
-					// Update priority if specified.
-					if ( $priority_data['priority'] > 0 ) {
-						$task['priority'] = $priority_data['priority'];
+					// Handle text updates (may contain new tags/priority).
+					if ( isset( $updates['text'] ) ) {
+						$tag_data      = self::extract_tags( $updates['text'] );
+						$priority_data = self::extract_priority( $tag_data['text'] );
+
+						$task['text'] = $priority_data['text'];
+
+						// Merge new tags.
+						if ( ! empty( $tag_data['tags'] ) ) {
+							$task['tags'] = array_unique( array_merge( $task['tags'] ?? array(), $tag_data['tags'] ) );
+						}
+
+						// Update priority if specified.
+						if ( $priority_data['priority'] > 0 ) {
+							$task['priority'] = $priority_data['priority'];
+						}
 					}
-				}
 
-				// Direct updates.
-				if ( isset( $updates['completed'] ) ) {
-					$task['completed'] = (bool) $updates['completed'];
-				}
-				if ( isset( $updates['notes'] ) ) {
-					$task['notes'] = $updates['notes'];
-				}
-				if ( isset( $updates['tags'] ) ) {
-					$task['tags'] = (array) $updates['tags'];
-				}
-				if ( isset( $updates['priority'] ) ) {
-					$task['priority'] = (int) $updates['priority'];
-				}
+					// Direct updates.
+					if ( isset( $updates['completed'] ) ) {
+						$task['completed'] = (bool) $updates['completed'];
+					}
+					if ( isset( $updates['notes'] ) ) {
+						$task['notes'] = $updates['notes'];
+					}
+					if ( isset( $updates['tags'] ) ) {
+						$task['tags'] = (array) $updates['tags'];
+					}
+					if ( isset( $updates['priority'] ) ) {
+						$task['priority'] = (int) $updates['priority'];
+					}
 
-				if ( self::save_project( $project_slug, $project ) ) {
-					return $task;
+					$updated = $task;
+					return $project;
 				}
-				break;
+				return false;
 			}
-		}
+		);
 
-		return false;
+		return $result['success'] ? $updated : false;
 	}
 
 	/**
@@ -441,20 +532,28 @@ class Task_Manager {
 	 * @param string $task_id      Task ID.
 	 * @return bool True on success.
 	 */
-	public static function delete_task( string $project_slug, string $task_id ) : bool {
-		$project = self::get_project( $project_slug );
-		if ( ! $project ) {
-			return false;
-		}
+	public static function delete_task( string $project_slug, string $task_id ): bool {
+		$deleted = false;
+		$result  = self::mutate_project(
+			$project_slug,
+			static function ( array $project ) use ( $task_id, &$deleted ) {
+				$project['tasks'] = array_values(
+					array_filter(
+						$project['tasks'],
+						static function ( $task ) use ( $task_id, &$deleted ) {
+							if ( isset( $task['id'] ) && $task_id === $task['id'] ) {
+								$deleted = true;
+								return false;
+							}
+							return true;
+						}
+					)
+				);
+				return $deleted ? $project : false;
+			}
+		);
 
-		$project['tasks'] = array_filter( $project['tasks'], function( $task ) use ( $task_id ) {
-			return $task['id'] !== $task_id;
-		});
-
-		// Re-index array.
-		$project['tasks'] = array_values( $project['tasks'] );
-
-		return self::save_project( $project_slug, $project );
+		return $result['success'] && $deleted;
 	}
 
 	/**
@@ -465,21 +564,22 @@ class Task_Manager {
 	 * @return bool|null New completion state or null on failure.
 	 */
 	public static function toggle_task( string $project_slug, string $task_id ) {
-		$project = self::get_project( $project_slug );
-		if ( ! $project ) {
-			return null;
-		}
-
 		$new_state = null;
-		foreach ( $project['tasks'] as &$task ) {
-			if ( $task['id'] === $task_id ) {
-				$task['completed'] = ! $task['completed'];
-				$new_state         = $task['completed'];
-				break;
+		$result    = self::mutate_project(
+			$project_slug,
+			static function ( array $project ) use ( $task_id, &$new_state ) {
+				foreach ( $project['tasks'] as &$task ) {
+					if ( isset( $task['id'] ) && $task_id === $task['id'] ) {
+						$task['completed'] = empty( $task['completed'] );
+						$new_state         = $task['completed'];
+						return $project;
+					}
+				}
+				return false;
 			}
-		}
+		);
 
-		if ( null !== $new_state && self::save_project( $project_slug, $project ) ) {
+		if ( $result['success'] && null !== $new_state ) {
 			return $new_state;
 		}
 
@@ -493,36 +593,34 @@ class Task_Manager {
 	 * @param array  $task_ids     Ordered task IDs.
 	 * @return bool True on success.
 	 */
-	public static function reorder_tasks( string $project_slug, array $task_ids ) : bool {
-		$project = self::get_project( $project_slug );
-		if ( ! $project ) {
-			return false;
-		}
+	public static function reorder_tasks( string $project_slug, array $task_ids ): bool {
+		$result = self::mutate_project(
+			$project_slug,
+			static function ( array $project ) use ( $task_ids ) {
+				$tasks_by_id = array();
+				foreach ( $project['tasks'] as $task ) {
+					$tasks_by_id[ $task['id'] ] = $task;
+				}
 
-		// Build lookup.
-		$tasks_by_id = array();
-		foreach ( $project['tasks'] as $task ) {
-			$tasks_by_id[ $task['id'] ] = $task;
-		}
+				$new_tasks = array();
+				foreach ( $task_ids as $id ) {
+					if ( isset( $tasks_by_id[ $id ] ) ) {
+						$new_tasks[] = $tasks_by_id[ $id ];
+					}
+				}
 
-		// Reorder.
-		$new_tasks = array();
-		foreach ( $task_ids as $id ) {
-			if ( isset( $tasks_by_id[ $id ] ) ) {
-				$new_tasks[] = $tasks_by_id[ $id ];
+				foreach ( $tasks_by_id as $id => $task ) {
+					if ( ! in_array( $id, $task_ids, true ) ) {
+						$new_tasks[] = $task;
+					}
+				}
+
+				$project['tasks'] = $new_tasks;
+				return $project;
 			}
-		}
+		);
 
-		// Add any tasks not in the ID list (safety).
-		foreach ( $tasks_by_id as $id => $task ) {
-			if ( ! in_array( $id, $task_ids, true ) ) {
-				$new_tasks[] = $task;
-			}
-		}
-
-		$project['tasks'] = $new_tasks;
-
-		return self::save_project( $project_slug, $project );
+		return $result['success'];
 	}
 
 	/**
@@ -531,13 +629,13 @@ class Task_Manager {
 	 * @param array $project Project data.
 	 * @return array Statistics.
 	 */
-	public static function get_stats( array $project ) : array {
+	public static function get_stats( array $project ): array {
 		$total     = count( $project['tasks'] ?? array() );
 		$completed = 0;
 
 		foreach ( $project['tasks'] ?? array() as $task ) {
 			if ( ! empty( $task['completed'] ) ) {
-				$completed++;
+				++$completed;
 			}
 		}
 
@@ -554,7 +652,7 @@ class Task_Manager {
 	 *
 	 * @return void
 	 */
-	public static function register_dashboard_widgets() : void {
+	public static function register_dashboard_widgets(): void {
 		if ( ! \current_user_can( 'manage_options' ) ) {
 			return;
 		}
@@ -570,7 +668,7 @@ class Task_Manager {
 						\__( 'Tasks: %s', 'functionalities' ),
 						\esc_html( $project['name'] )
 					),
-					function() use ( $slug ) {
+					function () use ( $slug ) {
 						self::render_dashboard_widget( $slug );
 					}
 				);
@@ -584,7 +682,7 @@ class Task_Manager {
 	 * @param string $project_slug Project slug.
 	 * @return void
 	 */
-	public static function render_dashboard_widget( string $project_slug ) : void {
+	public static function render_dashboard_widget( string $project_slug ): void {
 		$project = self::get_project( $project_slug );
 		if ( ! $project ) {
 			echo '<p>' . \esc_html__( 'Project not found.', 'functionalities' ) . '</p>';
@@ -605,15 +703,19 @@ class Task_Manager {
 			</div>
 			<ul style="margin: 0; padding: 0; list-style: none; max-height: 200px; overflow-y: auto;">
 				<?php
-				$pending_tasks = array_filter( $project['tasks'], function( $task ) {
-					return empty( $task['completed'] );
-				});
+				$pending_tasks = array_filter(
+					$project['tasks'],
+					function ( $task ) {
+						return empty( $task['completed'] );
+					}
+				);
 				$pending_tasks = array_slice( $pending_tasks, 0, 5 ); // Show top 5.
 
 				if ( empty( $pending_tasks ) ) :
 					?>
 					<li style="color: #646970; padding: 5px 0;"><?php \esc_html_e( 'All tasks completed!', 'functionalities' ); ?></li>
-				<?php else :
+					<?php
+				else :
 					foreach ( $pending_tasks as $task ) :
 						$priority_class = '';
 						if ( ! empty( $task['priority'] ) ) {
@@ -633,7 +735,8 @@ class Task_Manager {
 								<?php endif; ?>
 							</span>
 						</li>
-					<?php endforeach;
+						<?php
+					endforeach;
 				endif;
 				?>
 			</ul>
@@ -653,7 +756,7 @@ class Task_Manager {
 	 *
 	 * @return bool True if valid.
 	 */
-	private static function verify_ajax() : bool {
+	private static function verify_ajax(): bool {
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce doesn't need sanitization.
 		$nonce = isset( $_POST['nonce'] ) ? \wp_unslash( $_POST['nonce'] ) : '';
 		if ( empty( $nonce ) || ! \wp_verify_nonce( $nonce, 'functionalities_task_manager' ) ) {
@@ -672,7 +775,7 @@ class Task_Manager {
 	/**
 	 * AJAX: Create project.
 	 */
-	public static function ajax_create_project() : void {
+	public static function ajax_create_project(): void {
 		if ( ! self::verify_ajax() ) {
 			return;
 		}
@@ -686,10 +789,12 @@ class Task_Manager {
 
 		$project = self::create_project( $name );
 		if ( $project ) {
-			\wp_send_json_success( array(
-				'message' => \__( 'Project created.', 'functionalities' ),
-				'project' => $project,
-			));
+			\wp_send_json_success(
+				array(
+					'message' => \__( 'Project created.', 'functionalities' ),
+					'project' => $project,
+				)
+			);
 		} else {
 			\wp_send_json_error( array( 'message' => \__( 'Failed to create project.', 'functionalities' ) ) );
 		}
@@ -698,7 +803,7 @@ class Task_Manager {
 	/**
 	 * AJAX: Delete project.
 	 */
-	public static function ajax_delete_project() : void {
+	public static function ajax_delete_project(): void {
 		if ( ! self::verify_ajax() ) {
 			return;
 		}
@@ -720,7 +825,7 @@ class Task_Manager {
 	/**
 	 * AJAX: Add task.
 	 */
-	public static function ajax_add_task() : void {
+	public static function ajax_add_task(): void {
 		if ( ! self::verify_ajax() ) {
 			return;
 		}
@@ -728,9 +833,9 @@ class Task_Manager {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 		$project = isset( $_POST['project'] ) ? \sanitize_key( $_POST['project'] ) : '';
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
-		$text    = isset( $_POST['text'] ) ? \sanitize_text_field( \wp_unslash( $_POST['text'] ) ) : '';
+		$text = isset( $_POST['text'] ) ? \sanitize_text_field( \wp_unslash( $_POST['text'] ) ) : '';
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
-		$notes   = isset( $_POST['notes'] ) ? \sanitize_textarea_field( \wp_unslash( $_POST['notes'] ) ) : '';
+		$notes = isset( $_POST['notes'] ) ? \sanitize_textarea_field( \wp_unslash( $_POST['notes'] ) ) : '';
 
 		if ( empty( $project ) || empty( $text ) ) {
 			\wp_send_json_error( array( 'message' => \__( 'Project and task text are required.', 'functionalities' ) ) );
@@ -739,10 +844,12 @@ class Task_Manager {
 
 		$task = self::add_task( $project, $text, $notes );
 		if ( $task ) {
-			\wp_send_json_success( array(
-				'message' => \__( 'Task added.', 'functionalities' ),
-				'task'    => $task,
-			));
+			\wp_send_json_success(
+				array(
+					'message' => \__( 'Task added.', 'functionalities' ),
+					'task'    => $task,
+				)
+			);
 		} else {
 			\wp_send_json_error( array( 'message' => \__( 'Failed to add task.', 'functionalities' ) ) );
 		}
@@ -751,16 +858,16 @@ class Task_Manager {
 	/**
 	 * AJAX: Update task.
 	 */
-	public static function ajax_update_task() : void {
+	public static function ajax_update_task(): void {
 		if ( ! self::verify_ajax() ) {
 			return;
 		}
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
-		$project  = isset( $_POST['project'] ) ? \sanitize_key( $_POST['project'] ) : '';
+		$project = isset( $_POST['project'] ) ? \sanitize_key( $_POST['project'] ) : '';
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
-		$task_id  = isset( $_POST['task_id'] ) ? \sanitize_key( $_POST['task_id'] ) : '';
-		$updates  = array();
+		$task_id = isset( $_POST['task_id'] ) ? \sanitize_key( $_POST['task_id'] ) : '';
+		$updates = array();
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 		if ( isset( $_POST['text'] ) ) {
@@ -779,7 +886,7 @@ class Task_Manager {
 		}
 		// phpcs:disable WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- Nonce verified in verify_ajax(). Tags are sanitized with array_map.
 		if ( isset( $_POST['tags'] ) ) {
-			$tags = is_array( $_POST['tags'] ) ? \wp_unslash( $_POST['tags'] ) : explode( ',', \wp_unslash( $_POST['tags'] ) );
+			$tags            = is_array( $_POST['tags'] ) ? \wp_unslash( $_POST['tags'] ) : explode( ',', \wp_unslash( $_POST['tags'] ) );
 			$updates['tags'] = array_map( 'sanitize_key', $tags );
 		}
 		// phpcs:enable
@@ -791,10 +898,12 @@ class Task_Manager {
 
 		$task = self::update_task( $project, $task_id, $updates );
 		if ( $task ) {
-			\wp_send_json_success( array(
-				'message' => \__( 'Task updated.', 'functionalities' ),
-				'task'    => $task,
-			));
+			\wp_send_json_success(
+				array(
+					'message' => \__( 'Task updated.', 'functionalities' ),
+					'task'    => $task,
+				)
+			);
 		} else {
 			\wp_send_json_error( array( 'message' => \__( 'Failed to update task.', 'functionalities' ) ) );
 		}
@@ -803,7 +912,7 @@ class Task_Manager {
 	/**
 	 * AJAX: Delete task.
 	 */
-	public static function ajax_delete_task() : void {
+	public static function ajax_delete_task(): void {
 		if ( ! self::verify_ajax() ) {
 			return;
 		}
@@ -828,7 +937,7 @@ class Task_Manager {
 	/**
 	 * AJAX: Toggle task.
 	 */
-	public static function ajax_toggle_task() : void {
+	public static function ajax_toggle_task(): void {
 		if ( ! self::verify_ajax() ) {
 			return;
 		}
@@ -845,10 +954,12 @@ class Task_Manager {
 
 		$new_state = self::toggle_task( $project, $task_id );
 		if ( null !== $new_state ) {
-			\wp_send_json_success( array(
-				'message'   => \__( 'Task updated.', 'functionalities' ),
-				'completed' => $new_state,
-			));
+			\wp_send_json_success(
+				array(
+					'message'   => \__( 'Task updated.', 'functionalities' ),
+					'completed' => $new_state,
+				)
+			);
 		} else {
 			\wp_send_json_error( array( 'message' => \__( 'Failed to toggle task.', 'functionalities' ) ) );
 		}
@@ -857,13 +968,13 @@ class Task_Manager {
 	/**
 	 * AJAX: Reorder tasks.
 	 */
-	public static function ajax_reorder_tasks() : void {
+	public static function ajax_reorder_tasks(): void {
 		if ( ! self::verify_ajax() ) {
 			return;
 		}
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
-		$project  = isset( $_POST['project'] ) ? \sanitize_key( $_POST['project'] ) : '';
+		$project = isset( $_POST['project'] ) ? \sanitize_key( $_POST['project'] ) : '';
 		// phpcs:disable WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- Nonce verified. IDs are sanitized with array_map.
 		$task_ids = isset( $_POST['task_ids'] ) ? (array) \wp_unslash( $_POST['task_ids'] ) : array();
 		$task_ids = array_map( 'sanitize_key', $task_ids );
@@ -884,7 +995,7 @@ class Task_Manager {
 	/**
 	 * AJAX: Import project.
 	 */
-	public static function ajax_import_project() : void {
+	public static function ajax_import_project(): void {
 		if ( ! self::verify_ajax() ) {
 			return;
 		}
@@ -904,15 +1015,6 @@ class Task_Manager {
 
 		// Sanitize imported data.
 		$data['name'] = isset( $data['name'] ) ? \sanitize_text_field( $data['name'] ) : '';
-
-		// Create project with imported data.
-		$slug          = sanitize_title( $data['name'] );
-		$original_slug = $slug;
-		$counter       = 1;
-		while ( self::get_project( $slug ) ) {
-			$slug = $original_slug . '-' . $counter;
-			++$counter;
-		}
 
 		// Ensure required fields with sanitization.
 		$data['created']     = isset( $data['created'] ) ? \sanitize_text_field( $data['created'] ) : current_time( 'mysql' );
@@ -937,12 +1039,24 @@ class Task_Manager {
 			$task['id'] = self::generate_task_id();
 		}
 
-		if ( self::save_project( $slug, $data ) ) {
+		$original_slug = sanitize_title( $data['name'] );
+		$slug          = '';
+		for ( $counter = 0; $counter < 100; ++$counter ) {
+			$candidate = 0 === $counter ? $original_slug : $original_slug . '-' . $counter;
+			if ( self::create_project_file( $candidate, $data ) ) {
+				$slug = $candidate;
+				break;
+			}
+		}
+
+		if ( '' !== $slug ) {
 			$data['slug'] = $slug;
-			\wp_send_json_success( array(
-				'message' => \__( 'Project imported.', 'functionalities' ),
-				'project' => $data,
-			));
+			\wp_send_json_success(
+				array(
+					'message' => \__( 'Project imported.', 'functionalities' ),
+					'project' => $data,
+				)
+			);
 		} else {
 			\wp_send_json_error( array( 'message' => \__( 'Failed to import project.', 'functionalities' ) ) );
 		}
@@ -951,7 +1065,7 @@ class Task_Manager {
 	/**
 	 * AJAX: Export project.
 	 */
-	public static function ajax_export_project() : void {
+	public static function ajax_export_project(): void {
 		if ( ! self::verify_ajax() ) {
 			return;
 		}
@@ -972,21 +1086,23 @@ class Task_Manager {
 		// Remove internal fields.
 		unset( $project['slug'], $project['file_path'] );
 
-		\wp_send_json_success( array(
-			'json' => wp_json_encode( $project, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ),
-		));
+		\wp_send_json_success(
+			array(
+				'json' => wp_json_encode( $project, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ),
+			)
+		);
 	}
 
 	/**
 	 * AJAX: Update widget setting.
 	 */
-	public static function ajax_update_widget_setting() : void {
+	public static function ajax_update_widget_setting(): void {
 		if ( ! self::verify_ajax() ) {
 			return;
 		}
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
-		$slug        = isset( $_POST['project'] ) ? \sanitize_key( $_POST['project'] ) : '';
+		$slug = isset( $_POST['project'] ) ? \sanitize_key( $_POST['project'] ) : '';
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in verify_ajax().
 		$show_widget = isset( $_POST['show_widget'] ) && $_POST['show_widget'] === 'true';
 
@@ -995,19 +1111,21 @@ class Task_Manager {
 			return;
 		}
 
-		$project = self::get_project( $slug );
-		if ( ! $project ) {
-			\wp_send_json_error( array( 'message' => \__( 'Project not found.', 'functionalities' ) ) );
-			return;
-		}
+		$result = self::mutate_project(
+			$slug,
+			static function ( array $project ) use ( $show_widget ) {
+				$project['show_widget'] = $show_widget;
+				return $project;
+			}
+		);
 
-		$project['show_widget'] = $show_widget;
-
-		if ( self::save_project( $slug, $project ) ) {
-			\wp_send_json_success( array(
-				'message'     => \__( 'Widget setting updated.', 'functionalities' ),
-				'show_widget' => $show_widget,
-			));
+		if ( $result['success'] ) {
+			\wp_send_json_success(
+				array(
+					'message'     => \__( 'Widget setting updated.', 'functionalities' ),
+					'show_widget' => $show_widget,
+				)
+			);
 		} else {
 			\wp_send_json_error( array( 'message' => \__( 'Failed to update setting.', 'functionalities' ) ) );
 		}
@@ -1019,7 +1137,7 @@ class Task_Manager {
 	 * Searches for published and draft posts matching the search term.
 	 * Used for @mention autocomplete in task input.
 	 */
-	public static function ajax_search_posts() : void {
+	public static function ajax_search_posts(): void {
 		if ( ! self::verify_ajax() ) {
 			return;
 		}
@@ -1067,7 +1185,7 @@ class Task_Manager {
 	/**
 	 * AJAX: Import all draft posts as tasks.
 	 */
-	public static function ajax_import_drafts() : void {
+	public static function ajax_import_drafts(): void {
 		if ( ! self::verify_ajax() ) {
 			return;
 		}
@@ -1092,10 +1210,10 @@ class Task_Manager {
 		if ( $query->have_posts() ) {
 			while ( $query->have_posts() ) {
 				$query->the_post(); // Sets global $post
-				
+
 				// Get title
 				$text = \sanitize_text_field( \get_the_title() );
-				
+
 				// Append WP tags as hashtags if available (for posts)
 				$tags = \get_the_tags();
 				if ( $tags ) {
@@ -1110,16 +1228,18 @@ class Task_Manager {
 				// NOTE: We do not delete the draft post. We just create a task from it.
 				// Pass title to add_task, which handles hashtag (#tag) and priority (!1) extraction.
 				if ( self::add_task( $project_slug, $text ) ) {
-					$count++;
+					++$count;
 				}
 			}
 			\wp_reset_postdata();
 		}
 
-		\wp_send_json_success( array(
-			/* translators: %d: number of imported draft posts */
-			'message' => sprintf( \__( 'Imported %d draft posts.', 'functionalities' ), $count ),
-			'count'   => $count
-		) );
+		\wp_send_json_success(
+			array(
+				/* translators: %d: number of imported draft posts */
+				'message' => sprintf( \__( 'Imported %d draft posts.', 'functionalities' ), $count ),
+				'count'   => $count,
+			)
+		);
 	}
 }

@@ -29,7 +29,7 @@ class Link_Management {
 	 *
 	 * @return void
 	 */
-	public static function init() : void {
+	public static function init(): void {
 		$opts = self::get_options();
 
 		if ( empty( $opts['enabled'] ) ) {
@@ -71,22 +71,22 @@ class Link_Management {
 	 *
 	 * @return array Options array.
 	 */
-	protected static function get_options() : array {
+	protected static function get_options(): array {
 		if ( null !== self::$options ) {
 			return self::$options;
 		}
 
-		$defaults = array(
-			'enabled'                       => false,
-			'nofollow_external'             => false,
-			'exceptions'                    => '',
-			'open_external_new_tab'         => false,
-			'open_internal_new_tab'         => false,
-			'internal_new_tab_exceptions'   => '',
-			'json_preset_url'               => '',
-			'enable_developer_filters'      => false,
+		$defaults      = array(
+			'enabled'                     => false,
+			'nofollow_external'           => false,
+			'exceptions'                  => '',
+			'open_external_new_tab'       => false,
+			'open_internal_new_tab'       => false,
+			'internal_new_tab_exceptions' => '',
+			'json_preset_url'             => '',
+			'enable_developer_filters'    => false,
 		);
-		$opts = (array) \get_option( 'functionalities_link_management', $defaults );
+		$opts          = (array) \get_option( 'functionalities_link_management', $defaults );
 		self::$options = array_merge( $defaults, $opts );
 		return self::$options;
 	}
@@ -103,7 +103,7 @@ class Link_Management {
 	 *
 	 * @return void
 	 */
-	public static function load_json_preset() : void {
+	public static function load_json_preset(): void {
 		$opts = self::get_options();
 
 		$json_path = '';
@@ -181,7 +181,7 @@ class Link_Management {
 	 * @param string $source The file path or URL to check.
 	 * @return bool True if valid source.
 	 */
-	private static function is_valid_json_source( string $source ) : bool {
+	private static function is_valid_json_source( string $source ): bool {
 		// Check if it's a URL.
 		if ( filter_var( $source, FILTER_VALIDATE_URL ) ) {
 			return true;
@@ -225,6 +225,7 @@ class Link_Management {
 			return false;
 		}
 
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Local, administrator-configured file path.
 		return file_get_contents( $source );
 	}
 
@@ -238,7 +239,7 @@ class Link_Management {
 	 * @param string $content The content to filter.
 	 * @return string Filtered content.
 	 */
-	public static function filter_content( string $content ) : string {
+	public static function filter_content( string $content ): string {
 		// Skip in admin, feeds, and REST requests.
 		$is_rest = \defined( 'REST_REQUEST' ) && \constant( 'REST_REQUEST' );
 		if ( \is_admin() || \is_feed() || $is_rest ) {
@@ -269,7 +270,7 @@ class Link_Management {
 	 * @param string $content HTML content containing links to process.
 	 * @return string Processed content with nofollow/target attributes applied.
 	 */
-	public static function process_content( string $content ) : string {
+	public static function process_content( string $content ): string {
 		if ( trim( $content ) === '' || false === strpos( $content, '<a' ) ) {
 			return $content;
 		}
@@ -283,26 +284,27 @@ class Link_Management {
 		$manual_exceptions = self::parse_exceptions( (string) $opts['exceptions'] );
 		$exceptions        = array_unique( array_merge( $manual_exceptions, self::$cached_exceptions ) );
 		$internal_ex       = self::parse_exceptions( (string) $opts['internal_new_tab_exceptions'] );
-		$site_host   = (string) \wp_parse_url( \home_url(), PHP_URL_HOST );
+		$site_host         = (string) \wp_parse_url( \home_url(), PHP_URL_HOST );
 
 		$libxml_previous = libxml_use_internal_errors( true );
-		$dom = new \DOMDocument( '1.0', 'UTF-8' );
-		$html = '<div id="__functionalities_wrapper">' . $content . '</div>';
+		$dom             = new \DOMDocument( '1.0', 'UTF-8' );
+		$html            = '<div id="__functionalities_wrapper">' . $content . '</div>';
 		$dom->loadHTML( '<?xml encoding="utf-8" ?>' . $html );
 
 		$xpath = new \DOMXPath( $dom );
 		$nodes = $xpath->query( '//a[@href]' );
 		if ( $nodes instanceof \DOMNodeList ) {
 			foreach ( $nodes as $a ) {
-				$href = (string) $a->getAttribute( 'href' );
+				$href        = (string) $a->getAttribute( 'href' );
 				$is_external = self::is_external_url( $href, $site_host );
 
 				// Nofollow external
 				if ( $is_external && ! self::is_exception( $href, $exceptions ) && ! empty( $opts['nofollow_external'] ) ) {
-					$rel = (string) $a->getAttribute( 'rel' );
+					$rel   = (string) $a->getAttribute( 'rel' );
 					$parts = preg_split( '/\s+/', strtolower( $rel ) );
 					$parts = array_filter( array_unique( array_map( 'trim', (array) $parts ) ) );
-					if ( ! in_array( 'nofollow', $parts, true ) ) { $parts[] = 'nofollow'; }
+					if ( ! in_array( 'nofollow', $parts, true ) ) {
+						$parts[] = 'nofollow'; }
 					$a->setAttribute( 'rel', implode( ' ', $parts ) );
 				}
 
@@ -310,9 +312,10 @@ class Link_Management {
 				if ( $is_external && ! empty( $opts['open_external_new_tab'] ) ) {
 					$a->setAttribute( 'target', '_blank' );
 					// add noopener
-					$rel = strtolower( (string) $a->getAttribute( 'rel' ) );
+					$rel   = strtolower( (string) $a->getAttribute( 'rel' ) );
 					$parts = array_filter( array_unique( preg_split( '/\s+/', $rel ) ) );
-					if ( ! in_array( 'noopener', $parts, true ) ) { $parts[] = 'noopener'; }
+					if ( ! in_array( 'noopener', $parts, true ) ) {
+						$parts[] = 'noopener'; }
 					$a->setAttribute( 'rel', implode( ' ', $parts ) );
 				}
 
@@ -320,14 +323,17 @@ class Link_Management {
 				if ( ! $is_external && ! empty( $opts['open_internal_new_tab'] ) ) {
 					// If link host matches an exception domain, skip
 					$test = $href;
-					if ( strpos( $href, '//' ) === 0 ) { $test = 'http:' . $href; }
+					if ( strpos( $href, '//' ) === 0 ) {
+						$test = 'http:' . $href; }
 					$host = (string) \wp_parse_url( $test, PHP_URL_HOST );
 					$host = strtolower( $host );
 					$skip = false;
 					foreach ( $internal_ex as $exd ) {
-						if ( $exd === '' ) { continue; }
+						if ( $exd === '' ) {
+							continue; }
 						if ( $host === $exd || ( $host !== '' && substr( $host, - ( strlen( $exd ) + 1 ) ) === '.' . $exd ) ) {
-							$skip = true; break;
+							$skip = true;
+							break;
 						}
 					}
 					if ( ! $skip ) {
@@ -337,7 +343,7 @@ class Link_Management {
 			}
 		}
 
-		$out = '';
+		$out     = '';
 		$wrapper = $dom->getElementById( '__functionalities_wrapper' );
 		if ( $wrapper ) {
 			foreach ( $wrapper->childNodes as $child ) {
@@ -363,7 +369,7 @@ class Link_Management {
 	 * @param string $raw Raw exception text (one per line or comma-separated).
 	 * @return array Array of exceptions.
 	 */
-	protected static function parse_exceptions( string $raw ) : array {
+	protected static function parse_exceptions( string $raw ): array {
 		$cache_key = md5( $raw );
 		if ( isset( self::$runtime_exceptions_cache[ $cache_key ] ) ) {
 			return self::$runtime_exceptions_cache[ $cache_key ];
@@ -397,7 +403,7 @@ class Link_Management {
 	 * @param string $target_url The URL to add nofollow to.
 	 * @return array Results with success count and errors.
 	 */
-	public static function update_links_in_database( string $target_url ) : array {
+	public static function update_links_in_database( string $target_url ): array {
 		global $wpdb;
 
 		$target_url = trim( $target_url );
@@ -444,7 +450,7 @@ class Link_Management {
 		$processed     = 0;
 
 		foreach ( $posts as $post ) {
-			$processed++;
+			++$processed;
 
 			// Process links in content.
 			$new_content = self::add_nofollow_to_url_in_content( $post->post_content, $target_url );
@@ -459,7 +465,7 @@ class Link_Management {
 					array( '%d' )
 				);
 				\clean_post_cache( $post->ID );
-				$updated_count++;
+				++$updated_count;
 			}
 
 			// Prevent timeout on large batches.
@@ -495,7 +501,7 @@ class Link_Management {
 	 * @param string $target_url URL to add nofollow to.
 	 * @return string Modified content.
 	 */
-	protected static function add_nofollow_to_url_in_content( string $content, string $target_url ) : string {
+	protected static function add_nofollow_to_url_in_content( string $content, string $target_url ): string {
 		// Early exit if no links.
 		if ( false === strpos( $content, '<a ' ) ) {
 			return $content;
@@ -504,22 +510,26 @@ class Link_Management {
 		// Regex to find links with the target URL.
 		$pattern = '/<a\s+([^>]*href=["\']' . preg_quote( $target_url, '/' ) . '["\'][^>]*)>/i';
 
-		return preg_replace_callback( $pattern, function( $matches ) {
-			$tag        = $matches[0];
-			$attributes = $matches[1];
+		return preg_replace_callback(
+			$pattern,
+			function ( $matches ) {
+				$tag        = $matches[0];
+				$attributes = $matches[1];
 
-			// Check if already has nofollow.
-			if ( preg_match( '/rel=["\']([^"\']*nofollow[^"\']*)["\']/i', $attributes ) ) {
-				return $tag;
-			}
+				// Check if already has nofollow.
+				if ( preg_match( '/rel=["\']([^"\']*nofollow[^"\']*)["\']/i', $attributes ) ) {
+					return $tag;
+				}
 
-			// Add or append nofollow.
-			if ( preg_match( '/rel=["\']/i', $attributes ) ) {
-				return preg_replace( '/rel=["\']([^"\']*)["\']/i', 'rel="$1 nofollow"', $tag );
-			} else {
-				return str_replace( '<a ', '<a rel="nofollow" ', $tag );
-			}
-		}, $content );
+				// Add or append nofollow.
+				if ( preg_match( '/rel=["\']/i', $attributes ) ) {
+					return preg_replace( '/rel=["\']([^"\']*)["\']/i', 'rel="$1 nofollow"', $tag );
+				} else {
+					return str_replace( '<a ', '<a rel="nofollow" ', $tag );
+				}
+			},
+			$content
+		);
 	}
 
 	/**
@@ -529,10 +539,12 @@ class Link_Management {
 	 * @param string $site_host The site's hostname.
 	 * @return bool True if external, false otherwise.
 	 */
-	protected static function is_external_url( string $href, string $site_host ) : bool {
+	protected static function is_external_url( string $href, string $site_host ): bool {
 		$href = trim( $href );
-		if ( $href === '' ) { return false; }
-		if ( $href[0] === '#' ) { return false; }
+		if ( $href === '' ) {
+			return false; }
+		if ( $href[0] === '#' ) {
+			return false; }
 		$lower = strtolower( $href );
 		if ( strpos( $lower, 'mailto:' ) === 0 || strpos( $lower, 'tel:' ) === 0 || strpos( $lower, 'javascript:' ) === 0 ) {
 			return false;
@@ -546,7 +558,8 @@ class Link_Management {
 			$test = 'http:' . $href;
 		}
 		$host = (string) \wp_parse_url( $test, PHP_URL_HOST );
-		if ( $host === '' ) { return false; }
+		if ( $host === '' ) {
+			return false; }
 		return strcasecmp( $host, $site_host ) !== 0;
 	}
 
@@ -557,35 +570,42 @@ class Link_Management {
 	 * @param array  $exceptions Array of exception patterns.
 	 * @return bool True if matches exception, false otherwise.
 	 */
-	protected static function is_exception( string $href, array $exceptions ) : bool {
-		$h = strtolower( $href );
+	protected static function is_exception( string $href, array $exceptions ): bool {
+		$h    = strtolower( $href );
 		$host = '';
 		$test = $href;
-		if ( strpos( $href, '//' ) === 0 ) { $test = 'http:' . $href; }
+		if ( strpos( $href, '//' ) === 0 ) {
+			$test = 'http:' . $href; }
 		$tmpHost = \wp_parse_url( $test, PHP_URL_HOST );
-		if ( is_string( $tmpHost ) ) { $host = strtolower( $tmpHost ); }
+		if ( is_string( $tmpHost ) ) {
+			$host = strtolower( $tmpHost ); }
 
 		foreach ( $exceptions as $ex ) {
 			$ex = trim( $ex );
-			if ( $ex === '' ) { continue; }
+			if ( $ex === '' ) {
+				continue; }
 
 			// Full URL match (scheme optional if exception starts with //)
 			if ( strpos( $ex, '://' ) !== 0 && strpos( $ex, '//' ) === 0 ) {
 				$needle = $ex;
-				$hay = preg_replace( '#^https?:#', '', $h );
-				if ( strpos( $hay, $needle ) === 0 ) { return true; }
-			}
-			elseif ( strpos( $ex, '://' ) !== false ) {
-				if ( stripos( $h, $ex ) === 0 ) { return true; }
-			}
-			// Domain match
-			elseif ( strpos( $ex, '/' ) === false && strpos( $ex, '.' ) !== false ) {
+				$hay    = preg_replace( '#^https?:#', '', $h );
+				if ( strpos( $hay, $needle ) === 0 ) {
+					return true;
+				}
+			} elseif ( strpos( $ex, '://' ) !== false ) {
+				if ( stripos( $h, $ex ) === 0 ) {
+					return true;
+				}
+			} elseif ( strpos( $ex, '/' ) === false && strpos( $ex, '.' ) !== false ) {
+				// Domain match.
 				if ( $host === $ex || ( $host !== '' && substr( $host, - ( strlen( $ex ) + 1 ) ) === '.' . $ex ) ) {
 					return true;
 				}
 			}
 			// Partial value match
-			if ( stripos( $h, $ex ) !== false ) { return true; }
+			if ( stripos( $h, $ex ) !== false ) {
+				return true;
+			}
 		}
 		return false;
 	}

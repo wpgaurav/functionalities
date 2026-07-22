@@ -48,10 +48,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Progressive Web App endpoints and frontend behavior.
+ */
 class PWA {
 
 	const REWRITE_VERSION = '1.0.0';
 
+	/**
+	 * Cached module options.
+	 *
+	 * @var array|null
+	 */
 	private static $options = null;
 
 	/**
@@ -60,8 +68,12 @@ class PWA {
 	 * @since 1.1.0
 	 * @return void
 	 */
-	public static function init() : void {
-		self::register_routes();
+	public static function init(): void {
+		if ( \did_action( 'init' ) ) {
+			self::register_routes();
+		} else {
+			\add_action( 'init', array( __CLASS__, 'register_routes' ) );
+		}
 		\add_filter( 'query_vars', array( __CLASS__, 'register_query_vars' ) );
 		\add_action( 'template_redirect', array( __CLASS__, 'handle_endpoints' ) );
 		\add_action( 'update_option_functionalities_pwa', array( __CLASS__, 'on_option_update' ), 10, 2 );
@@ -82,7 +94,7 @@ class PWA {
 	 * @since 1.1.0
 	 * @return array Options array.
 	 */
-	public static function get_options() : array {
+	public static function get_options(): array {
 		if ( null !== self::$options ) {
 			return self::$options;
 		}
@@ -125,7 +137,7 @@ class PWA {
 			'rewrite_version'      => '',
 		);
 
-		$opts = (array) \get_option( 'functionalities_pwa', $defaults );
+		$opts          = (array) \get_option( 'functionalities_pwa', $defaults );
 		self::$options = array_merge( $defaults, $opts );
 
 		// Prefill empty fields from WordPress settings.
@@ -133,7 +145,7 @@ class PWA {
 			self::$options['app_name'] = \get_bloginfo( 'name' );
 		}
 		if ( self::$options['short_name'] === '' ) {
-			$name = \get_bloginfo( 'name' );
+			$name                        = \get_bloginfo( 'name' );
 			self::$options['short_name'] = mb_strlen( $name ) > 12 ? mb_substr( $name, 0, 12 ) : $name;
 		}
 		if ( self::$options['description'] === '' ) {
@@ -166,7 +178,7 @@ class PWA {
 	 * @since 1.1.0
 	 * @return bool
 	 */
-	private static function is_enabled() : bool {
+	private static function is_enabled(): bool {
 		$opts = self::get_options();
 
 		return (bool) \apply_filters( 'functionalities_pwa_enabled', ! empty( $opts['enabled'] ) );
@@ -182,7 +194,7 @@ class PWA {
 	 * @since 1.1.0
 	 * @return void
 	 */
-	public static function register_routes() : void {
+	public static function register_routes(): void {
 		\add_rewrite_rule( '^manifest\.webmanifest$', 'index.php?func_pwa_manifest=1', 'top' );
 		\add_rewrite_rule( '^functionalities-sw\.js$', 'index.php?func_pwa_sw=1', 'top' );
 		\add_rewrite_rule( '^functionalities-offline/?$', 'index.php?func_pwa_offline=1', 'top' );
@@ -195,7 +207,7 @@ class PWA {
 	 * @param array $vars Existing query vars.
 	 * @return array Modified query vars.
 	 */
-	public static function register_query_vars( array $vars ) : array {
+	public static function register_query_vars( array $vars ): array {
 		$vars[] = 'func_pwa_manifest';
 		$vars[] = 'func_pwa_sw';
 		$vars[] = 'func_pwa_offline';
@@ -210,7 +222,7 @@ class PWA {
 	 * @since 1.1.0
 	 * @return void
 	 */
-	public static function handle_endpoints() : void {
+	public static function handle_endpoints(): void {
 		if ( ! self::is_enabled() ) {
 			return;
 		}
@@ -242,7 +254,7 @@ class PWA {
 	 * @since 1.1.0
 	 * @return void
 	 */
-	private static function output_manifest() : void {
+	private static function output_manifest(): void {
 		$manifest = self::build_manifest();
 
 		while ( ob_get_level() ) {
@@ -265,7 +277,7 @@ class PWA {
 	 * @since 1.1.0
 	 * @return array Manifest data.
 	 */
-	private static function build_manifest() : array {
+	private static function build_manifest(): array {
 		$opts      = self::get_options();
 		$site_name = \get_bloginfo( 'name' );
 		$site_desc = \get_bloginfo( 'description' );
@@ -336,16 +348,32 @@ class PWA {
 	 * @since 1.1.0
 	 * @return array Icons array.
 	 */
-	private static function get_manifest_icons() : array {
+	private static function get_manifest_icons(): array {
 		$opts  = self::get_options();
 		$icons = array();
 		$seen  = array();
 
 		$sizes = array(
-			array( 'key' => 'icon_512', 'size' => '512x512', 'purpose' => 'any' ),
-			array( 'key' => 'icon_192', 'size' => '192x192', 'purpose' => 'any' ),
-			array( 'key' => 'maskable_icon_512', 'size' => '512x512', 'purpose' => 'maskable' ),
-			array( 'key' => 'maskable_icon_192', 'size' => '192x192', 'purpose' => 'maskable' ),
+			array(
+				'key'     => 'icon_512',
+				'size'    => '512x512',
+				'purpose' => 'any',
+			),
+			array(
+				'key'     => 'icon_192',
+				'size'    => '192x192',
+				'purpose' => 'any',
+			),
+			array(
+				'key'     => 'maskable_icon_512',
+				'size'    => '512x512',
+				'purpose' => 'maskable',
+			),
+			array(
+				'key'     => 'maskable_icon_192',
+				'size'    => '192x192',
+				'purpose' => 'maskable',
+			),
 		);
 
 		foreach ( $sizes as $def ) {
@@ -390,7 +418,7 @@ class PWA {
 	 * @param mixed $icon Attachment ID or URL.
 	 * @return string URL or empty string.
 	 */
-	private static function get_icon_url( $icon ) : string {
+	private static function get_icon_url( $icon ): string {
 		if ( empty( $icon ) ) {
 			return '';
 		}
@@ -410,7 +438,7 @@ class PWA {
 	 * @param string $url File URL.
 	 * @return string MIME type.
 	 */
-	private static function get_icon_mime( string $url ) : string {
+	private static function get_icon_mime( string $url ): string {
 		$ext = strtolower( pathinfo( wp_parse_url( $url, PHP_URL_PATH ) ?: '', PATHINFO_EXTENSION ) );
 		$map = array(
 			'png'  => 'image/png',
@@ -430,7 +458,7 @@ class PWA {
 	 * @since 1.1.0
 	 * @return array Shortcuts array.
 	 */
-	private static function get_manifest_shortcuts() : array {
+	private static function get_manifest_shortcuts(): array {
 		$opts = self::get_options();
 		$out  = array();
 
@@ -478,7 +506,7 @@ class PWA {
 	 * @since 1.1.0
 	 * @return array Screenshots array.
 	 */
-	private static function get_manifest_screenshots() : array {
+	private static function get_manifest_screenshots(): array {
 		$opts = self::get_options();
 		$out  = array();
 
@@ -524,7 +552,7 @@ class PWA {
 	 * @since 1.1.0
 	 * @return array Share target config.
 	 */
-	private static function build_share_target() : array {
+	private static function build_share_target(): array {
 		$opts   = self::get_options();
 		$action = trim( (string) ( $opts['share_target_action'] ?? '' ) );
 
@@ -564,23 +592,25 @@ class PWA {
 	 * @since 1.1.0
 	 * @return void
 	 */
-	private static function output_service_worker() : void {
+	private static function output_service_worker(): void {
 		$opts = self::get_options();
 
 		$config = array(
-			'version'    => ! empty( $opts['cache_version'] ) ? $opts['cache_version'] : 'v1',
+			'version'     => ! empty( $opts['cache_version'] ) ? $opts['cache_version'] : 'v1',
 			'offline_url' => \home_url( '/functionalities-offline/' ),
-			'precache'   => self::split_lines( $opts['precache_urls'] ?? '' ),
+			'precache'    => self::split_lines( $opts['precache_urls'] ?? '' ),
 		);
 
 		$config = (array) \apply_filters( 'functionalities_pwa_service_worker_config', $config );
 
-		$precache = array_values( array_unique(
-			array_merge(
-				array( \home_url( '/' ), $config['offline_url'] ),
-				$config['precache']
+		$precache = array_values(
+			array_unique(
+				array_merge(
+					array( \home_url( '/' ), $config['offline_url'] ),
+					$config['precache']
+				)
 			)
-		) );
+		);
 
 		while ( ob_get_level() ) {
 			ob_end_clean();
@@ -667,7 +697,7 @@ class PWA {
 	 * @since 1.1.0
 	 * @return void
 	 */
-	public static function output_head_tags() : void {
+	public static function output_head_tags(): void {
 		$opts        = self::get_options();
 		$theme_color = ! empty( $opts['theme_color'] ) ? $opts['theme_color'] : '#4f46e5';
 
@@ -691,7 +721,7 @@ class PWA {
 	 * @since 1.1.0
 	 * @return void
 	 */
-	public static function output_prompt_css() : void {
+	public static function output_prompt_css(): void {
 		$opts = self::get_options();
 		if ( empty( $opts['install_prompt'] ) ) {
 			return;
@@ -726,7 +756,7 @@ class PWA {
 	 * @since 1.1.0
 	 * @return void
 	 */
-	public static function output_install_prompt() : void {
+	public static function output_install_prompt(): void {
 		$opts = self::get_options();
 		if ( empty( $opts['install_prompt'] ) ) {
 			return;
@@ -761,35 +791,37 @@ class PWA {
 	 * @since 1.1.0
 	 * @return void
 	 */
-	public static function output_frontend_js() : void {
+	public static function output_frontend_js(): void {
 		$opts = self::get_options();
 
-		$config = \wp_json_encode( array(
-			'sw'        => \home_url( '/functionalities-sw.js' ),
-			'scope'     => ! empty( $opts['scope'] ) ? $opts['scope'] : \home_url( '/' ),
-			'prompt'    => ! empty( $opts['install_prompt'] ),
-			'frequency' => (int) ( $opts['prompt_frequency'] ?? 14 ),
-		) );
+		$config = \wp_json_encode(
+			array(
+				'sw'        => \home_url( '/functionalities-sw.js' ),
+				'scope'     => ! empty( $opts['scope'] ) ? $opts['scope'] : \home_url( '/' ),
+				'prompt'    => ! empty( $opts['install_prompt'] ),
+				'frequency' => (int) ( $opts['prompt_frequency'] ?? 14 ),
+			)
+		);
 
 		echo '<script id="functionalities-pwa-js">';
 		echo '(function(){';
 		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $config is wp_json_encode'd output.
-		echo "var c=" . $config . ",dp,sk='func_pwa_dismiss';";
+		echo 'var c=' . $config . ",dp,sk='func_pwa_dismiss';";
 		echo "function si(on){document.documentElement.classList.toggle('func-pwa-installable',on)}";
-		echo "function pi(){if(!dp)return false;dp.prompt();dp.userChoice.then(function(){localStorage.setItem(sk,Date.now().toString());dp=null;si(false)});return true}";
+		echo 'function pi(){if(!dp)return false;dp.prompt();dp.userChoice.then(function(){localStorage.setItem(sk,Date.now().toString());dp=null;si(false)});return true}';
 		echo "if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register(c.sw,{scope:c.scope}).catch(function(){})})}";
 		echo "window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();dp=e;si(true);";
-		echo "if(!c.prompt)return;";
-		echo "var last=localStorage.getItem(sk);if(last){var d=(Date.now()-parseInt(last,10))/(864e5);if(d<c.frequency)return}";
+		echo 'if(!c.prompt)return;';
+		echo 'var last=localStorage.getItem(sk);if(last){var d=(Date.now()-parseInt(last,10))/(864e5);if(d<c.frequency)return}';
 		echo "var p=document.getElementById('func-pwa-prompt');if(p)p.style.display='block'});";
 		echo "window.addEventListener('appinstalled',function(){si(false);document.documentElement.classList.add('func-pwa-installed')});";
 		echo "document.addEventListener('click',function(e){";
 		echo "if(e.target.closest('.func-pwa-prompt__btn--install')){if(pi()){var p=document.getElementById('func-pwa-prompt');if(p)p.style.display='none'}return}";
 		echo "if(e.target.closest('.func-pwa-install,[data-func-pwa-install]')){e.preventDefault();pi();return}";
 		echo "if(e.target.closest('.func-pwa-prompt__btn--dismiss')){var p=document.getElementById('func-pwa-prompt');if(p)p.style.display='none';localStorage.setItem(sk,Date.now().toString())}";
-		echo "});";
-		echo "window.funcPwaInstall=pi;";
-		echo "})();";
+		echo '});';
+		echo 'window.funcPwaInstall=pi;';
+		echo '})();';
 		echo '</script>' . "\n";
 	}
 
@@ -803,12 +835,12 @@ class PWA {
 	 * @since 1.1.0
 	 * @return void
 	 */
-	private static function output_offline_page() : void {
-		$opts       = self::get_options();
-		$site_name  = \esc_html( \get_bloginfo( 'name' ) );
-		$home       = \esc_url( \home_url( '/' ) );
-		$theme      = \esc_attr( $opts['theme_color'] ?? '#4f46e5' );
-		$cache_ver  = \esc_js( $opts['cache_version'] ?? 'v1' );
+	private static function output_offline_page(): void {
+		$opts      = self::get_options();
+		$site_name = \esc_html( \get_bloginfo( 'name' ) );
+		$home      = \esc_url( \home_url( '/' ) );
+		$theme     = \esc_attr( $opts['theme_color'] ?? '#4f46e5' );
+		$cache_ver = \esc_js( $opts['cache_version'] ?? 'v1' );
 
 		while ( ob_get_level() ) {
 			ob_end_clean();
@@ -817,7 +849,8 @@ class PWA {
 		\status_header( 503 );
 		\nocache_headers();
 
-		?><!DOCTYPE html>
+		?>
+		<!DOCTYPE html>
 <html lang="<?php echo \esc_attr( \get_bloginfo( 'language' ) ); ?>">
 <head>
 <meta charset="utf-8">
@@ -926,7 +959,7 @@ if(ul.children.length)wrap.style.display='block';
 	 * @since 1.1.0
 	 * @return void
 	 */
-	private static function handle_share_target() : void {
+	private static function handle_share_target(): void {
 		$opts = self::get_options();
 		if ( empty( $opts['share_target_enabled'] ) ) {
 			\wp_safe_redirect( \home_url( '/' ) );
@@ -961,7 +994,7 @@ if(ul.children.length)wrap.style.display='block';
 	 * @param mixed $value     New option value.
 	 * @return void
 	 */
-	public static function on_option_update( $old_value, $value ) : void {
+	public static function on_option_update( $old_value, $value ): void {
 		self::$options = null;
 		self::flush_rewrites();
 	}
@@ -972,7 +1005,7 @@ if(ul.children.length)wrap.style.display='block';
 	 * @since 1.1.0
 	 * @return void
 	 */
-	private static function flush_rewrites() : void {
+	private static function flush_rewrites(): void {
 		self::register_routes();
 		\flush_rewrite_rules( false );
 	}
@@ -987,7 +1020,7 @@ if(ul.children.length)wrap.style.display='block';
 	 * @param string $str Input string.
 	 * @return array Trimmed, non-empty values.
 	 */
-	private static function split_list( string $str ) : array {
+	private static function split_list( string $str ): array {
 		if ( $str === '' ) {
 			return array();
 		}
@@ -1001,7 +1034,7 @@ if(ul.children.length)wrap.style.display='block';
 	 * @param string $str Input string.
 	 * @return array Trimmed, non-empty values.
 	 */
-	private static function split_lines( string $str ) : array {
+	private static function split_lines( string $str ): array {
 		if ( trim( $str ) === '' ) {
 			return array();
 		}

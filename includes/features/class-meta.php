@@ -54,7 +54,7 @@ class Meta {
 	 *
 	 * @return void
 	 */
-	public static function init() : void {
+	public static function init(): void {
 		$options = self::get_options();
 
 		// Only initialize if module is enabled.
@@ -87,67 +87,70 @@ class Meta {
 	 *
 	 * @return void
 	 */
-	private static function init_licenses() : void {
+	private static function init_licenses(): void {
 		$options   = self::get_options();
 		$site_name = \get_bloginfo( 'name' );
 		$home_url  = \home_url( '/' );
 
 		// Allow customization via filter.
-		self::$licenses = \apply_filters( 'functionalities_meta_licenses', array(
-			'all-rights-reserved' => array(
-				'rights'    => \__( 'All Rights Reserved', 'functionalities' ),
-				'dc_rights' => sprintf(
-					/* translators: %1$s: year, %2$s: site name */
-					\__( '© %1$s %2$s. All rights reserved. No reproduction without permission.', 'functionalities' ),
-					gmdate( 'Y' ),
-					$site_name
+		self::$licenses = \apply_filters(
+			'functionalities_meta_licenses',
+			array(
+				'all-rights-reserved' => array(
+					'rights'    => \__( 'All Rights Reserved', 'functionalities' ),
+					'dc_rights' => sprintf(
+						/* translators: %1$s: year, %2$s: site name */
+						\__( '© %1$s %2$s. All rights reserved. No reproduction without permission.', 'functionalities' ),
+						gmdate( 'Y' ),
+						$site_name
+					),
+					'url'       => ! empty( $options['default_license_url'] ) ? $options['default_license_url'] : $home_url . 'disclaimer/',
+					'name'      => \__( 'All Rights Reserved', 'functionalities' ),
 				),
-				'url'       => ! empty( $options['default_license_url'] ) ? $options['default_license_url'] : $home_url . 'disclaimer/',
-				'name'      => \__( 'All Rights Reserved', 'functionalities' ),
-			),
-			'cc-by'               => array(
-				'rights'    => \__( 'Creative Commons Attribution 4.0', 'functionalities' ),
-				'dc_rights' => \__( 'This work is licensed under CC BY 4.0', 'functionalities' ),
-				'url'       => 'https://creativecommons.org/licenses/by/4.0/',
-				'name'      => 'CC BY 4.0',
-			),
-			'cc-by-sa'            => array(
-				'rights'    => \__( 'Creative Commons Attribution-ShareAlike 4.0', 'functionalities' ),
-				'dc_rights' => \__( 'This work is licensed under CC BY-SA 4.0', 'functionalities' ),
-				'url'       => 'https://creativecommons.org/licenses/by-sa/4.0/',
-				'name'      => 'CC BY-SA 4.0',
-			),
-			'cc-by-nc'            => array(
-				'rights'    => \__( 'Creative Commons Attribution-NonCommercial 4.0', 'functionalities' ),
-				'dc_rights' => \__( 'This work is licensed under CC BY-NC 4.0', 'functionalities' ),
-				'url'       => 'https://creativecommons.org/licenses/by-nc/4.0/',
-				'name'      => 'CC BY-NC 4.0',
-			),
-			'cc-by-nc-sa'         => array(
-				'rights'    => \__( 'Creative Commons Attribution-NonCommercial-ShareAlike 4.0', 'functionalities' ),
-				'dc_rights' => \__( 'This work is licensed under CC BY-NC-SA 4.0', 'functionalities' ),
-				'url'       => 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
-				'name'      => 'CC BY-NC-SA 4.0',
-			),
-			'cc-by-nd'            => array(
-				'rights'    => \__( 'Creative Commons Attribution-NoDerivatives 4.0', 'functionalities' ),
-				'dc_rights' => \__( 'This work is licensed under CC BY-ND 4.0', 'functionalities' ),
-				'url'       => 'https://creativecommons.org/licenses/by-nd/4.0/',
-				'name'      => 'CC BY-ND 4.0',
-			),
-			'cc-by-nc-nd'         => array(
-				'rights'    => \__( 'Creative Commons Attribution-NonCommercial-NoDerivatives 4.0', 'functionalities' ),
-				'dc_rights' => \__( 'This work is licensed under CC BY-NC-ND 4.0', 'functionalities' ),
-				'url'       => 'https://creativecommons.org/licenses/by-nc-nd/4.0/',
-				'name'      => 'CC BY-NC-ND 4.0',
-			),
-			'cc0'                 => array(
-				'rights'    => \__( 'CC0 1.0 Universal (Public Domain)', 'functionalities' ),
-				'dc_rights' => \__( 'This work is dedicated to the public domain under CC0 1.0', 'functionalities' ),
-				'url'       => 'https://creativecommons.org/publicdomain/zero/1.0/',
-				'name'      => 'CC0 1.0',
-			),
-		) );
+				'cc-by'               => array(
+					'rights'    => \__( 'Creative Commons Attribution 4.0', 'functionalities' ),
+					'dc_rights' => \__( 'This work is licensed under CC BY 4.0', 'functionalities' ),
+					'url'       => 'https://creativecommons.org/licenses/by/4.0/',
+					'name'      => 'CC BY 4.0',
+				),
+				'cc-by-sa'            => array(
+					'rights'    => \__( 'Creative Commons Attribution-ShareAlike 4.0', 'functionalities' ),
+					'dc_rights' => \__( 'This work is licensed under CC BY-SA 4.0', 'functionalities' ),
+					'url'       => 'https://creativecommons.org/licenses/by-sa/4.0/',
+					'name'      => 'CC BY-SA 4.0',
+				),
+				'cc-by-nc'            => array(
+					'rights'    => \__( 'Creative Commons Attribution-NonCommercial 4.0', 'functionalities' ),
+					'dc_rights' => \__( 'This work is licensed under CC BY-NC 4.0', 'functionalities' ),
+					'url'       => 'https://creativecommons.org/licenses/by-nc/4.0/',
+					'name'      => 'CC BY-NC 4.0',
+				),
+				'cc-by-nc-sa'         => array(
+					'rights'    => \__( 'Creative Commons Attribution-NonCommercial-ShareAlike 4.0', 'functionalities' ),
+					'dc_rights' => \__( 'This work is licensed under CC BY-NC-SA 4.0', 'functionalities' ),
+					'url'       => 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
+					'name'      => 'CC BY-NC-SA 4.0',
+				),
+				'cc-by-nd'            => array(
+					'rights'    => \__( 'Creative Commons Attribution-NoDerivatives 4.0', 'functionalities' ),
+					'dc_rights' => \__( 'This work is licensed under CC BY-ND 4.0', 'functionalities' ),
+					'url'       => 'https://creativecommons.org/licenses/by-nd/4.0/',
+					'name'      => 'CC BY-ND 4.0',
+				),
+				'cc-by-nc-nd'         => array(
+					'rights'    => \__( 'Creative Commons Attribution-NonCommercial-NoDerivatives 4.0', 'functionalities' ),
+					'dc_rights' => \__( 'This work is licensed under CC BY-NC-ND 4.0', 'functionalities' ),
+					'url'       => 'https://creativecommons.org/licenses/by-nc-nd/4.0/',
+					'name'      => 'CC BY-NC-ND 4.0',
+				),
+				'cc0'                 => array(
+					'rights'    => \__( 'CC0 1.0 Universal (Public Domain)', 'functionalities' ),
+					'dc_rights' => \__( 'This work is dedicated to the public domain under CC0 1.0', 'functionalities' ),
+					'url'       => 'https://creativecommons.org/publicdomain/zero/1.0/',
+					'name'      => 'CC0 1.0',
+				),
+			)
+		);
 	}
 
 	/**
@@ -157,7 +160,7 @@ class Meta {
 	 *
 	 * @return string Plugin identifier: 'rank-math', 'yoast', 'seo-framework', 'seopress', 'aioseo', or 'none'.
 	 */
-	public static function detect_seo_plugin() : string {
+	public static function detect_seo_plugin(): string {
 		// Return cached result if available.
 		if ( self::$detected_seo_plugin !== null ) {
 			return self::$detected_seo_plugin;
@@ -186,7 +189,7 @@ class Meta {
 	 *
 	 * @return void
 	 */
-	private static function init_seo_integrations() : void {
+	private static function init_seo_integrations(): void {
 		$seo_plugin = self::detect_seo_plugin();
 
 		switch ( $seo_plugin ) {
@@ -227,7 +230,7 @@ class Meta {
 	 *
 	 * @return void
 	 */
-	public static function output_standalone_schema() : void {
+	public static function output_standalone_schema(): void {
 		$options = self::get_options();
 
 		// Check if we should output on this post type.
@@ -249,19 +252,19 @@ class Meta {
 
 		// Build the schema.
 		$schema = array(
-			'@context'        => 'https://schema.org',
-			'@type'           => 'Article',
-			'headline'        => \get_the_title(),
-			'datePublished'   => \get_the_date( 'c' ),
-			'dateModified'    => \get_the_modified_date( 'c' ),
-			'copyrightYear'   => $copyright['copyrightYear'],
-			'copyrightHolder' => $copyright['copyrightHolder'],
-			'author'          => array(
+			'@context'         => 'https://schema.org',
+			'@type'            => 'Article',
+			'headline'         => \get_the_title(),
+			'datePublished'    => \get_the_date( 'c' ),
+			'dateModified'     => \get_the_modified_date( 'c' ),
+			'copyrightYear'    => $copyright['copyrightYear'],
+			'copyrightHolder'  => $copyright['copyrightHolder'],
+			'author'           => array(
 				'@type' => $holder['type'],
 				'name'  => $holder['name'],
 				'url'   => $holder['url'],
 			),
-			'publisher'       => array(
+			'publisher'        => array(
 				'@type' => 'Organization',
 				'name'  => \get_bloginfo( 'name' ),
 				'url'   => \home_url( '/' ),
@@ -309,25 +312,25 @@ class Meta {
 	 *
 	 * @return array Module options.
 	 */
-	public static function get_options() : array {
+	public static function get_options(): array {
 		if ( null !== self::$options ) {
 			return self::$options;
 		}
 
-		$defaults = array(
-			'enabled'                 => false,
-			'enable_copyright_meta'   => true,
-			'enable_dublin_core'      => true,
-			'enable_license_metabox'  => true,
+		$defaults      = array(
+			'enabled'                   => false,
+			'enable_copyright_meta'     => true,
+			'enable_dublin_core'        => true,
+			'enable_license_metabox'    => true,
 			'enable_schema_integration' => true,
-			'default_license'         => 'all-rights-reserved',
-			'default_license_url'     => '',
-			'post_types'              => array( 'post' ),
-			'copyright_holder_type'   => 'author', // 'author', 'site', 'custom'.
-			'custom_copyright_holder' => '',
-			'dc_language'             => '',
+			'default_license'           => 'all-rights-reserved',
+			'default_license_url'       => '',
+			'post_types'                => array( 'post' ),
+			'copyright_holder_type'     => 'author', // 'author', 'site', 'custom'.
+			'custom_copyright_holder'   => '',
+			'dc_language'               => '',
 		);
-		$opts     = (array) \get_option( 'functionalities_meta', $defaults );
+		$opts          = (array) \get_option( 'functionalities_meta', $defaults );
 		self::$options = array_merge( $defaults, $opts );
 		return self::$options;
 	}
@@ -338,7 +341,7 @@ class Meta {
 	 * @param string $license License identifier.
 	 * @return array License data.
 	 */
-	public static function get_license_data( string $license ) : array {
+	public static function get_license_data( string $license ): array {
 		if ( empty( self::$licenses ) ) {
 			self::init_licenses();
 		}
@@ -356,7 +359,7 @@ class Meta {
 	 *     @type string $type Schema.org type (Person or Organization).
 	 * }
 	 */
-	private static function get_copyright_holder( \WP_Post $post ) : array {
+	private static function get_copyright_holder( \WP_Post $post ): array {
 		$options = self::get_options();
 
 		switch ( $options['copyright_holder_type'] ) {
@@ -394,7 +397,7 @@ class Meta {
 	 *
 	 * @return void
 	 */
-	public static function output_meta_tags() : void {
+	public static function output_meta_tags(): void {
 		$options = self::get_options();
 
 		// Check if we should output on this post type.
@@ -469,7 +472,7 @@ class Meta {
 	 *
 	 * @return void
 	 */
-	public static function add_license_metabox() : void {
+	public static function add_license_metabox(): void {
 		$options    = self::get_options();
 		$post_types = ! empty( $options['post_types'] ) ? $options['post_types'] : array( 'post' );
 
@@ -489,10 +492,10 @@ class Meta {
 	 * @param \WP_Post $post Current post object.
 	 * @return void
 	 */
-	public static function render_license_metabox( \WP_Post $post ) : void {
-		$options        = self::get_options();
-		$current        = \get_post_meta( $post->ID, '_gt_content_license', true );
-		$current        = ! empty( $current ) ? $current : $options['default_license'];
+	public static function render_license_metabox( \WP_Post $post ): void {
+		$options         = self::get_options();
+		$current         = \get_post_meta( $post->ID, '_gt_content_license', true );
+		$current         = ! empty( $current ) ? $current : $options['default_license'];
 		$detected_plugin = self::detect_seo_plugin();
 
 		\wp_nonce_field( 'gt_license_nonce', 'gt_license_nonce_field' );
@@ -534,7 +537,7 @@ class Meta {
 	 * @param string $plugin Plugin identifier.
 	 * @return string Display name.
 	 */
-	private static function get_plugin_display_name( string $plugin ) : string {
+	private static function get_plugin_display_name( string $plugin ): string {
 		$names = array(
 			'rank-math'     => 'Rank Math',
 			'yoast'         => 'Yoast SEO',
@@ -553,7 +556,7 @@ class Meta {
 	 * @param \WP_Post $post    Post object.
 	 * @return void
 	 */
-	public static function save_license_meta( int $post_id, \WP_Post $post ) : void {
+	public static function save_license_meta( int $post_id, \WP_Post $post ): void {
 		// Verify nonce.
 		if ( ! isset( $_POST['gt_license_nonce_field'] ) ) {
 			return;
@@ -599,7 +602,7 @@ class Meta {
 	 *
 	 * @return array|null Copyright data or null if not applicable.
 	 */
-	private static function get_copyright_schema_data() : ?array {
+	private static function get_copyright_schema_data(): ?array {
 		if ( ! \is_singular() ) {
 			return null;
 		}
@@ -639,7 +642,7 @@ class Meta {
 	 * @param object $jsonld JSON-LD object.
 	 * @return array Modified data.
 	 */
-	public static function add_copyright_to_rank_math( array $data, $jsonld ) : array {
+	public static function add_copyright_to_rank_math( array $data, $jsonld ): array {
 		$copyright = self::get_copyright_schema_data();
 		if ( $copyright === null ) {
 			return $data;
@@ -668,7 +671,7 @@ class Meta {
 	 * @param array $data Article schema data.
 	 * @return array Modified data.
 	 */
-	public static function add_copyright_to_yoast_article( array $data ) : array {
+	public static function add_copyright_to_yoast_article( array $data ): array {
 		$copyright = self::get_copyright_schema_data();
 		if ( $copyright === null ) {
 			return $data;
@@ -690,7 +693,7 @@ class Meta {
 	 * @param array $data WebPage schema data.
 	 * @return array Modified data.
 	 */
-	public static function add_copyright_to_yoast_webpage( array $data ) : array {
+	public static function add_copyright_to_yoast_webpage( array $data ): array {
 		$copyright = self::get_copyright_schema_data();
 		if ( $copyright === null ) {
 			return $data;
@@ -715,7 +718,7 @@ class Meta {
 	 * @param array $data JSON-LD data.
 	 * @return array Modified data.
 	 */
-	public static function add_copyright_to_seo_framework( array $data ) : array {
+	public static function add_copyright_to_seo_framework( array $data ): array {
 		$copyright = self::get_copyright_schema_data();
 		if ( $copyright === null ) {
 			return $data;
@@ -745,7 +748,7 @@ class Meta {
 	 * @param array $schemas Schema data.
 	 * @return array Modified schemas.
 	 */
-	public static function add_copyright_to_seopress( array $schemas ) : array {
+	public static function add_copyright_to_seopress( array $schemas ): array {
 		$copyright = self::get_copyright_schema_data();
 		if ( $copyright === null ) {
 			return $schemas;
@@ -774,7 +777,7 @@ class Meta {
 	 * @param array $data Schema data.
 	 * @return array Modified data.
 	 */
-	public static function add_copyright_to_aioseo( array $data ) : array {
+	public static function add_copyright_to_aioseo( array $data ): array {
 		$copyright = self::get_copyright_schema_data();
 		if ( $copyright === null ) {
 			return $data;

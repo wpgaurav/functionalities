@@ -20,6 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Fonts class for custom @font-face rule generation.
  *
  * Provides a user interface for configuring custom fonts with proper
+ *
  * @font-face declarations. Supports both static and variable fonts,
  * WOFF2 and WOFF formats, and various font-display strategies.
  *
@@ -122,7 +123,7 @@ class Fonts {
 	 *
 	 * @return void
 	 */
-	public static function init() : void {
+	public static function init(): void {
 		// Preload fonts early.
 		\add_action( 'wp_head', array( __CLASS__, 'preload_fonts' ), 1 );
 
@@ -158,7 +159,7 @@ class Fonts {
 	 *
 	 * @return void
 	 */
-	public static function flush_options_cache() : void {
+	public static function flush_options_cache(): void {
 		self::$options = null;
 	}
 
@@ -196,12 +197,12 @@ class Fonts {
 	 *
 	 * @return array Options array.
 	 */
-	protected static function get_options() : array {
+	protected static function get_options(): array {
 		if ( null !== self::$options ) {
 			return self::$options;
 		}
 
-		$defaults = array(
+		$defaults      = array(
 			'enabled'        => false,
 			'items'          => array(),
 			'assign_enabled' => false,
@@ -210,7 +211,7 @@ class Fonts {
 			'per_heading'    => false,
 			'heading_fonts'  => array(),
 		);
-		$opts = (array) \get_option( 'functionalities_fonts', $defaults );
+		$opts          = (array) \get_option( 'functionalities_fonts', $defaults );
 		self::$options = array_merge( $defaults, $opts );
 		return self::$options;
 	}
@@ -219,6 +220,7 @@ class Fonts {
 	 * Output @font-face CSS rules.
 	 *
 	 * Generates and outputs inline CSS containing all configured
+	 *
 	 * @font-face declarations.
 	 *
 	 * @since 0.3.0
@@ -226,7 +228,7 @@ class Fonts {
 	 *
 	 * @return void
 	 */
-	public static function print_fonts_css() : void {
+	public static function print_fonts_css(): void {
 		$opts = self::get_options();
 
 		/**
@@ -277,7 +279,7 @@ class Fonts {
 	 * @since 0.13.0
 	 * @return void
 	 */
-	public static function preload_fonts() : void {
+	public static function preload_fonts(): void {
 		if ( \is_admin() ) {
 			return;
 		}
@@ -305,6 +307,7 @@ class Fonts {
 	 * Inject custom @font-face CSS into the block editor's style settings.
 	 *
 	 * The editor canvas is iframed (WP 6.3+/7.x). The reliable way to get custom
+	 *
 	 * @font-face rules into that iframe is the editor `styles` setting — the same
 	 * channel the Font Library and add_editor_style() feed, which WordPress copies
 	 * verbatim into the iframe document. This replaces two weaker approaches:
@@ -385,7 +388,7 @@ class Fonts {
 	 * @param array $opts Fonts options.
 	 * @return string Assignment CSS, or '' when nothing to assign.
 	 */
-	protected static function build_assignment_css( array $opts ) : string {
+	protected static function build_assignment_css( array $opts ): string {
 		if ( empty( $opts['assign_enabled'] ) ) {
 			return '';
 		}
@@ -425,12 +428,13 @@ class Fonts {
 	 *
 	 * Injects font families into Bricks' Custom_Fonts cache so they appear
 	 * in the builder's font picker under "Custom Fonts" and generate
+	 *
 	 * @font-face rules that Bricks loads automatically.
 	 *
 	 * @since 1.4.0
 	 * @return void
 	 */
-	public static function bricks_register_fonts() : void {
+	public static function bricks_register_fonts(): void {
 		if ( ! defined( 'BRICKS_VERSION' ) || ! class_exists( '\Bricks\Custom_Fonts' ) ) {
 			return;
 		}
@@ -484,7 +488,7 @@ class Fonts {
 	 * @since 1.4.0
 	 * @return void
 	 */
-	public static function bricks_enqueue_fonts() : void {
+	public static function bricks_enqueue_fonts(): void {
 		// Only run inside Bricks builder context.
 		if ( ! defined( 'BRICKS_VERSION' ) ) {
 			return;
@@ -575,10 +579,10 @@ class Fonts {
 			}
 
 			$face = array(
-				'fontFamily' => $family,
-				'fontStyle'  => trim( (string) ( $item['style'] ?? 'normal' ) ),
+				'fontFamily'  => $family,
+				'fontStyle'   => trim( (string) ( $item['style'] ?? 'normal' ) ),
 				'fontDisplay' => trim( (string) ( $item['display'] ?? 'swap' ) ),
-				'src'        => array( $woff2 ),
+				'src'         => array( $woff2 ),
 			);
 
 			$woff = trim( (string) ( $item['woff_url'] ?? '' ) );
@@ -630,7 +634,7 @@ class Fonts {
 			$styles = array();
 
 			if ( $body_font !== '' ) {
-				$body_slug = sanitize_title( $body_font );
+				$body_slug            = sanitize_title( $body_font );
 				$styles['typography'] = array(
 					'fontFamily' => 'var(--wp--preset--font-family--' . $body_slug . ')',
 				);
@@ -640,7 +644,7 @@ class Fonts {
 			$elements = array();
 
 			if ( $heading_font !== '' ) {
-				$heading_slug = sanitize_title( $heading_font );
+				$heading_slug        = sanitize_title( $heading_font );
 				$elements['heading'] = array(
 					'typography' => array(
 						'fontFamily' => 'var(--wp--preset--font-family--' . $heading_slug . ')',
@@ -654,7 +658,7 @@ class Fonts {
 					$key  = 'h' . $i;
 					$font = trim( (string) ( $heading_fonts[ $key ] ?? '' ) );
 					if ( $font !== '' ) {
-						$font_slug = sanitize_title( $font );
+						$font_slug        = sanitize_title( $font );
 						$elements[ $key ] = array(
 							'typography' => array(
 								'fontFamily' => 'var(--wp--preset--font-family--' . $font_slug . ')',
@@ -697,7 +701,7 @@ class Fonts {
 	 * @param string $range A single weight ("400") or space-separated range ("1 900").
 	 * @return string Normalized weight or range.
 	 */
-	protected static function normalize_weight_range( string $range ) : string {
+	protected static function normalize_weight_range( string $range ): string {
 		$range = trim( $range );
 		if ( $range === '' ) {
 			return '';
@@ -717,7 +721,7 @@ class Fonts {
 		return implode( ' ', $normalized );
 	}
 
-	protected static function build_css( array $items ) : string {
+	protected static function build_css( array $items ): string {
 		$parts = array();
 
 		foreach ( $items as $item ) {
@@ -807,7 +811,7 @@ class Fonts {
 	 * @param array $mimes Associative array of allowed MIME types.
 	 * @return array Modified MIME types with font formats added.
 	 */
-	public static function allow_font_mimes( array $mimes ) : array {
+	public static function allow_font_mimes( array $mimes ): array {
 		if ( ! \current_user_can( 'upload_files' ) ) {
 			return $mimes;
 		}
@@ -828,10 +832,10 @@ class Fonts {
 	 *
 	 * @since 1.4.5
 	 *
-	 * @param array       $wp_check Array of file data (ext, type, proper_filename).
-	 * @param string      $file     Full path to the file.
-	 * @param string      $filename The name of the file.
-	 * @param string[]    $mimes    Allowed MIME types keyed by extension.
+	 * @param array        $wp_check Array of file data (ext, type, proper_filename).
+	 * @param string       $file     Full path to the file.
+	 * @param string       $filename The name of the file.
+	 * @param string[]     $mimes    Allowed MIME types keyed by extension.
 	 * @param string|false $real_mime The real MIME type or false.
 	 * @return array Modified file check data.
 	 */

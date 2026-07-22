@@ -94,7 +94,7 @@ class Misc {
 	 *
 	 * @return void
 	 */
-	public static function init() : void {
+	public static function init(): void {
 		$opts = self::get_options();
 
 		if ( empty( $opts['enabled'] ) ) {
@@ -328,12 +328,12 @@ class Misc {
 	 *
 	 * @return array Options array.
 	 */
-	protected static function get_options() : array {
+	protected static function get_options(): array {
 		if ( null !== self::$options ) {
 			return self::$options;
 		}
 
-		$defaults = array(
+		$defaults      = array(
 			'enabled'                         => false,
 			'disable_block_widgets'           => false,
 			'load_separate_core_block_assets' => false,
@@ -358,7 +358,7 @@ class Misc {
 			'enable_prism_admin'              => false,
 			'enable_textarea_fullscreen'      => false,
 		);
-		$opts = (array) \get_option( 'functionalities_misc', $defaults );
+		$opts          = (array) \get_option( 'functionalities_misc', $defaults );
 		self::$options = array_merge( $defaults, $opts );
 		return self::$options;
 	}
@@ -372,7 +372,7 @@ class Misc {
 	 * @param string $key  The option key to check.
 	 * @return bool True if option is enabled.
 	 */
-	protected static function is_option_enabled( array $opts, string $key ) : bool {
+	protected static function is_option_enabled( array $opts, string $key ): bool {
 		$value = ! empty( $opts[ $key ] );
 
 		/**
@@ -394,7 +394,7 @@ class Misc {
 	 *
 	 * @return void
 	 */
-	public static function enqueue_prism() : void {
+	public static function enqueue_prism(): void {
 		/**
 		 * Filters the Prism.js theme CSS URL.
 		 *
@@ -428,7 +428,7 @@ class Misc {
 	 * @param string $src The source URL.
 	 * @return string The source URL without version query string.
 	 */
-	public static function remove_ver_query_string( string $src ) : string {
+	public static function remove_ver_query_string( string $src ): string {
 		if ( strpos( $src, 'ver=' ) ) {
 			$src = remove_query_arg( 'ver', $src );
 		}
@@ -443,7 +443,7 @@ class Misc {
 	 * @param array $links Array of links to ping.
 	 * @return void
 	 */
-	public static function disable_self_pings( array &$links ) : void {
+	public static function disable_self_pings( array &$links ): void {
 		$home = home_url();
 		foreach ( $links as $l => $link ) {
 			if ( 0 === strpos( $link, $home ) ) {
@@ -461,7 +461,7 @@ class Misc {
 	 *
 	 * @return void
 	 */
-	protected static function disable_emojis() : void {
+	protected static function disable_emojis(): void {
 		\remove_action( 'wp_head', 'print_emoji_detection_script', 7 );
 		\remove_action( 'admin_print_scripts', 'print_emoji_detection_script' );
 		\remove_action( 'wp_print_styles', 'print_emoji_styles' );
@@ -490,7 +490,7 @@ class Misc {
 	 *
 	 * @return void
 	 */
-	protected static function disable_embeds() : void {
+	protected static function disable_embeds(): void {
 		\remove_action( 'wp_head', 'wp_oembed_add_discovery_links' );
 		\remove_action( 'wp_head', 'wp_oembed_add_host_js' );
 		\add_filter( 'embed_oembed_discover', '__return_false' );
@@ -520,7 +520,7 @@ class Misc {
 	 *
 	 * @return void
 	 */
-	protected static function disable_feeds() : void {
+	protected static function disable_feeds(): void {
 		$callback = function () {
 			// Redirect to homepage.
 			if ( function_exists( 'wp_safe_redirect' ) ) {

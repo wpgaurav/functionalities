@@ -27,7 +27,7 @@ trait CSS_Sanitizer {
 	 * @param string $css Raw CSS string.
 	 * @return string Sanitized CSS.
 	 */
-	protected static function sanitize_css( string $css ) : string {
+	protected static function sanitize_css( string $css ): string {
 		// Remove any HTML tags.
 		$css = wp_strip_all_tags( $css );
 
