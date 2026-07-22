@@ -276,8 +276,8 @@ class SVG_Icons
 		}
 
 		$defaults = array(
-			'enabled' => true, // Enabled by default
-			'icons' => array(),
+			'enabled' => false,
+			'icons'   => array(),
 		);
 		$opts = (array) \get_option('functionalities_svg_icons', $defaults);
 		self::$options = array_merge($defaults, $opts);

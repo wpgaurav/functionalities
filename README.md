@@ -1,6 +1,6 @@
 # Dynamic Functionalities
 
-All-in-one WordPress optimization toolkit with 15+ modules for performance, security, SEO, and content management. Built with modern WordPress coding standards and a clean module-based dashboard. Optimized for performance with lazy-loading, static property caching, and intelligent transients.
+All-in-one WordPress optimization toolkit with 16 modules for performance, security, SEO, and content management. Built with modern WordPress coding standards and a clean module-based dashboard. Optimized for performance with modular initialization, static property caching, and intelligent transients.
 
 **Version:** 1.4.7
 **License:** GPL-2.0-or-later
@@ -19,18 +19,8 @@ All-in-one WordPress optimization toolkit with 15+ modules for performance, secu
 All modules are accessed through a unified dashboard at `wp-admin/admin.php?page=functionalities`. Click any module card to configure its settings.
 
 Learn more on [Functionalities Site](https://functionalities.dev)
----
 
-## Performance & Footprint
-
-This plugin is built with a "Performance First" philosophy. Unlike many all-in-one plugins that slow down your site, Functionalities is designed to be as lightweight as possible:
-
-- **Modular & Lazy Loaded:** Using a custom autoloader, the plugin only loads the code required for active modules. If a feature is disabled, its code is never even included in memory.
-- **Minimized Database Load:** All module settings are cached in static properties. This ensures that `get_option()` is called at most once per module per request, regardless of how many times a feature is accessed.
-- **Zero Frontend Bloat:** Most modules are "Zero Footprint" on the frontend, meaning they load no CSS or JS unless explicitly required (like the Components or Fonts modules).
-- **Intelligent Filtering:** Content filters (`the_content`, etc.) use `strpos()` fast-exit checks. If the specific markers or tags for a feature aren't present in your content, the plugin exits immediately without running expensive regular expressions or DOM parsing.
-- **Efficient HTML Processing:** We use targeted regex for lightweight tasks (like Schema injection) and only resort to `DOMDocument` when structural manipulation is strictly necessary, ensuring maximum speed.
-- **Aggressive Caching:** Heavy operations—such as reading JSON exception lists, calculating file hashes, or managing redirects—are cached using WordPress Transients or versioned options to minimize Disk I/O.
+See the [public roadmap](ROADMAP.md) for planned fixes and features.
 
 ---
 
@@ -38,7 +28,7 @@ This plugin is built with a "Performance First" philosophy. Unlike many all-in-o
 
 This plugin is built with a "Performance First" philosophy. Unlike many all-in-one plugins that slow down your site, Functionalities is designed to be as lightweight as possible:
 
-- **Modular & Lazy Loaded:** Using a custom autoloader, the plugin only loads the code required for active modules. If a feature is disabled, its code is never even included in memory.
+- **Modular Initialization:** Each module checks its enabled state before registering its feature hooks. Disabled modules add no frontend assets or feature behavior.
 - **Minimized Database Load:** All module settings are cached in static properties. This ensures that `get_option()` is called at most once per module per request, regardless of how many times a feature is accessed.
 - **Zero Frontend Bloat:** Most modules are "Zero Footprint" on the frontend, meaning they load no CSS or JS unless explicitly required (like the Components or Fonts modules).
 - **Intelligent Filtering:** Content filters (`the_content`, etc.) use `strpos()` fast-exit checks. If the specific markers or tags for a feature aren't present in your content, the plugin exits immediately without running expensive regular expressions or DOM parsing.
@@ -271,6 +261,21 @@ Enhanced login protection and security measures for your WordPress site.
 - Custom login page logo and background styling
 
 **Navigate to:** `?page=functionalities&module=login-security`
+
+---
+
+### Progressive Web App
+
+Make the site installable with a web app manifest, service worker, offline fallback, and optional install prompt.
+
+**Features:**
+- Configurable app name, colors, icons, display mode, and orientation
+- Offline page and versioned runtime caching
+- App shortcuts, screenshots, and advanced manifest fields
+- Optional install prompt and Web Share Target support
+- Root-level manifest and service worker endpoints
+
+**Navigate to:** `?page=functionalities&module=pwa`
 
 ---
 
