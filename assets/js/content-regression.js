@@ -277,6 +277,28 @@
 	}
 
 	/**
+	 * Explain heading-level additions and removals from the snapshot diff.
+	 *
+	 * @param {Object} props Component props.
+	 * @return {JSX.Element|null} Heading change details.
+	 */
+	function HeadingChanges( { diff } ) {
+		if ( ! diff || ( ! diff.headings_added.length && ! diff.headings_removed.length ) ) {
+			return null;
+		}
+
+		const added = diff.headings_added.map( ( level ) => 'H' + level ).join( ', ' );
+		const removed = diff.headings_removed.map( ( level ) => 'H' + level ).join( ', ' );
+
+		return wp.element.createElement(
+			'div',
+			{ style: { marginTop: '10px', fontSize: '12px', color: '#50575e' } },
+			added && wp.element.createElement( 'p', { style: { margin: '0 0 4px' } }, i18n.headingsAdded + ' ' + added ),
+			removed && wp.element.createElement( 'p', { style: { margin: 0 } }, i18n.headingsRemoved + ' ' + removed )
+		);
+	}
+
+	/**
 	 * Main regression panel content component.
 	 *
 	 * @param {Object} props Component props.
@@ -411,7 +433,7 @@
 			return wp.element.createElement( NoBaseline );
 		}
 
-		const { warnings, has_baseline: hasBaseline, post_settings: postSettings, current, baseline } = status;
+		const { warnings, has_baseline: hasBaseline, post_settings: postSettings, current, baseline, diff } = status;
 		const hasWarnings = warnings && warnings.length > 0;
 
 		return wp.element.createElement(
@@ -439,6 +461,7 @@
 				current: current,
 				baseline: baseline
 			} ),
+			hasBaseline && showActions && wp.element.createElement( HeadingChanges, { diff: diff } ),
 
 			// Actions (only shown if there are warnings and showActions is true).
 			showActions && hasWarnings && ! ignoreWarnings && wp.element.createElement(

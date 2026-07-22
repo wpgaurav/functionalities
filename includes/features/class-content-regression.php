@@ -43,7 +43,7 @@ class Content_Regression {
 	 *
 	 * @return void
 	 */
-	public static function init() : void {
+	public static function init(): void {
 		$opts = self::get_options();
 
 		if ( empty( $opts['enabled'] ) ) {
@@ -81,39 +81,39 @@ class Content_Regression {
 	 *
 	 * @return array Options array.
 	 */
-	public static function get_options() : array {
+	public static function get_options(): array {
 		if ( null !== self::$options ) {
 			return self::$options;
 		}
 
 		$defaults = array(
-			'enabled'                     => false,
-			'post_types'                  => array( 'post', 'page' ),
+			'enabled'                    => false,
+			'post_types'                 => array( 'post', 'page' ),
 			// Internal link detection.
-			'link_drop_enabled'           => true,
-			'link_drop_percent'           => 30,
-			'link_drop_absolute'          => 3,
-			'exclude_nofollow_links'      => false,
+			'link_drop_enabled'          => true,
+			'link_drop_percent'          => 30,
+			'link_drop_absolute'         => 3,
+			'exclude_nofollow_links'     => false,
 			// Word count detection.
-			'word_count_enabled'          => true,
-			'word_count_drop_percent'     => 35,
-			'word_count_min_age_days'     => 30,
-			'word_count_compare_average'  => false,
-			'exclude_shortcodes'          => false,
+			'word_count_enabled'         => true,
+			'word_count_drop_percent'    => 35,
+			'word_count_min_age_days'    => 30,
+			'word_count_compare_average' => false,
+			'exclude_shortcodes'         => false,
 			// Heading detection.
-			'heading_enabled'             => true,
-			'detect_missing_h1'           => true,
-			'detect_multiple_h1'          => true,
-			'detect_skipped_levels'       => true,
-			'title_is_h1'                 => true, // Consider post title as H1 (themes render it as H1).
+			'heading_enabled'            => true,
+			'detect_missing_h1'          => true,
+			'detect_multiple_h1'         => true,
+			'detect_skipped_levels'      => true,
+			'title_is_h1'                => true, // Consider post title as H1 (themes render it as H1).
 			// Image detection.
-			'detect_missing_alt'          => true,
+			'detect_missing_alt'         => true,
 			// Snapshot settings.
-			'snapshot_rolling_count'      => 5,
+			'snapshot_rolling_count'     => 5,
 			// UI settings.
-			'show_post_column'            => true,
+			'show_post_column'           => true,
 		);
-		$opts = (array) \get_option( 'functionalities_content_regression', $defaults );
+		$opts          = (array) \get_option( 'functionalities_content_regression', $defaults );
 		self::$options = array_merge( $defaults, $opts );
 		return self::$options;
 	}
@@ -124,7 +124,7 @@ class Content_Regression {
 	 * @param int $post_id Post ID.
 	 * @return array Per-post settings.
 	 */
-	public static function get_post_settings( int $post_id ) : array {
+	public static function get_post_settings( int $post_id ): array {
 		$defaults = array(
 			'detection_disabled' => false,
 			'is_short_form'      => false,
@@ -143,9 +143,9 @@ class Content_Regression {
 	 * @param array $settings Settings to save.
 	 * @return void
 	 */
-	public static function update_post_settings( int $post_id, array $settings ) : void {
+	public static function update_post_settings( int $post_id, array $settings ): void {
 		$current = self::get_post_settings( $post_id );
-		$merged = array_merge( $current, $settings );
+		$merged  = array_merge( $current, $settings );
 		\update_post_meta( $post_id, self::POST_SETTINGS_KEY, $merged );
 	}
 
@@ -157,7 +157,7 @@ class Content_Regression {
 	 * @param bool     $update  Whether this is an update.
 	 * @return void
 	 */
-	public static function on_save_post( int $post_id, \WP_Post $post, bool $update ) : void {
+	public static function on_save_post( int $post_id, \WP_Post $post, bool $update ): void {
 		// Skip autosaves and revisions.
 		if ( \wp_is_post_autosave( $post_id ) || \wp_is_post_revision( $post_id ) ) {
 			return;
@@ -193,31 +193,35 @@ class Content_Regression {
 	 * @param \WP_Post $post Post object.
 	 * @return array Snapshot data.
 	 */
-	public static function capture_snapshot( \WP_Post $post ) : array {
+	public static function capture_snapshot( \WP_Post $post ): array {
 		$content = $post->post_content;
-		$opts = self::get_options();
+		$opts    = self::get_options();
 
 		// Get rendered content for accurate parsing - with error handling.
 		$rendered = '';
 		try {
 			// Remove problematic filters temporarily.
 			$current_post = $GLOBALS['post'] ?? null;
+			// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- The content filter expects the target post globally; restored in finally.
 			$GLOBALS['post'] = $post;
 
 			// Apply content filters with error suppression.
 			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Applying core WordPress filter.
 			$rendered = \apply_filters( 'the_content', $content );
 
-			// Restore original post.
-			if ( null !== $current_post ) {
-				$GLOBALS['post'] = $current_post;
-			}
 		} catch ( \Exception $e ) {
 			// If content filter fails, use raw content.
 			$rendered = $content;
 			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 				// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Debug logging only when WP_DEBUG is enabled.
 				error_log( 'Functionalities Content Regression: Error rendering content - ' . $e->getMessage() );
+			}
+		} finally {
+			if ( null !== $current_post ) {
+				// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Restore the pre-filter global.
+				$GLOBALS['post'] = $current_post;
+			} else {
+				unset( $GLOBALS['post'] );
 			}
 		}
 
@@ -227,18 +231,18 @@ class Content_Regression {
 		}
 
 		// Parse the content with error handling.
-		$links = self::parse_links( $rendered, $opts );
+		$links      = self::parse_links( $rendered, $opts );
 		$word_count = self::count_words( $content, $opts );
-		$headings = self::parse_headings( $content );
+		$headings   = self::parse_headings( $content );
 
 		return array(
-			'internal_link_count'  => $links['internal'],
-			'external_link_count'  => $links['external'],
-			'word_count'           => $word_count,
-			'heading_map'          => $headings['map'],
-			'h1_count'             => $headings['h1_count'],
-			'timestamp'            => time(),
-			'is_stable_version'    => true,
+			'internal_link_count' => $links['internal'],
+			'external_link_count' => $links['external'],
+			'word_count'          => $word_count,
+			'heading_map'         => $headings['map'],
+			'h1_count'            => $headings['h1_count'],
+			'timestamp'           => time(),
+			'is_stable_version'   => true,
 		);
 	}
 
@@ -249,20 +253,23 @@ class Content_Regression {
 	 * @param array  $opts    Module options.
 	 * @return array Link counts.
 	 */
-	public static function parse_links( string $content, array $opts ) : array {
+	public static function parse_links( string $content, array $opts ): array {
 		$internal = 0;
 		$external = 0;
 
 		if ( empty( $content ) ) {
-			return array( 'internal' => 0, 'external' => 0 );
+			return array(
+				'internal' => 0,
+				'external' => 0,
+			);
 		}
 
 		$site_host = (string) \wp_parse_url( \home_url(), PHP_URL_HOST );
 
 		// Use DOMDocument for reliable parsing.
 		$libxml_previous = libxml_use_internal_errors( true );
-		$dom = new \DOMDocument( '1.0', 'UTF-8' );
-		$html = '<div id="__functionalities_regression_wrapper">' . $content . '</div>';
+		$dom             = new \DOMDocument( '1.0', 'UTF-8' );
+		$html            = '<div id="__functionalities_regression_wrapper">' . $content . '</div>';
 		$dom->loadHTML( '<?xml encoding="utf-8" ?>' . $html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );
 
 		$xpath = new \DOMXPath( $dom );
@@ -278,7 +285,7 @@ class Content_Regression {
 		);
 
 		// Get all links.
-		$all_links = $xpath->query( '//a[@href]' );
+		$all_links      = $xpath->query( '//a[@href]' );
 		$excluded_links = array();
 
 		// Build list of excluded links.
@@ -299,7 +306,7 @@ class Content_Regression {
 				}
 
 				$href = (string) $link->getAttribute( 'href' );
-				$rel = (string) $link->getAttribute( 'rel' );
+				$rel  = (string) $link->getAttribute( 'rel' );
 
 				// Skip empty hrefs and anchors.
 				if ( empty( $href ) || '#' === $href[0] ) {
@@ -344,7 +351,7 @@ class Content_Regression {
 	 * @param string $site_host Site hostname.
 	 * @return bool True if internal.
 	 */
-	protected static function is_internal_url( string $href, string $site_host ) : bool {
+	protected static function is_internal_url( string $href, string $site_host ): bool {
 		$href = trim( $href );
 
 		// Relative URLs are internal.
@@ -372,7 +379,7 @@ class Content_Regression {
 	 * @param array  $opts    Module options.
 	 * @return int Word count.
 	 */
-	public static function count_words( string $content, array $opts ) : int {
+	public static function count_words( string $content, array $opts ): int {
 		// Optionally remove shortcodes.
 		if ( ! empty( $opts['exclude_shortcodes'] ) ) {
 			$content = \strip_shortcodes( $content );
@@ -402,12 +409,15 @@ class Content_Regression {
 	 * @param string $content Raw post content (block editor or classic).
 	 * @return array Heading data with map and h1_count.
 	 */
-	public static function parse_headings( string $content ) : array {
+	public static function parse_headings( string $content ): array {
 		$heading_map = array();
-		$h1_count = 0;
+		$h1_count    = 0;
 
 		if ( empty( $content ) ) {
-			return array( 'map' => $heading_map, 'h1_count' => $h1_count );
+			return array(
+				'map'      => $heading_map,
+				'h1_count' => $h1_count,
+			);
 		}
 
 		// Try to parse blocks first (for block editor content).
@@ -435,10 +445,10 @@ class Content_Regression {
 	 * @param int   $h1_count    Reference to H1 count.
 	 * @return void
 	 */
-	protected static function extract_headings_from_blocks( array $blocks, array &$heading_map, int &$h1_count ) : void {
+	protected static function extract_headings_from_blocks( array $blocks, array &$heading_map, int &$h1_count ): void {
 		foreach ( $blocks as $block ) {
 			if ( 'core/heading' === $block['blockName'] ) {
-				$level = isset( $block['attrs']['level'] ) ? (int) $block['attrs']['level'] : 2;
+				$level         = isset( $block['attrs']['level'] ) ? (int) $block['attrs']['level'] : 2;
 				$heading_map[] = $level;
 				if ( 1 === $level ) {
 					++$h1_count;
@@ -460,21 +470,21 @@ class Content_Regression {
 	 * @param int    $h1_count    Reference to H1 count.
 	 * @return void
 	 */
-	protected static function extract_headings_from_html( string $html, array &$heading_map, int &$h1_count ) : void {
+	protected static function extract_headings_from_html( string $html, array &$heading_map, int &$h1_count ): void {
 		if ( empty( $html ) ) {
 			return;
 		}
 
 		$libxml_previous = libxml_use_internal_errors( true );
-		$dom = new \DOMDocument( '1.0', 'UTF-8' );
+		$dom             = new \DOMDocument( '1.0', 'UTF-8' );
 		$dom->loadHTML( '<?xml encoding="utf-8" ?>' . $html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );
 
-		$xpath = new \DOMXPath( $dom );
+		$xpath    = new \DOMXPath( $dom );
 		$headings = $xpath->query( '//h1|//h2|//h3|//h4|//h5|//h6' );
 
 		if ( $headings instanceof \DOMNodeList ) {
 			foreach ( $headings as $heading ) {
-				$level = (int) substr( $heading->nodeName, 1 );
+				$level         = (int) substr( $heading->nodeName, 1 );
 				$heading_map[] = $level;
 				if ( 1 === $level ) {
 					++$h1_count;
@@ -494,7 +504,7 @@ class Content_Regression {
 	 * @param array $opts     Module options.
 	 * @return void
 	 */
-	protected static function store_snapshot( int $post_id, array $snapshot, array $opts ) : void {
+	protected static function store_snapshot( int $post_id, array $snapshot, array $opts ): void {
 		$existing = \get_post_meta( $post_id, self::META_KEY, true );
 
 		if ( ! is_array( $existing ) ) {
@@ -508,7 +518,7 @@ class Content_Regression {
 		$existing['snapshots'][] = $snapshot;
 
 		// Keep only last N snapshots.
-		$keep_count = max( 1, (int) $opts['snapshot_rolling_count'] );
+		$keep_count            = max( 1, (int) $opts['snapshot_rolling_count'] );
 		$existing['snapshots'] = array_slice( $existing['snapshots'], -$keep_count );
 
 		// Calculate rolling average.
@@ -523,16 +533,19 @@ class Content_Regression {
 	 * @param array $snapshots Array of snapshots.
 	 * @return array Rolling average values.
 	 */
-	protected static function calculate_rolling_average( array $snapshots ) : array {
-		$stable_snapshots = array_filter( $snapshots, function( $s ) {
-			return ! empty( $s['is_stable_version'] );
-		} );
+	protected static function calculate_rolling_average( array $snapshots ): array {
+		$stable_snapshots = array_filter(
+			$snapshots,
+			function ( $s ) {
+				return ! empty( $s['is_stable_version'] );
+			}
+		);
 
 		if ( empty( $stable_snapshots ) ) {
 			return array();
 		}
 
-		$count = count( $stable_snapshots );
+		$count  = count( $stable_snapshots );
 		$totals = array(
 			'internal_link_count' => 0,
 			'external_link_count' => 0,
@@ -542,7 +555,7 @@ class Content_Regression {
 		foreach ( $stable_snapshots as $snapshot ) {
 			$totals['internal_link_count'] += (int) ( $snapshot['internal_link_count'] ?? 0 );
 			$totals['external_link_count'] += (int) ( $snapshot['external_link_count'] ?? 0 );
-			$totals['word_count'] += (int) ( $snapshot['word_count'] ?? 0 );
+			$totals['word_count']          += (int) ( $snapshot['word_count'] ?? 0 );
 		}
 
 		return array(
@@ -558,7 +571,7 @@ class Content_Regression {
 	 * @param int $post_id Post ID.
 	 * @return array|null Last stable snapshot or null.
 	 */
-	public static function get_last_stable_snapshot( int $post_id ) : ?array {
+	public static function get_last_stable_snapshot( int $post_id ): ?array {
 		$data = \get_post_meta( $post_id, self::META_KEY, true );
 
 		if ( ! is_array( $data ) || empty( $data['snapshots'] ) ) {
@@ -582,7 +595,7 @@ class Content_Regression {
 	 * @param int $post_id Post ID.
 	 * @return array|null Rolling average or null.
 	 */
-	public static function get_rolling_average( int $post_id ) : ?array {
+	public static function get_rolling_average( int $post_id ): ?array {
 		$data = \get_post_meta( $post_id, self::META_KEY, true );
 
 		if ( ! is_array( $data ) || empty( $data['rolling_average'] ) ) {
@@ -598,9 +611,9 @@ class Content_Regression {
 	 * @param int $post_id Post ID.
 	 * @return array Array of warnings (empty if no issues).
 	 */
-	public static function detect_regressions( int $post_id ) : array {
-		$warnings = array();
-		$opts = self::get_options();
+	public static function detect_regressions( int $post_id ): array {
+		$warnings      = array();
+		$opts          = self::get_options();
 		$post_settings = self::get_post_settings( $post_id );
 
 		// Check if detection is disabled for this post.
@@ -641,7 +654,7 @@ class Content_Regression {
 		// Check heading structure.
 		if ( ! empty( $opts['heading_enabled'] ) ) {
 			$heading_warnings = self::check_heading_structure( $current, $opts, $post );
-			$warnings = array_merge( $warnings, $heading_warnings );
+			$warnings         = array_merge( $warnings, $heading_warnings );
 		}
 
 		// Check for images missing alt text.
@@ -663,8 +676,8 @@ class Content_Regression {
 	 * @param array $opts     Module options.
 	 * @return array|null Warning data or null.
 	 */
-	protected static function check_link_drop( array $current, array $baseline, array $opts ) : ?array {
-		$current_count = (int) ( $current['internal_link_count'] ?? 0 );
+	protected static function check_link_drop( array $current, array $baseline, array $opts ): ?array {
+		$current_count  = (int) ( $current['internal_link_count'] ?? 0 );
 		$baseline_count = (int) ( $baseline['internal_link_count'] ?? 0 );
 
 		// No warning if baseline had no links.
@@ -672,25 +685,25 @@ class Content_Regression {
 			return null;
 		}
 
-		$drop = $baseline_count - $current_count;
+		$drop         = $baseline_count - $current_count;
 		$drop_percent = ( $drop / $baseline_count ) * 100;
 
-		$threshold_percent = (float) $opts['link_drop_percent'];
+		$threshold_percent  = (float) $opts['link_drop_percent'];
 		$threshold_absolute = (int) $opts['link_drop_absolute'];
 
 		// Trigger if drop exceeds percentage OR absolute threshold.
 		if ( $drop_percent >= $threshold_percent || $drop >= $threshold_absolute ) {
 			return array(
-				'type'     => 'link_drop',
-				'severity' => 'warning',
-				'message'  => sprintf(
+				'type'               => 'link_drop',
+				'severity'           => 'warning',
+				'message'            => sprintf(
 					/* translators: 1: previous link count, 2: current link count */
 					\__( 'This update reduced internal links from %1$d to %2$d compared to the previous version.', 'functionalities' ),
 					$baseline_count,
 					$current_count
 				),
-				'before'   => $baseline_count,
-				'after'    => $current_count,
+				'before'             => $baseline_count,
+				'after'              => $current_count,
 				'baseline_timestamp' => $baseline['timestamp'] ?? 0,
 			);
 		}
@@ -708,13 +721,13 @@ class Content_Regression {
 	 * @param array    $post_settings Per-post settings.
 	 * @return array|null Warning data or null.
 	 */
-	protected static function check_word_count_drop( \WP_Post $post, array $current, array $baseline, array $opts, array $post_settings ) : ?array {
+	protected static function check_word_count_drop( \WP_Post $post, array $current, array $baseline, array $opts, array $post_settings ): ?array {
 		// Skip if marked as short-form.
 		if ( ! empty( $post_settings['is_short_form'] ) ) {
 			return null;
 		}
 
-		$current_count = (int) ( $current['word_count'] ?? 0 );
+		$current_count  = (int) ( $current['word_count'] ?? 0 );
 		$baseline_count = (int) ( $baseline['word_count'] ?? 0 );
 
 		// No warning if baseline had no words.
@@ -724,31 +737,31 @@ class Content_Regression {
 
 		// Check post age requirement.
 		$min_age_days = (int) $opts['word_count_min_age_days'];
-		$post_date = strtotime( $post->post_date_gmt );
-		$age_days = ( time() - $post_date ) / DAY_IN_SECONDS;
+		$post_date    = strtotime( $post->post_date_gmt );
+		$age_days     = ( time() - $post_date ) / DAY_IN_SECONDS;
 
 		if ( $age_days < $min_age_days ) {
 			return null;
 		}
 
 		// Calculate drop percentage.
-		$drop = $baseline_count - $current_count;
+		$drop         = $baseline_count - $current_count;
 		$drop_percent = ( $drop / $baseline_count ) * 100;
 
 		$threshold_percent = (float) $opts['word_count_drop_percent'];
 
 		if ( $drop_percent >= $threshold_percent ) {
 			return array(
-				'type'     => 'word_count_drop',
-				'severity' => 'warning',
-				'message'  => sprintf(
+				'type'               => 'word_count_drop',
+				'severity'           => 'warning',
+				'message'            => sprintf(
 					/* translators: %d: percentage drop */
 					\__( 'This post is %d%% shorter than its previous published version.', 'functionalities' ),
 					round( $drop_percent )
 				),
-				'before'   => $baseline_count,
-				'after'    => $current_count,
-				'drop_percent' => round( $drop_percent ),
+				'before'             => $baseline_count,
+				'after'              => $current_count,
+				'drop_percent'       => round( $drop_percent ),
 				'baseline_timestamp' => $baseline['timestamp'] ?? 0,
 			);
 		}
@@ -764,14 +777,14 @@ class Content_Regression {
 	 * @param \WP_Post $post    Post object.
 	 * @return array Array of warnings.
 	 */
-	protected static function check_heading_structure( array $current, array $opts, \WP_Post $post ) : array {
-		$warnings = array();
-		$heading_map = $current['heading_map'] ?? array();
+	protected static function check_heading_structure( array $current, array $opts, \WP_Post $post ): array {
+		$warnings            = array();
+		$heading_map         = $current['heading_map'] ?? array();
 		$h1_count_in_content = $current['h1_count'] ?? 0;
 
 		// Check if post title should count as H1 (most themes render title as H1).
 		$title_is_h1 = ! empty( $opts['title_is_h1'] );
-		$has_title = ! empty( $post->post_title );
+		$has_title   = ! empty( $post->post_title );
 
 		// Effective H1 count includes title if enabled.
 		$effective_h1_count = $h1_count_in_content;
@@ -826,7 +839,7 @@ class Content_Regression {
 		if ( ! empty( $opts['detect_skipped_levels'] ) && ! empty( $heading_map ) ) {
 			// If title is H1, content should start with H2.
 			$expected_start = ( $title_is_h1 && $has_title ) ? 2 : 1;
-			$first_heading = reset( $heading_map );
+			$first_heading  = reset( $heading_map );
 
 			// Check if first heading skips from title (H1) or start.
 			if ( $first_heading > $expected_start ) {
@@ -850,7 +863,7 @@ class Content_Regression {
 			} else {
 				// Check for skipped levels in content.
 				$prev_level = $first_heading;
-				$rest = array_slice( $heading_map, 1 );
+				$rest       = array_slice( $heading_map, 1 );
 				foreach ( $rest as $level ) {
 					if ( $level > $prev_level + 1 ) {
 						$warnings[] = array(
@@ -881,7 +894,7 @@ class Content_Regression {
 	 * @param \WP_Post $post Post object.
 	 * @return array|null Warning data or null.
 	 */
-	protected static function check_missing_alt_text( \WP_Post $post ) : ?array {
+	protected static function check_missing_alt_text( \WP_Post $post ): ?array {
 		$content = $post->post_content;
 
 		// Find all img tags.
@@ -889,7 +902,7 @@ class Content_Regression {
 			return null;
 		}
 
-		$missing_alt = 0;
+		$missing_alt  = 0;
 		$total_images = count( $matches[0] );
 
 		foreach ( $matches[0] as $img ) {
@@ -927,70 +940,86 @@ class Content_Regression {
 	 *
 	 * @return void
 	 */
-	public static function register_rest_routes() : void {
-		\register_rest_route( 'functionalities/v1', '/regression/(?P<id>\d+)', array(
-			'methods'             => 'GET',
-			'callback'            => array( __CLASS__, 'rest_get_regression_status' ),
-			'permission_callback' => function() {
-				return \current_user_can( 'edit_posts' );
-			},
-			'args'                => array(
-				'id' => array(
-					'required'          => true,
-					'validate_callback' => function( $param ) {
-						return is_numeric( $param );
-					},
+	public static function register_rest_routes(): void {
+		\register_rest_route(
+			'functionalities/v1',
+			'/regression/(?P<id>\d+)',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( __CLASS__, 'rest_get_regression_status' ),
+				'permission_callback' => function () {
+					return \current_user_can( 'edit_posts' );
+				},
+				'args'                => array(
+					'id' => array(
+						'required'          => true,
+						'validate_callback' => function ( $param ) {
+							return is_numeric( $param );
+						},
+					),
 				),
-			),
-		) );
+			)
+		);
 
-		\register_rest_route( 'functionalities/v1', '/regression/(?P<id>\d+)/mark-intentional', array(
-			'methods'             => 'POST',
-			'callback'            => array( __CLASS__, 'rest_mark_intentional' ),
-			'permission_callback' => function() {
-				return \current_user_can( 'edit_posts' );
-			},
-			'args'                => array(
-				'id' => array(
-					'required'          => true,
-					'validate_callback' => function( $param ) {
-						return is_numeric( $param );
-					},
+		\register_rest_route(
+			'functionalities/v1',
+			'/regression/(?P<id>\d+)/mark-intentional',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( __CLASS__, 'rest_mark_intentional' ),
+				'permission_callback' => function () {
+					return \current_user_can( 'edit_posts' );
+				},
+				'args'                => array(
+					'id' => array(
+						'required'          => true,
+						'validate_callback' => function ( $param ) {
+							return is_numeric( $param );
+						},
+					),
 				),
-			),
-		) );
+			)
+		);
 
-		\register_rest_route( 'functionalities/v1', '/regression/(?P<id>\d+)/reset-baseline', array(
-			'methods'             => 'POST',
-			'callback'            => array( __CLASS__, 'rest_reset_baseline' ),
-			'permission_callback' => function() {
-				return \current_user_can( 'edit_posts' );
-			},
-			'args'                => array(
-				'id' => array(
-					'required'          => true,
-					'validate_callback' => function( $param ) {
-						return is_numeric( $param );
-					},
+		\register_rest_route(
+			'functionalities/v1',
+			'/regression/(?P<id>\d+)/reset-baseline',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( __CLASS__, 'rest_reset_baseline' ),
+				'permission_callback' => function () {
+					return \current_user_can( 'edit_posts' );
+				},
+				'args'                => array(
+					'id' => array(
+						'required'          => true,
+						'validate_callback' => function ( $param ) {
+							return is_numeric( $param );
+						},
+					),
 				),
-			),
-		) );
+			)
+		);
 
-		\register_rest_route( 'functionalities/v1', '/regression/(?P<id>\d+)/settings', array(
-			'methods'             => 'POST',
-			'callback'            => array( __CLASS__, 'rest_update_post_settings' ),
-			'permission_callback' => function() {
-				return \current_user_can( 'edit_posts' );
-			},
-			'args'                => array(
-				'id' => array(
-					'required'          => true,
-					'validate_callback' => function( $param ) {
-						return is_numeric( $param );
-					},
+		\register_rest_route(
+			'functionalities/v1',
+			'/regression/(?P<id>\d+)/settings',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( __CLASS__, 'rest_update_post_settings' ),
+				'permission_callback' => function () {
+					return \current_user_can( 'edit_posts' );
+				},
+				'args'                => array(
+					'id' => array(
+						'required'          => true,
+						'validate_callback' => function ( $param ) {
+							return is_numeric( $param );
+						},
+					),
 				),
-			),
-		) );
+			)
+		);
 	}
 
 	/**
@@ -999,9 +1028,9 @@ class Content_Regression {
 	 * @param \WP_REST_Request $request Request object.
 	 * @return \WP_REST_Response Response.
 	 */
-	public static function rest_get_regression_status( \WP_REST_Request $request ) : \WP_REST_Response {
+	public static function rest_get_regression_status( \WP_REST_Request $request ): \WP_REST_Response {
 		$post_id = (int) $request->get_param( 'id' );
-		$post = \get_post( $post_id );
+		$post    = \get_post( $post_id );
 
 		if ( ! $post ) {
 			return new \WP_REST_Response( array( 'error' => 'Post not found' ), 404 );
@@ -1011,8 +1040,8 @@ class Content_Regression {
 			return new \WP_REST_Response( array( 'error' => 'Permission denied' ), 403 );
 		}
 
-		$warnings = self::detect_regressions( $post_id );
-		$baseline = self::get_last_stable_snapshot( $post_id );
+		$warnings      = self::detect_regressions( $post_id );
+		$baseline      = self::get_last_stable_snapshot( $post_id );
 		$post_settings = self::get_post_settings( $post_id );
 
 		// Also capture current snapshot for comparison display.
@@ -1021,13 +1050,16 @@ class Content_Regression {
 			$current = self::capture_snapshot( $post );
 		}
 
-		return new \WP_REST_Response( array(
-			'warnings'      => $warnings,
-			'baseline'      => $baseline,
-			'current'       => $current,
-			'post_settings' => $post_settings,
-			'has_baseline'  => ! empty( $baseline ),
-		) );
+		return new \WP_REST_Response(
+			array(
+				'warnings'      => $warnings,
+				'baseline'      => $baseline,
+				'current'       => $current,
+				'diff'          => self::build_snapshot_diff( $baseline, $current ),
+				'post_settings' => $post_settings,
+				'has_baseline'  => ! empty( $baseline ),
+			)
+		);
 	}
 
 	/**
@@ -1036,9 +1068,9 @@ class Content_Regression {
 	 * @param \WP_REST_Request $request Request object.
 	 * @return \WP_REST_Response Response.
 	 */
-	public static function rest_mark_intentional( \WP_REST_Request $request ) : \WP_REST_Response {
+	public static function rest_mark_intentional( \WP_REST_Request $request ): \WP_REST_Response {
 		$post_id = (int) $request->get_param( 'id' );
-		$post = \get_post( $post_id );
+		$post    = \get_post( $post_id );
 
 		if ( ! $post ) {
 			return new \WP_REST_Response( array( 'error' => 'Post not found' ), 404 );
@@ -1049,10 +1081,11 @@ class Content_Regression {
 		}
 
 		// Mark current snapshot as stable (intentional change).
-		$opts = self::get_options();
-		$snapshot = self::capture_snapshot( $post );
+		$opts                          = self::get_options();
+		$snapshot                      = self::capture_snapshot( $post );
 		$snapshot['is_stable_version'] = true;
 		self::store_snapshot( $post_id, $snapshot, $opts );
+		self::record_audit( $post_id, 'mark_intentional' );
 
 		return new \WP_REST_Response( array( 'success' => true ) );
 	}
@@ -1063,9 +1096,9 @@ class Content_Regression {
 	 * @param \WP_REST_Request $request Request object.
 	 * @return \WP_REST_Response Response.
 	 */
-	public static function rest_reset_baseline( \WP_REST_Request $request ) : \WP_REST_Response {
+	public static function rest_reset_baseline( \WP_REST_Request $request ): \WP_REST_Response {
 		$post_id = (int) $request->get_param( 'id' );
-		$post = \get_post( $post_id );
+		$post    = \get_post( $post_id );
 
 		if ( ! $post ) {
 			return new \WP_REST_Response( array( 'error' => 'Post not found' ), 404 );
@@ -1079,9 +1112,10 @@ class Content_Regression {
 		\delete_post_meta( $post_id, self::META_KEY );
 
 		// Capture new baseline.
-		$opts = self::get_options();
+		$opts     = self::get_options();
 		$snapshot = self::capture_snapshot( $post );
 		self::store_snapshot( $post_id, $snapshot, $opts );
+		self::record_audit( $post_id, 'reset_baseline' );
 
 		return new \WP_REST_Response( array( 'success' => true ) );
 	}
@@ -1092,9 +1126,9 @@ class Content_Regression {
 	 * @param \WP_REST_Request $request Request object.
 	 * @return \WP_REST_Response Response.
 	 */
-	public static function rest_update_post_settings( \WP_REST_Request $request ) : \WP_REST_Response {
+	public static function rest_update_post_settings( \WP_REST_Request $request ): \WP_REST_Response {
 		$post_id = (int) $request->get_param( 'id' );
-		$post = \get_post( $post_id );
+		$post    = \get_post( $post_id );
 
 		if ( ! $post ) {
 			return new \WP_REST_Response( array( 'error' => 'Post not found' ), 404 );
@@ -1104,8 +1138,8 @@ class Content_Regression {
 			return new \WP_REST_Response( array( 'error' => 'Permission denied' ), 403 );
 		}
 
-		$params = $request->get_json_params();
-		$allowed = array( 'detection_disabled', 'is_short_form' );
+		$params   = $request->get_json_params();
+		$allowed  = array( 'detection_disabled', 'is_short_form' );
 		$settings = array();
 
 		foreach ( $allowed as $key ) {
@@ -1118,10 +1152,12 @@ class Content_Regression {
 			self::update_post_settings( $post_id, $settings );
 		}
 
-		return new \WP_REST_Response( array(
-			'success'  => true,
-			'settings' => self::get_post_settings( $post_id ),
-		) );
+		return new \WP_REST_Response(
+			array(
+				'success'  => true,
+				'settings' => self::get_post_settings( $post_id ),
+			)
+		);
 	}
 
 	/**
@@ -1129,7 +1165,7 @@ class Content_Regression {
 	 *
 	 * @return void
 	 */
-	public static function setup_post_columns() : void {
+	public static function setup_post_columns(): void {
 		$opts = self::get_options();
 
 		if ( empty( $opts['show_post_column'] ) ) {
@@ -1160,7 +1196,7 @@ class Content_Regression {
 	 * @param array $columns Existing columns.
 	 * @return array Modified columns.
 	 */
-	public static function add_column( array $columns ) : array {
+	public static function add_column( array $columns ): array {
 		$columns['functionalities_regression'] = '<span class="dashicons dashicons-shield" title="' . \esc_attr__( 'Content Integrity', 'functionalities' ) . '"></span>';
 		return $columns;
 	}
@@ -1172,7 +1208,7 @@ class Content_Regression {
 	 * @param int    $post_id Post ID.
 	 * @return void
 	 */
-	public static function render_column( string $column, int $post_id ) : void {
+	public static function render_column( string $column, int $post_id ): void {
 		if ( 'functionalities_regression' !== $column ) {
 			return;
 		}
@@ -1197,7 +1233,7 @@ class Content_Regression {
 	 *
 	 * @return void
 	 */
-	public static function enqueue_editor_assets() : void {
+	public static function enqueue_editor_assets(): void {
 		$opts = self::get_options();
 
 		if ( empty( $opts['enabled'] ) ) {
@@ -1223,24 +1259,30 @@ class Content_Regression {
 			true
 		);
 
-		\wp_localize_script( 'functionalities-content-regression', 'functionalitiesRegressionData', array(
-			'postId'   => $post->ID,
-			'restBase' => '/functionalities/v1/regression/',
-			'nonce'    => \wp_create_nonce( 'wp_rest' ),
-			'i18n'     => array(
-				'panelTitle'        => \__( 'Content Integrity', 'functionalities' ),
-				'noIssues'          => \__( 'No structural issues detected.', 'functionalities' ),
-				'noBaseline'        => \__( 'No baseline snapshot available yet. Changes will be tracked after first publish.', 'functionalities' ),
-				'reviewChanges'     => \__( 'Review changes', 'functionalities' ),
-				'ignoreThisUpdate'  => \__( 'Ignore for this update', 'functionalities' ),
-				'markIntentional'   => \__( 'Mark change as intentional', 'functionalities' ),
-				'resetBaseline'     => \__( 'Reset baseline', 'functionalities' ),
-				'disableDetection'  => \__( 'Disable detection for this post', 'functionalities' ),
-				'markAsShortForm'   => \__( 'Mark as short-form content', 'functionalities' ),
-				'lastSnapshot'      => \__( 'Last snapshot:', 'functionalities' ),
-				'loading'           => \__( 'Checking content integrity...', 'functionalities' ),
-			),
-		) );
+		\wp_localize_script(
+			'functionalities-content-regression',
+			'functionalitiesRegressionData',
+			array(
+				'postId'   => $post->ID,
+				'restBase' => '/functionalities/v1/regression/',
+				'nonce'    => \wp_create_nonce( 'wp_rest' ),
+				'i18n'     => array(
+					'panelTitle'       => \__( 'Content Integrity', 'functionalities' ),
+					'noIssues'         => \__( 'No structural issues detected.', 'functionalities' ),
+					'noBaseline'       => \__( 'No baseline snapshot available yet. Changes will be tracked after first publish.', 'functionalities' ),
+					'reviewChanges'    => \__( 'Review changes', 'functionalities' ),
+					'ignoreThisUpdate' => \__( 'Ignore for this update', 'functionalities' ),
+					'markIntentional'  => \__( 'Mark change as intentional', 'functionalities' ),
+					'resetBaseline'    => \__( 'Reset baseline', 'functionalities' ),
+					'disableDetection' => \__( 'Disable detection for this post', 'functionalities' ),
+					'markAsShortForm'  => \__( 'Mark as short-form content', 'functionalities' ),
+					'lastSnapshot'     => \__( 'Last snapshot:', 'functionalities' ),
+					'loading'          => \__( 'Checking content integrity...', 'functionalities' ),
+					'headingsAdded'    => \__( 'Headings added:', 'functionalities' ),
+					'headingsRemoved'  => \__( 'Headings removed:', 'functionalities' ),
+				),
+			)
+		);
 
 		// CSS loaded via enqueue_editor_styles() on enqueue_block_assets for WP 7 iframe compatibility.
 	}
@@ -1251,7 +1293,7 @@ class Content_Regression {
 	 * @since 1.3.0
 	 * @return void
 	 */
-	public static function enqueue_editor_styles() : void {
+	public static function enqueue_editor_styles(): void {
 		if ( ! \is_admin() ) {
 			return;
 		}
@@ -1284,7 +1326,7 @@ class Content_Regression {
 	 *
 	 * @return void
 	 */
-	public static function ajax_mark_intentional() : void {
+	public static function ajax_mark_intentional(): void {
 		\check_ajax_referer( 'functionalities_regression', 'nonce' );
 
 		if ( ! \current_user_can( 'edit_posts' ) ) {
@@ -1292,16 +1334,17 @@ class Content_Regression {
 		}
 
 		$post_id = isset( $_POST['post_id'] ) ? (int) $_POST['post_id'] : 0;
-		$post = \get_post( $post_id );
+		$post    = \get_post( $post_id );
 
 		if ( ! $post || ! \current_user_can( 'edit_post', $post_id ) ) {
 			\wp_send_json_error( array( 'message' => \__( 'Invalid post.', 'functionalities' ) ) );
 		}
 
-		$opts = self::get_options();
-		$snapshot = self::capture_snapshot( $post );
+		$opts                          = self::get_options();
+		$snapshot                      = self::capture_snapshot( $post );
 		$snapshot['is_stable_version'] = true;
 		self::store_snapshot( $post_id, $snapshot, $opts );
+		self::record_audit( $post_id, 'mark_intentional' );
 
 		\wp_send_json_success( array( 'message' => \__( 'Change marked as intentional.', 'functionalities' ) ) );
 	}
@@ -1311,7 +1354,7 @@ class Content_Regression {
 	 *
 	 * @return void
 	 */
-	public static function ajax_reset_baseline() : void {
+	public static function ajax_reset_baseline(): void {
 		\check_ajax_referer( 'functionalities_regression', 'nonce' );
 
 		if ( ! \current_user_can( 'edit_posts' ) ) {
@@ -1319,7 +1362,7 @@ class Content_Regression {
 		}
 
 		$post_id = isset( $_POST['post_id'] ) ? (int) $_POST['post_id'] : 0;
-		$post = \get_post( $post_id );
+		$post    = \get_post( $post_id );
 
 		if ( ! $post || ! \current_user_can( 'edit_post', $post_id ) ) {
 			\wp_send_json_error( array( 'message' => \__( 'Invalid post.', 'functionalities' ) ) );
@@ -1327,9 +1370,10 @@ class Content_Regression {
 
 		\delete_post_meta( $post_id, self::META_KEY );
 
-		$opts = self::get_options();
+		$opts     = self::get_options();
 		$snapshot = self::capture_snapshot( $post );
 		self::store_snapshot( $post_id, $snapshot, $opts );
+		self::record_audit( $post_id, 'reset_baseline' );
 
 		\wp_send_json_success( array( 'message' => \__( 'Baseline has been reset.', 'functionalities' ) ) );
 	}
@@ -1339,7 +1383,7 @@ class Content_Regression {
 	 *
 	 * @return void
 	 */
-	public static function ajax_get_regression_status() : void {
+	public static function ajax_get_regression_status(): void {
 		\check_ajax_referer( 'functionalities_regression', 'nonce' );
 
 		if ( ! \current_user_can( 'edit_posts' ) ) {
@@ -1347,25 +1391,78 @@ class Content_Regression {
 		}
 
 		$post_id = isset( $_POST['post_id'] ) ? (int) $_POST['post_id'] : 0;
-		$post = \get_post( $post_id );
+		$post    = \get_post( $post_id );
 
 		if ( ! $post || ! \current_user_can( 'edit_post', $post_id ) ) {
 			\wp_send_json_error( array( 'message' => \__( 'Invalid post.', 'functionalities' ) ) );
 		}
 
-		$warnings = self::detect_regressions( $post_id );
-		$baseline = self::get_last_stable_snapshot( $post_id );
+		$warnings      = self::detect_regressions( $post_id );
+		$baseline      = self::get_last_stable_snapshot( $post_id );
 		$post_settings = self::get_post_settings( $post_id );
 
 		// Also capture current snapshot for comparison display.
 		$current = self::capture_snapshot( $post );
 
-		\wp_send_json_success( array(
-			'warnings'      => $warnings,
-			'baseline'      => $baseline,
-			'current'       => $current,
-			'post_settings' => $post_settings,
-			'has_baseline'  => ! empty( $baseline ),
-		) );
+		\wp_send_json_success(
+			array(
+				'warnings'      => $warnings,
+				'baseline'      => $baseline,
+				'current'       => $current,
+				'diff'          => self::build_snapshot_diff( $baseline, $current ),
+				'post_settings' => $post_settings,
+				'has_baseline'  => ! empty( $baseline ),
+			)
+		);
+	}
+
+	/**
+	 * Build a human-readable structural difference between two snapshots.
+	 *
+	 * @param array|null $baseline Stable snapshot.
+	 * @param array|null $current  Current snapshot.
+	 * @return array
+	 */
+	public static function build_snapshot_diff( ?array $baseline, ?array $current ): array {
+		if ( ! $baseline || ! $current ) {
+			return array();
+		}
+		$metrics = array();
+		foreach ( array( 'internal_link_count', 'external_link_count', 'word_count', 'h1_count' ) as $key ) {
+			$before          = (int) ( $baseline[ $key ] ?? 0 );
+			$after           = (int) ( $current[ $key ] ?? 0 );
+			$metrics[ $key ] = array(
+				'before' => $before,
+				'after'  => $after,
+				'delta'  => $after - $before,
+			);
+		}
+		$before_headings = array_map( 'wp_json_encode', (array) ( $baseline['heading_map'] ?? array() ) );
+		$after_headings  = array_map( 'wp_json_encode', (array) ( $current['heading_map'] ?? array() ) );
+
+		return array(
+			'metrics'          => $metrics,
+			'headings_added'   => array_values( array_map( 'json_decode', array_diff( $after_headings, $before_headings ) ) ),
+			'headings_removed' => array_values( array_map( 'json_decode', array_diff( $before_headings, $after_headings ) ) ),
+			'baseline_time'    => (int) ( $baseline['timestamp'] ?? 0 ),
+			'current_time'     => (int) ( $current['timestamp'] ?? 0 ),
+		);
+	}
+
+	/**
+	 * Append bounded audit metadata without storing post content.
+	 *
+	 * @param int    $post_id Post ID.
+	 * @param string $action  Audit action.
+	 * @return void
+	 */
+	private static function record_audit( int $post_id, string $action ): void {
+		$audit   = (array) \get_post_meta( $post_id, '_functionalities_content_audit', true );
+		$audit[] = array(
+			'action'    => $action,
+			'user_id'   => \get_current_user_id(),
+			'timestamp' => time(),
+		);
+		\update_post_meta( $post_id, '_functionalities_content_audit', array_slice( $audit, -50 ) );
 	}
 }

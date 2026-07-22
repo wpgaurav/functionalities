@@ -22,7 +22,7 @@ trait Admin_Options {
 	 *
 	 * @return array Link management options.
 	 */
-	public static function get_link_management_options() : array {
+	public static function get_link_management_options(): array {
 		$defaults = array(
 			'enabled'                     => false,
 			'nofollow_external'           => false,
@@ -33,7 +33,7 @@ trait Admin_Options {
 			'json_preset_url'             => '',
 			'enable_developer_filters'    => false,
 		);
-		$opts = (array) \get_option( 'functionalities_link_management', $defaults );
+		$opts     = (array) \get_option( 'functionalities_link_management', $defaults );
 		return array_merge( $defaults, $opts );
 	}
 
@@ -42,7 +42,7 @@ trait Admin_Options {
 	 *
 	 * @return array Block cleanup options.
 	 */
-	public static function get_block_cleanup_options() : array {
+	public static function get_block_cleanup_options(): array {
 		$defaults = array(
 			'enabled'                       => false,
 			'remove_heading_block_class'    => false,
@@ -59,7 +59,7 @@ trait Admin_Options {
 			'remove_media_text_block_class' => false,
 			'custom_classes_to_remove'      => '',
 		);
-		$opts = (array) \get_option( 'functionalities_block_cleanup', $defaults );
+		$opts     = (array) \get_option( 'functionalities_block_cleanup', $defaults );
 		return array_merge( $defaults, $opts );
 	}
 
@@ -68,7 +68,7 @@ trait Admin_Options {
 	 *
 	 * @return array Default post types.
 	 */
-	public static function default_editor_link_post_types() : array {
+	public static function default_editor_link_post_types(): array {
 		$pts      = get_post_types( array( 'public' => true ), 'objects' );
 		$defaults = array();
 		foreach ( $pts as $name => $obj ) {
@@ -85,13 +85,13 @@ trait Admin_Options {
 	 *
 	 * @return array Editor links options.
 	 */
-	public static function get_editor_links_options() : array {
+	public static function get_editor_links_options(): array {
 		$defaults = array(
 			'enabled'      => false,
 			'enable_limit' => false,
 			'post_types'   => self::default_editor_link_post_types(),
 		);
-		$opts = (array) \get_option( 'functionalities_editor_links', $defaults );
+		$opts     = (array) \get_option( 'functionalities_editor_links', $defaults );
 		return array_merge( $defaults, $opts );
 	}
 
@@ -105,7 +105,7 @@ trait Admin_Options {
 	 *
 	 * @return array Snippets options.
 	 */
-	public static function get_snippets_options() : array {
+	public static function get_snippets_options(): array {
 		$defaults = array(
 			'enabled'    => false,
 			'enable_ga4' => false,
@@ -114,7 +114,7 @@ trait Admin_Options {
 			'body_open'  => array(),
 			'footer'     => array(),
 		);
-		$opts = (array) \get_option( 'functionalities_snippets', $defaults );
+		$opts     = (array) \get_option( 'functionalities_snippets', $defaults );
 
 		// Migrate old single-string format to repeater arrays.
 		if ( isset( $opts['header_code'] ) || isset( $opts['enable_header'] ) ) {
@@ -130,7 +130,7 @@ trait Admin_Options {
 	 *
 	 * @return array Schema options.
 	 */
-	public static function get_schema_options() : array {
+	public static function get_schema_options(): array {
 		$defaults = array(
 			'enabled'            => false,
 			'enable_site_schema' => true,
@@ -144,7 +144,7 @@ trait Admin_Options {
 			'add_author'         => true,
 			'enable_breadcrumbs' => false,
 		);
-		$opts = (array) \get_option( 'functionalities_schema', $defaults );
+		$opts     = (array) \get_option( 'functionalities_schema', $defaults );
 		return array_merge( $defaults, $opts );
 	}
 
@@ -153,7 +153,7 @@ trait Admin_Options {
 	 *
 	 * @return array Default components.
 	 */
-	public static function default_components() : array {
+	public static function default_components(): array {
 		return array(
 			array(
 				'name'  => 'Card',
@@ -228,12 +228,12 @@ trait Admin_Options {
 	 *
 	 * @return array Components options.
 	 */
-	public static function get_components_options() : array {
+	public static function get_components_options(): array {
 		$defaults = array(
 			'enabled' => false,
 			'items'   => self::default_components(),
 		);
-		$opts = (array) \get_option( 'functionalities_components', $defaults );
+		$opts     = (array) \get_option( 'functionalities_components', $defaults );
 		if ( empty( $opts['items'] ) ) {
 			$opts['items'] = self::default_components();
 		}
@@ -245,7 +245,7 @@ trait Admin_Options {
 	 *
 	 * @return array Misc options.
 	 */
-	public static function get_misc_options() : array {
+	public static function get_misc_options(): array {
 		$defaults = array(
 			'enabled'                         => false,
 			'disable_block_widgets'           => false,
@@ -271,7 +271,7 @@ trait Admin_Options {
 			'enable_prism_admin'              => false,
 			'enable_textarea_fullscreen'      => false,
 		);
-		$opts = (array) \get_option( 'functionalities_misc', $defaults );
+		$opts     = (array) \get_option( 'functionalities_misc', $defaults );
 		return array_merge( $defaults, $opts );
 	}
 
@@ -280,12 +280,12 @@ trait Admin_Options {
 	 *
 	 * @return array Fonts options.
 	 */
-	public static function get_fonts_options() : array {
+	public static function get_fonts_options(): array {
 		$defaults = array(
 			'enabled' => false,
 			'items'   => array(),
 		);
-		$opts = (array) \get_option( 'functionalities_fonts', $defaults );
+		$opts     = (array) \get_option( 'functionalities_fonts', $defaults );
 		return array_merge( $defaults, $opts );
 	}
 
@@ -294,7 +294,7 @@ trait Admin_Options {
 	 *
 	 * @return array Options.
 	 */
-	public static function get_login_security_options() : array {
+	public static function get_login_security_options(): array {
 		return \Functionalities\Features\Login_Security::get_options();
 	}
 
@@ -303,21 +303,21 @@ trait Admin_Options {
 	 *
 	 * @return array Meta options.
 	 */
-	public static function get_meta_options() : array {
+	public static function get_meta_options(): array {
 		$defaults = array(
-			'enabled'                 => false,
-			'enable_copyright_meta'   => true,
-			'enable_dublin_core'      => true,
-			'enable_license_metabox'  => true,
+			'enabled'                   => false,
+			'enable_copyright_meta'     => true,
+			'enable_dublin_core'        => true,
+			'enable_license_metabox'    => true,
 			'enable_schema_integration' => true,
-			'default_license'         => 'all-rights-reserved',
-			'default_license_url'     => '',
-			'post_types'              => array( 'post' ),
-			'copyright_holder_type'   => 'author',
-			'custom_copyright_holder' => '',
-			'dc_language'             => '',
+			'default_license'           => 'all-rights-reserved',
+			'default_license_url'       => '',
+			'post_types'                => array( 'post' ),
+			'copyright_holder_type'     => 'author',
+			'custom_copyright_holder'   => '',
+			'dc_language'               => '',
 		);
-		$opts = (array) \get_option( 'functionalities_meta', $defaults );
+		$opts     = (array) \get_option( 'functionalities_meta', $defaults );
 		return array_merge( $defaults, $opts );
 	}
 
@@ -326,7 +326,7 @@ trait Admin_Options {
 	 *
 	 * @return array Content regression options.
 	 */
-	public static function get_content_regression_options() : array {
+	public static function get_content_regression_options(): array {
 		$defaults = array(
 			'enabled'                    => false,
 			'post_types'                 => array( 'post', 'page' ),
@@ -346,7 +346,7 @@ trait Admin_Options {
 			'snapshot_rolling_count'     => 5,
 			'show_post_column'           => true,
 		);
-		$opts = (array) \get_option( 'functionalities_content_regression', $defaults );
+		$opts     = (array) \get_option( 'functionalities_content_regression', $defaults );
 		return array_merge( $defaults, $opts );
 	}
 
@@ -355,7 +355,7 @@ trait Admin_Options {
 	 *
 	 * @return array Assumption detection options.
 	 */
-	public static function get_assumption_detection_options() : array {
+	public static function get_assumption_detection_options(): array {
 		$defaults = array(
 			'enabled'                         => false,
 			'detect_schema_collision'         => true,
@@ -371,8 +371,10 @@ trait Admin_Options {
 			'detect_missing_security_headers' => true,
 			'detect_debug_exposure'           => true,
 			'detect_cron_issues'              => true,
+			'scan_schedule'                   => 'daily',
+			'email_notifications'             => false,
 		);
-		$opts = (array) \get_option( 'functionalities_assumption_detection', $defaults );
+		$opts     = (array) \get_option( 'functionalities_assumption_detection', $defaults );
 		return array_merge( $defaults, $opts );
 	}
 
@@ -381,7 +383,7 @@ trait Admin_Options {
 	 *
 	 * @return array Options.
 	 */
-	public static function get_svg_icons_options() : array {
+	public static function get_svg_icons_options(): array {
 		return \Functionalities\Features\SVG_Icons::get_options();
 	}
 
@@ -390,7 +392,7 @@ trait Admin_Options {
 	 *
 	 * @return array PWA options.
 	 */
-	public static function get_pwa_options() : array {
+	public static function get_pwa_options(): array {
 		return \Functionalities\Features\PWA::get_options();
 	}
 }

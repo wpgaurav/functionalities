@@ -98,7 +98,7 @@ class Block_Cleanup {
 	 *
 	 * @return void
 	 */
-	public static function init() : void {
+	public static function init(): void {
 		$opts = self::get_options();
 
 		if ( empty( $opts['enabled'] ) ) {
@@ -165,12 +165,12 @@ class Block_Cleanup {
 	 *
 	 * @return array Options array.
 	 */
-	protected static function get_options() : array {
+	protected static function get_options(): array {
 		if ( null !== self::$options ) {
 			return self::$options;
 		}
 
-		$defaults = array(
+		$defaults      = array(
 			'enabled'                       => false,
 			'remove_heading_block_class'    => false,
 			'remove_list_block_class'       => false,
@@ -186,7 +186,7 @@ class Block_Cleanup {
 			'remove_media_text_block_class' => false,
 			'custom_classes_to_remove'      => '',
 		);
-		$opts = (array) \get_option( 'functionalities_block_cleanup', $defaults );
+		$opts          = (array) \get_option( 'functionalities_block_cleanup', $defaults );
 		self::$options = array_merge( $defaults, $opts );
 		return self::$options;
 	}
@@ -205,7 +205,7 @@ class Block_Cleanup {
 	 * @param string $content The post content to filter.
 	 * @return string The filtered content with block classes removed.
 	 */
-	public static function filter_content_cleanup( string $content ) : string {
+	public static function filter_content_cleanup( string $content ): string {
 		// Skip in admin, feeds, and REST requests.
 		if ( \is_admin() || \is_feed() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
 			return $content;
@@ -386,7 +386,7 @@ class Block_Cleanup {
 	 * @param string $value Raw string value to embed in an XPath expression.
 	 * @return string Quoted XPath literal (e.g. `"foo"`, `'foo"bar'`, or `concat('a', "'", 'b')`).
 	 */
-	protected static function xpath_string_literal( string $value ) : string {
+	protected static function xpath_string_literal( string $value ): string {
 		if ( false === strpos( $value, "'" ) ) {
 			return "'" . $value . "'";
 		}
@@ -407,7 +407,7 @@ class Block_Cleanup {
 		return 'concat(' . implode( ',', $parts ) . ')';
 	}
 
-	protected static function strip_class_from_nodes( $nodes, string $class ) : void {
+	protected static function strip_class_from_nodes( $nodes, string $class ): void {
 		if ( ! ( $nodes instanceof \DOMNodeList ) ) {
 			return;
 		}

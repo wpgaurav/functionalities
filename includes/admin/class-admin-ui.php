@@ -27,9 +27,9 @@ class Admin_UI {
 	 * @param bool   $open    Whether to show open by default. Default false.
 	 * @return void
 	 */
-	public static function render_docs_section( string $title, string $content, string $type = 'info', bool $open = false ) : void {
+	public static function render_docs_section( string $title, string $content, string $type = 'info', bool $open = false ): void {
 		$open_attr = $open ? ' open' : '';
-		$class = 'functionalities-docs-accordion functionalities-docs-' . esc_attr( $type );
+		$class     = 'functionalities-docs-accordion functionalities-docs-' . esc_attr( $type );
 
 		echo '<details class="' . esc_attr( $class ) . '"' . esc_attr( $open_attr ) . '>';
 		echo '<summary>' . esc_html( $title ) . '</summary>';
@@ -44,7 +44,7 @@ class Admin_UI {
 	 * @param array $items List of feature descriptions.
 	 * @return void
 	 */
-	public static function render_features_docs( array $items ) : void {
+	public static function render_features_docs( array $items ): void {
 		$content = '<ul>';
 		foreach ( $items as $item ) {
 			$content .= '<li>' . esc_html( $item ) . '</li>';
@@ -64,7 +64,7 @@ class Admin_UI {
 	 * @param string $description Usage description.
 	 * @return void
 	 */
-	public static function render_usage_docs( string $description ) : void {
+	public static function render_usage_docs( string $description ): void {
 		self::render_docs_section(
 			\__( 'How to Use', 'functionalities' ),
 			'<p>' . esc_html( $description ) . '</p>',
@@ -78,7 +78,7 @@ class Admin_UI {
 	 * @param array $hooks Array of hooks with 'name' and 'description' keys.
 	 * @return void
 	 */
-	public static function render_developer_docs( array $hooks ) : void {
+	public static function render_developer_docs( array $hooks ): void {
 		$content = '<dl class="functionalities-hooks-list">';
 		foreach ( $hooks as $hook ) {
 			$content .= '<dt><code>' . esc_html( $hook['name'] ) . '</code></dt>';
@@ -99,7 +99,7 @@ class Admin_UI {
 	 * @param string $message Warning message.
 	 * @return void
 	 */
-	public static function render_caution_docs( string $message ) : void {
+	public static function render_caution_docs( string $message ): void {
 		self::render_docs_section(
 			\__( 'Caution', 'functionalities' ),
 			'<p>' . esc_html( $message ) . '</p>',
@@ -113,7 +113,7 @@ class Admin_UI {
 	 * @param array $config Configuration array with 'features', 'usage', 'caution', 'hooks' keys.
 	 * @return void
 	 */
-	public static function render_module_docs( array $config ) : void {
+	public static function render_module_docs( array $config ): void {
 		echo '<div class="functionalities-module-docs">';
 
 		if ( ! empty( $config['features'] ) ) {

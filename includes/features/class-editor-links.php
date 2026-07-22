@@ -72,7 +72,7 @@ class Editor_Links {
 	 *
 	 * @return void
 	 */
-	public static function init() : void {
+	public static function init(): void {
 		$opts = self::get_options();
 
 		if ( empty( $opts['enabled'] ) ) {
@@ -106,17 +106,17 @@ class Editor_Links {
 	 *
 	 * @return array Options array.
 	 */
-	protected static function get_options() : array {
+	protected static function get_options(): array {
 		if ( null !== self::$options ) {
 			return self::$options;
 		}
 
-		$defaults = array(
+		$defaults      = array(
 			'enabled'      => false,
 			'enable_limit' => false,
 			'post_types'   => array(),
 		);
-		$opts = (array) \get_option( 'functionalities_editor_links', $defaults );
+		$opts          = (array) \get_option( 'functionalities_editor_links', $defaults );
 		self::$options = array_merge( $defaults, $opts );
 		return self::$options;
 	}
@@ -131,7 +131,7 @@ class Editor_Links {
 	 *
 	 * @return array Array of allowed post type slugs.
 	 */
-	protected static function get_allowed_post_types() : array {
+	protected static function get_allowed_post_types(): array {
 		$opts    = self::get_options();
 		$allowed = (array) ( $opts['post_types'] ?? array() );
 
@@ -157,7 +157,7 @@ class Editor_Links {
 	 * @param array $query WP_Query arguments for link search.
 	 * @return array Modified query arguments.
 	 */
-	public static function filter_wp_link_query_args( array $query ) : array {
+	public static function filter_wp_link_query_args( array $query ): array {
 		/**
 		 * Filters whether editor link filtering is enabled.
 		 *
@@ -191,7 +191,7 @@ class Editor_Links {
 	 * @param \WP_REST_Request $request       The REST request object.
 	 * @return array Modified query arguments.
 	 */
-	public static function filter_rest_search_query( array $prepared_args, $request ) : array {
+	public static function filter_rest_search_query( array $prepared_args, $request ): array {
 		/** This filter is documented in class-editor-links.php */
 		if ( ! \apply_filters( 'functionalities_editor_links_enabled', true ) ) {
 			return $prepared_args;
@@ -227,7 +227,7 @@ class Editor_Links {
 	 * @param \WP_REST_Request $request The REST request object.
 	 * @return array Modified query arguments.
 	 */
-	public static function filter_rest_post_query( array $args, $request ) : array {
+	public static function filter_rest_post_query( array $args, $request ): array {
 		/** This filter is documented in class-editor-links.php */
 		if ( ! \apply_filters( 'functionalities_editor_links_enabled', true ) ) {
 			return $args;

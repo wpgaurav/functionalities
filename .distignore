@@ -12,8 +12,8 @@ coverage
 .editorconfig
 .eslintrc.js
 .prettierrc
-phpunit.xml
-phpcs.xml
+phpunit.xml*
+phpcs.xml*
 phpstan.neon
 
 # Build tools

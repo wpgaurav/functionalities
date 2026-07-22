@@ -1,8 +1,8 @@
 # Dynamic Functionalities Roadmap
 
-All planned fixes and features below target **v1.4.8**. GitHub issues are the
-source of truth for scope and acceptance criteria. Work can land in phases, but
-the v1.4.8 release should not be tagged until every listed issue is complete.
+All planned fixes and features below ship in **v1.4.8**. GitHub issues remain the
+source of truth for scope and acceptance criteria. The release is tagged only
+after automated checks and the real-WordPress smoke gate pass.
 
 ## Phase 1: Stabilize the foundation
 

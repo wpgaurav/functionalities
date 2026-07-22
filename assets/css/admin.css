@@ -1543,3 +1543,42 @@
 		grid-template-columns: repeat(2, 1fr);
 	}
 }
+
+.functionalities-tools {
+	margin-top: 30px;
+	padding: 20px;
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+}
+
+.functionalities-tools h2 {
+	margin-top: 0;
+}
+
+.functionalities-tools details {
+	margin: 14px 0;
+}
+
+.functionalities-tools__modules {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+	gap: 8px 16px;
+	margin: 12px 0;
+}
+
+.functionalities-tools__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-top: 16px;
+}
+
+.functionalities-tools__result {
+	max-height: 320px;
+	overflow: auto;
+	margin: 16px 0 0;
+	padding: 12px;
+	background: #f6f7f7;
+	white-space: pre-wrap;
+}

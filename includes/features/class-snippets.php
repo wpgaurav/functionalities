@@ -129,7 +129,7 @@ class Snippets {
 	 *
 	 * @return void
 	 */
-	public static function init() : void {
+	public static function init(): void {
 		$opts = self::get_options();
 
 		if ( empty( $opts['enabled'] ) ) {
@@ -152,7 +152,7 @@ class Snippets {
 	 *
 	 * @return array Options array.
 	 */
-	protected static function get_options() : array {
+	protected static function get_options(): array {
 		if ( null !== self::$options ) {
 			return self::$options;
 		}
@@ -165,7 +165,7 @@ class Snippets {
 			'body_open'  => array(),
 			'footer'     => array(),
 		);
-		$opts = (array) \get_option( 'functionalities_snippets', $defaults );
+		$opts     = (array) \get_option( 'functionalities_snippets', $defaults );
 
 		// In-memory migration from old single-string format.
 		if ( isset( $opts['header_code'] ) || isset( $opts['enable_header'] ) ) {
@@ -184,7 +184,7 @@ class Snippets {
 	 * @param array $opts Old-format options.
 	 * @return array New-format options.
 	 */
-	public static function migrate_options( array $opts ) : array {
+	public static function migrate_options( array $opts ): array {
 		$migrated = array(
 			'enabled'    => ! empty( $opts['enabled'] ),
 			'enable_ga4' => ! empty( $opts['enable_ga4'] ),
@@ -229,7 +229,7 @@ class Snippets {
 	 *
 	 * @return bool True if snippets should be output.
 	 */
-	protected static function should_output() : bool {
+	protected static function should_output(): bool {
 		$is_rest = \defined( 'REST_REQUEST' ) && \constant( 'REST_REQUEST' );
 		if ( \is_admin() || \is_feed() || $is_rest ) {
 			return false;
@@ -255,7 +255,7 @@ class Snippets {
 	 * @param string $comment    HTML comment label.
 	 * @return void
 	 */
-	private static function output_snippets( string $location, string $filter, string $comment ) : void {
+	private static function output_snippets( string $location, string $filter, string $comment ): void {
 		$opts     = self::get_options();
 		$snippets = ! empty( $opts[ $location ] ) && \is_array( $opts[ $location ] ) ? $opts[ $location ] : array();
 		$parts    = array();
@@ -302,21 +302,21 @@ class Snippets {
 	 *
 	 * @return void
 	 */
-	public static function output_head() : void {
+	public static function output_head(): void {
 		if ( ! self::should_output() ) {
 			return;
 		}
 
 		$opts = self::get_options();
 
-		/** @since 0.8.0 */
+		/** Fires before header snippets are printed. @since 0.8.0 */
 		\do_action( 'functionalities_before_header_snippets' );
 
 		// Output Google Analytics 4.
 		if ( ! empty( $opts['enable_ga4'] ) && ! empty( $opts['ga4_id'] ) ) {
 			$ga4_id = preg_replace( '/[^A-Z0-9\-]/', '', strtoupper( (string) $opts['ga4_id'] ) );
 
-			/** @since 0.8.0 */
+			/** Filters whether the configured GA4 tag is printed. @since 0.8.0 */
 			$ga4_enabled = \apply_filters( 'functionalities_snippets_ga4_enabled', true, $ga4_id );
 
 			if ( $ga4_enabled && $ga4_id !== '' ) {
@@ -330,7 +330,7 @@ class Snippets {
 
 		self::output_snippets( 'header', 'functionalities_snippets_header_code', 'Custom Header Code' );
 
-		/** @since 0.8.0 */
+		/** Fires after header snippets are printed. @since 0.8.0 */
 		\do_action( 'functionalities_after_header_snippets' );
 	}
 
@@ -343,17 +343,17 @@ class Snippets {
 	 *
 	 * @return void
 	 */
-	public static function output_footer() : void {
+	public static function output_footer(): void {
 		if ( ! self::should_output() ) {
 			return;
 		}
 
-		/** @since 0.8.0 */
+		/** Fires before footer snippets are printed. @since 0.8.0 */
 		\do_action( 'functionalities_before_footer_snippets' );
 
 		self::output_snippets( 'footer', 'functionalities_snippets_footer_code', 'Custom Footer Code' );
 
-		/** @since 0.8.0 */
+		/** Fires after footer snippets are printed. @since 0.8.0 */
 		\do_action( 'functionalities_after_footer_snippets' );
 	}
 
@@ -365,7 +365,7 @@ class Snippets {
 	 *
 	 * @return void
 	 */
-	public static function output_body_open() : void {
+	public static function output_body_open(): void {
 		if ( ! self::should_output() ) {
 			return;
 		}
@@ -399,10 +399,10 @@ class Snippets {
 			),
 			'noscript' => array(),
 			'style'    => array(
-				'type'  => true,
-				'media' => true,
-				'id'    => true,
-				'nonce' => true,
+				'type'   => true,
+				'media'  => true,
+				'id'     => true,
+				'nonce'  => true,
 				'data-*' => true,
 			),
 			'link'     => array(
@@ -484,9 +484,9 @@ class Snippets {
 		// Per-call random token so a snippet body containing a literal placeholder
 		// cannot collide with the substitution markers injected below.
 		// Format: ___FUNC_STYLE_{random}_{index}___
-		$token = function_exists( '\wp_generate_password' )
+		$token  = function_exists( '\wp_generate_password' )
 			? \wp_generate_password( 16, false, false )
-			: substr( md5( (string) mt_rand() . microtime() ), 0, 16 );
+			: substr( md5( (string) wp_rand() . microtime() ), 0, 16 );
 		$prefix = '___FUNC_STYLE_' . $token . '_';
 		$suffix = '___';
 
@@ -497,7 +497,10 @@ class Snippets {
 		}
 
 		// Extract <style> blocks before wp_kses processing.
-		$style_allowed = isset( $allowed_tags['style'] ) ? $allowed_tags['style'] : array( 'type' => true, 'media' => true );
+		$style_allowed       = isset( $allowed_tags['style'] ) ? $allowed_tags['style'] : array(
+			'type'  => true,
+			'media' => true,
+		);
 		$code_without_styles = preg_replace_callback(
 			'/<style(\s[^>]*)?>(.*?)<\/style>/is',
 			function ( $matches ) use ( &$style_blocks, $prefix, $suffix, $style_allowed ) {
