@@ -56,6 +56,34 @@ if ( ! function_exists( 'sanitize_textarea_field' ) ) {
 	}
 }
 
+if ( ! function_exists( 'sanitize_hex_color' ) ) {
+	function sanitize_hex_color( $value ) {
+		return preg_match( '/^#(?:[0-9a-f]{3}){1,2}$/i', (string) $value ) ? $value : null;
+	}
+}
+
+if ( ! function_exists( 'sanitize_html_class' ) ) {
+	function sanitize_html_class( $value ) {
+		return preg_replace( '/[^A-Za-z0-9_-]/', '', (string) $value );
+	}
+}
+
+if ( ! function_exists( 'esc_attr' ) ) {
+	function esc_attr( $value ) {
+		return htmlspecialchars( (string) $value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8' );
+	}
+}
+
+if ( ! function_exists( 'get_block_wrapper_attributes' ) ) {
+	function get_block_wrapper_attributes( $attributes = array() ) {
+		$output = array();
+		foreach ( $attributes as $name => $value ) {
+			$output[] = esc_attr( $name ) . '="' . esc_attr( $value ) . '"';
+		}
+		return implode( ' ', $output );
+	}
+}
+
 if ( ! function_exists( 'esc_url_raw' ) ) {
 	function esc_url_raw( $value ) {
 		return trim( (string) $value );

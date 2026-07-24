@@ -69,14 +69,14 @@ class SVG_Icons {
 		'polyline',
 		'polygon',
 		'defs',
-		'clipPath',
+		'clippath',
 		'mask',
 		'use',
 		'symbol',
 		'title',
 		'desc',
-		'linearGradient',
-		'radialGradient',
+		'lineargradient',
+		'radialgradient',
 		'stop',
 	);
 
@@ -138,6 +138,36 @@ class SVG_Icons {
 	);
 
 	/**
+	 * CSS properties allowed in an imported SVG style attribute.
+	 *
+	 * @var array
+	 */
+	private static $allowed_style_properties = array(
+		'color',
+		'fill',
+		'fill-opacity',
+		'fill-rule',
+		'stroke',
+		'stroke-width',
+		'stroke-linecap',
+		'stroke-linejoin',
+		'stroke-dasharray',
+		'stroke-dashoffset',
+		'stroke-opacity',
+		'clip-rule',
+		'opacity',
+		'stop-color',
+		'stop-opacity',
+	);
+
+	/**
+	 * Request-local counter used to prevent duplicate SVG definition IDs.
+	 *
+	 * @var int
+	 */
+	private static $render_instance = 0;
+
+	/**
 	 * Initialize the SVG icons module.
 	 *
 	 * @since 0.11.0
@@ -162,6 +192,7 @@ class SVG_Icons {
 		// Register block editor assets.
 		\add_action( 'enqueue_block_editor_assets', array( __CLASS__, 'enqueue_editor_assets' ) );
 		\add_action( 'enqueue_block_assets', array( __CLASS__, 'enqueue_editor_styles' ) );
+		\add_action( 'rest_api_init', array( __CLASS__, 'register_rest_routes' ) );
 
 		// Register AJAX handlers.
 		\add_action( 'wp_ajax_functionalities_svg_icon_save', array( __CLASS__, 'ajax_save_icon' ) );
@@ -190,21 +221,14 @@ class SVG_Icons {
 			return;
 		}
 
+		$metadata = FUNCTIONALITIES_DIR . 'assets/blocks/svg-icon/block.json';
+		if ( ! file_exists( $metadata ) ) {
+			return;
+		}
+
 		\register_block_type(
-			'functionalities/svg-icon-block',
+			$metadata,
 			array(
-				'attributes'      => array(
-					'iconSlug' => array( 'type' => 'string' ),
-					'size'     => array(
-						'type'    => 'number',
-						'default' => 48,
-					),
-					'align'    => array(
-						'type'    => 'string',
-						'default' => 'none',
-					),
-					'color'    => array( 'type' => 'string' ),
-				),
 				'render_callback' => array( __CLASS__, 'render_block' ),
 			)
 		);
@@ -223,43 +247,57 @@ class SVG_Icons {
 			return '';
 		}
 
-		$size  = isset( $attributes['size'] ) ? intval( $attributes['size'] ) : 48;
-		$align = isset( $attributes['align'] ) ? $attributes['align'] : 'none';
-		$color = isset( $attributes['color'] ) ? $attributes['color'] : '';
+		$unit = isset( $attributes['sizeUnit'] ) && in_array( $attributes['sizeUnit'], array( 'px', 'em', 'rem' ), true )
+			? $attributes['sizeUnit']
+			: 'px';
+		$size = isset( $attributes['size'] ) && is_numeric( $attributes['size'] )
+			? (float) $attributes['size']
+			: 48;
+		$size = 'px' === $unit
+			? max( 8, min( 512, $size ) )
+			: max( 0.5, min( 32, $size ) );
+		$size = rtrim( rtrim( number_format( $size, 2, '.', '' ), '0' ), '.' );
 
-		$svg = self::render_icon( $slug, 'func-svg-icon-block' );
+		$align      = isset( $attributes['align'] ) && in_array( $attributes['align'], array( 'left', 'center', 'right' ), true )
+			? $attributes['align']
+			: 'none';
+		$color      = isset( $attributes['color'] ) ? \sanitize_hex_color( $attributes['color'] ) : '';
+		$mode       = isset( $attributes['colorMode'] ) && 'original' === $attributes['colorMode']
+			? 'original'
+			: 'monochrome';
+		$decorative = ! isset( $attributes['decorative'] ) || (bool) $attributes['decorative'];
+		$label      = isset( $attributes['label'] ) ? \sanitize_text_field( $attributes['label'] ) : '';
+
+		$svg = self::render_icon(
+			$slug,
+			'func-svg-icon-block',
+			array(
+				'block'      => true,
+				'color_mode' => $mode,
+				'decorative' => $decorative,
+				'label'      => $label,
+			)
+		);
 
 		if ( empty( $svg ) ) {
 			return '';
 		}
 
-		// Apply custom size and color.
-		$styles = array(
-			'width'          => $size . 'px',
-			'height'         => $size . 'px',
-			'display'        => 'inline-block',
-			'vertical-align' => 'middle',
-			'fill'           => 'currentColor',
+		$wrapper_styles  = '--func-icon-size:' . $size . $unit . ';line-height:0;';
+		$wrapper_styles .= 'none' !== $align ? 'text-align:' . $align . ';' : '';
+		$wrapper_styles .= $color ? 'color:' . $color . ';' : '';
+
+		$wrapper_attributes = array(
+			'class' => 'func-svg-icon-block-wrapper is-color-' . $mode,
+			'style' => $wrapper_styles,
 		);
-
-		if ( ! empty( $color ) ) {
-			$styles['color'] = $color;
+		if ( function_exists( 'get_block_wrapper_attributes' ) ) {
+			$wrapper = \get_block_wrapper_attributes( $wrapper_attributes );
+		} else {
+			$wrapper = 'class="' . \esc_attr( $wrapper_attributes['class'] ) . '" style="' . \esc_attr( $wrapper_attributes['style'] ) . '"';
 		}
 
-		$style_attr = '';
-		foreach ( $styles as $prop => $val ) {
-			$style_attr .= $prop . ':' . $val . ';';
-		}
-
-		// Replace the style attribute added by render_icon.
-		$svg = preg_replace( '/style="[^"]*"/', 'style="' . \esc_attr( $style_attr ) . '"', $svg, 1 );
-
-		$wrapper_styles = 'margin: 1em 0;';
-		if ( in_array( $align, array( 'left', 'right', 'center' ), true ) ) {
-			$wrapper_styles .= 'text-align:' . $align . ';';
-		}
-
-		return '<div class="func-svg-icon-block-wrapper" style="' . \esc_attr( $wrapper_styles ) . '">' . $svg . '</div>';
+		return '<div ' . $wrapper . '>' . $svg . '</div>';
 	}
 
 	/**
@@ -315,36 +353,57 @@ class SVG_Icons {
 	 * @return void
 	 */
 	public static function enqueue_editor_assets(): void {
-		$icons = self::get_icons();
+		$icons         = self::get_icons();
+		$metadata_file = FUNCTIONALITIES_DIR . 'assets/blocks/svg-icon/block.json';
+		$metadata      = array();
+		if ( file_exists( $metadata_file ) ) {
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reads a bundled local metadata file.
+			$metadata = json_decode( (string) file_get_contents( $metadata_file ), true );
+		}
 
 		// Register editor script.
 		\wp_enqueue_script(
 			'functionalities-svg-icons-editor',
 			FUNCTIONALITIES_URL . 'assets/js/svg-icons-editor.js',
-			array( 'wp-rich-text', 'wp-element', 'wp-block-editor', 'wp-components', 'wp-i18n', 'wp-dom-ready', 'wp-blocks' ),
+			array( 'wp-api-fetch', 'wp-rich-text', 'wp-element', 'wp-block-editor', 'wp-components', 'wp-i18n', 'wp-dom-ready', 'wp-blocks' ),
 			FUNCTIONALITIES_VERSION,
 			true
 		);
 
-		// Pass icons data to JavaScript.
+		// Pass only configuration. Icons are paginated through the REST API when requested.
 		\wp_localize_script(
 			'functionalities-svg-icons-editor',
 			'functionalitiesSvgIcons',
 			array(
-				'icons'   => array_values( $icons ),
-				'nonce'   => \wp_create_nonce( 'functionalities_svg_icons' ),
-				'ajaxUrl' => \admin_url( 'admin-ajax.php' ),
-				'i18n'    => array(
-					'insertIcon'   => \__( 'Insert Icon', 'functionalities' ),
-					'searchIcons'  => \__( 'Search icons...', 'functionalities' ),
-					'noIcons'      => \__( 'No icons found. Add icons in Functionalities > SVG Icons.', 'functionalities' ),
-					'blockTitle'   => \__( 'SVG Icon', 'functionalities' ),
-					'blockDesc'    => \__( 'Insert an SVG icon from your library as a block.', 'functionalities' ),
-					'changeIcon'   => \__( 'Change Icon', 'functionalities' ),
-					'iconSettings' => \__( 'Icon Settings', 'functionalities' ),
-					'iconSize'     => \__( 'Icon Size (px)', 'functionalities' ),
-					'iconColor'    => \__( 'Icon Color', 'functionalities' ),
-					'selectIcon'   => \__( 'Select Icon', 'functionalities' ),
+				'icons'         => array(), // Kept for third-party integrations that inspect this key.
+				'iconCount'     => count( $icons ),
+				'restPath'      => '/functionalities/v1/svg-icons',
+				'blockMetadata' => is_array( $metadata ) ? $metadata : array(),
+				'nonce'         => \wp_create_nonce( 'functionalities_svg_icons' ),
+				'ajaxUrl'       => \admin_url( 'admin-ajax.php' ),
+				'i18n'          => array(
+					'insertIcon'      => \__( 'Insert icon shortcode', 'functionalities' ),
+					'searchIcons'     => \__( 'Search icons', 'functionalities' ),
+					'noIcons'         => \__( 'No icons found. Add icons in Functionalities > SVG Icons.', 'functionalities' ),
+					'noMatchingIcons' => \__( 'No matching icons found.', 'functionalities' ),
+					'blockTitle'      => \__( 'SVG Icon', 'functionalities' ),
+					'blockDesc'       => \__( 'Insert an SVG icon from your library as a block.', 'functionalities' ),
+					'changeIcon'      => \__( 'Change icon', 'functionalities' ),
+					'iconSettings'    => \__( 'Icon settings', 'functionalities' ),
+					'iconSize'        => \__( 'Icon size', 'functionalities' ),
+					'sizeUnit'        => \__( 'Size unit', 'functionalities' ),
+					'colorMode'       => \__( 'Color mode', 'functionalities' ),
+					'monochrome'      => \__( 'Monochrome (inherit text color)', 'functionalities' ),
+					'originalColors'  => \__( 'Original SVG colors', 'functionalities' ),
+					'decorative'      => \__( 'Decorative icon', 'functionalities' ),
+					'decorativeHelp'  => \__( 'Decorative icons are hidden from assistive technology.', 'functionalities' ),
+					'accessibility'   => \__( 'Accessibility label', 'functionalities' ),
+					'selectIcon'      => \__( 'Select icon', 'functionalities' ),
+					'loadingIcons'    => \__( 'Loading icons…', 'functionalities' ),
+					'loadMore'        => \__( 'Load more', 'functionalities' ),
+					'loadError'       => \__( 'Icons could not be loaded. Try again.', 'functionalities' ),
+					'missingIcon'     => \__( 'The selected icon is no longer in the library. Choose a replacement.', 'functionalities' ),
+					'recentIcons'     => \__( 'Recent icons', 'functionalities' ),
 				),
 			)
 		);
@@ -383,13 +442,122 @@ class SVG_Icons {
 				width: 1em !important;
 				height: 1em !important;
 				vertical-align: -0.125em;
-				fill: currentColor;
-			}
-			.func-icon path {
-				fill: inherit;
 			}
 		';
 		\wp_add_inline_style( 'functionalities-svg-icons-editor', $inline_styles );
+	}
+
+	/**
+	 * Register the paginated icon-library endpoint used by the editor.
+	 *
+	 * @since 1.4.8
+	 * @return void
+	 */
+	public static function register_rest_routes(): void {
+		\register_rest_route(
+			'functionalities/v1',
+			'/svg-icons',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'permission_callback' => static function (): bool {
+					return \current_user_can( 'edit_posts' );
+				},
+				'callback'            => array( __CLASS__, 'rest_get_icons' ),
+				'args'                => array(
+					'search'   => array(
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+					'include'  => array(
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+					'page'     => array(
+						'type'              => 'integer',
+						'default'           => 1,
+						'minimum'           => 1,
+						'sanitize_callback' => 'absint',
+					),
+					'per_page' => array(
+						'type'              => 'integer',
+						'default'           => 48,
+						'minimum'           => 1,
+						'maximum'           => 100,
+						'sanitize_callback' => 'absint',
+					),
+				),
+			)
+		);
+	}
+
+	/**
+	 * Return a filtered page of icons for the block editor.
+	 *
+	 * @since 1.4.8
+	 * @param \WP_REST_Request $request REST request.
+	 * @return \WP_REST_Response
+	 */
+	public static function rest_get_icons( \WP_REST_Request $request ): \WP_REST_Response {
+		$icons    = array_values( self::get_icons() );
+		$search   = strtolower( (string) $request->get_param( 'search' ) );
+		$included = array_filter( array_map( 'sanitize_key', explode( ',', (string) $request->get_param( 'include' ) ) ) );
+
+		if ( $included ) {
+			$icons = array_values(
+				array_filter(
+					$icons,
+					static function ( array $icon ) use ( $included ): bool {
+						return isset( $icon['slug'] ) && in_array( $icon['slug'], $included, true );
+					}
+				)
+			);
+		} elseif ( '' !== $search ) {
+			$icons = array_values(
+				array_filter(
+					$icons,
+					static function ( array $icon ) use ( $search ): bool {
+						$name = isset( $icon['name'] ) ? strtolower( (string) $icon['name'] ) : '';
+						$slug = isset( $icon['slug'] ) ? strtolower( (string) $icon['slug'] ) : '';
+						return false !== strpos( $name, $search ) || false !== strpos( $slug, $search );
+					}
+				)
+			);
+		}
+
+		usort(
+			$icons,
+			static function ( array $first, array $second ): int {
+				return strcasecmp( (string) ( $first['name'] ?? $first['slug'] ?? '' ), (string) ( $second['name'] ?? $second['slug'] ?? '' ) );
+			}
+		);
+
+		$total    = count( $icons );
+		$per_page = max( 1, min( 100, (int) $request->get_param( 'per_page' ) ) );
+		$page     = max( 1, (int) $request->get_param( 'page' ) );
+		$icons    = array_slice( $icons, ( $page - 1 ) * $per_page, $per_page );
+		$icons    = array_values(
+			array_filter(
+				array_map(
+					static function ( array $icon ): array {
+						$svg = isset( $icon['svg'] ) ? self::sanitize_svg( (string) $icon['svg'] ) : '';
+						if ( '' === $svg ) {
+							return array();
+						}
+						return array(
+							'slug' => isset( $icon['slug'] ) ? \sanitize_key( $icon['slug'] ) : '',
+							'name' => isset( $icon['name'] ) ? \sanitize_text_field( $icon['name'] ) : '',
+							'svg'  => $svg,
+						);
+					},
+					$icons
+				)
+			)
+		);
+
+		$response = new \WP_REST_Response( $icons );
+		$response->header( 'X-WP-Total', (string) $total );
+		$response->header( 'X-WP-TotalPages', (string) (int) ceil( $total / $per_page ) );
+		return $response;
 	}
 
 	/**
@@ -419,13 +587,14 @@ class SVG_Icons {
 		// Remove data: URLs (can contain scripts).
 		$svg = preg_replace( '/data\s*:/i', '', $svg );
 
-		// Parse the SVG.
-		libxml_use_internal_errors( true );
-		$doc = new \DOMDocument();
-		$doc->loadXML( $svg, LIBXML_NONET );
+		// Parse the SVG without resolving external resources.
+		$previous_errors = libxml_use_internal_errors( true );
+		$doc             = new \DOMDocument();
+		$loaded          = $doc->loadXML( $svg, LIBXML_NONET | LIBXML_NOERROR | LIBXML_NOWARNING );
 		libxml_clear_errors();
+		libxml_use_internal_errors( $previous_errors );
 
-		if ( ! $doc->documentElement ) {
+		if ( ! $loaded || ! $doc->documentElement || 'svg' !== strtolower( $doc->documentElement->localName ) ) {
 			return '';
 		}
 
@@ -460,6 +629,38 @@ class SVG_Icons {
 			$attrName = strtolower( $attr->nodeName );
 			if ( ! in_array( $attrName, self::$allowed_attributes, true ) ) {
 				$attrs_to_remove[] = $attr->nodeName;
+				continue;
+			}
+
+			$value = trim( $attr->nodeValue );
+			if ( 'style' === $attrName ) {
+				$safe_style = self::sanitize_svg_style( $value );
+				if ( '' === $safe_style ) {
+					$attrs_to_remove[] = $attr->nodeName;
+				} else {
+					$attr->nodeValue = $safe_style;
+				}
+			} elseif ( 'id' === $attrName ) {
+				if ( ! preg_match( '/^[A-Za-z_][A-Za-z0-9_.:-]*$/', $value ) ) {
+					$attrs_to_remove[] = $attr->nodeName;
+				}
+			} elseif ( in_array( $attrName, array( 'href', 'xlink:href' ), true ) ) {
+				if ( ! preg_match( '/^#[A-Za-z_][A-Za-z0-9_.:-]*$/', $value ) ) {
+					$attrs_to_remove[] = $attr->nodeName;
+				}
+			} elseif ( in_array( $attrName, array( 'fill', 'stroke', 'stop-color' ), true )
+				&& (
+					preg_match( '/(?:javascript\s*:|data\s*:|expression\s*\()/i', $value )
+					|| ( false !== stripos( $value, 'url(' )
+						&& ! preg_match( '/^url\(\s*#[A-Za-z_][A-Za-z0-9_.:-]*\s*\)$/i', $value ) )
+				)
+			) {
+				$attrs_to_remove[] = $attr->nodeName;
+			} elseif ( in_array( $attrName, array( 'clip-path', 'mask' ), true )
+				&& 'none' !== strtolower( $value )
+				&& ! preg_match( '/^url\(\s*#[A-Za-z_][A-Za-z0-9_.:-]*\s*\)$/i', $value )
+			) {
+				$attrs_to_remove[] = $attr->nodeName;
 			}
 		}
 		foreach ( $attrs_to_remove as $attr ) {
@@ -476,6 +677,46 @@ class SVG_Icons {
 				self::sanitize_node( $child );
 			}
 		}
+	}
+
+	/**
+	 * Sanitize an SVG style attribute using a narrow property allowlist.
+	 *
+	 * @since 1.4.8
+	 * @param string $style Raw style declaration.
+	 * @return string Safe declaration list.
+	 */
+	private static function sanitize_svg_style( string $style ): string {
+		if ( preg_match( '/(?:expression|javascript\s*:|data\s*:|@import|behavior\s*:|-moz-binding)/i', $style ) ) {
+			return '';
+		}
+
+		$safe = array();
+		foreach ( explode( ';', $style ) as $declaration ) {
+			if ( false === strpos( $declaration, ':' ) ) {
+				continue;
+			}
+
+			list( $property, $value ) = array_map( 'trim', explode( ':', $declaration, 2 ) );
+			$property                 = strtolower( $property );
+			if ( ! in_array( $property, self::$allowed_style_properties, true ) || '' === $value ) {
+				continue;
+			}
+
+			if ( false !== stripos( $value, 'url(' )
+				&& ! preg_match( '/^url\(\s*#[A-Za-z_][A-Za-z0-9_.:-]*\s*\)$/i', $value )
+			) {
+				continue;
+			}
+
+			if ( false !== strpbrk( $value, '<>"\\' ) ) {
+				continue;
+			}
+
+			$safe[] = $property . ':' . $value;
+		}
+
+		return implode( ';', $safe );
 	}
 
 	/**
@@ -526,6 +767,11 @@ class SVG_Icons {
 		 * @param string $slug          The icon slug/namespace.
 		 */
 		$sanitized_svg = \apply_filters( 'functionalities_svg_icons_sanitize', $sanitized_svg, $slug );
+		$sanitized_svg = self::sanitize_svg( (string) $sanitized_svg );
+		if ( empty( $sanitized_svg ) ) {
+			\wp_send_json_error( array( 'message' => \__( 'Invalid SVG content.', 'functionalities' ) ) );
+			return;
+		}
 
 		// Get current options.
 		$opts = self::get_options();
@@ -542,6 +788,7 @@ class SVG_Icons {
 
 		// Save options.
 		\update_option( 'functionalities_svg_icons', $opts );
+		self::$options = $opts;
 
 		\wp_send_json_success(
 			array(
@@ -587,6 +834,7 @@ class SVG_Icons {
 		if ( isset( $opts['icons'][ $slug ] ) ) {
 			unset( $opts['icons'][ $slug ] );
 			\update_option( 'functionalities_svg_icons', $opts );
+			self::$options = $opts;
 		}
 
 		\wp_send_json_success( array( 'message' => \__( 'Icon deleted successfully.', 'functionalities' ) ) );
@@ -621,34 +869,162 @@ class SVG_Icons {
 	 * Render an icon by slug.
 	 *
 	 * @since 0.11.0
-	 * @param string $slug       The icon slug.
+	 * @param string $slug        The icon slug.
 	 * @param string $extra_class Optional extra CSS class.
+	 * @param array  $args        Rendering options.
 	 * @return string The rendered SVG HTML.
 	 */
-	public static function render_icon( string $slug, string $extra_class = '' ): string {
+	public static function render_icon( string $slug, string $extra_class = '', array $args = array() ): string {
 		$icons = self::get_icons();
 
 		if ( ! isset( $icons[ $slug ] ) ) {
 			return '';
 		}
 
-		$svg = $icons[ $slug ]['svg'];
+		$defaults = array(
+			'block'      => false,
+			'color_mode' => 'monochrome',
+			'decorative' => true,
+			'label'      => '',
+		);
+		$args     = array_merge( $defaults, $args );
+		$svg      = self::sanitize_svg( (string) $icons[ $slug ]['svg'] );
+		if ( '' === $svg ) {
+			return '';
+		}
 
-		// Remove any HTML/XML comments.
-		$svg = preg_replace( '/<!--[\s\S]*?-->/', '', $svg );
+		$previous_errors = libxml_use_internal_errors( true );
+		$doc             = new \DOMDocument();
+		$loaded          = $doc->loadXML( $svg, LIBXML_NONET | LIBXML_NOERROR | LIBXML_NOWARNING );
+		libxml_clear_errors();
+		libxml_use_internal_errors( $previous_errors );
+		if ( ! $loaded || ! $doc->documentElement ) {
+			return '';
+		}
 
-		// Add inline styles for size inheritance and proper alignment.
-		$svg = preg_replace(
-			'/<svg\b/',
-			'<svg class="func-svg-icon' . ( $extra_class ? ' ' . \esc_attr( $extra_class ) : '' ) . '" style="display:inline-block;width:1em;height:1em;vertical-align:-0.125em;fill:currentColor" aria-hidden="true"',
-			$svg,
-			1
+		$root = $doc->documentElement;
+		++self::$render_instance;
+		self::prefix_definition_ids( $root, 'func-svg-' . self::$render_instance . '-' );
+
+		$classes = array( 'func-svg-icon' );
+		foreach ( preg_split( '/\s+/', trim( $root->getAttribute( 'class' ) . ' ' . $extra_class ) ) as $class ) {
+			$class = \sanitize_html_class( $class );
+			if ( '' !== $class ) {
+				$classes[] = $class;
+			}
+		}
+		$root->setAttribute( 'class', implode( ' ', array_unique( $classes ) ) );
+		$root->removeAttribute( 'width' );
+		$root->removeAttribute( 'height' );
+		$root->setAttribute(
+			'style',
+			! empty( $args['block'] )
+				? 'display:inline-block;width:var(--func-icon-size);height:var(--func-icon-size);vertical-align:middle'
+				: 'display:inline-block;width:1em;height:1em;vertical-align:-0.125em'
 		);
 
-		// Remove any existing width/height attributes to allow CSS control.
-		$svg = preg_replace( '/\s(width|height)="[^"]*"/', '', $svg );
+		if ( 'original' !== $args['color_mode'] ) {
+			self::apply_monochrome_color( $root );
+		}
 
-		return $svg;
+		$root->setAttribute( 'focusable', 'false' );
+		if ( ! empty( $args['decorative'] ) ) {
+			$root->setAttribute( 'aria-hidden', 'true' );
+			$root->removeAttribute( 'role' );
+			$root->removeAttribute( 'aria-label' );
+		} else {
+			$label = \sanitize_text_field( (string) $args['label'] );
+			if ( '' === $label ) {
+				$label = isset( $icons[ $slug ]['name'] )
+					? \sanitize_text_field( (string) $icons[ $slug ]['name'] )
+					: $slug;
+			}
+			$root->removeAttribute( 'aria-hidden' );
+			$root->setAttribute( 'role', 'img' );
+			$root->setAttribute( 'aria-label', $label );
+		}
+
+		$result = $doc->saveXML( $root );
+		return $result ? $result : '';
+	}
+
+	/**
+	 * Prefix definition IDs and their local references to avoid DOM collisions.
+	 *
+	 * @since 1.4.8
+	 * @param \DOMElement $root   SVG root.
+	 * @param string      $prefix Unique prefix.
+	 * @return void
+	 */
+	private static function prefix_definition_ids( \DOMElement $root, string $prefix ): void {
+		$nodes  = array( $root );
+		$id_map = array();
+		foreach ( $root->getElementsByTagName( '*' ) as $node ) {
+			$nodes[] = $node;
+		}
+
+		foreach ( $nodes as $node ) {
+			if ( $node->hasAttribute( 'id' ) ) {
+				$old_id            = $node->getAttribute( 'id' );
+				$new_id            = $prefix . $old_id;
+				$id_map[ $old_id ] = $new_id;
+				$node->setAttribute( 'id', $new_id );
+			}
+		}
+
+		if ( ! $id_map ) {
+			return;
+		}
+
+		foreach ( $nodes as $node ) {
+			foreach ( array( 'href', 'xlink:href', 'fill', 'stroke', 'clip-path', 'mask', 'style' ) as $attribute ) {
+				if ( ! $node->hasAttribute( $attribute ) ) {
+					continue;
+				}
+				$value = $node->getAttribute( $attribute );
+				foreach ( $id_map as $old_id => $new_id ) {
+					$value = str_replace( '#' . $old_id, '#' . $new_id, $value );
+				}
+				$node->setAttribute( $attribute, $value );
+			}
+		}
+	}
+
+	/**
+	 * Convert SVG paint attributes to currentColor without making fill="none" shapes solid.
+	 *
+	 * @since 1.4.8
+	 * @param \DOMElement $root SVG root.
+	 * @return void
+	 */
+	private static function apply_monochrome_color( \DOMElement $root ): void {
+		$nodes = array( $root );
+		foreach ( $root->getElementsByTagName( '*' ) as $node ) {
+			$nodes[] = $node;
+		}
+
+		$fill_shapes = array( 'path', 'circle', 'ellipse', 'rect', 'polygon', 'polyline' );
+		foreach ( $nodes as $node ) {
+			$has_paint = false;
+			foreach ( array( 'fill', 'stroke' ) as $paint ) {
+				if ( $node->hasAttribute( $paint ) ) {
+					$has_paint = true;
+					if ( 'none' !== strtolower( trim( $node->getAttribute( $paint ) ) ) ) {
+						$node->setAttribute( $paint, 'currentColor' );
+					}
+				}
+			}
+
+			if ( $node->hasAttribute( 'style' ) ) {
+				$style = preg_replace( '/\b(fill|stroke)\s*:\s*(?!none\b)[^;]+/i', '$1:currentColor', $node->getAttribute( 'style' ) );
+				$node->setAttribute( 'style', $style );
+				$has_paint = $has_paint || preg_match( '/\b(?:fill|stroke)\s*:/i', $style );
+			}
+
+			if ( ! $has_paint && in_array( strtolower( $node->localName ), $fill_shapes, true ) ) {
+				$node->setAttribute( 'fill', 'currentColor' );
+			}
+		}
 	}
 
 	/**

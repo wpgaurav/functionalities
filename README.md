@@ -172,7 +172,11 @@ Upload custom SVG icons and insert them inline in the block editor.
 **Features:**
 - Custom SVG icon library with secure sanitization
 - Inline insertion via RichText toolbar (inherits surrounding font size)
-- Standalone SVG Icon block with alignment, size, and color controls
+- Standalone metadata-driven SVG Icon block with alignment, native text color, spacing, anchor, and custom class support
+- Pixel, `em`, and `rem` sizing with bounded values
+- Monochrome or original-color rendering
+- Decorative or informative accessibility modes with custom labels
+- Searchable, paginated, keyboard-accessible icon picker with recent icons first
 - Zero frontend footprint when no icons are used
 
 **Navigate to:** `?page=functionalities&module=svg-icons`

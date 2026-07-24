@@ -1,0 +1,63 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 2,
+	"name": "functionalities/svg-icon-block",
+	"version": "1.4.8",
+	"title": "SVG Icon",
+	"category": "design",
+	"icon": "flag",
+	"description": "Insert an SVG icon from your Functionalities library.",
+	"textdomain": "functionalities",
+	"attributes": {
+		"iconSlug": {
+			"type": "string",
+			"default": ""
+		},
+		"size": {
+			"type": "number",
+			"default": 48
+		},
+		"sizeUnit": {
+			"type": "string",
+			"default": "px"
+		},
+		"align": {
+			"type": "string",
+			"default": "none"
+		},
+		"color": {
+			"type": "string",
+			"default": ""
+		},
+		"colorMode": {
+			"type": "string",
+			"default": "monochrome"
+		},
+		"decorative": {
+			"type": "boolean",
+			"default": true
+		},
+		"label": {
+			"type": "string",
+			"default": ""
+		}
+	},
+	"supports": {
+		"html": false,
+		"anchor": true,
+		"customClassName": true,
+		"align": [
+			"left",
+			"center",
+			"right"
+		],
+		"color": {
+			"text": true,
+			"background": false,
+			"gradients": false
+		},
+		"spacing": {
+			"margin": true
+		}
+	}
+}
