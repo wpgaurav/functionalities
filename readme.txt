@@ -135,6 +135,8 @@ Before uninstalling, go to the Functionalities dashboard and check **"Delete all
 == Changelog ==
 
 = 1.4.8 =
+* Improved: SVG Icon block now uses block metadata, lazy paginated icon loading, native block supports, px/em/rem sizing, original-color and monochrome modes, accessible labels, missing-icon recovery, and keyboard-friendly selection.
+* Security: SVG sanitization now requires a real SVG root, restricts styles and local references, blocks external href values, and prefixes definition IDs to prevent collisions.
 * Fixed: Fresh PWA settings now register rewrite endpoints immediately, and the offline application shell returns a cacheable success response so service-worker precaching can complete.
 * Added: True lazy module registry. A frontend request with all modules disabled loads no feature class files; enabling one module loads only that feature and shared dependencies.
 * Added: Versioned settings export/import with dry-run differences, module validation, default custom-code redaction, and an explicit code opt-in.
@@ -312,7 +314,7 @@ Before uninstalling, go to the Functionalities dashboard and check **"Delete all
 == Upgrade Notice ==
 
 = 1.4.8 =
-Adds safe settings portability, CSV redirects, an opt-in 404 monitor, native Site Health signals, true lazy module loading, atomic file storage, and pull-request quality gates. Existing option names, admin URLs, hooks, and JSON formats remain compatible.
+Adds the upgraded SVG Icon block, safe settings portability, CSV redirects, an opt-in 404 monitor, native Site Health signals, true lazy module loading, atomic file storage, and pull-request quality gates. Existing option names, block names, shortcode syntax, admin URLs, hooks, and JSON formats remain compatible.
 
 = 1.4.5 =
 Enables WOFF/WOFF2 font uploads in the media library with magic-byte validation for security.
