@@ -127,10 +127,11 @@ class Fonts {
 		// Preload fonts early.
 		\add_action( 'wp_head', array( __CLASS__, 'preload_fonts' ), 1 );
 
-		// Front-end @font-face. The block editor canvas (an iframe) is served by
-		// add_editor_settings_fonts() below; an admin_head print would reach only
-		// the parent admin document, never the iframe, so there is no such path.
-		\add_action( 'wp_head', array( __CLASS__, 'print_fonts_css' ), 20 );
+		// Declare font faces immediately after their preloads and before theme
+		// typography can reference them. Registering a src-less style handle this
+		// late in wp_head lets the browser paint fallback text before it discovers
+		// font-display, which can turn a font swap into a large layout shift.
+		\add_action( 'wp_head', array( __CLASS__, 'print_fonts_css' ), 2 );
 		\add_filter( 'block_editor_settings_all', array( __CLASS__, 'add_editor_settings_fonts' ) );
 
 		// Typography assignments via theme.json data layer.
@@ -225,6 +226,8 @@ class Fonts {
 	 *
 	 * @since 0.3.0
 	 * @since 0.8.0 Added filters for extensibility.
+	 * @since 1.5.0 Print the declaration directly after preloads so browsers know
+	 *              the font-display policy before theme typography is parsed.
 	 *
 	 * @return void
 	 */
@@ -262,15 +265,23 @@ class Fonts {
 		 */
 		$items = \apply_filters( 'functionalities_fonts_items', $opts['items'] );
 
-		$css = self::build_css( $items );
+		$css = self::sanitize_css( self::build_css( $items ) );
 
 		if ( $css === '' ) {
 			return;
 		}
 
-		\wp_register_style( 'functionalities-fonts', false, array(), FUNCTIONALITIES_VERSION );
-		\wp_enqueue_style( 'functionalities-fonts' );
-		\wp_add_inline_style( 'functionalities-fonts', self::sanitize_css( $css ) );
+		if ( \function_exists( 'wp_print_inline_style_tag' ) ) {
+			\wp_print_inline_style_tag(
+				$css,
+				array( 'id' => 'functionalities-fonts-inline-css' )
+			);
+			return;
+		}
+
+		// Backward-compatible fallback for WordPress versions without the helper.
+		// CSS has already passed the module's sanitizer above.
+		echo '<style id="functionalities-fonts-inline-css">' . $css . '</style>' . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 
 	/**
