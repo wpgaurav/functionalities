@@ -1,8 +1,25 @@
 # Dynamic Functionalities Roadmap
 
-All planned fixes and features below ship in **v1.4.8**. GitHub issues remain the
-source of truth for scope and acceptance criteria. The release is tagged only
-after automated checks and the real-WordPress smoke gate pass.
+Version **1.5.0** builds on the completed v1.4.8 reliability work with
+progressive WordPress 7 platform integrations. The release is tagged only after
+automated checks and the real-WordPress smoke gate pass.
+
+## v1.5.0: WordPress 7 platform integration
+
+- Upgrade the SVG Icon block to Block API v3.
+- Add a WordPress Core Icon source without giving up the existing custom icon
+  library.
+- Support two-way transforms with `core/icon`, block bindings, synced-pattern
+  overrides, and an Icon Callout pattern.
+- Expose permissioned, schema-validated operations through the Abilities API.
+- Add DataViews and DataForm workspaces for redirects and tasks with classic UI
+  fallbacks.
+- Add Command Palette actions for common navigation and scans.
+- Add explicitly opt-in finding explanations through the WordPress AI Client.
+- Keep every WordPress 7-only integration feature-detected and free of frontend
+  assets.
+
+## v1.4.8: Completed reliability foundation
 
 ## Phase 1: Stabilize the foundation
 
@@ -34,7 +51,7 @@ after automated checks and the real-WordPress smoke gate pass.
   scheduled scans, deduplicated notifications, and useful snapshot diffs
   ([#47](https://github.com/wpgaurav/functionalities/issues/47)).
 
-## v1.4.8 release gate
+## v1.4.8 release gate (completed)
 
 - All seven roadmap issues are closed through reviewed changes.
 - Automated checks pass across the supported PHP and WordPress range.

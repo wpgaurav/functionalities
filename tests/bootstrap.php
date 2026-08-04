@@ -6,7 +6,7 @@
  */
 
 define( 'ABSPATH', dirname( __DIR__ ) . '/' );
-define( 'FUNCTIONALITIES_VERSION', '1.4.8-test' );
+define( 'FUNCTIONALITIES_VERSION', '1.5.0-test' );
 
 $GLOBALS['functionalities_test_options'] = array();
 

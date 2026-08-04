@@ -40,6 +40,7 @@
 	var config = window.functionalitiesSvgIcons || {};
 	var i18n = config.i18n || {};
 	var restPath = config.restPath || '/functionalities/v1/svg-icons';
+	var coreRestPath = config.coreRestPath || '/wp/v2/icons';
 	var requestCache = {};
 	var perPage = 48;
 
@@ -76,10 +77,33 @@
 		}
 	}
 
-	function requestIcons(search, page, include) {
-		var key = [search || '', page || 1, include || ''].join('|');
+	function requestIcons(search, page, include, source) {
+		source = source === 'core' ? 'core' : 'custom';
+		var key = [source, search || '', page || 1, include || ''].join('|');
 		if (requestCache[key]) {
 			return Promise.resolve(requestCache[key]);
+		}
+
+		if (source === 'core') {
+			var coreQuery = search ? '?search=' + encodeURIComponent(search) : '';
+			return apiFetch({ path: coreRestPath + coreQuery }).then(function (icons) {
+				var normalized = (Array.isArray(icons) ? icons : []).map(function (icon) {
+					return {
+						slug: icon.name,
+						name: icon.label || icon.name,
+						svg: icon.content,
+						source: 'core'
+					};
+				});
+				if (include) {
+					normalized = normalized.filter(function (icon) {
+						return icon.slug === include;
+					});
+				}
+				var start = ((page || 1) - 1) * perPage;
+				requestCache[key] = normalized.slice(start, start + perPage);
+				return requestCache[key];
+			});
 		}
 
 		var query = '?per_page=' + perPage + '&page=' + (page || 1);
@@ -91,7 +115,10 @@
 		}
 
 		return apiFetch({ path: restPath + query }).then(function (icons) {
-			requestCache[key] = Array.isArray(icons) ? icons : [];
+			requestCache[key] = (Array.isArray(icons) ? icons : []).map(function (icon) {
+				icon.source = 'custom';
+				return icon;
+			});
 			return requestCache[key];
 		});
 	}
@@ -129,7 +156,7 @@
 			var timer = window.setTimeout(function () {
 				setLoading(true);
 				setHasError(false);
-				requestIcons(search, 1, '').then(function (results) {
+				requestIcons(search, 1, '', props.source).then(function (results) {
 					if (!active) {
 						return;
 					}
@@ -158,12 +185,12 @@
 				active = false;
 				window.clearTimeout(timer);
 			};
-		}, [search]);
+		}, [search, props.source]);
 
 		var loadMore = useCallback(function () {
 			var nextPage = page + 1;
 			setLoading(true);
-			requestIcons(search, nextPage, '').then(function (results) {
+			requestIcons(search, nextPage, '', props.source).then(function (results) {
 				setIcons(icons.concat(results));
 				setPage(nextPage);
 				setHasMore(results.length === perPage);
@@ -172,7 +199,7 @@
 				setHasError(true);
 				setLoading(false);
 			});
-		}, [icons, page, search]);
+		}, [icons, page, search, props.source]);
 
 		var chooseIcon = function (icon) {
 			rememberIcon(icon.slug);
@@ -283,12 +310,14 @@
 
 		useEffect(function () {
 			var active = true;
-			if (!attributes.iconSlug) {
+			var source = attributes.iconSource === 'core' ? 'core' : 'custom';
+			var selectedSlug = source === 'core' ? attributes.coreIcon : attributes.iconSlug;
+			if (!selectedSlug) {
 				setSelectedIcon(null);
 				setIsMissing(false);
 				return function () { active = false; };
 			}
-			requestIcons('', 1, attributes.iconSlug).then(function (results) {
+			requestIcons('', 1, selectedSlug, source).then(function (results) {
 				if (active) {
 					setSelectedIcon(results[0] || null);
 					setIsMissing(results.length === 0);
@@ -300,10 +329,14 @@
 				}
 			});
 			return function () { active = false; };
-		}, [attributes.iconSlug]);
+		}, [attributes.iconSource, attributes.iconSlug, attributes.coreIcon]);
 
 		var selectIcon = function (icon) {
-			setAttributes({ iconSlug: icon.slug });
+			if (attributes.iconSource === 'core') {
+				setAttributes({ coreIcon: icon.slug });
+			} else {
+				setAttributes({ iconSlug: icon.slug });
+			}
 			setSelectedIcon(icon);
 			setIsMissing(false);
 		};
@@ -343,6 +376,19 @@
 					title: i18n.iconSettings || __('Icon settings', 'functionalities'),
 					initialOpen: true
 				},
+					el(SelectControl, {
+						label: i18n.iconSource || __('Icon source', 'functionalities'),
+						value: attributes.iconSource === 'core' ? 'core' : 'custom',
+						options: [
+							{ label: i18n.customLibrary || __('Custom library', 'functionalities'), value: 'custom' },
+							{ label: i18n.coreLibrary || __('WordPress Core', 'functionalities'), value: 'core', disabled: !config.hasCoreIcons }
+						],
+						onChange: function (value) {
+							setAttributes({ iconSource: value });
+							setSelectedIcon(null);
+							setIsMissing(false);
+						}
+					}),
 					el(RangeControl, {
 						label: i18n.iconSize || __('Icon size', 'functionalities'),
 						value: size,
@@ -405,7 +451,8 @@
 				isOpen && el(IconPicker, {
 					onSelect: selectIcon,
 					onClose: function () { setIsOpen(false); },
-					selectedSlug: attributes.iconSlug || ''
+					selectedSlug: attributes.iconSource === 'core' ? (attributes.coreIcon || '') : (attributes.iconSlug || ''),
+					source: attributes.iconSource === 'core' ? 'core' : 'custom'
 				})
 			)
 		);
@@ -430,7 +477,59 @@
 		var settings = Object.assign({}, metadata, {
 			icon: toolbarIcon,
 			edit: SvgIconEdit,
-			save: function () { return null; }
+			save: function () { return null; },
+			transforms: {
+				from: [
+					{
+						type: 'block',
+						blocks: ['core/icon'],
+						transform: function (attributes) {
+							var width = attributes.style && attributes.style.dimensions ? attributes.style.dimensions.width : '';
+							var parsedSize = typeof width === 'string' ? parseFloat(width) : 48;
+							var parsedUnit = typeof width === 'string' && /(?:em|rem)$/.test(width) ? width.replace(/^[0-9.]+/, '') : 'px';
+							return wp.blocks.createBlock(blockName, {
+								iconSource: 'core',
+								coreIcon: attributes.icon || '',
+								size: isNaN(parsedSize) ? 48 : parsedSize,
+								sizeUnit: parsedUnit,
+								align: attributes.align || 'none',
+								decorative: !attributes.ariaLabel,
+								label: attributes.ariaLabel || '',
+								style: attributes.style || {},
+								textColor: attributes.textColor,
+								backgroundColor: attributes.backgroundColor,
+								className: attributes.className,
+								anchor: attributes.anchor
+							});
+						}
+					}
+				],
+				to: [
+					{
+						type: 'block',
+						blocks: ['core/icon'],
+						isMatch: function (attributes) {
+							return attributes.iconSource === 'core' && !!attributes.coreIcon;
+						},
+						transform: function (attributes) {
+							var style = Object.assign({}, attributes.style || {});
+							style.dimensions = Object.assign({}, style.dimensions || {}, {
+								width: (attributes.size || 48) + (attributes.sizeUnit || 'px')
+							});
+							return wp.blocks.createBlock('core/icon', {
+								icon: attributes.coreIcon,
+								align: attributes.align === 'none' ? undefined : attributes.align,
+								ariaLabel: attributes.decorative === false ? attributes.label : undefined,
+								style: style,
+								textColor: attributes.textColor,
+								backgroundColor: attributes.backgroundColor,
+								className: attributes.className,
+								anchor: attributes.anchor
+							});
+						}
+					}
+				]
+			}
 		});
 		delete settings.name;
 		delete settings.$schema;

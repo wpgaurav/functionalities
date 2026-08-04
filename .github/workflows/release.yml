@@ -105,7 +105,14 @@ jobs:
             "readme.txt" \
             "uninstall.php" \
             "includes/admin/class-admin.php" \
-            "includes/admin/class-admin-ui.php"; do
+            "includes/admin/class-admin-ui.php" \
+            "includes/core/class-wordpress-7-integration.php" \
+            "assets/js/wp7-admin.js" \
+            "assets/js/wp7-admin.asset.php" \
+            "assets/js/wp7-admin.css" \
+            "assets/js/wp7-commands.js" \
+            "assets/js/wp7-dataviews.css" \
+            "assets/blocks/svg-icon/block.json"; do
               if [ ! -f "$DIST/$f" ]; then
                 echo "::error::Missing critical file: $f"
                 MISSING=$((MISSING + 1))

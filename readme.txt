@@ -2,10 +2,10 @@
 Contributors: gauravtiwari
 Donate link: https://gauravtiwari.org/donate/
 Tags: performance, security, seo, redirection, cleanup
-Requires at least: 5.8
+Requires at least: 6.3
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.4.8
+Stable tag: 1.5.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -133,6 +133,16 @@ Before uninstalling, go to the Functionalities dashboard and check **"Delete all
 3. Assumption Detection module
 
 == Changelog ==
+
+= 1.5.0 =
+* Added: WordPress 7 Abilities API operations for module status, privacy-safe diagnostics, assumption scans, content-integrity checks, redirect import previews, redirect creation, task creation, module toggles, and opt-in AI explanations.
+* Added: DataViews and DataForm workspaces for Redirect Manager, its bounded 404 activity, and Task Manager with searchable, sortable, filterable tables and modern creation forms while retaining the classic interfaces as fallbacks.
+* Added: Command Palette actions for opening Functionalities screens and running an Assumption Detection scan.
+* Added: Explicitly opt-in AI explanations powered by the WordPress AI Client. Only a finding submitted by an administrator is sent to the configured provider.
+* Improved: SVG Icon block upgraded to Block API v3 with WordPress Core Icon source support, two-way Core Icon transforms, pattern-override-ready content attributes, block bindings, and an Icon Callout pattern.
+* Fixed: Content Integrity now uses the current `wp.editor` plugin-sidebar components on WordPress 7 while retaining the legacy fallback.
+* Fixed: Custom font declarations are emitted with their preloads so first-paint typography does not shift when async theme styles arrive.
+* Changed: Minimum WordPress version is now 6.3 so the SVG Icon block can use Block API v3 consistently. WordPress 7-only integrations remain feature-detected.
 
 = 1.4.8 =
 * Improved: SVG Icon block now uses block metadata, lazy paginated icon loading, native block supports, px/em/rem sizing, original-color and monochrome modes, accessible labels, missing-icon recovery, and keyboard-friendly selection.

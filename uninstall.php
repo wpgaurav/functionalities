@@ -58,6 +58,7 @@ $functionalities_options = array(
 	'functionalities_task_manager',
 	'functionalities_redirect_manager',
 	'functionalities_svg_icons',
+	'functionalities_wordpress_7',
 	// Assumption detection data.
 	'functionalities_assumptions_detected',
 	'functionalities_assumptions_ignored',

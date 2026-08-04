@@ -29,11 +29,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
           coverage: none
           tools: composer:v2
+      - run: npm ci
+      - run: npm run build
+      - run: git diff --exit-code -- assets/js/wp7-admin.js assets/js/wp7-admin.asset.php assets/js/wp7-admin.css assets/js/wp7-admin-rtl.css assets/js/wp7-dataviews.css assets/js/wp7-dataviews-rtl.css
       - run: composer install --no-interaction --prefer-dist
       - run: composer phpcs
       - run: composer test
@@ -63,9 +70,16 @@ jobs:
             functionalities/includes/admin/class-settings-portability-controller.php \
             functionalities/includes/admin/class-site-health-controller.php \
             functionalities/includes/core/class-module-registry.php \
+            functionalities/includes/core/class-wordpress-7-integration.php \
             functionalities/includes/storage/class-atomic-json-store.php \
             functionalities/assets/js/admin-redirects.js \
-            functionalities/assets/js/admin-tools.js; do
+            functionalities/assets/js/admin-tools.js \
+            functionalities/assets/js/wp7-admin.js \
+            functionalities/assets/js/wp7-admin.asset.php \
+            functionalities/assets/js/wp7-admin.css \
+            functionalities/assets/js/wp7-commands.js \
+            functionalities/assets/js/wp7-dataviews.css \
+            functionalities/assets/blocks/svg-icon/block.json; do
             unzip -Z1 "$zip" | grep -qx "$required"
           done
           if unzip -Z1 "$zip" | grep -Eq '(^|/)(tests|vendor|node_modules|\.git|\.github)/|composer\.(json|lock)$|\.md$'; then

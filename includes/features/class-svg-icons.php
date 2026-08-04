@@ -232,6 +232,24 @@ class SVG_Icons {
 				'render_callback' => array( __CLASS__, 'render_block' ),
 			)
 		);
+
+		if ( \function_exists( 'register_block_pattern_category' ) ) {
+			\register_block_pattern_category(
+				'functionalities',
+				array( 'label' => \__( 'Functionalities', 'functionalities' ) )
+			);
+		}
+		if ( \function_exists( 'register_block_pattern' ) && class_exists( '\WP_Icons_Registry' ) && \WP_Icons_Registry::get_instance()->is_registered( 'core/info' ) ) {
+			\register_block_pattern(
+				'functionalities/icon-callout',
+				array(
+					'title'       => \__( 'Icon callout', 'functionalities' ),
+					'description' => \__( 'A reusable icon and text callout whose icon and label can be overridden in synced patterns.', 'functionalities' ),
+					'categories'  => array( 'functionalities', 'text' ),
+					'content'     => '<!-- wp:group {"layout":{"type":"flex","flexWrap":"nowrap","verticalAlignment":"top"}} --><div class="wp-block-group"><!-- wp:functionalities/svg-icon-block {"iconSource":"core","coreIcon":"core/info","size":32,"sizeUnit":"px"} /--><!-- wp:paragraph --><p>' . \esc_html__( 'Add a concise callout message.', 'functionalities' ) . '</p><!-- /wp:paragraph --></div><!-- /wp:group -->',
+				)
+			);
+		}
 	}
 
 	/**
@@ -242,8 +260,12 @@ class SVG_Icons {
 	 * @return string Block HTML.
 	 */
 	public static function render_block( array $attributes ): string {
-		$slug = isset( $attributes['iconSlug'] ) ? \sanitize_key( $attributes['iconSlug'] ) : '';
-		if ( empty( $slug ) ) {
+		$source    = isset( $attributes['iconSource'] ) && 'core' === $attributes['iconSource'] ? 'core' : 'custom';
+		$slug      = isset( $attributes['iconSlug'] ) ? \sanitize_key( $attributes['iconSlug'] ) : '';
+		$core_icon = isset( $attributes['coreIcon'] ) && preg_match( '/^[a-z][a-z0-9-]*\/[a-z][a-z0-9-]*$/', (string) $attributes['coreIcon'] )
+			? (string) $attributes['coreIcon']
+			: '';
+		if ( ( 'core' === $source && empty( $core_icon ) ) || ( 'custom' === $source && empty( $slug ) ) ) {
 			return '';
 		}
 
@@ -268,16 +290,15 @@ class SVG_Icons {
 		$decorative = ! isset( $attributes['decorative'] ) || (bool) $attributes['decorative'];
 		$label      = isset( $attributes['label'] ) ? \sanitize_text_field( $attributes['label'] ) : '';
 
-		$svg = self::render_icon(
-			$slug,
-			'func-svg-icon-block',
-			array(
-				'block'      => true,
-				'color_mode' => $mode,
-				'decorative' => $decorative,
-				'label'      => $label,
-			)
+		$render_args = array(
+			'block'      => true,
+			'color_mode' => $mode,
+			'decorative' => $decorative,
+			'label'      => $label,
 		);
+		$svg         = 'core' === $source
+			? self::render_core_icon( $core_icon, 'func-svg-icon-block', $render_args )
+			: self::render_icon( $slug, 'func-svg-icon-block', $render_args );
 
 		if ( empty( $svg ) ) {
 			return '';
@@ -298,6 +319,81 @@ class SVG_Icons {
 		}
 
 		return '<div ' . $wrapper . '>' . $svg . '</div>';
+	}
+
+	/**
+	 * Render a WordPress 7 Core Icon through the Functionalities block.
+	 *
+	 * Core's icon registry is read-only for third parties in WordPress 7.0, so
+	 * this consumes the public registry without attempting to modify it.
+	 *
+	 * @since 1.5.0
+	 * @param string $name        Namespaced Core icon name.
+	 * @param string $extra_class Optional CSS class.
+	 * @param array  $args        Rendering options.
+	 * @return string
+	 */
+	public static function render_core_icon( string $name, string $extra_class = '', array $args = array() ): string {
+		if ( ! class_exists( '\WP_Icons_Registry' ) || ! preg_match( '/^[a-z][a-z0-9-]*\/[a-z][a-z0-9-]*$/', $name ) ) {
+			return '';
+		}
+		$icon = \WP_Icons_Registry::get_instance()->get_registered_icon( $name );
+		if ( ! is_array( $icon ) || empty( $icon['content'] ) ) {
+			return '';
+		}
+
+		$defaults = array(
+			'block'      => true,
+			'color_mode' => 'monochrome',
+			'decorative' => true,
+			'label'      => '',
+		);
+		$args     = array_merge( $defaults, $args );
+		$svg      = self::sanitize_svg( (string) $icon['content'] );
+		if ( '' === $svg ) {
+			return '';
+		}
+
+		$previous_errors = libxml_use_internal_errors( true );
+		$doc             = new \DOMDocument();
+		$loaded          = $doc->loadXML( $svg, LIBXML_NONET | LIBXML_NOERROR | LIBXML_NOWARNING );
+		libxml_clear_errors();
+		libxml_use_internal_errors( $previous_errors );
+		if ( ! $loaded || ! $doc->documentElement ) {
+			return '';
+		}
+
+		$root    = $doc->documentElement;
+		$classes = array( 'func-svg-icon', 'is-core-icon' );
+		foreach ( preg_split( '/\s+/', trim( $root->getAttribute( 'class' ) . ' ' . $extra_class ) ) as $class ) {
+			$class = \sanitize_html_class( $class );
+			if ( '' !== $class ) {
+				$classes[] = $class;
+			}
+		}
+		$root->setAttribute( 'class', implode( ' ', array_unique( $classes ) ) );
+		$root->removeAttribute( 'width' );
+		$root->removeAttribute( 'height' );
+		$root->setAttribute( 'style', 'display:inline-block;width:var(--func-icon-size);height:var(--func-icon-size);vertical-align:middle' );
+		self::apply_monochrome_color( $root );
+		$root->setAttribute( 'focusable', 'false' );
+
+		if ( ! empty( $args['decorative'] ) ) {
+			$root->setAttribute( 'aria-hidden', 'true' );
+			$root->removeAttribute( 'role' );
+			$root->removeAttribute( 'aria-label' );
+		} else {
+			$label = \sanitize_text_field( (string) $args['label'] );
+			if ( '' === $label ) {
+				$label = isset( $icon['label'] ) ? \sanitize_text_field( (string) $icon['label'] ) : $name;
+			}
+			$root->removeAttribute( 'aria-hidden' );
+			$root->setAttribute( 'role', 'img' );
+			$root->setAttribute( 'aria-label', $label );
+		}
+
+		$result = $doc->saveXML( $root );
+		return $result ? $result : '';
 	}
 
 	/**
@@ -378,6 +474,8 @@ class SVG_Icons {
 				'icons'         => array(), // Kept for third-party integrations that inspect this key.
 				'iconCount'     => count( $icons ),
 				'restPath'      => '/functionalities/v1/svg-icons',
+				'coreRestPath'  => '/wp/v2/icons',
+				'hasCoreIcons'  => class_exists( '\WP_Icons_Registry' ),
 				'blockMetadata' => is_array( $metadata ) ? $metadata : array(),
 				'nonce'         => \wp_create_nonce( 'functionalities_svg_icons' ),
 				'ajaxUrl'       => \admin_url( 'admin-ajax.php' ),
@@ -404,6 +502,9 @@ class SVG_Icons {
 					'loadError'       => \__( 'Icons could not be loaded. Try again.', 'functionalities' ),
 					'missingIcon'     => \__( 'The selected icon is no longer in the library. Choose a replacement.', 'functionalities' ),
 					'recentIcons'     => \__( 'Recent icons', 'functionalities' ),
+					'iconSource'      => \__( 'Icon source', 'functionalities' ),
+					'customLibrary'   => \__( 'Custom library', 'functionalities' ),
+					'coreLibrary'     => \__( 'WordPress Core', 'functionalities' ),
 				),
 			)
 		);

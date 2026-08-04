@@ -1,0 +1,12 @@
+{
+  "name": "dynamic-functionalities",
+  "version": "1.5.0",
+  "private": true,
+  "scripts": {
+    "build": "wp-scripts build src/wp7-admin.js --output-path=build/wp7 && cp build/wp7/wp7-admin.js build/wp7/wp7-admin.asset.php build/wp7/wp7-admin.css build/wp7/wp7-admin-rtl.css assets/js/ && cp node_modules/@wordpress/dataviews/build-style/style.css assets/js/wp7-dataviews.css && cp node_modules/@wordpress/dataviews/build-style/style-rtl.css assets/js/wp7-dataviews-rtl.css"
+  },
+  "devDependencies": {
+    "@wordpress/dataviews": "14.3.0",
+    "@wordpress/scripts": "^33.0.0"
+  }
+}

@@ -2,7 +2,7 @@
 
 All-in-one WordPress optimization toolkit with 16 modules for performance, security, SEO, and content management. Built with modern WordPress coding standards and a clean module-based dashboard. Optimized for performance with modular initialization, static property caching, and intelligent transients.
 
-**Version:** 1.4.8
+**Version:** 1.5.0
 **License:** GPL-2.0-or-later
 **Text Domain:** `functionalities`
 **Pricing:** Free
@@ -177,9 +177,26 @@ Upload custom SVG icons and insert them inline in the block editor.
 - Monochrome or original-color rendering
 - Decorative or informative accessibility modes with custom labels
 - Searchable, paginated, keyboard-accessible icon picker with recent icons first
+- WordPress 7 Core Icon library source and two-way transforms with the Core Icon block
+- Pattern overrides and block bindings for icon names and accessibility labels
+- Reusable Icon Callout pattern
 - Zero frontend footprint when no icons are used
 
 **Navigate to:** `?page=functionalities&module=svg-icons`
+
+---
+
+### WordPress 7 Integration
+
+WordPress 7 sites gain progressive platform integrations without adding frontend assets:
+
+- Abilities API operations for diagnostics, module controls, redirects, tasks, assumption scans, and content checks
+- DataViews and DataForm workspaces for Redirect Manager, bounded 404 activity, and Task Manager
+- Command Palette shortcuts for common Functionalities actions
+- Optional WordPress AI Client explanations for individual Assumption Detection and Content Integrity findings
+- Core Icon library interoperability in the SVG Icon block
+
+AI explanations are disabled by default. When enabled, the plugin sends only the finding an administrator explicitly submits to the site's configured WordPress AI provider.
 
 ---
 

@@ -10,7 +10,11 @@
 	'use strict';
 
 	const { registerPlugin } = wp.plugins;
-	const { PluginPrePublishPanel, PluginSidebar, PluginSidebarMoreMenuItem } = wp.editPost;
+	const {
+		PluginPrePublishPanel,
+		PluginSidebar,
+		PluginSidebarMoreMenuItem,
+	} = wp.editor || wp.editPost;
 	const { PanelBody, Button, Spinner, Notice, ToggleControl, Icon } = wp.components;
 	const { useState, useEffect, useCallback } = wp.element;
 	const { useSelect, useDispatch } = wp.data;
