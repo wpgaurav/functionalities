@@ -62,13 +62,36 @@ class Upgrader {
 
 		// Create, harden, and migrate the private data directory now rather than
 		// on whichever request first happens to touch storage.
-		if ( Module_Registry::is_enabled( 'redirect-manager' ) || Module_Registry::is_enabled( 'task-manager' ) ) {
+		//
+		// This must not depend on whether the modules are switched on. A site can
+		// carry a redirects.json written months ago by a module that is disabled
+		// today, and that file is readable over the web exactly the same way. If
+		// legacy data is present, or either module is active, migrate.
+		if ( self::has_legacy_data() || Module_Registry::is_enabled( 'redirect-manager' ) || Module_Registry::is_enabled( 'task-manager' ) ) {
 			\Functionalities\Storage\Data_Directory::path();
 		}
 
 		// The exception preset is now cached; drop anything left from before.
 		\delete_transient( 'functionalities_link_preset' );
 		\delete_transient( 'func_redirects_json' );
+	}
+
+	/**
+	 * Check whether data written to the old public path is still present.
+	 *
+	 * @since 1.6.0
+	 * @return bool
+	 */
+	private static function has_legacy_data(): bool {
+		$base = \Functionalities\Storage\Data_Directory::base();
+
+		foreach ( array( 'redirects.json', '404-log.json', 'tasks' ) as $name ) {
+			if ( file_exists( $base . '/' . $name ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**

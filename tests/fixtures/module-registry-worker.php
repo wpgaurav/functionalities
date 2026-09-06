@@ -7,6 +7,7 @@
 
 define( 'ABSPATH', dirname( __DIR__, 2 ) . '/' );
 define( 'HOUR_IN_SECONDS', 3600 );
+define( 'WP_CONTENT_DIR', sys_get_temp_dir() . '/functionalities-registry-worker' );
 
 $enabled = isset( $argv[1] ) ? $argv[1] : 'none';
 $mode    = isset( $argv[2] ) ? $argv[2] : 'frontend';
