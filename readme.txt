@@ -3,9 +3,9 @@ Contributors: gauravtiwari
 Donate link: https://gauravtiwari.org/donate/
 Tags: performance, security, seo, redirection, cleanup
 Requires at least: 6.3
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.5.0
+Stable tag: 1.6.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -13,11 +13,22 @@ Replace 5+ plugins with one lightweight toolkit. 16 modules for performance, sec
 
 == Description ==
 
-### Replace your plugin stack with one lightweight toolkit
-
 Dynamic Functionalities replaces the stack of single-purpose plugins most WordPress sites depend on. Instead of installing separate plugins for performance cleanup, redirect management, login security, schema markup, external link control, and code snippets, you get 16 purpose-built modules in one package that loads less code than most individual plugins.
 
-Every module is independent. Enable what you need, disable what you don't. Disabled modules load zero code.
+Every module is independent. Enable what you need, disable what you don't. Disabled modules load zero code — no hooks, no files, no queries.
+
+Full documentation lives at [functionalities.dev](https://functionalities.dev/), including a [module reference](https://functionalities.dev/modules), a [getting started guide](https://functionalities.dev/docs/getting-started), and a [complete hook reference](https://functionalities.dev/docs/hooks).
+
+= New in 1.6.0 =
+
+A security and correctness release, tested on WordPress 7.1.
+
+* **Abilities API permissions tightened.** Each WordPress 7 ability now carries its own permission callback and rejects undeclared input. Previously a shared callback widened to `edit_post` whenever a request carried a `post_id`, so anyone who could edit a single post could reach administrator-only operations.
+* **Data files moved somewhere private.** Redirects, the 404 log, and task notes now live in a folder with a random name and are no longer readable at a guessable URL. Existing files migrate automatically.
+* **Snippets reach visitors intact.** Header and footer code is filtered once at save time against the author's capability instead of being re-filtered against each visitor's, which used to mangle `&&` and comparison operators for logged-out readers.
+* **Content filters use the WordPress HTML API.** Link Management, Block Cleanup, and Schema edit attributes in place instead of reserializing through DOMDocument. Pages built with Vue, Alpine, or mustache templates are processed correctly rather than skipped.
+
+Existing settings, hooks, admin URLs, and data files carry over untouched. The full list is in the changelog below.
 
 = Why Not Just Use Separate Plugins? =
 
@@ -32,13 +43,13 @@ A typical WordPress site runs 5-10 utility plugins that each load their own CSS,
 
 Here's what you can deactivate after installing Dynamic Functionalities:
 
-* **Redirection / Safe Redirect Manager / 301 Redirects** — The Redirect Manager module handles 301, 302, 307, and 308 redirects with file-based storage (no database bloat)
-* **Limit Login Attempts Reloaded / WP Limit Login / Login LockDown** — Login Security module covers login attempt limiting, lockout durations, XML-RPC blocking, and login error hiding
-* **External Links / WP External Links** — Link Management module automates nofollow, new tab behavior, and exception lists with JSON preset support
-* **Schema Pro / Schema & Structured Data** — Schema Settings module adds microdata with itemscope/itemtype support and BreadcrumbList JSON-LD
-* **Insert Headers and Footers / WPCode** — Header & Footer Snippets module handles GA4 integration and custom code injection
-* **Asset CleanUp / Perfmatters** — Performance & Cleanup module disables emojis, embeds, REST API links, XML-RPC, feeds, Gravatars, heartbeat, and more
-* **SVG Support / Safe SVG** — SVG Icons module lets you upload and insert SVG icons inline in the block editor
+* **Redirection / Safe Redirect Manager / 301 Redirects** — The [Redirect Manager](https://functionalities.dev/docs/redirect-manager) module handles 301, 302, 307, and 308 redirects with file-based storage (no database bloat)
+* **Limit Login Attempts Reloaded / WP Limit Login / Login LockDown** — [Login Security](https://functionalities.dev/docs/login-security) module covers login attempt limiting, lockout durations, XML-RPC blocking, and login error hiding
+* **External Links / WP External Links** — [Link Management](https://functionalities.dev/docs/link-management) module automates nofollow, new tab behavior, and exception lists with JSON preset support
+* **Schema Pro / Schema & Structured Data** — [Schema Settings](https://functionalities.dev/docs/schema) module adds microdata with itemscope/itemtype support and BreadcrumbList JSON-LD
+* **Insert Headers and Footers / WPCode** — [Header & Footer Snippets](https://functionalities.dev/docs/snippets) module handles GA4 integration and custom code injection
+* **Asset CleanUp / Perfmatters** — [Performance & Cleanup](https://functionalities.dev/docs/performance) module disables emojis, embeds, REST API links, XML-RPC, feeds, Gravatars, heartbeat, and more
+* **SVG Support / Safe SVG** — [SVG Icons](https://functionalities.dev/docs/svg-icons) module lets you upload and insert SVG icons inline in the block editor
 * **Use Any Font / Custom Fonts** — Fonts module registers custom font families with @font-face, WOFF2/WOFF, variable font support, and Bricks Builder integration
 * **PWA for WP / Super Progressive Web Apps** — Progressive Web App module makes your site installable with service worker support
 
@@ -46,31 +57,40 @@ Here's what you can deactivate after installing Dynamic Functionalities:
 
 Some modules solve problems no other free plugin addresses:
 
-* **Content Integrity** — Monitors posts for structural regressions on update: dropped internal links, word count drops, heading structure changes. Catches accidental content loss before it goes live.
-* **Assumption Detection** — Watches for technical assumptions that silently break: schema collisions from conflicting plugins, duplicate analytics tags, redundant font loading, missing expected elements.
+* **[Content Integrity](https://functionalities.dev/docs/content-regression)** — Monitors posts for structural regressions on update: dropped internal links, word count drops, heading structure changes. Catches accidental content loss before it goes live.
+* **[Assumption Detection](https://functionalities.dev/docs/assumption-detection)** — Watches for technical assumptions that silently break: schema collisions from conflicting plugins, duplicate analytics tags, redundant font loading, missing expected elements.
 * **Components** — Define reusable CSS components as selector + rules pairs. Auto-enqueued site-wide without a page builder or theme dependency.
-* **Task Manager** — File-based project management inside WordPress admin. No external service, no database tables, no SaaS subscription.
-* **Block Cleanup** — Strips wp-block classes from frontend HTML for sites that don't need them. Cleaner markup, smaller DOM.
+* **[Task Manager](https://functionalities.dev/docs/task-manager)** — File-based project management inside WordPress admin. No external service, no database tables, no SaaS subscription.
+* **[Block Cleanup](https://functionalities.dev/docs/block-cleanup)** — Strips wp-block classes from frontend HTML for sites that don't need them. Cleaner markup, smaller DOM.
 * **Editor Link Suggestions** — Limits the block editor link autocomplete to specific post types. Stops irrelevant suggestions from cluttering the link picker.
 
 = Performance First =
 
-* **Modular & lazy loaded** — Only active modules run code
+* **Modular & lazy loaded** — Only active modules run code. A front-end request with every module disabled loads zero feature files.
 * **Static property caching** — Options are read once per request, not on every hook
-* **Fast-exit content filters** — strpos() checks before any regex or DOM parsing
+* **Fast-exit content filters** — strpos() checks run before any parsing happens
+* **WordPress HTML API** — Content filters edit attributes in place instead of reserializing the document, so markup comes out the way you wrote it
 * **Transient caching** — Heavy operations (JSON parsing, file I/O) are cached
 * **No frontend bloat** — No CSS or JS loaded unless a module explicitly needs it
 
 = Developer Friendly =
 
 * Clean namespaced codebase: `Functionalities\Features\*`, `Functionalities\Admin\*`
-* All hooks prefixed with `functionalities_` for safe filtering
-* Every module exposes filters for customization
+* All hooks prefixed with `functionalities_` for safe filtering — see the [hook reference](https://functionalities.dev/docs/hooks)
+* Every module exposes filters for customization, documented in the [API reference](https://functionalities.dev/docs/api-reference)
+* WordPress 7 Abilities API operations, each behind its own capability check
 * PSR-4-like autoloader with zero dependencies
 * GPL-2.0-or-later — fork it, extend it, contribute back
 
 = Documentation & Support =
 
+* [functionalities.dev](https://functionalities.dev/) — Documentation home
+* [Getting started](https://functionalities.dev/docs/getting-started) — Install, enable your first module, and verify it
+* [Module reference](https://functionalities.dev/modules) — What each of the 16 modules does
+* [Dashboard guide](https://functionalities.dev/docs/dashboard) — Working with the module dashboard
+* [Hooks](https://functionalities.dev/docs/hooks) and [API reference](https://functionalities.dev/docs/api-reference) — For developers extending the plugin
+* [FAQ](https://functionalities.dev/faq) — Common questions answered in more depth than this page
+* [Downloads](https://functionalities.dev/download) — Current and previous releases
 * [Training](https://gauravtiwari.org/course/functionalities-training/) — Step-by-step module walkthroughs
 * [GitHub Issues](https://github.com/wpgaurav/functionalities/issues) — Bug reports and feature requests
 * [WordPress.org Support](https://wordpress.org/support/plugin/functionalities/) — Community support forum
@@ -83,6 +103,8 @@ Some modules solve problems no other free plugin addresses:
 4. Enable the modules you need from the dashboard
 
 Each module card shows what it does. Click **Configure** to access its settings. Modules you don't enable load no code at all.
+
+For a walkthrough with screenshots, see [Getting started](https://functionalities.dev/docs/getting-started) and the [dashboard guide](https://functionalities.dev/docs/dashboard).
 
 == Frequently Asked Questions ==
 
@@ -112,11 +134,25 @@ Yes. The Meta & Copyright module detects active SEO plugins and adjusts its beha
 
 = How are redirects stored? =
 
-File-based JSON storage, not database tables. This means redirects load faster and don't bloat your wp_options or create custom tables that survive uninstallation.
+In a JSON file, not database tables, so redirects load fast and don't bloat `wp_options` or leave custom tables behind after uninstall.
+
+Since 1.6.0 that file lives in a folder with a randomly generated name under `wp-content/`, alongside `.htaccess`, `web.config`, and index files that block direct access and directory listing. A Site Health check confirms over HTTP that the folder really is unreachable on your host, and tells you what to add to your server config if it isn't. See the [Redirect Manager docs](https://functionalities.dev/docs/redirect-manager).
 
 = Can I migrate redirects from another plugin? =
 
-The Redirect Manager supports manual entry of 301, 302, 307, and 308 redirects. For bulk migration, export your existing redirects as CSV and add them through the interface.
+Yes. Export your existing redirects to CSV and import them. The importer recognizes the common column names other plugins use, validates the whole file before writing anything, and flags duplicates, wildcards, loops, and chains. Runs are all-or-nothing, and you can preview the result as a dry run first. Manual entry supports 301, 302, 307, and 308.
+
+= Which WordPress versions does it support? =
+
+WordPress 6.3 and later, on PHP 7.4 and later. 1.6.0 is tested on WordPress 7.1. WordPress 7 features — the Abilities API, DataViews workspaces, block bindings, and Command Palette actions — are feature-detected, so the plugin runs the same on 6.3 without them.
+
+= Does the plugin send any data anywhere? =
+
+No. Nothing is phoned home, and there is no telemetry. Two features make outbound requests, both under your control: Link Management fetches a JSON exception list only if you configure a URL for it, and AI explanations are strictly opt-in and only send a finding an administrator explicitly submits. The diagnostics download excludes task content, redirects, users, secrets, and site URLs.
+
+= Where does the plugin store its files? =
+
+Generated CSS goes to `wp-content/uploads/functionalities/`. Redirects, the 404 log, and task notes go in a private folder with a random name under `wp-content/functionalities/`, protected from direct access and from directory listing. Everything else is a WordPress option.
 
 = What happens if I deactivate the plugin? =
 
@@ -133,6 +169,30 @@ Before uninstalling, go to the Functionalities dashboard and check **"Delete all
 3. Assumption Detection module
 
 == Changelog ==
+
+= 1.6.0 =
+* Security: Abilities API operations now use a permission callback per ability and reject undeclared input properties. A shared callback previously widened to `edit_post` whenever the request carried a `post_id`, so any user who could edit one post could toggle modules, create redirects, create tasks, and trigger scans.
+* Security: Redirects, the bounded 404 log, and Task Manager projects moved to a private folder with a random name under `wp-content/functionalities/`. Existing files are migrated automatically. Apache, IIS, and directory-listing rules are written alongside them, and a new Site Health check confirms over HTTP that the folder really is unreachable.
+* Fixed: Header and footer snippets are no longer re-filtered against the *visitor's* capability at output time. Anonymous visitors were receiving mangled code — `&&` became `&amp;&amp;` and comparison operators were eaten as tags — while the logged-in administrator saw the snippet work. Filtering now happens once, at save time, against the author's capability.
+* Fixed: A JSON exception preset served from a URL is fetched at most once per cache window instead of on every page load. The cache clears whenever the module settings change, a post or page is edited, or the theme changes, and the last good list is kept when a fetch fails.
+* Fixed: The bulk nofollow tool pages through posts with an ID cursor and now finishes on sites with more than 100 matches. It previously returned the same first batch on every run.
+* Improved: Link Management, Block Cleanup, and Schema use the WordPress HTML API instead of DOMDocument. Attributes are edited in place, so Vue, Alpine, and mustache syntax survive untouched and the JS-framework skip guard added in 1.4.3 and 1.4.4 is gone. Content that used to be skipped is now processed correctly.
+* Improved: Redirect hits and 404 aggregates are buffered and written in batches rather than rewriting the whole JSON file under an exclusive lock on every request.
+* Improved: Redirects run at `parse_request`, before WordPress queries the database for a page it is about to discard. WordPress's own entry points are never redirected.
+* Improved: The Content Integrity column on the posts list reads a result cached at save time instead of rendering and parsing every row on every page load.
+* Improved: The SVG icon library is stored without autoloading, so full SVG markup no longer loads on every request.
+* Improved: The service worker skips wp-admin, the login page, REST responses, cross-origin requests, and anything marked no-store or private; caps the runtime cache; and precaches URLs individually so one stale entry cannot stop it installing. The manifest now includes an `id`.
+* Improved: Login Security adds per-username throttling, an IP allowlist, an unlock button on the lockout log, and a warning when every recent lockout shares one address, which is the signature of a site behind a CDN.
+* Improved: Prism.js is bundled with the plugin instead of being loaded from a third-party CDN.
+* Improved: Performance & Cleanup makes the revision limit configurable, and disabling Heartbeat now applies to the frontend only unless the new admin option is also enabled, so autosave and post locking keep working.
+* Improved: Content Integrity and Assumption Detection gained the filters their documentation promised, and the module documentation now lists hook names that exist. Nineteen documented hooks were never fired.
+* Fixed: Settings export no longer redacts the GA4 measurement ID as if it were custom code.
+* Fixed: Core icons get the same definition-ID prefixing as custom icons, so two gradient icons on one page no longer collide.
+* Fixed: Saving PWA settings flushes rewrite rules once instead of twice.
+* Fixed: Disabling feeds falls back to a message only when a redirect is genuinely impossible, making the documented message filter reachable.
+* Changed: The translation template is generated from the source. It was a one-string placeholder.
+* Changed: `src/` and `docs/` are excluded from the distribution, and `build.sh` now uses the same exclude list as the release workflow so a local build and a tagged release cannot drift.
+* Changed: Tested up to WordPress 7.1.
 
 = 1.5.0 =
 * Added: WordPress 7 Abilities API operations for module status, privacy-safe diagnostics, assumption scans, content-integrity checks, redirect import previews, redirect creation, task creation, module toggles, and opt-in AI explanations.
@@ -322,6 +382,9 @@ Before uninstalling, go to the Functionalities dashboard and check **"Delete all
 * Added: Assumption Detection module
 
 == Upgrade Notice ==
+
+= 1.6.0 =
+Security release. Fixes an Abilities API permission flaw that let any user who could edit a post reach administrator-only operations, moves redirect and task data into a private folder, and stops header/footer snippets being mangled for logged-out visitors. Also replaces DOMDocument with the WordPress HTML API in three content filters, so pages using Vue or Alpine are processed correctly instead of skipped. Existing settings, hooks, admin URLs, and data files are migrated automatically.
 
 = 1.4.8 =
 Adds the upgraded SVG Icon block, safe settings portability, CSV redirects, an opt-in 404 monitor, native Site Health signals, true lazy module loading, atomic file storage, and pull-request quality gates. Existing option names, block names, shortcode syntax, admin URLs, hooks, and JSON formats remain compatible.

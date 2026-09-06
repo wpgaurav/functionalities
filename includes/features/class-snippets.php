@@ -278,8 +278,8 @@ class Snippets {
 			$code = \apply_filters( $filter, (string) $snippet['code'], $snippet );
 
 			if ( ! empty( $code ) ) {
-				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped via escape_snippet() with unfiltered_html cap check and kses_with_styles fallback.
-				$parts[] = self::escape_snippet( $code );
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Filtered at save time against the author's unfiltered_html capability; see escape_snippet().
+				$parts[] = self::escape_snippet( $code, is_array( $snippet ) ? $snippet : array() );
 			}
 		}
 
@@ -443,24 +443,38 @@ class Snippets {
 	}
 
 	/**
-	 * Escape a code snippet for safe output.
+	 * Prepare a stored snippet for output.
 	 *
-	 * Users with `unfiltered_html` capability get raw output; others
-	 * get content filtered via kses_with_styles() which preserves CSS
-	 * inside `<style>` tags while filtering HTML.
+	 * Filtering happens once, at save time, against the capability of the user
+	 * who wrote the snippet (see Admin_Sanitizers::sanitize_snippets()). What is
+	 * stored is therefore already safe, and the value is emitted verbatim.
+	 *
+	 * Until 1.6.0 this method re-ran kses at output time against the capability
+	 * of whoever was *viewing* the page. Anonymous visitors never hold
+	 * `unfiltered_html`, so they received a mangled copy — `&&` became
+	 * `&amp;&amp;`, a `a < b` comparison was eaten as a tag, and wrapper markup
+	 * disappeared — while the logged-in administrator who pasted the snippet saw
+	 * it work. Every snippet with real JavaScript in it was broken for the
+	 * audience it was written for.
+	 *
+	 * A snippet saved by a user without `unfiltered_html` records
+	 * `unfiltered => false`, and is filtered again here as a belt-and-braces
+	 * guard for values that reached the option by another route.
 	 *
 	 * @since 1.0.1
 	 * @since 1.4.0 Uses kses_with_styles() to preserve CSS content.
+	 * @since 1.6.0 Filters at save time only; output is verbatim.
 	 *
-	 * @param string $code The snippet code.
-	 * @return string Escaped snippet.
+	 * @param string $code    The snippet code.
+	 * @param array  $snippet The full snippet array.
+	 * @return string Snippet ready for output.
 	 */
-	private static function escape_snippet( string $code ): string {
-		if ( \current_user_can( 'unfiltered_html' ) ) {
-			return $code;
+	private static function escape_snippet( string $code, array $snippet = array() ): string {
+		if ( array_key_exists( 'unfiltered', $snippet ) && empty( $snippet['unfiltered'] ) ) {
+			return self::kses_with_styles( $code, self::snippet_allowed_tags() );
 		}
 
-		return self::kses_with_styles( $code, self::snippet_allowed_tags() );
+		return $code;
 	}
 
 	/**

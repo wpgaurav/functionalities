@@ -43,12 +43,25 @@ jobs:
       - run: git diff --exit-code -- assets/js/wp7-admin.js assets/js/wp7-admin.asset.php assets/js/wp7-admin.css assets/js/wp7-admin-rtl.css assets/js/wp7-dataviews.css assets/js/wp7-dataviews-rtl.css
       - run: composer install --no-interaction --prefer-dist
       - run: composer phpcs
+
+      # The content filters run on WordPress's HTML API. Fetch just that part of
+      # core so those tests execute instead of skipping.
+      - name: Fetch the WordPress HTML API
+        run: |
+          git clone --depth=1 --filter=blob:none --sparse https://github.com/WordPress/wordpress-develop.git /tmp/wordpress
+          git -C /tmp/wordpress sparse-checkout set src/wp-includes
       - run: composer test
+        env:
+          FUNCTIONALITIES_WP_DIR: /tmp/wordpress/src
+
+      - name: Translation template is current
+        run: ./bin/make-pot.sh --check
       - run: |
           for file in $(find assets -name '*.js' -type f); do
             node --check "$file"
           done
       - run: bash -n build.sh
+      - run: bash -n bin/make-pot.sh
 
   package:
     name: Distribution package
@@ -72,6 +85,10 @@ jobs:
             functionalities/includes/core/class-module-registry.php \
             functionalities/includes/core/class-wordpress-7-integration.php \
             functionalities/includes/storage/class-atomic-json-store.php \
+            functionalities/includes/storage/class-data-directory.php \
+            functionalities/assets/vendor/prism/prism.min.js \
+            functionalities/assets/vendor/prism/prism.min.css \
+            functionalities/languages/functionalities.pot \
             functionalities/assets/js/admin-redirects.js \
             functionalities/assets/js/admin-tools.js \
             functionalities/assets/js/wp7-admin.js \
@@ -82,7 +99,7 @@ jobs:
             functionalities/assets/blocks/svg-icon/block.json; do
             unzip -Z1 "$zip" | grep -qx "$required"
           done
-          if unzip -Z1 "$zip" | grep -Eq '(^|/)(tests|vendor|node_modules|\.git|\.github)/|composer\.(json|lock)$|\.md$'; then
+          if unzip -Z1 "$zip" | grep -Eq '(^|/)(tests|node_modules|src|docs|\.git|\.github)/|/vendor/(composer|bin)/|composer\.(json|lock)$|package\.json$|\.md$'; then
             echo 'Development files leaked into the distribution.' >&2
             exit 1
           fi

@@ -84,8 +84,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Block_Cleanup {
 
-	use \Functionalities\Traits\Has_Dom_Parser;
-
 	/**
 	 * Initialize the block cleanup module.
 	 *
@@ -230,11 +228,6 @@ class Block_Cleanup {
 			return $content;
 		}
 
-		// Skip content containing JS-framework directives — DOMDocument corrupts them.
-		if ( self::content_has_js_framework_directives( $content ) ) {
-			return $content;
-		}
-
 		// Build list of classes to remove based on settings.
 		$classes_to_remove = array();
 
@@ -312,43 +305,29 @@ class Block_Cleanup {
 		// Store original for filter.
 		$original = $content;
 
-		// Parse HTML with DOMDocument.
-		$libxml_prev = libxml_use_internal_errors( true );
-		$dom         = new \DOMDocument( '1.0', 'UTF-8' );
-		$html        = '<div id="__functionalities_wrapper">' . $content . '</div>';
-		$dom->loadHTML( '<?xml encoding="utf-8" ?>' . $html );
-		$xpath = new \DOMXPath( $dom );
+		// The HTML API removes the class token in place. The DOMDocument pass this
+		// replaced in 1.6.0 reserialized the whole fragment, which is what used to
+		// corrupt Vue and Alpine markup.
+		if ( ! class_exists( '\WP_HTML_Tag_Processor' ) ) {
+			return $content;
+		}
 
-		// Remove all specified classes from all elements.
-		foreach ( $classes_to_remove as $class ) {
-			$class = trim( $class );
-			if ( $class === '' ) {
+		$processor = new \WP_HTML_Tag_Processor( $content );
+
+		while ( $processor->next_tag() ) {
+			if ( null === $processor->get_attribute( 'class' ) ) {
 				continue;
 			}
 
-			// Find all elements with this class.
-			// XPath 1.0 has no string-escape syntax, so we build the literal via xpath_string_literal()
-			// which uses concat() when the value contains both quote types. addcslashes() was incorrect
-			// here — XPath does not interpret backslash escapes, so a class containing a quote produced
-			// malformed XPath and a silent query failure.
-			$needle = self::xpath_string_literal( ' ' . $class . ' ' );
-			$nodes  = $xpath->query( '//*[contains(concat(" ", normalize-space(@class), " "), ' . $needle . ')]' );
-			self::strip_class_from_nodes( $nodes, $class );
-		}
-
-		// Extract processed content.
-		$out     = '';
-		$wrapper = $dom->getElementById( '__functionalities_wrapper' );
-		if ( $wrapper ) {
-			foreach ( $wrapper->childNodes as $child ) {
-				$out .= $dom->saveHTML( $child );
+			foreach ( $classes_to_remove as $class ) {
+				$class = trim( $class );
+				if ( '' !== $class ) {
+					$processor->remove_class( $class );
+				}
 			}
 		}
 
-		libxml_clear_errors();
-		libxml_use_internal_errors( $libxml_prev );
-
-		$result = $out !== '' ? $out : $content;
+		$result = $processor->get_updated_html();
 
 		/**
 		 * Filters the content after block classes have been removed.
@@ -359,85 +338,5 @@ class Block_Cleanup {
 		 * @param string $original The original content before processing.
 		 */
 		return \apply_filters( 'functionalities_block_cleanup_content', $result, $original );
-	}
-
-	/**
-	 * Strip a specific class from a list of DOM nodes.
-	 *
-	 * Removes the specified class name from all elements in the node list.
-	 * If the element has no remaining classes after removal, the class
-	 * attribute is removed entirely.
-	 *
-	 * @since 0.2.0
-	 *
-	 * @param \DOMNodeList|false $nodes DOMNodeList of elements to process.
-	 * @param string             $class The class name to remove.
-	 * @return void
-	 */
-	/**
-	 * Build a safely-quoted XPath 1.0 string literal.
-	 *
-	 * XPath 1.0 has no escape syntax inside string literals — a literal with
-	 * both `'` and `"` must be assembled with `concat()`. This helper picks
-	 * the simplest safe form for the given input.
-	 *
-	 * @since 1.4.6
-	 *
-	 * @param string $value Raw string value to embed in an XPath expression.
-	 * @return string Quoted XPath literal (e.g. `"foo"`, `'foo"bar'`, or `concat('a', "'", 'b')`).
-	 */
-	protected static function xpath_string_literal( string $value ): string {
-		if ( false === strpos( $value, "'" ) ) {
-			return "'" . $value . "'";
-		}
-		if ( false === strpos( $value, '"' ) ) {
-			return '"' . $value . '"';
-		}
-
-		// Both quote types present: split on `'` and concat with literal `'` glue.
-		// Each piece is wrapped in single quotes (safe — pieces no longer contain `'`),
-		// and the glue is a double-quoted literal containing one apostrophe.
-		$parts = array();
-		foreach ( explode( "'", $value ) as $i => $piece ) {
-			if ( $i > 0 ) {
-				$parts[] = '"\'"';
-			}
-			$parts[] = "'" . $piece . "'";
-		}
-		return 'concat(' . implode( ',', $parts ) . ')';
-	}
-
-	protected static function strip_class_from_nodes( $nodes, string $class ): void {
-		if ( ! ( $nodes instanceof \DOMNodeList ) ) {
-			return;
-		}
-
-		foreach ( $nodes as $el ) {
-			if ( ! $el instanceof \DOMElement ) {
-				continue;
-			}
-
-			$cls = $el->getAttribute( 'class' );
-			if ( $cls === '' ) {
-				continue;
-			}
-
-			// Split classes and filter out the target class.
-			$parts = preg_split( '/\s+/', $cls );
-			$parts = array_filter(
-				$parts,
-				function ( $c ) use ( $class ) {
-					return strtolower( (string) $c ) !== strtolower( $class );
-				}
-			);
-			$parts = array_values( array_unique( $parts ) );
-
-			// Update or remove class attribute.
-			if ( empty( $parts ) ) {
-				$el->removeAttribute( 'class' );
-			} else {
-				$el->setAttribute( 'class', implode( ' ', $parts ) );
-			}
-		}
 	}
 }

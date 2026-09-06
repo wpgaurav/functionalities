@@ -39,7 +39,7 @@ final class WordPress7IntegrationTest extends TestCase {
 		);
 
 		$this->assertSame( 3, $metadata['apiVersion'] );
-		$this->assertSame( '1.5.0', $metadata['version'] );
+		$this->assertSame( '1.6.0', $metadata['version'] );
 		$this->assertSame( 'content', $metadata['attributes']['iconSlug']['role'] );
 		$this->assertSame( 'content', $metadata['attributes']['coreIcon']['role'] );
 		$this->assertSame( 'content', $metadata['attributes']['label']['role'] );

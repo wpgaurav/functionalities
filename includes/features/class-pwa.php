@@ -76,7 +76,9 @@ class PWA {
 		}
 		\add_filter( 'query_vars', array( __CLASS__, 'register_query_vars' ) );
 		\add_action( 'template_redirect', array( __CLASS__, 'handle_endpoints' ) );
-		\add_action( 'update_option_functionalities_pwa', array( __CLASS__, 'on_option_update' ), 10, 2 );
+		// Rewrite flushing runs from Module_Registry::handle_option_update(), which
+		// is hooked to updated_option and added_option. Hooking it here as well
+		// flushed the rules twice on every save.
 
 		if ( ! self::is_enabled() ) {
 			return;
@@ -283,6 +285,7 @@ class PWA {
 		$site_desc = \get_bloginfo( 'description' );
 
 		$manifest = array(
+			'id'               => ! empty( $opts['scope'] ) ? $opts['scope'] : '/',
 			'name'             => ! empty( $opts['app_name'] ) ? $opts['app_name'] : $site_name,
 			'short_name'       => ! empty( $opts['short_name'] ) ? $opts['short_name'] : $site_name,
 			'description'      => ! empty( $opts['description'] ) ? $opts['description'] : $site_desc,
@@ -626,6 +629,19 @@ class PWA {
 		$offline_json = \wp_json_encode( $config['offline_url'] );
 		$precache_js  = implode( ',', array_map( '\\wp_json_encode', $precache ) );
 
+		$excluded_json = \wp_json_encode(
+			array_values(
+				array_unique(
+					(array) \apply_filters(
+						'functionalities_pwa_excluded_paths',
+						array( '/wp-admin', '/wp-login.php', '/wp-json', '/wp-cron.php', '/xmlrpc.php' )
+					)
+				)
+			)
+		);
+		$max_entries   = (int) \apply_filters( 'functionalities_pwa_runtime_cache_limit', 60 );
+		$max_entries   = max( 10, min( 500, $max_entries ) );
+
 		// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- All values are wp_json_encode'd (safe for JS context).
 		echo '/* Functionalities PWA Service Worker */' . "\n";
 		echo 'const CACHE_VERSION=' . $ver_json . ';' . "\n";
@@ -634,12 +650,20 @@ class PWA {
 		echo 'const IMAGE_CACHE=`func-pwa-images-${CACHE_VERSION}`;' . "\n";
 		echo 'const OFFLINE_URL=' . $offline_json . ';' . "\n";
 		echo 'const PRECACHE_URLS=[' . $precache_js . '];' . "\n";
+		echo 'const EXCLUDED_PATHS=' . $excluded_json . ';' . "\n";
+		echo 'const MAX_ENTRIES=' . (int) $max_entries . ';' . "\n";
 		// phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped
 
 		// Service worker body (static JS, no PHP interpolation).
 		// phpcs:disable Generic.Strings.UnnecessaryStringConcat.Found
+
+		// Precache each URL on its own. cache.addAll() rejects the whole install
+		// if any single entry 404s, so one stale precache URL used to stop the
+		// service worker installing at all.
 		echo 'self.addEventListener("install",e=>{' .
-			'e.waitUntil(caches.open(CORE_CACHE).then(c=>c.addAll(PRECACHE_URLS)).then(()=>self.skipWaiting()));' .
+			'e.waitUntil(caches.open(CORE_CACHE).then(c=>Promise.all(' .
+			'PRECACHE_URLS.map(u=>c.add(new Request(u,{credentials:"same-origin"})).catch(()=>null))' .
+			')).then(()=>self.skipWaiting()));' .
 			'});' . "\n";
 
 		echo 'self.addEventListener("activate",e=>{' .
@@ -650,17 +674,42 @@ class PWA {
 			']));' .
 			'});' . "\n";
 
+		// Never store administration screens, REST responses, or anything the
+		// server marks as private. A shared device must not keep a logged-in
+		// editor's pages in Cache Storage.
+		echo 'function isExcluded(url){' .
+			'const p=url.pathname;' .
+			'return EXCLUDED_PATHS.some(x=>p===x||p.startsWith(x+"/")||p.startsWith(x+"?"))||p.startsWith("/wp-admin");' .
+			'}' . "\n";
+
+		echo 'function isPrivate(res){' .
+			'if(!res)return true;' .
+			'const cc=res.headers.get("Cache-Control")||"";' .
+			'return /no-store|private/i.test(cc);' .
+			'}' . "\n";
+
+		echo 'async function trim(cache){' .
+			'const keys=await cache.keys();' .
+			'if(keys.length<=MAX_ENTRIES)return;' .
+			'for(let i=0;i<keys.length-MAX_ENTRIES;i++){await cache.delete(keys[i]);}' .
+			'}' . "\n";
+
+		echo 'async function put(cache,req,res){' .
+			'if(!res||res.status!==200||res.type==="opaque"||isPrivate(res))return;' .
+			'await cache.put(req,res.clone());await trim(cache);' .
+			'}' . "\n";
+
 		echo 'async function cacheFirst(req){' .
 			'const cache=await caches.open(IMAGE_CACHE);' .
 			'const cached=await cache.match(req);' .
 			'if(cached)return cached;' .
-			'try{const res=await fetch(req);if(res&&res.status===200)cache.put(req,res.clone());return res;}' .
+			'try{const res=await fetch(req);await put(cache,req,res);return res;}' .
 			'catch(e){return new Response("",{status:408});}' .
 			'}' . "\n";
 
 		echo 'async function networkFirst(req){' .
 			'const cache=await caches.open(RUNTIME_CACHE);' .
-			'try{const res=await fetch(req);if(res&&res.status===200)cache.put(req,res.clone());return res;}' .
+			'try{const res=await fetch(req);await put(cache,req,res);return res;}' .
 			'catch(e){const cached=await cache.match(req);if(cached)return cached;' .
 			'if(req.mode==="navigate"){const core=await caches.open(CORE_CACHE);const off=await core.match(OFFLINE_URL);if(off)return off;}' .
 			'return new Response("Offline",{status:503,headers:{"Content-Type":"text/plain"}});}' .
@@ -669,12 +718,16 @@ class PWA {
 		echo 'async function staleRevalidate(req){' .
 			'const cache=await caches.open(RUNTIME_CACHE);' .
 			'const cached=await cache.match(req);' .
-			'const net=fetch(req).then(res=>{if(res&&res.status===200)cache.put(req,res.clone());return res;}).catch(()=>cached);' .
+			'const net=fetch(req).then(async res=>{await put(cache,req,res);return res;}).catch(()=>cached);' .
 			'return cached||net;' .
 			'}' . "\n";
 
 		echo 'self.addEventListener("fetch",e=>{' .
 			'if(e.request.method!=="GET")return;' .
+			'const url=new URL(e.request.url);' .
+			'if(url.origin!==self.location.origin)return;' .
+			'if(isExcluded(url))return;' .
+			'if(url.search&&e.request.mode!=="navigate")return;' .
 			'const dest=e.request.destination;' .
 			'if(e.request.mode==="navigate"){e.respondWith(networkFirst(e.request));return;}' .
 			'if(dest==="image"){e.respondWith(cacheFirst(e.request));return;}' .

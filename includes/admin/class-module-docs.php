@@ -45,16 +45,24 @@ class Module_Docs {
 				),
 				'hooks'    => array(
 					array(
-						'name'        => 'functionalities_nofollow_exceptions',
-						'description' => \__( 'Modify exception list', 'functionalities' ),
+						'name'        => 'functionalities_exception_domains',
+						'description' => \__( 'Modify the exception domain list', 'functionalities' ),
 					),
 					array(
-						'name'        => 'functionalities_link_attributes',
-						'description' => \__( 'Modify link attributes', 'functionalities' ),
+						'name'        => 'functionalities_exception_urls',
+						'description' => \__( 'Modify the exception URL list', 'functionalities' ),
 					),
 					array(
-						'name'        => 'functionalities_process_links',
-						'description' => \__( 'Toggle link processing', 'functionalities' ),
+						'name'        => 'functionalities_json_preset_path',
+						'description' => \__( 'Override the JSON preset file path or URL', 'functionalities' ),
+					),
+					array(
+						'name'        => 'functionalities_link_preset_ttl',
+						'description' => \__( 'Change how long a resolved JSON preset stays cached', 'functionalities' ),
+					),
+					array(
+						'name'        => 'functionalities_link_update_batch_limit',
+						'description' => \__( 'Change the bulk database update batch size', 'functionalities' ),
 					),
 				),
 			),
@@ -73,6 +81,10 @@ class Module_Docs {
 					array(
 						'name'        => 'functionalities_block_cleanup_classes',
 						'description' => \__( 'Modify classes to remove', 'functionalities' ),
+					),
+					array(
+						'name'        => 'functionalities_block_cleanup_content',
+						'description' => \__( 'Modify content after classes are removed', 'functionalities' ),
 					),
 				),
 			),
@@ -138,16 +150,20 @@ class Module_Docs {
 						'description' => \__( 'Toggle all schema output', 'functionalities' ),
 					),
 					array(
-						'name'        => 'functionalities_schema_site_type',
+						'name'        => 'functionalities_schema_site_itemtype',
 						'description' => \__( 'Modify site itemtype', 'functionalities' ),
 					),
 					array(
-						'name'        => 'functionalities_schema_article_type',
+						'name'        => 'functionalities_schema_article_itemtype',
 						'description' => \__( 'Modify article itemtype', 'functionalities' ),
 					),
 					array(
-						'name'        => 'functionalities_schema_content',
+						'name'        => 'functionalities_schema_article_content',
 						'description' => \__( 'Modify wrapped content', 'functionalities' ),
+					),
+					array(
+						'name'        => 'functionalities_schema_language_attributes',
+						'description' => \__( 'Modify the html element attributes', 'functionalities' ),
 					),
 				),
 			),
@@ -244,16 +260,16 @@ class Module_Docs {
 				'caution'  => \__( 'Some options may break functionality if plugins depend on them. Test after enabling. Disable Heartbeat API with care if you use auto-save or real-time features.', 'functionalities' ),
 				'hooks'    => array(
 					array(
-						'name'        => 'functionalities_misc_options',
-						'description' => \__( 'Modify options before application', 'functionalities' ),
+						'name'        => 'functionalities_misc_option_{$key}',
+						'description' => \__( 'Control any single toggle, for example functionalities_misc_option_disable_emojis', 'functionalities' ),
 					),
 					array(
-						'name'        => 'functionalities_misc_disable_emojis',
-						'description' => \__( 'Control emoji removal', 'functionalities' ),
+						'name'        => 'functionalities_misc_init',
+						'description' => \__( 'Action: fires after all toggles are processed', 'functionalities' ),
 					),
 					array(
-						'name'        => 'functionalities_misc_disable_embeds',
-						'description' => \__( 'Control embed removal', 'functionalities' ),
+						'name'        => 'functionalities_misc_feeds_disabled_message',
+						'description' => \__( 'Change the disabled-feeds message', 'functionalities' ),
 					),
 				),
 			),
@@ -267,16 +283,16 @@ class Module_Docs {
 				),
 				'hooks'    => array(
 					array(
-						'name'        => 'functionalities_meta_enabled',
-						'description' => \__( 'Toggle module', 'functionalities' ),
+						'name'        => 'functionalities_meta_licenses',
+						'description' => \__( 'Add or modify available licenses', 'functionalities' ),
 					),
 					array(
-						'name'        => 'functionalities_meta_copyright_holder',
-						'description' => \__( 'Modify copyright holder', 'functionalities' ),
+						'name'        => 'functionalities_meta_standalone_schema',
+						'description' => \__( 'Modify the standalone JSON-LD output', 'functionalities' ),
 					),
 					array(
-						'name'        => 'functionalities_meta_license',
-						'description' => \__( 'Modify license output', 'functionalities' ),
+						'name'        => 'functionalities_module_enabled',
+						'description' => \__( 'Toggle any module, receives the module slug', 'functionalities' ),
 					),
 				),
 			),
@@ -291,20 +307,20 @@ class Module_Docs {
 				'usage'    => \__( 'This is content integrity, not SEO. The system answers: "Did this update accidentally damage something important?" It never scores content, never suggests fixes, and always compares a post to itself.', 'functionalities' ),
 				'hooks'    => array(
 					array(
-						'name'        => 'functionalities_regression_enabled',
-						'description' => \__( 'Toggle detection', 'functionalities' ),
+						'name'        => 'functionalities_content_regression_post_types',
+						'description' => \__( 'Modify the monitored post types', 'functionalities' ),
 					),
 					array(
-						'name'        => 'functionalities_regression_post_types',
-						'description' => \__( 'Modify enabled post types', 'functionalities' ),
+						'name'        => 'functionalities_content_regression_warnings',
+						'description' => \__( 'Modify detected warnings for a post', 'functionalities' ),
 					),
 					array(
-						'name'        => 'functionalities_regression_warnings',
-						'description' => \__( 'Modify detected warnings', 'functionalities' ),
+						'name'        => 'functionalities_content_regression_snapshot',
+						'description' => \__( 'Modify a snapshot before it is stored', 'functionalities' ),
 					),
 					array(
-						'name'        => 'functionalities_regression_snapshot_saved',
-						'description' => \__( 'Action: after snapshot saved', 'functionalities' ),
+						'name'        => 'functionalities_content_regression_snapshot_saved',
+						'description' => \__( 'Action: after a snapshot is saved', 'functionalities' ),
 					),
 				),
 			),
@@ -319,16 +335,12 @@ class Module_Docs {
 				'usage'    => \__( 'This module notices when assumptions stop being true. It does not optimize, does not enforce best practices, and does not recommend plugins. It simply says: "This used to be true. Now it isn\'t."', 'functionalities' ),
 				'hooks'    => array(
 					array(
-						'name'        => 'functionalities_assumptions_enabled',
-						'description' => \__( 'Toggle detection', 'functionalities' ),
+						'name'        => 'functionalities_assumption_detection_warnings',
+						'description' => \__( 'Modify detected findings before they are stored', 'functionalities' ),
 					),
 					array(
-						'name'        => 'functionalities_assumptions_detectors',
-						'description' => \__( 'Modify active detectors', 'functionalities' ),
-					),
-					array(
-						'name'        => 'functionalities_assumptions_warnings',
-						'description' => \__( 'Modify detected warnings', 'functionalities' ),
+						'name'        => 'functionalities_assumption_detection_enabled',
+						'description' => \__( 'Toggle individual detectors, receives the detector key', 'functionalities' ),
 					),
 				),
 			),

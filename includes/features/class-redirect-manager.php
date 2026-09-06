@@ -20,6 +20,22 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Redirect_Manager {
 
 	/**
+	 * Option holding buffered hit counts and 404 aggregates.
+	 *
+	 * @since 1.6.0
+	 * @var string
+	 */
+	const BUFFER_OPTION = 'functionalities_redirect_hit_buffer';
+
+	/**
+	 * Cron hook that flushes the write buffer.
+	 *
+	 * @since 1.6.0
+	 * @var string
+	 */
+	const FLUSH_HOOK = 'functionalities_redirect_flush_buffer';
+
+	/**
 	 * Redirects file path.
 	 *
 	 * @var string
@@ -53,8 +69,8 @@ class Redirect_Manager {
 	 * @return void
 	 */
 	public static function init(): void {
-		self::$redirects_file = WP_CONTENT_DIR . '/functionalities/redirects.json';
-		self::$log_file       = WP_CONTENT_DIR . '/functionalities/404-log.json';
+		self::$redirects_file = \Functionalities\Storage\Data_Directory::file( 'redirects.json' );
+		self::$log_file       = \Functionalities\Storage\Data_Directory::file( '404-log.json' );
 
 		$opts = (array) \get_option( 'functionalities_redirect_manager', array( 'enabled' => false ) );
 
@@ -62,16 +78,28 @@ class Redirect_Manager {
 			return;
 		}
 
-		// Handle redirects early on frontend.
-		\add_action( 'template_redirect', array( __CLASS__, 'handle_redirect' ), 1 );
+		// Handle redirects before the main query runs. template_redirect fires
+		// after WordPress has already queried the database for a page it is about
+		// to throw away.
+		\add_action( 'parse_request', array( __CLASS__, 'handle_redirect' ), 1 );
 		if ( ! empty( $opts['monitor_404'] ) ) {
 			\add_action( 'template_redirect', array( __CLASS__, 'maybe_log_404' ), 99 );
+		}
+
+		// Buffered hits and 404 aggregates reach disk in batches.
+		\add_action( self::FLUSH_HOOK, array( __CLASS__, 'flush_buffer' ) );
+		if ( ! \wp_next_scheduled( self::FLUSH_HOOK ) ) {
+			\wp_schedule_event( time() + 300, 'hourly', self::FLUSH_HOOK );
 		}
 
 		// Only register admin handlers in admin.
 		if ( ! \is_admin() ) {
 			return;
 		}
+
+		// Show current numbers on the management screen.
+		\add_action( 'load-toplevel_page_functionalities', array( __CLASS__, 'flush_buffer' ) );
+		\add_action( 'load-functionalities_page_functionalities-redirect-manager', array( __CLASS__, 'flush_buffer' ) );
 
 		// AJAX handlers.
 		\add_action( 'wp_ajax_functionalities_redirect_add', array( __CLASS__, 'ajax_add_redirect' ) );
@@ -107,19 +135,12 @@ class Redirect_Manager {
 	 */
 	private static function get_redirects_dir() {
 		$dir = dirname( self::$redirects_file );
-		if ( ! file_exists( $dir ) ) {
-			if ( ! wp_mkdir_p( $dir ) ) {
-				return false;
-			}
-			// Security files.
-			$index_file = $dir . '/index.php';
-			if ( ! file_exists( $index_file ) ) {
-				$fs = self::get_filesystem();
-				if ( $fs ) {
-					$fs->put_contents( $index_file, '<?php // Silence is golden.', FS_CHMOD_FILE );
-				}
-			}
+		if ( ! file_exists( $dir ) && ! wp_mkdir_p( $dir ) ) {
+			return false;
 		}
+
+		\Functionalities\Storage\Data_Directory::harden( $dir );
+
 		return $dir;
 	}
 
@@ -501,19 +522,27 @@ class Redirect_Manager {
 	 * @return void
 	 */
 	public static function handle_redirect(): void {
-		// Don't redirect in admin.
-		if ( is_admin() ) {
-			return;
-		}
-
-		$redirects = self::get_redirects();
-		if ( empty( $redirects ) ) {
+		// Don't redirect in admin, on cron, or on API routes.
+		if ( is_admin() || \wp_doing_cron() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
 			return;
 		}
 
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitized by normalize_path.
 		$raw_uri      = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
 		$current_path = self::normalize_path( $raw_uri );
+
+		// Never redirect WordPress's own entry points. This matters now that the
+		// check runs at parse_request, which also serves REST.
+		foreach ( array( '/wp-admin', '/wp-json', '/wp-login.php', '/wp-cron.php', '/xmlrpc.php' ) as $reserved ) {
+			if ( 0 === strpos( $current_path, $reserved ) ) {
+				return;
+			}
+		}
+
+		$redirects = self::get_redirects();
+		if ( empty( $redirects ) ) {
+			return;
+		}
 
 		// Preserve the original query string so it can be appended to the destination.
 		$query_string = '';
@@ -579,10 +608,12 @@ class Redirect_Manager {
 	}
 
 	/**
-	 * Schedule a hit counter increment on shutdown.
+	 * Buffer a hit for the current redirect.
 	 *
-	 * Avoids a full JSON file read/write in the critical redirect path.
-	 * The actual disk write happens after the response is sent.
+	 * Until 1.6.0 every redirect rewrote the entire redirects file under an
+	 * exclusive lock at shutdown, so a crawler sweeping dead URLs serialised
+	 * every request on that lock. Hits now accumulate in a non-autoloaded option
+	 * and are merged into the file in batches.
 	 *
 	 * @param string $id Redirect ID.
 	 * @return void
@@ -590,29 +621,106 @@ class Redirect_Manager {
 	private static function defer_hit_increment( string $id ): void {
 		\register_shutdown_function(
 			function () use ( $id ) {
-				self::increment_hits( $id );
+				self::buffer_event( 'hits', $id );
 			}
 		);
 	}
 
 	/**
-	 * Increment redirect hit counter.
+	 * Add one event to the write buffer and flush when it is worth the disk I/O.
 	 *
-	 * @param string $id Redirect ID.
+	 * @since 1.6.0
+	 *
+	 * @param string $bucket Buffer bucket: hits or not_found.
+	 * @param string $key    Redirect ID or request path.
+	 * @param array  $meta   Extra data for the not_found bucket.
 	 * @return void
 	 */
-	private static function increment_hits( string $id ): void {
-		self::mutate_redirects(
-			static function ( array $redirects ) use ( $id ) {
-				foreach ( $redirects as &$redirect ) {
-					if ( isset( $redirect['id'] ) && $id === $redirect['id'] ) {
-						$redirect['hits'] = (int) ( $redirect['hits'] ?? 0 ) + 1;
-						return $redirects;
+	private static function buffer_event( string $bucket, string $key, array $meta = array() ): void {
+		if ( '' === $key ) {
+			return;
+		}
+
+		$buffer = (array) \get_option( self::BUFFER_OPTION, array() );
+
+		if ( 'hits' === $bucket ) {
+			$buffer['hits'][ $key ] = (int) ( $buffer['hits'][ $key ] ?? 0 ) + 1;
+		} else {
+			$existing                    = $buffer['not_found'][ $key ] ?? array();
+			$buffer['not_found'][ $key ] = array(
+				'count'     => (int) ( $existing['count'] ?? 0 ) + 1,
+				'last_seen' => time(),
+				'origin'    => $meta['origin'] ?? ( $existing['origin'] ?? '' ),
+			);
+		}
+
+		$buffer['started'] = isset( $buffer['started'] ) ? (int) $buffer['started'] : time();
+
+		\update_option( self::BUFFER_OPTION, $buffer, false );
+
+		$pending = count( $buffer['hits'] ?? array() ) + count( $buffer['not_found'] ?? array() );
+
+		/**
+		 * Filters how many buffered events trigger a flush to disk.
+		 *
+		 * @since 1.6.0
+		 *
+		 * @param int $threshold Number of distinct buffered entries.
+		 */
+		$threshold = (int) \apply_filters( 'functionalities_redirect_buffer_threshold', 25 );
+
+		if ( $pending >= max( 1, $threshold ) || ( time() - (int) $buffer['started'] ) > 5 * MINUTE_IN_SECONDS ) {
+			self::flush_buffer();
+		}
+	}
+
+	/**
+	 * Merge buffered hits and 404 aggregates into their JSON files.
+	 *
+	 * @since 1.6.0
+	 * @return void
+	 */
+	public static function flush_buffer(): void {
+		$buffer = (array) \get_option( self::BUFFER_OPTION, array() );
+		if ( empty( $buffer['hits'] ) && empty( $buffer['not_found'] ) ) {
+			return;
+		}
+
+		// Clear first: a failed write must not replay the same counts forever.
+		\delete_option( self::BUFFER_OPTION );
+
+		if ( ! empty( $buffer['hits'] ) ) {
+			$hits = $buffer['hits'];
+			self::mutate_redirects(
+				static function ( array $redirects ) use ( $hits ) {
+					$changed = false;
+					foreach ( $redirects as &$redirect ) {
+						$id = $redirect['id'] ?? '';
+						if ( '' !== $id && isset( $hits[ $id ] ) ) {
+							$redirect['hits'] = (int) ( $redirect['hits'] ?? 0 ) + (int) $hits[ $id ];
+							$changed          = true;
+						}
 					}
+					unset( $redirect );
+					return $changed ? $redirects : false;
 				}
-				return false;
-			}
-		);
+			);
+		}
+
+		if ( ! empty( $buffer['not_found'] ) ) {
+			self::write_not_found( $buffer['not_found'] );
+		}
+	}
+
+	/**
+	 * Return buffered hit counts that have not reached the file yet.
+	 *
+	 * @since 1.6.0
+	 * @return array Redirect ID to pending count.
+	 */
+	public static function get_buffered_hits(): array {
+		$buffer = (array) \get_option( self::BUFFER_OPTION, array() );
+		return isset( $buffer['hits'] ) && is_array( $buffer['hits'] ) ? $buffer['hits'] : array();
 	}
 
 	/**
@@ -623,15 +731,20 @@ class Redirect_Manager {
 	public static function get_stats(): array {
 		$redirects = self::get_redirects();
 
-		$total   = count( $redirects );
-		$enabled = 0;
-		$hits    = 0;
+		$total    = count( $redirects );
+		$enabled  = 0;
+		$hits     = 0;
+		$buffered = self::get_buffered_hits();
 
 		foreach ( $redirects as $r ) {
 			if ( ! empty( $r['enabled'] ) ) {
 				++$enabled;
 			}
-			$hits += $r['hits'] ?? 0;
+			$hits += (int) ( $r['hits'] ?? 0 );
+			$id    = $r['id'] ?? '';
+			if ( '' !== $id && isset( $buffered[ $id ] ) ) {
+				$hits += (int) $buffered[ $id ];
+			}
 		}
 
 		return array(
@@ -854,39 +967,63 @@ class Redirect_Manager {
 			$origin = sanitize_text_field( (string) wp_parse_url( \wp_unslash( $_SERVER['HTTP_REFERER'] ), PHP_URL_HOST ) );
 		}
 
+		self::buffer_event( 'not_found', $path, array( 'origin' => $origin ) );
+	}
+
+	/**
+	 * Merge buffered 404 aggregates into the bounded log file.
+	 *
+	 * @since 1.6.0
+	 *
+	 * @param array $entries Path to aggregate data.
+	 * @return void
+	 */
+	private static function write_not_found( array $entries ): void {
+		$options   = (array) \get_option( 'functionalities_redirect_manager', array() );
 		$cap       = max( 25, min( 2000, (int) ( $options['monitor_cap'] ?? 500 ) ) );
 		$retention = max( 1, min( 365, (int) ( $options['monitor_retention_days'] ?? 30 ) ) );
 		$cutoff    = time() - ( $retention * DAY_IN_SECONDS );
+
 		\Functionalities\Storage\Atomic_JSON_Store::update(
 			self::$log_file,
-			static function ( array $data ) use ( $path, $origin, $cap, $cutoff ) {
+			static function ( array $data ) use ( $entries, $cap, $cutoff ) {
 				$items = isset( $data['items'] ) && is_array( $data['items'] ) ? $data['items'] : array();
 				$items = array_filter(
 					$items,
-					static function ( array $item ) use ( $cutoff ) {
-						return (int) ( $item['last_seen'] ?? 0 ) >= $cutoff;
+					static function ( $item ) use ( $cutoff ) {
+						return is_array( $item ) && (int) ( $item['last_seen'] ?? 0 ) >= $cutoff;
 					}
 				);
-				if ( isset( $items[ $path ] ) ) {
-					$items[ $path ]['count']     = (int) $items[ $path ]['count'] + 1;
-					$items[ $path ]['last_seen'] = time();
-					if ( $origin ) {
-						$items[ $path ]['referrer_origin'] = $origin;
+
+				foreach ( $entries as $path => $entry ) {
+					$count  = (int) ( $entry['count'] ?? 1 );
+					$origin = (string) ( $entry['origin'] ?? '' );
+					$seen   = (int) ( $entry['last_seen'] ?? time() );
+
+					if ( isset( $items[ $path ] ) ) {
+						$items[ $path ]['count']     = (int) $items[ $path ]['count'] + $count;
+						$items[ $path ]['last_seen'] = $seen;
+						if ( '' !== $origin ) {
+							$items[ $path ]['referrer_origin'] = $origin;
+						}
+						continue;
 					}
-				} else {
+
 					$items[ $path ] = array(
 						'path'            => $path,
-						'count'           => 1,
-						'last_seen'       => time(),
+						'count'           => $count,
+						'last_seen'       => $seen,
 						'referrer_origin' => $origin,
 					);
 				}
+
 				uasort(
 					$items,
 					static function ( array $a, array $b ) {
 						return (int) $b['last_seen'] <=> (int) $a['last_seen'];
 					}
 				);
+
 				$data['items'] = array_slice( $items, 0, $cap, true );
 				return $data;
 			},

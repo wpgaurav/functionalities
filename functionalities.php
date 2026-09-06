@@ -3,7 +3,7 @@
  * Plugin Name:       Dynamic Functionalities
  * Plugin URI:        https://functionalities.dev
  * Description:       All-in-one WordPress optimization toolkit. 15+ modules for performance, security, SEO, and content management.
- * Version:           1.5.0
+ * Version:           1.6.0
  * Author:            Gaurav Tiwari
  * Author URI:        https://gauravtiwari.org
  * License:           GPL-2.0-or-later
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Define constants.
 if ( ! defined( 'FUNCTIONALITIES_VERSION' ) ) {
-	define( 'FUNCTIONALITIES_VERSION', '1.5.0' );
+	define( 'FUNCTIONALITIES_VERSION', '1.6.0' );
 }
 if ( ! defined( 'FUNCTIONALITIES_FILE' ) ) {
 	define( 'FUNCTIONALITIES_FILE', __FILE__ );
@@ -65,6 +65,7 @@ spl_autoload_register(
 	function () {
 		\Functionalities\Core\WordPress_7_Integration::init();
 		if ( \is_admin() ) {
+			\Functionalities\Core\Upgrader::maybe_upgrade();
 			\Functionalities\Admin\Admin::init();
 		}
 		\Functionalities\Admin\Site_Health_Controller::init();
@@ -117,6 +118,7 @@ spl_autoload_register(
 	__FILE__,
 	function () {
 		\wp_clear_scheduled_hook( 'functionalities_assumption_background_scan' );
+		\wp_clear_scheduled_hook( 'functionalities_redirect_flush_buffer' );
 		if ( function_exists( 'flush_rewrite_rules' ) ) {
 			\flush_rewrite_rules();
 		}

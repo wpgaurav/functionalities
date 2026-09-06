@@ -2,7 +2,9 @@
 
 All-in-one WordPress optimization toolkit with 16 modules for performance, security, SEO, and content management. Built with modern WordPress coding standards and a clean module-based dashboard. Optimized for performance with modular initialization, static property caching, and intelligent transients.
 
-**Version:** 1.5.0
+**Version:** 1.6.0
+**Requires WordPress:** 6.3 or later (tested up to 7.1)
+**Requires PHP:** 7.4 or later
 **License:** GPL-2.0-or-later
 **Text Domain:** `functionalities`
 **Pricing:** Free
@@ -18,7 +20,21 @@ All-in-one WordPress optimization toolkit with 16 modules for performance, secur
 
 All modules are accessed through a unified dashboard at `wp-admin/admin.php?page=functionalities`. Click any module card to configure its settings.
 
-Learn more on [Functionalities Site](https://functionalities.dev)
+## Documentation
+
+Full documentation is at **[functionalities.dev](https://functionalities.dev/)**:
+
+| | |
+|---|---|
+| [Getting started](https://functionalities.dev/docs/getting-started) | Install, enable a module, verify it works |
+| [Module reference](https://functionalities.dev/modules) | What each of the 16 modules does |
+| [Dashboard](https://functionalities.dev/docs/dashboard) | Working with the module dashboard |
+| [Hooks](https://functionalities.dev/docs/hooks) | Every action and filter the plugin fires |
+| [API reference](https://functionalities.dev/docs/api-reference) | Extending the plugin in code |
+| [FAQ](https://functionalities.dev/faq) | Common questions |
+| [Downloads](https://functionalities.dev/download) | Current and previous releases |
+
+Per-module guides: [Link Management](https://functionalities.dev/docs/link-management) · [Redirect Manager](https://functionalities.dev/docs/redirect-manager) · [Login Security](https://functionalities.dev/docs/login-security) · [Performance & Cleanup](https://functionalities.dev/docs/performance) · [Schema](https://functionalities.dev/docs/schema) · [Snippets](https://functionalities.dev/docs/snippets) · [SVG Icons](https://functionalities.dev/docs/svg-icons) · [Block Cleanup](https://functionalities.dev/docs/block-cleanup) · [Content Integrity](https://functionalities.dev/docs/content-regression) · [Assumption Detection](https://functionalities.dev/docs/assumption-detection) · [Task Manager](https://functionalities.dev/docs/task-manager)
 
 See the [public roadmap](ROADMAP.md) for planned fixes and features.
 
@@ -31,8 +47,8 @@ This plugin is built with a "Performance First" philosophy. Unlike many all-in-o
 - **Modular Initialization:** Each module checks its enabled state before registering its feature hooks. Disabled modules add no frontend assets or feature behavior.
 - **Minimized Database Load:** All module settings are cached in static properties. This ensures that `get_option()` is called at most once per module per request, regardless of how many times a feature is accessed.
 - **Zero Frontend Bloat:** Most modules are "Zero Footprint" on the frontend, meaning they load no CSS or JS unless explicitly required (like the Components or Fonts modules).
-- **Intelligent Filtering:** Content filters (`the_content`, etc.) use `strpos()` fast-exit checks. If the specific markers or tags for a feature aren't present in your content, the plugin exits immediately without running expensive regular expressions or DOM parsing.
-- **Efficient HTML Processing:** We use targeted regex for lightweight tasks (like Schema injection) and only resort to `DOMDocument` when structural manipulation is strictly necessary, ensuring maximum speed.
+- **Intelligent Filtering:** Content filters (`the_content`, etc.) use `strpos()` fast-exit checks. If the specific markers or tags for a feature aren't present in your content, the plugin exits immediately without running expensive parsing.
+- **Efficient HTML Processing:** Since 1.6.0, Link Management, Block Cleanup, and Schema use the WordPress HTML API (`WP_HTML_Tag_Processor`) to edit attributes in place. Nothing is reserialized, so Vue, Alpine, and mustache templates survive untouched and no framework skip guard is needed.
 - **Aggressive Caching:** Heavy operations—such as reading JSON exception lists, calculating file hashes, or managing redirects—are cached using WordPress Transients or versioned options to minimize Disk I/O.
 
 ---
@@ -278,6 +294,9 @@ Enhanced login protection and security measures for your WordPress site.
 
 **Features:**
 - Limit login attempts to prevent brute force attacks
+- Per-username throttling, so a distributed attempt against one account is caught
+- IP allowlist, so a shared address behind a CDN cannot lock you out of your own site
+- Unlock any address or username directly from the lockout log
 - Configurable lockout durations
 - Disable XML-RPC authentication and application passwords
 - Hide detailed login errors to prevent user enumeration
@@ -394,52 +413,38 @@ add_filter( 'functionalities_svg_icons_sanitize', function( $svg, $slug ) {
 ```
 functionalities/
 ├── assets/
-│   ├── css/
-│   │   ├── admin.css
-│   │   ├── admin-ui.css
-│   │   ├── content-regression.css
-│   │   └── svg-icons-editor.css
-│   └── js/
-│       ├── admin.js
-│       ├── admin-redirects.js
-│       ├── admin-tools.js
-│       ├── admin-ui.js
-│       ├── content-regression.js
-│       └── svg-icons-editor.js
+│   ├── blocks/svg-icon/        Block metadata for the SVG Icon block
+│   ├── css/                    admin, admin-ui, content-regression, svg-icons-editor
+│   ├── js/                     admin*, content-regression, svg-icons-editor, wp7-*
+│   └── vendor/prism/           Bundled Prism.js (MIT), admin syntax highlighting
 ├── includes/
 │   ├── admin/
-│   │   ├── class-admin.php
-│   │   ├── class-admin-ui.php
-│   │   ├── class-module-controller.php
-│   │   ├── class-module-docs.php
+│   │   ├── class-admin.php                             Thin entry point
+│   │   ├── class-admin-ui.php                          Shared UI helpers
+│   │   ├── class-module-controller.php                 Settings + custom pages
+│   │   ├── class-module-docs.php                       Per-module docs text
+│   │   ├── class-settings-portability-controller.php   Export / import / diagnostics
+│   │   ├── class-site-health-controller.php            Scans, schedules, exposure probe
 │   │   ├── class-redirect-manager-controller.php
-│   │   ├── class-settings-portability-controller.php
-│   │   ├── class-site-health-controller.php
 │   │   ├── class-svg-icons-controller.php
-│   │   └── class-task-manager-controller.php
+│   │   ├── class-task-manager-controller.php
+│   │   ├── trait-admin-ajax.php
+│   │   ├── trait-admin-options.php
+│   │   └── trait-admin-sanitizers.php
 │   ├── core/
-│   │   └── class-module-registry.php
-│   ├── features/
-│   │   ├── class-assumption-detection.php
-│   │   ├── class-block-cleanup.php
-│   │   ├── class-components.php
-│   │   ├── class-content-regression.php
-│   │   ├── class-editor-links.php
-│   │   ├── class-fonts.php
-│   │   ├── class-link-management.php
-│   │   ├── class-login-security.php
-│   │   ├── class-meta.php
-│   │   ├── class-misc.php
-│   │   ├── class-pwa.php
-│   │   ├── class-redirect-manager.php
-│   │   ├── class-schema.php
-│   │   ├── class-snippets.php
-│   │   ├── class-svg-icons.php
-│   │   └── class-task-manager.php
-│   └── storage/
-│       └── class-atomic-json-store.php
+│   │   ├── class-module-registry.php                   Module list + lazy loader
+│   │   └── class-wordpress-7-integration.php           Abilities, DataViews, AI
+│   ├── features/                                       One class per module (16)
+│   ├── storage/
+│   │   ├── class-atomic-json-store.php                 Locked, atomic JSON writes
+│   │   └── class-data-directory.php                    Private data path + hardening
+│   └── traits/
+│       └── trait-css-sanitizer.php
 ├── languages/
-├── exception-urls.json.sample
+├── src/                        Source for the WordPress 7 admin bundle (not shipped)
+├── tests/                      PHPUnit suite
+├── docs/                       Performance baseline notes (not shipped)
+├── exception-urls-sample.json
 ├── functionalities.php
 ├── index.php
 └── uninstall.php

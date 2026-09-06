@@ -39,6 +39,14 @@ class Content_Regression {
 	const POST_SETTINGS_KEY = '_functionalities_regression_settings';
 
 	/**
+	 * Post meta key caching the last detection result for the list column.
+	 *
+	 * @since 1.6.0
+	 * @var string
+	 */
+	const STATUS_KEY = '_functionalities_regression_status';
+
+	/**
 	 * Initialize content regression detection.
 	 *
 	 * @return void
@@ -119,6 +127,28 @@ class Content_Regression {
 	}
 
 	/**
+	 * Return the post types this module monitors.
+	 *
+	 * @since 1.6.0
+	 * @return array
+	 */
+	public static function get_monitored_post_types(): array {
+		$opts  = self::get_options();
+		$types = isset( $opts['post_types'] ) && is_array( $opts['post_types'] )
+			? $opts['post_types']
+			: array( 'post', 'page' );
+
+		/**
+		 * Filters the post types Content Integrity monitors.
+		 *
+		 * @since 1.6.0
+		 *
+		 * @param array $types Post type slugs.
+		 */
+		return (array) \apply_filters( 'functionalities_content_regression_post_types', $types );
+	}
+
+	/**
 	 * Get per-post settings.
 	 *
 	 * @param int $post_id Post ID.
@@ -171,8 +201,7 @@ class Content_Regression {
 		$opts = self::get_options();
 
 		// Check if post type is enabled.
-		$enabled_types = (array) $opts['post_types'];
-		if ( ! in_array( $post->post_type, $enabled_types, true ) ) {
+		if ( ! in_array( $post->post_type, self::get_monitored_post_types(), true ) ) {
 			return;
 		}
 
@@ -181,6 +210,18 @@ class Content_Regression {
 		if ( ! empty( $post_settings['detection_disabled'] ) ) {
 			return;
 		}
+
+		// Compare against the previous baseline before the new snapshot replaces
+		// it, and cache the outcome for the posts list column.
+		$warnings = self::detect_regressions( $post_id );
+		\update_post_meta(
+			$post_id,
+			self::STATUS_KEY,
+			array(
+				'count'   => count( $warnings ),
+				'checked' => time(),
+			)
+		);
 
 		// Capture and store snapshot.
 		$snapshot = self::capture_snapshot( $post );
@@ -235,7 +276,7 @@ class Content_Regression {
 		$word_count = self::count_words( $content, $opts );
 		$headings   = self::parse_headings( $content );
 
-		return array(
+		$snapshot = array(
 			'internal_link_count' => $links['internal'],
 			'external_link_count' => $links['external'],
 			'word_count'          => $word_count,
@@ -244,6 +285,16 @@ class Content_Regression {
 			'timestamp'           => time(),
 			'is_stable_version'   => true,
 		);
+
+		/**
+		 * Filters a captured snapshot before it is compared or stored.
+		 *
+		 * @since 1.6.0
+		 *
+		 * @param array    $snapshot Snapshot data.
+		 * @param \WP_Post $post     Post the snapshot describes.
+		 */
+		return (array) \apply_filters( 'functionalities_content_regression_snapshot', $snapshot, $post );
 	}
 
 	/**
@@ -525,6 +576,16 @@ class Content_Regression {
 		$existing['rolling_average'] = self::calculate_rolling_average( $existing['snapshots'] );
 
 		\update_post_meta( $post_id, self::META_KEY, $existing );
+
+		/**
+		 * Fires after a content snapshot has been stored.
+		 *
+		 * @since 1.6.0
+		 *
+		 * @param int   $post_id  Post ID.
+		 * @param array $snapshot The snapshot that was stored.
+		 */
+		\do_action( 'functionalities_content_regression_snapshot_saved', $post_id, $snapshot );
 	}
 
 	/**
@@ -665,7 +726,15 @@ class Content_Regression {
 			}
 		}
 
-		return $warnings;
+		/**
+		 * Filters the warnings detected for one post.
+		 *
+		 * @since 1.6.0
+		 *
+		 * @param array $warnings Detected warnings.
+		 * @param int   $post_id  Post ID.
+		 */
+		return (array) \apply_filters( 'functionalities_content_regression_warnings', $warnings, $post_id );
 	}
 
 	/**
@@ -1172,9 +1241,7 @@ class Content_Regression {
 			return;
 		}
 
-		$enabled_types = (array) $opts['post_types'];
-
-		foreach ( $enabled_types as $post_type ) {
+		foreach ( self::get_monitored_post_types() as $post_type ) {
 			// WordPress uses different hook names for built-in post types.
 			if ( 'post' === $post_type ) {
 				\add_filter( 'manage_posts_columns', array( __CLASS__, 'add_column' ) );
@@ -1213,19 +1280,29 @@ class Content_Regression {
 			return;
 		}
 
-		$warnings = self::detect_regressions( $post_id );
+		// Read the result cached at save time. Running full detection here meant
+		// rendering the_content and parsing the DOM once per row on every visit
+		// to the posts list.
+		$status = \get_post_meta( $post_id, self::STATUS_KEY, true );
 
-		if ( empty( $warnings ) ) {
-			echo '<span class="dashicons dashicons-yes-alt" style="color:#00a32a;" title="' . \esc_attr__( 'No issues detected', 'functionalities' ) . '"></span>';
-		} else {
-			$count = count( $warnings );
-			$title = sprintf(
-				/* translators: %d: number of warnings */
-				\_n( '%d issue detected', '%d issues detected', $count, 'functionalities' ),
-				$count
-			);
-			echo '<span class="dashicons dashicons-warning" style="color:#dba617;" title="' . \esc_attr( $title ) . '"></span>';
+		if ( ! is_array( $status ) || ! isset( $status['count'] ) ) {
+			echo '<span class="dashicons dashicons-minus" style="color:#a7aaad;" title="' . \esc_attr__( 'Not checked yet. Update this post to record a baseline.', 'functionalities' ) . '"></span>';
+			return;
 		}
+
+		$count = (int) $status['count'];
+
+		if ( 0 === $count ) {
+			echo '<span class="dashicons dashicons-yes-alt" style="color:#00a32a;" title="' . \esc_attr__( 'No issues detected at the last update', 'functionalities' ) . '"></span>';
+			return;
+		}
+
+		$title = sprintf(
+			/* translators: %d: number of warnings */
+			\_n( '%d issue detected at the last update', '%d issues detected at the last update', $count, 'functionalities' ),
+			$count
+		);
+		echo '<span class="dashicons dashicons-warning" style="color:#dba617;" title="' . \esc_attr( $title ) . '"></span>';
 	}
 
 	/**
@@ -1246,8 +1323,7 @@ class Content_Regression {
 			return;
 		}
 
-		$enabled_types = (array) $opts['post_types'];
-		if ( ! in_array( $post->post_type, $enabled_types, true ) ) {
+		if ( ! in_array( $post->post_type, self::get_monitored_post_types(), true ) ) {
 			return;
 		}
 
@@ -1308,8 +1384,7 @@ class Content_Regression {
 			return;
 		}
 
-		$enabled_types = (array) $opts['post_types'];
-		if ( ! in_array( $post->post_type, $enabled_types, true ) ) {
+		if ( ! in_array( $post->post_type, self::get_monitored_post_types(), true ) ) {
 			return;
 		}
 

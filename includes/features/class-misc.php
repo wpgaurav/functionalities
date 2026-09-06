@@ -66,9 +66,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @param string $url The theme URL.
  *
  * @example
- * // Use a different Prism theme
+ * // Point at a different Prism theme shipped with your own theme or plugin.
  * add_filter( 'functionalities_misc_prism_theme_url', function( $url ) {
- *     return 'https://unpkg.com/prismjs@1.29.0/themes/prism-tomorrow.min.css';
+ *     return get_stylesheet_directory_uri() . '/css/prism-tomorrow.min.css';
  * } );
  *
  * ## Actions
@@ -82,6 +82,14 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @since 0.2.0
  */
 class Misc {
+
+	/**
+	 * Version of the bundled Prism build, used for asset cache busting.
+	 *
+	 * @since 1.6.0
+	 * @var string
+	 */
+	const PRISM_VERSION = '1.29.0';
 
 	/**
 	 * Initialize the misc module.
@@ -206,10 +214,12 @@ class Misc {
 
 		// Limit revisions.
 		if ( self::is_option_enabled( $opts, 'limit_revisions' ) ) {
+			$keep = isset( $opts['revisions_limit'] ) ? (int) $opts['revisions_limit'] : 10;
+			$keep = max( 0, min( 100, $keep ) );
 			\add_filter(
 				'wp_revisions_to_keep',
-				function () {
-					return 10;
+				function () use ( $keep ) {
+					return $keep;
 				}
 			);
 		}
@@ -227,11 +237,16 @@ class Misc {
 			);
 		}
 
-		// Disable Heartbeat API.
+		// Disable Heartbeat API. Deregistering it in wp-admin also breaks post
+		// locking and autosave, so admin is a separate opt-in.
 		if ( self::is_option_enabled( $opts, 'disable_heartbeat' ) ) {
+			$disable_in_admin = self::is_option_enabled( $opts, 'disable_heartbeat_admin' );
 			\add_action(
 				'init',
-				function () {
+				function () use ( $disable_in_admin ) {
+					if ( \is_admin() && ! $disable_in_admin ) {
+						return;
+					}
 					\wp_deregister_script( 'heartbeat' );
 				},
 				1
@@ -351,8 +366,10 @@ class Misc {
 			'remove_dns_prefetch'             => false,
 			'remove_recent_comments_css'      => false,
 			'limit_revisions'                 => false,
+			'revisions_limit'                 => 10,
 			'disable_dashicons_for_guests'    => false,
 			'disable_heartbeat'               => false,
+			'disable_heartbeat_admin'         => false,
 			'disable_admin_bar_front'         => false,
 			'remove_jquery_migrate'           => false,
 			'enable_prism_admin'              => false,
@@ -398,26 +415,28 @@ class Misc {
 		/**
 		 * Filters the Prism.js theme CSS URL.
 		 *
+		 * Defaults to the copy bundled with the plugin. WordPress.org guideline 8
+		 * forbids loading executable code from a third-party host, so the CDN
+		 * build this used to pull from is no longer the default.
+		 *
 		 * @since 0.8.0
 		 *
 		 * @param string $url The theme URL.
 		 */
 		$theme_url = \apply_filters(
 			'functionalities_misc_prism_theme_url',
-			'https://unpkg.com/prismjs@1.29.0/themes/prism.min.css'
+			FUNCTIONALITIES_URL . 'assets/vendor/prism/prism.min.css'
 		);
 
-		// phpcs:ignore PluginCheck.CodeAnalysis.EnqueuedResourceOffloading.OffloadedContent -- Admin-only feature using Prism.js for code highlighting. CDN used for performance.
-		\wp_enqueue_style( 'functionalities-prism', $theme_url, array(), FUNCTIONALITIES_VERSION );
-		// phpcs:ignore PluginCheck.CodeAnalysis.EnqueuedResourceOffloading.OffloadedContent -- Admin-only feature using Prism.js for code highlighting. CDN used for performance.
-		\wp_enqueue_script( 'functionalities-prism', 'https://unpkg.com/prismjs@1.29.0/prism.min.js', array(), FUNCTIONALITIES_VERSION, true );
-
-		\add_action(
-			'admin_print_footer_scripts',
-			function () {
-				echo '<script>window.Prism&&Prism.highlightAll();</script>';
-			}
+		\wp_enqueue_style( 'functionalities-prism', $theme_url, array(), self::PRISM_VERSION );
+		\wp_enqueue_script(
+			'functionalities-prism',
+			FUNCTIONALITIES_URL . 'assets/vendor/prism/prism.min.js',
+			array(),
+			self::PRISM_VERSION,
+			true
 		);
+		\wp_add_inline_script( 'functionalities-prism', 'window.Prism&&Prism.highlightAll();' );
 	}
 
 	/**
@@ -522,8 +541,10 @@ class Misc {
 	 */
 	protected static function disable_feeds(): void {
 		$callback = function () {
-			// Redirect to homepage.
-			if ( function_exists( 'wp_safe_redirect' ) ) {
+			// Redirect to the homepage when a redirect is still possible. Once
+			// headers are out, fall back to a plain message instead of emitting
+			// a warning and continuing to render the feed.
+			if ( ! headers_sent() ) {
 				\wp_safe_redirect( \home_url( '/' ), 301 );
 				exit;
 			}

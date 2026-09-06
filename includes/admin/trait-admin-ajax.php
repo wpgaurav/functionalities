@@ -37,11 +37,12 @@ trait Admin_Ajax {
 			return;
 		}
 
-		// Get URL from request.
-		$url = isset( $_POST['url'] ) ? \sanitize_text_field( wp_unslash( $_POST['url'] ) ) : '';
+		// Get URL and paging cursor from request.
+		$url   = isset( $_POST['url'] ) ? \sanitize_text_field( wp_unslash( $_POST['url'] ) ) : '';
+		$after = isset( $_POST['after'] ) ? absint( wp_unslash( $_POST['after'] ) ) : 0;
 
 		// Call the update method.
-		$result = \Functionalities\Features\Link_Management::update_links_in_database( $url );
+		$result = \Functionalities\Features\Link_Management::update_links_in_database( $url, $after );
 
 		if ( $result['success'] ) {
 			\wp_send_json_success( $result );

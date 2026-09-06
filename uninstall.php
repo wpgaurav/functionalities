@@ -59,6 +59,10 @@ $functionalities_options = array(
 	'functionalities_redirect_manager',
 	'functionalities_svg_icons',
 	'functionalities_wordpress_7',
+	'functionalities_data_key',
+	'functionalities_version',
+	'functionalities_link_preset_last_good',
+	'functionalities_redirect_hit_buffer',
 	// Assumption detection data.
 	'functionalities_assumptions_detected',
 	'functionalities_assumptions_ignored',
@@ -82,6 +86,7 @@ global $wpdb;
 $functionalities_meta_keys = array(
 	'_functionalities_content_snapshot',
 	'_functionalities_regression_settings',
+	'_functionalities_regression_status',
 	'_functionalities_content_audit',
 	'_gt_content_license',
 );
@@ -105,11 +110,15 @@ $wpdb->query(
 // Redirect manager cache transient.
 delete_transient( 'func_redirects_json' );
 
+// Link Management exception preset cache.
+delete_transient( 'functionalities_link_preset' );
+
 // Assumption detection schedule transient.
 delete_transient( 'functionalities_run_assumption_detection' );
 
-// Scheduled assumption scan.
+// Scheduled background jobs.
 wp_clear_scheduled_hook( 'functionalities_assumption_background_scan' );
+wp_clear_scheduled_hook( 'functionalities_redirect_flush_buffer' );
 
 // --- Filesystem data ---
 $functionalities_data_dir = WP_CONTENT_DIR . '/functionalities';

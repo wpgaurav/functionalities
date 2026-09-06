@@ -107,6 +107,9 @@ jobs:
             "includes/admin/class-admin.php" \
             "includes/admin/class-admin-ui.php" \
             "includes/core/class-wordpress-7-integration.php" \
+            "includes/storage/class-data-directory.php" \
+            "assets/vendor/prism/prism.min.js" \
+            "languages/functionalities.pot" \
             "assets/js/wp7-admin.js" \
             "assets/js/wp7-admin.asset.php" \
             "assets/js/wp7-admin.css" \

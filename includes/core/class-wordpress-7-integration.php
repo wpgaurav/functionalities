@@ -78,7 +78,9 @@ class WordPress_7_Integration {
 				'type'                 => 'object',
 				'additionalProperties' => array( 'type' => 'object' ),
 			),
-			true
+			true,
+			true,
+			array( __CLASS__, 'permission_manage_options' )
 		);
 
 		self::register_ability(
@@ -88,7 +90,9 @@ class WordPress_7_Integration {
 			null,
 			array( __CLASS__, 'ability_run_diagnostics' ),
 			array( 'type' => 'object' ),
-			true
+			true,
+			true,
+			array( __CLASS__, 'permission_manage_options' )
 		);
 
 		self::register_ability(
@@ -99,7 +103,8 @@ class WordPress_7_Integration {
 			array( __CLASS__, 'ability_scan_assumptions' ),
 			array( 'type' => 'array' ),
 			false,
-			false
+			false,
+			array( __CLASS__, 'permission_manage_options' )
 		);
 
 		self::register_ability(
@@ -107,9 +112,10 @@ class WordPress_7_Integration {
 			\__( 'Check content integrity', 'functionalities' ),
 			\__( 'Checks one post against its Content Integrity baseline.', 'functionalities' ),
 			array(
-				'type'       => 'object',
-				'required'   => array( 'post_id' ),
-				'properties' => array(
+				'type'                 => 'object',
+				'required'             => array( 'post_id' ),
+				'additionalProperties' => false,
+				'properties'           => array(
 					'post_id' => array(
 						'type'    => 'integer',
 						'minimum' => 1,
@@ -118,7 +124,9 @@ class WordPress_7_Integration {
 			),
 			array( __CLASS__, 'ability_check_content_integrity' ),
 			array( 'type' => 'array' ),
-			true
+			true,
+			true,
+			array( __CLASS__, 'permission_edit_monitored_post' )
 		);
 
 		self::register_ability(
@@ -126,9 +134,10 @@ class WordPress_7_Integration {
 			\__( 'Preview redirect import', 'functionalities' ),
 			\__( 'Validates CSV redirect data and reports duplicates, loops, chains, and invalid rows without saving.', 'functionalities' ),
 			array(
-				'type'       => 'object',
-				'required'   => array( 'csv' ),
-				'properties' => array(
+				'type'                 => 'object',
+				'required'             => array( 'csv' ),
+				'additionalProperties' => false,
+				'properties'           => array(
 					'csv' => array(
 						'type'      => 'string',
 						'maxLength' => 1000000,
@@ -137,7 +146,9 @@ class WordPress_7_Integration {
 			),
 			array( __CLASS__, 'ability_preview_redirect_import' ),
 			array( 'type' => 'object' ),
-			true
+			true,
+			true,
+			array( __CLASS__, 'permission_manage_options' )
 		);
 
 		self::register_ability(
@@ -145,9 +156,10 @@ class WordPress_7_Integration {
 			\__( 'Create redirect', 'functionalities' ),
 			\__( 'Creates a validated redirect in the Redirect Manager.', 'functionalities' ),
 			array(
-				'type'       => 'object',
-				'required'   => array( 'from_url', 'to_url' ),
-				'properties' => array(
+				'type'                 => 'object',
+				'required'             => array( 'from_url', 'to_url' ),
+				'additionalProperties' => false,
+				'properties'           => array(
 					'from_url' => array(
 						'type'      => 'string',
 						'minLength' => 1,
@@ -168,7 +180,8 @@ class WordPress_7_Integration {
 			array( __CLASS__, 'ability_create_redirect' ),
 			array( 'type' => 'object' ),
 			false,
-			false
+			false,
+			array( __CLASS__, 'permission_manage_options' )
 		);
 
 		self::register_ability(
@@ -176,9 +189,10 @@ class WordPress_7_Integration {
 			\__( 'Create task', 'functionalities' ),
 			\__( 'Adds a task to an existing Task Manager project.', 'functionalities' ),
 			array(
-				'type'       => 'object',
-				'required'   => array( 'project', 'text' ),
-				'properties' => array(
+				'type'                 => 'object',
+				'required'             => array( 'project', 'text' ),
+				'additionalProperties' => false,
+				'properties'           => array(
 					'project' => array(
 						'type'      => 'string',
 						'pattern'   => '^[a-zA-Z0-9_-]+$',
@@ -199,7 +213,8 @@ class WordPress_7_Integration {
 			array( __CLASS__, 'ability_create_task' ),
 			array( 'type' => 'object' ),
 			false,
-			false
+			false,
+			array( __CLASS__, 'permission_manage_options' )
 		);
 
 		self::register_ability(
@@ -207,11 +222,13 @@ class WordPress_7_Integration {
 			\__( 'Toggle module', 'functionalities' ),
 			\__( 'Enables or disables one Functionalities module while preserving its settings.', 'functionalities' ),
 			array(
-				'type'       => 'object',
-				'required'   => array( 'module', 'enabled' ),
-				'properties' => array(
+				'type'                 => 'object',
+				'required'             => array( 'module', 'enabled' ),
+				'additionalProperties' => false,
+				'properties'           => array(
 					'module'  => array(
-						'type' => 'string',
+						'type'      => 'string',
+						'maxLength' => 64,
 					),
 					'enabled' => array(
 						'type' => 'boolean',
@@ -221,7 +238,8 @@ class WordPress_7_Integration {
 			array( __CLASS__, 'ability_toggle_module' ),
 			array( 'type' => 'object' ),
 			false,
-			true
+			true,
+			array( __CLASS__, 'permission_manage_options' )
 		);
 
 		self::register_ability(
@@ -229,9 +247,10 @@ class WordPress_7_Integration {
 			\__( 'Explain a finding with AI', 'functionalities' ),
 			\__( 'Uses the WordPress AI Client to explain one Assumption Detection or Content Integrity finding. This requires explicit opt-in and a configured provider.', 'functionalities' ),
 			array(
-				'type'       => 'object',
-				'required'   => array( 'context', 'finding' ),
-				'properties' => array(
+				'type'                 => 'object',
+				'required'             => array( 'context', 'finding' ),
+				'additionalProperties' => false,
+				'properties'           => array(
 					'context' => array(
 						'type' => 'string',
 						'enum' => array( 'assumption', 'content-integrity' ),
@@ -251,7 +270,8 @@ class WordPress_7_Integration {
 				),
 			),
 			false,
-			false
+			false,
+			array( __CLASS__, 'permission_manage_options' )
 		);
 	}
 
@@ -266,15 +286,16 @@ class WordPress_7_Integration {
 	 * @param array      $output      Output schema.
 	 * @param bool       $is_readonly Whether execution is read-only.
 	 * @param bool       $idempotent  Whether repeated execution is idempotent.
+	 * @param callable   $permission  Permission callback for this ability.
 	 * @return void
 	 */
-	private static function register_ability( string $name, string $label, string $description, ?array $input, callable $callback, array $output, bool $is_readonly, bool $idempotent = true ): void {
+	private static function register_ability( string $name, string $label, string $description, ?array $input, callable $callback, array $output, bool $is_readonly, bool $idempotent, callable $permission ): void {
 		$args = array(
 			'label'               => $label,
 			'description'         => $description,
 			'category'            => 'functionalities',
 			'execute_callback'    => $callback,
-			'permission_callback' => array( __CLASS__, 'ability_permission' ),
+			'permission_callback' => $permission,
 			'output_schema'       => $output,
 			'meta'                => array(
 				'show_in_rest' => true,
@@ -292,16 +313,52 @@ class WordPress_7_Integration {
 	}
 
 	/**
-	 * Check ability permissions.
+	 * Require site administration rights.
 	 *
+	 * Site-wide abilities never widen their permission based on ability input.
+	 * A previous shared callback downgraded to `edit_post` whenever the input
+	 * carried a `post_id`, which let any contributor with one draft reach the
+	 * administrator-only operations by adding that property to the request.
+	 *
+	 * @since 1.6.0
+	 * @return bool
+	 */
+	public static function permission_manage_options(): bool {
+		return \current_user_can( 'manage_options' );
+	}
+
+	/**
+	 * Require edit rights on one post that Content Integrity actually monitors.
+	 *
+	 * @since 1.6.0
 	 * @param mixed $input Ability input.
 	 * @return bool
 	 */
-	public static function ability_permission( $input = null ): bool {
-		if ( is_array( $input ) && isset( $input['post_id'] ) ) {
-			return \current_user_can( 'edit_post', (int) $input['post_id'] );
+	public static function permission_edit_monitored_post( $input = null ): bool {
+		if ( ! is_array( $input ) || ! isset( $input['post_id'] ) ) {
+			return false;
 		}
-		return \current_user_can( 'manage_options' );
+
+		$post_id = (int) $input['post_id'];
+		if ( $post_id < 1 ) {
+			return false;
+		}
+
+		$post = \get_post( $post_id );
+		if ( ! $post instanceof \WP_Post ) {
+			return false;
+		}
+
+		$options    = (array) \get_option( 'functionalities_content_regression', array() );
+		$post_types = isset( $options['post_types'] ) && is_array( $options['post_types'] )
+			? $options['post_types']
+			: array( 'post', 'page' );
+
+		if ( ! in_array( $post->post_type, $post_types, true ) ) {
+			return false;
+		}
+
+		return \current_user_can( 'edit_post', $post_id );
 	}
 
 	/**

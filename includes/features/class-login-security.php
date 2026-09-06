@@ -37,6 +37,22 @@ class Login_Security {
 	private const LOCKOUT_PREFIX = 'funct_login_lockout_';
 
 	/**
+	 * Failed attempts by username prefix.
+	 *
+	 * @since 1.6.0
+	 * @var string
+	 */
+	private const USER_ATTEMPTS_PREFIX = 'funct_login_user_attempts_';
+
+	/**
+	 * Username lockout prefix.
+	 *
+	 * @since 1.6.0
+	 * @var string
+	 */
+	private const USER_LOCKOUT_PREFIX = 'funct_login_user_lockout_';
+
+	/**
 	 * Initialize the feature.
 	 *
 	 * @return void
@@ -54,6 +70,10 @@ class Login_Security {
 			\add_action( 'wp_login_failed', array( __CLASS__, 'record_failed_attempt' ) );
 			\add_action( 'wp_login', array( __CLASS__, 'clear_attempts' ), 10, 2 );
 			\add_filter( 'login_errors', array( __CLASS__, 'custom_login_error' ) );
+		}
+
+		if ( \is_admin() ) {
+			\add_action( 'wp_ajax_functionalities_login_unlock', array( __CLASS__, 'ajax_unlock' ) );
 		}
 
 		// Disable XML-RPC authentication.
@@ -111,6 +131,8 @@ class Login_Security {
 			'disable_application_passwords' => false,
 			'hide_login_errors'             => true,
 			'trust_proxy_headers'           => false,
+			'lock_usernames'                => true,
+			'allowlist_ips'                 => '',
 			'custom_logo_url'               => '',
 			'custom_background_color'       => '',
 			'custom_form_background'        => '',
@@ -163,7 +185,47 @@ class Login_Security {
 	}
 
 	/**
-	 * Check if IP is locked out.
+	 * Check whether an IP is exempt from lockouts.
+	 *
+	 * Behind a CDN or reverse proxy with proxy headers switched off, every
+	 * visitor shares one REMOTE_ADDR, so a single attacker can lock out the whole
+	 * site. An allowlist gives the site owner a way back in.
+	 *
+	 * @since 1.6.0
+	 *
+	 * @param string $ip Client IP.
+	 * @return bool
+	 */
+	public static function is_allowlisted( string $ip ): bool {
+		if ( '' === $ip ) {
+			return false;
+		}
+
+		$opts = self::get_options();
+		$raw  = (string) ( $opts['allowlist_ips'] ?? '' );
+		if ( '' === trim( $raw ) ) {
+			return false;
+		}
+
+		foreach ( preg_split( '/[\r\n,]+/', $raw ) as $entry ) {
+			$entry = trim( (string) $entry );
+			if ( '' === $entry ) {
+				continue;
+			}
+			if ( $entry === $ip ) {
+				return true;
+			}
+			// Prefix wildcard, for example 203.0.113.*
+			if ( '*' === substr( $entry, -1 ) && 0 === strpos( $ip, rtrim( $entry, '*' ) ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Check if the request is locked out by IP or by username.
 	 *
 	 * @param mixed  $user     User object or error.
 	 * @param string $username Username.
@@ -175,11 +237,19 @@ class Login_Security {
 			return $user;
 		}
 
-		$ip          = self::get_client_ip();
-		$lockout_key = self::LOCKOUT_PREFIX . md5( $ip );
+		$ip = self::get_client_ip();
+		if ( self::is_allowlisted( $ip ) ) {
+			return $user;
+		}
 
-		if ( \get_transient( $lockout_key ) ) {
-			$opts = self::get_options();
+		$opts   = self::get_options();
+		$locked = (bool) \get_transient( self::LOCKOUT_PREFIX . md5( $ip ) );
+
+		if ( ! $locked && ! empty( $opts['lock_usernames'] ) ) {
+			$locked = (bool) \get_transient( self::USER_LOCKOUT_PREFIX . md5( strtolower( (string) $username ) ) );
+		}
+
+		if ( $locked ) {
 			return new \WP_Error(
 				'too_many_attempts',
 				sprintf(
@@ -200,10 +270,17 @@ class Login_Security {
 	 * @return void
 	 */
 	public static function record_failed_attempt( $username ): void {
-		$opts         = self::get_options();
-		$ip           = self::get_client_ip();
-		$attempts_key = self::ATTEMPTS_PREFIX . md5( $ip );
-		$lockout_key  = self::LOCKOUT_PREFIX . md5( $ip );
+		$opts = self::get_options();
+		$ip   = self::get_client_ip();
+
+		if ( self::is_allowlisted( $ip ) ) {
+			return;
+		}
+
+		$attempts_key     = self::ATTEMPTS_PREFIX . md5( $ip );
+		$lockout_key      = self::LOCKOUT_PREFIX . md5( $ip );
+		$max_attempts     = isset( $opts['max_attempts'] ) ? (int) $opts['max_attempts'] : 5;
+		$lockout_duration = isset( $opts['lockout_duration'] ) ? (int) $opts['lockout_duration'] : 15;
 
 		// Get current attempts.
 		$attempts = (int) \get_transient( $attempts_key );
@@ -213,9 +290,7 @@ class Login_Security {
 		\set_transient( $attempts_key, $attempts, HOUR_IN_SECONDS );
 
 		// Check if should lockout.
-		$max_attempts = isset( $opts['max_attempts'] ) ? (int) $opts['max_attempts'] : 5;
 		if ( $attempts >= $max_attempts ) {
-			$lockout_duration = isset( $opts['lockout_duration'] ) ? (int) $opts['lockout_duration'] : 15;
 			\set_transient( $lockout_key, true, $lockout_duration * MINUTE_IN_SECONDS );
 
 			// Log the lockout.
@@ -223,6 +298,24 @@ class Login_Security {
 
 			// Clear attempts after lockout.
 			\delete_transient( $attempts_key );
+		}
+
+		// Also throttle per username, so a distributed attempt against one
+		// account is caught even when each request comes from a fresh address.
+		if ( empty( $opts['lock_usernames'] ) || '' === (string) $username ) {
+			return;
+		}
+
+		$user_hash         = md5( strtolower( (string) $username ) );
+		$user_attempts_key = self::USER_ATTEMPTS_PREFIX . $user_hash;
+		$user_attempts     = (int) \get_transient( $user_attempts_key ) + 1;
+
+		\set_transient( $user_attempts_key, $user_attempts, HOUR_IN_SECONDS );
+
+		if ( $user_attempts >= max( $max_attempts, 1 ) * 2 ) {
+			\set_transient( self::USER_LOCKOUT_PREFIX . $user_hash, true, $lockout_duration * MINUTE_IN_SECONDS );
+			self::log_lockout( $ip, $username, $user_attempts );
+			\delete_transient( $user_attempts_key );
 		}
 	}
 
@@ -234,9 +327,13 @@ class Login_Security {
 	 * @return void
 	 */
 	public static function clear_attempts( $username, $user ): void {
-		$ip           = self::get_client_ip();
-		$attempts_key = self::ATTEMPTS_PREFIX . md5( $ip );
-		\delete_transient( $attempts_key );
+		\delete_transient( self::ATTEMPTS_PREFIX . md5( self::get_client_ip() ) );
+
+		if ( '' !== (string) $username ) {
+			$user_hash = md5( strtolower( (string) $username ) );
+			\delete_transient( self::USER_ATTEMPTS_PREFIX . $user_hash );
+			\delete_transient( self::USER_LOCKOUT_PREFIX . $user_hash );
+		}
 	}
 
 	/**
@@ -463,5 +560,73 @@ class Login_Security {
 		\delete_transient( $lockout_key );
 
 		return true;
+	}
+
+	/**
+	 * Manually unlock a username.
+	 *
+	 * @since 1.6.0
+	 *
+	 * @param string $username Username.
+	 * @return bool
+	 */
+	public static function unlock_username( string $username ): bool {
+		if ( '' === $username ) {
+			return false;
+		}
+
+		$hash = md5( strtolower( $username ) );
+		\delete_transient( self::USER_ATTEMPTS_PREFIX . $hash );
+		\delete_transient( self::USER_LOCKOUT_PREFIX . $hash );
+
+		return true;
+	}
+
+	/**
+	 * Handle the unlock button on the lockout log.
+	 *
+	 * @since 1.6.0
+	 * @return void
+	 */
+	public static function ajax_unlock(): void {
+		\check_ajax_referer( 'functionalities_login_unlock', 'nonce' );
+
+		if ( ! \current_user_can( 'manage_options' ) ) {
+			\wp_send_json_error( array( 'message' => \__( 'Insufficient permissions.', 'functionalities' ) ), 403 );
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by check_ajax_referer above.
+		$ip = isset( $_POST['ip'] ) ? \sanitize_text_field( \wp_unslash( $_POST['ip'] ) ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by check_ajax_referer above.
+		$username = isset( $_POST['username'] ) ? \sanitize_text_field( \wp_unslash( $_POST['username'] ) ) : '';
+
+		if ( '' !== $ip ) {
+			self::unlock_ip( $ip );
+		}
+		if ( '' !== $username ) {
+			self::unlock_username( $username );
+		}
+
+		\wp_send_json_success( array( 'message' => \__( 'Unlocked.', 'functionalities' ) ) );
+	}
+
+	/**
+	 * Report whether every recent lockout came from a single address.
+	 *
+	 * That pattern normally means the site sits behind a proxy or CDN and every
+	 * visitor shares one REMOTE_ADDR, so IP lockouts hit everyone at once.
+	 *
+	 * @since 1.6.0
+	 * @return bool
+	 */
+	public static function lockouts_share_one_ip(): bool {
+		$logs = self::get_lockout_log( 10 );
+		if ( count( $logs ) < 5 ) {
+			return false;
+		}
+
+		$ips = array_unique( array_filter( \wp_list_pluck( $logs, 'ip' ) ) );
+
+		return 1 === count( $ips );
 	}
 }

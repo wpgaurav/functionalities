@@ -1222,9 +1222,22 @@ class Module_Controller {
 		self::add_misc_field( 'remove_query_strings', \__( 'Remove query strings from static resources (?ver=)', 'functionalities' ) );
 		self::add_misc_field( 'remove_dns_prefetch', \__( 'Remove DNS prefetch links from <head>', 'functionalities' ) );
 		self::add_misc_field( 'remove_recent_comments_css', \__( 'Remove Recent Comments inline CSS', 'functionalities' ) );
-		self::add_misc_field( 'limit_revisions', \__( 'Limit post revisions to 10', 'functionalities' ) );
+		self::add_misc_field( 'limit_revisions', \__( 'Limit post revisions', 'functionalities' ) );
+		\add_settings_field(
+			'revisions_limit',
+			\__( 'Revisions to keep', 'functionalities' ),
+			function () {
+				$opts = self::get_misc_options();
+				$val  = isset( $opts['revisions_limit'] ) ? (int) $opts['revisions_limit'] : 10;
+				echo '<input type="number" min="0" max="100" class="small-text" name="functionalities_misc[revisions_limit]" value="' . \esc_attr( $val ) . '"> ';
+				echo \esc_html__( 'revisions per post. Applies when the option above is enabled. Zero keeps none.', 'functionalities' );
+			},
+			'functionalities_misc',
+			'functionalities_misc_section'
+		);
 		self::add_misc_field( 'disable_dashicons_for_guests', \__( 'Disable Dashicons on frontend for non-logged-in users', 'functionalities' ) );
-		self::add_misc_field( 'disable_heartbeat', \__( 'Disable Heartbeat API', 'functionalities' ) );
+		self::add_misc_field( 'disable_heartbeat', \__( 'Disable Heartbeat API on the frontend', 'functionalities' ) );
+		self::add_misc_field( 'disable_heartbeat_admin', \__( 'Also disable Heartbeat in wp-admin (breaks autosave and post locking)', 'functionalities' ) );
 		self::add_misc_field( 'disable_admin_bar_front', \__( 'Disable admin bar on the frontend', 'functionalities' ) );
 		self::add_misc_field( 'remove_jquery_migrate', \__( 'Remove jQuery Migrate from frontend', 'functionalities' ) );
 		self::add_misc_field( 'enable_prism_admin', \__( 'Load PrismJS on admin screens (code highlighting where applicable)', 'functionalities' ) );
@@ -1336,16 +1349,33 @@ class Module_Controller {
 				echo '<li>' . \esc_html__( 'Customize the login page with your logo and colors', 'functionalities' ) . '</li>';
 				echo '</ul>';
 				echo '</div>';
+				if ( \Functionalities\Features\Login_Security::lockouts_share_one_ip() ) {
+					echo '<div class="notice notice-warning inline" style="margin:12px 0;padding:10px 14px">';
+					echo '<strong>' . \esc_html__( 'Every recent lockout came from the same address.', 'functionalities' ) . '</strong> ';
+					echo \esc_html__( 'That usually means this site sits behind a proxy or CDN and all visitors share one address, so an IP lockout blocks everyone. Enable "Trust Proxy Headers" if the proxy is trusted, and add your own address to the allowlist below.', 'functionalities' );
+					echo '</div>';
+				}
+
 				$logs = \Functionalities\Features\Login_Security::get_lockout_log( 5 );
 				if ( ! empty( $logs ) ) {
+					$unlock_nonce = \wp_create_nonce( 'functionalities_login_unlock' );
 					echo '<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;padding:12px 16px;margin:12px 0">';
 					echo '<h4 style="margin:0 0 8px;color:#92400e">' . \esc_html__( 'Recent Lockouts', 'functionalities' ) . '</h4>';
-					echo '<ul style="margin:0;padding-left:20px;font-size:13px">';
+					echo '<ul style="margin:0;padding:0;list-style:none;font-size:13px" id="functionalities-lockout-log">';
 					foreach ( $logs as $log ) {
-						echo '<li><strong>' . \esc_html( $log['ip'] ) . '</strong> — ' . \esc_html( $log['username'] ) . ' (' . \esc_html( $log['time'] ) . ')</li>';
+						echo '<li style="display:flex;align-items:center;gap:10px;padding:4px 0">';
+						echo '<strong>' . \esc_html( $log['ip'] ) . '</strong> — ' . \esc_html( $log['username'] ) . ' (' . \esc_html( $log['time'] ) . ') ';
+						echo '<button type="button" class="button button-small functionalities-unlock" data-ip="' . \esc_attr( $log['ip'] ) . '" data-username="' . \esc_attr( $log['username'] ) . '">' . \esc_html__( 'Unlock', 'functionalities' ) . '</button>';
+						echo '</li>';
 					}
 					echo '</ul>';
 					echo '</div>';
+					printf(
+						'<script>jQuery(function($){$("#functionalities-lockout-log").on("click",".functionalities-unlock",function(){var b=$(this);b.prop("disabled",true);$.post(ajaxurl,{action:"functionalities_login_unlock",nonce:%s,ip:b.data("ip"),username:b.data("username")},function(r){b.text(r.success?%s:%s);});});});</script>',
+						\wp_json_encode( $unlock_nonce ),
+						\wp_json_encode( \__( 'Unlocked', 'functionalities' ) ),
+						\wp_json_encode( \__( 'Failed', 'functionalities' ) )
+					);
 				}
 			},
 			'functionalities_login_security'
@@ -1427,6 +1457,28 @@ class Module_Controller {
 				$o = self::get_login_security_options();
 				echo '<label><input type="checkbox" name="functionalities_login_security[trust_proxy_headers]" value="1" ' . checked( ! empty( $o['trust_proxy_headers'] ), true, false ) . '> ' . \esc_html__( 'Read client IP from X-Forwarded-For / Client-IP headers', 'functionalities' ) . '</label>';
 				echo '<p class="description">' . \esc_html__( 'Only enable when this site sits behind a trusted reverse proxy or CDN (Cloudflare, nginx, etc.). With this OFF, lockouts are keyed by REMOTE_ADDR and cannot be spoofed via headers — the secure default.', 'functionalities' ) . '</p>';
+			},
+			'functionalities_login_security',
+			'functionalities_login_security_section'
+		);
+		\add_settings_field(
+			'lock_usernames',
+			\__( 'Throttle by Username', 'functionalities' ),
+			function () {
+				$o = self::get_login_security_options();
+				echo '<label><input type="checkbox" name="functionalities_login_security[lock_usernames]" value="1" ' . checked( ! empty( $o['lock_usernames'] ), true, false ) . '> ' . \esc_html__( 'Also lock a username after repeated failures from any address', 'functionalities' ) . '</label>';
+				echo '<p class="description">' . \esc_html__( 'Catches distributed attempts against one account. Triggers at twice the attempt limit above.', 'functionalities' ) . '</p>';
+			},
+			'functionalities_login_security',
+			'functionalities_login_security_section'
+		);
+		\add_settings_field(
+			'allowlist_ips',
+			\__( 'Never Lock These IPs', 'functionalities' ),
+			function () {
+				$o = self::get_login_security_options();
+				echo '<textarea name="functionalities_login_security[allowlist_ips]" rows="3" class="large-text code" placeholder="203.0.113.9&#10;198.51.100.*">' . \esc_textarea( $o['allowlist_ips'] ?? '' ) . '</textarea>';
+				echo '<p class="description">' . \esc_html__( 'One per line. A trailing * matches a prefix. Add your own address so a lockout cannot shut you out.', 'functionalities' ) . '</p>';
 			},
 			'functionalities_login_security',
 			'functionalities_login_security_section'
@@ -3224,28 +3276,51 @@ add_filter( 'functionalities_json_preset_path', function( $default_path ) {
 					$btn.prop('disabled', true).text('<?php echo \esc_js( \__( 'Processing...', 'functionalities' ) ); ?>');
 					$result.html('<div class="notice notice-info"><p><?php echo \esc_js( \__( 'Processing...', 'functionalities' ) ); ?></p></div>');
 
-					$.ajax({
-						url: ajaxurl,
-						type: 'POST',
-						data: {
-							action: 'functionalities_update_database',
-							url: url,
-							nonce: '<?php echo esc_attr( \wp_create_nonce( 'functionalities_db_update' ) ); ?>'
-						},
-						success: function(response) {
-							if (response.success) {
-								$result.html('<div class="notice notice-success"><p>' + response.data.message + '</p></div>');
-							} else {
-								$result.html('<div class="notice notice-error"><p>' + response.data.message + '</p></div>');
+					var totalUpdated = 0;
+					var totalScanned = 0;
+					var nonce = '<?php echo esc_attr( \wp_create_nonce( 'functionalities_db_update' ) ); ?>';
+
+					function finish(html, cls) {
+						$result.html('<div class="notice notice-' + cls + '"><p>' + html + '</p></div>');
+						$btn.prop('disabled', false).text('<?php echo \esc_js( \__( 'Update Database', 'functionalities' ) ); ?>');
+					}
+
+					// Walk the whole table with an ID cursor. Each batch reports
+					// progress so a large site shows movement instead of stalling.
+					function runBatch(after) {
+						$.ajax({
+							url: ajaxurl,
+							type: 'POST',
+							data: {
+								action: 'functionalities_update_database',
+								url: url,
+								after: after,
+								nonce: nonce
+							},
+							success: function(response) {
+								if (!response.success) {
+									finish(response.data.message, 'error');
+									return;
+								}
+
+								totalUpdated += parseInt(response.data.count, 10) || 0;
+								totalScanned += parseInt(response.data.processed, 10) || 0;
+
+								if (response.data.has_more) {
+									$result.html('<div class="notice notice-info"><p>' + response.data.message + ' (' + totalUpdated + '/' + totalScanned + ')</p></div>');
+									runBatch(parseInt(response.data.last_id, 10) || 0);
+									return;
+								}
+
+								finish('<?php echo \esc_js( \__( 'Done.', 'functionalities' ) ); ?> ' + totalUpdated + ' / ' + totalScanned, 'success');
+							},
+							error: function() {
+								finish('<?php echo \esc_js( \__( 'An error occurred.', 'functionalities' ) ); ?>', 'error');
 							}
-						},
-						error: function() {
-							$result.html('<div class="notice notice-error"><p><?php echo \esc_js( \__( 'An error occurred.', 'functionalities' ) ); ?></p></div>');
-						},
-						complete: function() {
-							$btn.prop('disabled', false).text('<?php echo \esc_js( \__( 'Update Database', 'functionalities' ) ); ?>');
-						}
-					});
+						});
+					}
+
+					runBatch(0);
 				});
 			});
 			</script>
@@ -5247,8 +5322,8 @@ add_filter( 'functionalities_json_preset_path', function( $default_path ) {
 				<?php
 				printf(
 					/* translators: %s: directory path */
-					\esc_html__( 'Tasks are stored in: %s', 'functionalities' ),
-					'<code>' . \esc_html( WP_CONTENT_DIR . '/functionalities/tasks/' ) . '</code>'
+					\esc_html__( 'Tasks are stored in a private folder under %s that is not reachable over the web.', 'functionalities' ),
+					'<code>' . \esc_html( str_replace( ABSPATH, '', \Functionalities\Storage\Data_Directory::base() ) ) . '/</code>'
 				);
 				?>
 			</p>
@@ -6509,7 +6584,7 @@ add_filter( 'functionalities_json_preset_path', function( $default_path ) {
 		// Handle enable/disable toggle.
 		if ( isset( $_POST['functionalities_svg_icons_toggle'] ) && \wp_verify_nonce( \sanitize_text_field( \wp_unslash( $_POST['_wpnonce'] ?? '' ) ), 'functionalities_svg_icons_toggle' ) ) {
 			$opts['enabled'] = ! empty( $_POST['enabled'] );
-			\update_option( 'functionalities_svg_icons', $opts );
+			\update_option( 'functionalities_svg_icons', $opts, false );
 			echo '<div class="notice notice-success is-dismissible"><p>' . \esc_html__( 'Settings saved.', 'functionalities' ) . '</p></div>';
 		}
 		?>
