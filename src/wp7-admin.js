@@ -577,9 +577,17 @@ function mountWorkspace() {
 	) {
 		return;
 	}
+	// A disabled module has no data and refuses every write, so rendering the
+	// panel would only offer a create form that cannot succeed.
+	if ( ! config.moduleEnabled ) {
+		return;
+	}
 	const host = document.createElement( 'section' );
 	host.className = 'functionalities-wp7-workspace';
-	host.innerHTML = `<h2>${ config.i18n.modernTools }</h2><div data-functionalities-wp7-root></div>`;
+	// No outer heading: the panel's own tables carry headings, and naming the
+	// section after the WordPress version labelled the implementation rather
+	// than what the reader is looking at.
+	host.innerHTML = '<div data-functionalities-wp7-root></div>';
 	const target =
 		document.querySelector( '.functionalities-module' ) ||
 		document.querySelector( '.wrap' );
