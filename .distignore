@@ -1,12 +1,15 @@
-# Development
-.git
-.github
-.gitignore
-.distignore
-node_modules
-vendor
-tests
-coverage
+# Development. Leading slashes anchor these to the plugin root so a bundled
+# path such as assets/vendor/ is not swept up with Composer's vendor/.
+/.git
+/.github
+/.gitignore
+/.distignore
+/node_modules
+/vendor
+/tests
+/coverage
+/src
+/docs
 
 # Config
 .editorconfig
@@ -17,11 +20,11 @@ phpcs.xml*
 phpstan.neon
 
 # Build tools
-build.sh
-package.json
-package-lock.json
-composer.json
-composer.lock
+/build.sh
+/package.json
+/package-lock.json
+/composer.json
+/composer.lock
 
 # IDE
 .idea/
@@ -45,7 +48,7 @@ CLAUDE.md
 *~
 
 # Misc
-build-release/
-.wordpress-org/
-landing-page.html
-LICENSE
+/build-release/
+/.wordpress-org/
+/landing-page.html
+/LICENSE

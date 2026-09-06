@@ -345,7 +345,9 @@ class Settings_Portability_Controller {
 		$fields  = array();
 		$removed = array();
 		if ( 'snippets' === $slug ) {
-			$fields = array_diff( array_keys( $value ), array( 'enabled' ) );
+			// Only the three snippet arrays hold custom code. The GA4 toggle and
+			// measurement ID are ordinary settings and travel with an export.
+			$fields = array( 'header', 'body_open', 'footer' );
 		} elseif ( 'components' === $slug || 'svg-icons' === $slug ) {
 			$fields = array( 'items' );
 			if ( 'svg-icons' === $slug ) {

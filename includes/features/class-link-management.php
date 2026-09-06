@@ -22,7 +22,21 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Link_Management {
 
-	use \Functionalities\Traits\Has_Dom_Parser;
+	/**
+	 * Transient holding the resolved exception preset.
+	 *
+	 * @since 1.6.0
+	 * @var string
+	 */
+	const PRESET_TRANSIENT = 'functionalities_link_preset';
+
+	/**
+	 * Option holding the last successfully resolved preset.
+	 *
+	 * @since 1.6.0
+	 * @var string
+	 */
+	const PRESET_FALLBACK_OPTION = 'functionalities_link_preset_last_good';
 
 	/**
 	 * Initialize link management features.
@@ -36,13 +50,56 @@ class Link_Management {
 			return;
 		}
 
-		// Load JSON preset immediately (we're already on init hook).
-		self::load_json_preset();
-
-		// Apply to content, widgets, and comments.
+		// Apply to content, widgets, and comments. The JSON preset is resolved
+		// lazily from process_content() so a request that renders no links never
+		// pays for reading (or fetching) it.
 		\add_filter( 'the_content', array( __CLASS__, 'filter_content' ), 999 );
 		\add_filter( 'widget_text', array( __CLASS__, 'filter_content' ), 999 );
 		\add_filter( 'comment_text', array( __CLASS__, 'filter_content' ), 999 );
+
+		// Keep the cached preset in step with everything that can change it.
+		\add_action( 'update_option_functionalities_link_management', array( __CLASS__, 'flush_preset_cache' ) );
+		\add_action( 'add_option_functionalities_link_management', array( __CLASS__, 'flush_preset_cache' ) );
+		\add_action( 'save_post', array( __CLASS__, 'flush_preset_cache_on_save' ), 10, 2 );
+		\add_action( 'deleted_post', array( __CLASS__, 'flush_preset_cache' ) );
+		\add_action( 'switch_theme', array( __CLASS__, 'flush_preset_cache' ) );
+	}
+
+	/**
+	 * Drop the cached preset whenever a post or page is edited.
+	 *
+	 * Content edits are the moment an author expects a freshly edited exception
+	 * list to take effect, so every real save invalidates the cache. Autosaves
+	 * and revisions are skipped because they do not change published content and
+	 * fire on a timer while the editor is open.
+	 *
+	 * @since 1.6.0
+	 *
+	 * @param int      $post_id Post ID.
+	 * @param \WP_Post $post    Post object.
+	 * @return void
+	 */
+	public static function flush_preset_cache_on_save( $post_id, $post = null ): void {
+		if ( \wp_is_post_autosave( $post_id ) || \wp_is_post_revision( $post_id ) ) {
+			return;
+		}
+
+		if ( $post instanceof \WP_Post && 'auto-draft' === $post->post_status ) {
+			return;
+		}
+
+		self::flush_preset_cache();
+	}
+
+	/**
+	 * Clear the cached exception preset.
+	 *
+	 * @since 1.6.0
+	 * @return void
+	 */
+	public static function flush_preset_cache(): void {
+		self::$cached_exceptions = null;
+		\delete_transient( self::PRESET_TRANSIENT );
 	}
 
 	/**
@@ -53,11 +110,13 @@ class Link_Management {
 	private static $options = null;
 
 	/**
-	 * Cached exceptions.
+	 * Request-local copy of the resolved preset exceptions.
 	 *
-	 * @var array
+	 * Null means "not resolved yet this request".
+	 *
+	 * @var array|null
 	 */
-	private static $cached_exceptions = array();
+	private static $cached_exceptions = null;
 
 	/**
 	 * Cached internal exceptions.
@@ -92,7 +151,69 @@ class Link_Management {
 	}
 
 	/**
+	 * Return the exception list from the JSON preset, using the cached copy.
+	 *
+	 * Resolution is cached in a transient so a remote preset URL is fetched at
+	 * most once per cache window instead of once per page load. The cache is
+	 * dropped whenever the module settings change, a post or page is edited, or
+	 * the theme changes — see flush_preset_cache_on_save().
+	 *
+	 * @since 1.6.0
+	 *
+	 * @return array Exception URL list.
+	 */
+	public static function get_preset_exceptions(): array {
+		if ( null !== self::$cached_exceptions ) {
+			return self::$cached_exceptions;
+		}
+
+		$cached = \get_transient( self::PRESET_TRANSIENT );
+		if ( is_array( $cached ) ) {
+			self::$cached_exceptions = $cached;
+			return self::$cached_exceptions;
+		}
+
+		/**
+		 * Filters how long a resolved exception preset stays cached.
+		 *
+		 * @since 1.6.0
+		 *
+		 * @param int $ttl Cache lifetime in seconds.
+		 */
+		$ttl      = (int) \apply_filters( 'functionalities_link_preset_ttl', 15 * MINUTE_IN_SECONDS );
+		$ttl      = max( 60, $ttl );
+		$resolved = self::resolve_json_preset();
+
+		if ( null === $resolved ) {
+			// The source could not be read. Keep serving the last good list and
+			// retry sooner rather than caching an empty result for the full TTL.
+			$fallback                = (array) \get_option( self::PRESET_FALLBACK_OPTION, array() );
+			self::$cached_exceptions = $fallback;
+			\set_transient( self::PRESET_TRANSIENT, $fallback, min( $ttl, 5 * MINUTE_IN_SECONDS ) );
+			return self::$cached_exceptions;
+		}
+
+		self::$cached_exceptions = $resolved;
+		\set_transient( self::PRESET_TRANSIENT, $resolved, $ttl );
+		\update_option( self::PRESET_FALLBACK_OPTION, $resolved, false );
+
+		return self::$cached_exceptions;
+	}
+
+	/**
 	 * Load JSON preset file for exceptions.
+	 *
+	 * Retained for backward compatibility with code that called this directly.
+	 * Resolution now happens through get_preset_exceptions().
+	 *
+	 * @return void
+	 */
+	public static function load_json_preset(): void {
+		self::get_preset_exceptions();
+	}
+
+	/**
+	 * Resolve the JSON preset from its configured source.
 	 *
 	 * Checks the following locations in order:
 	 * 1. User-provided custom URL/path (if set)
@@ -101,9 +222,11 @@ class Link_Management {
 	 * 4. Parent theme's exception-urls.json
 	 * 5. Plugin's default exception-urls.json
 	 *
-	 * @return void
+	 * @since 1.6.0
+	 *
+	 * @return array|null Exception list, or null when the source could not be read.
 	 */
-	public static function load_json_preset(): void {
+	private static function resolve_json_preset(): ?array {
 		$opts = self::get_options();
 
 		$json_path = '';
@@ -142,20 +265,20 @@ class Link_Management {
 			}
 		}
 
-		// No valid JSON path found.
+		// No valid JSON path found: nothing to load, and nothing failed.
 		if ( empty( $json_path ) ) {
-			return;
+			return array();
 		}
 
 		// Load JSON content - handle both local files and URLs.
 		$json_content = self::get_json_content( $json_path );
 		if ( false === $json_content ) {
-			return;
+			return null;
 		}
 
 		$preset = json_decode( $json_content, true );
 		if ( ! is_array( $preset ) ) {
-			return;
+			return null;
 		}
 
 		$json_urls = array();
@@ -168,11 +291,7 @@ class Link_Management {
 			$json_urls = array_filter( $preset, 'is_string' );
 		}
 
-		if ( empty( $json_urls ) ) {
-			return;
-		}
-
-		self::$cached_exceptions = $json_urls;
+		return array_values( array_filter( array_map( 'strval', $json_urls ) ) );
 	}
 
 	/**
@@ -275,85 +394,111 @@ class Link_Management {
 			return $content;
 		}
 
-		// Skip content containing JS-framework directives — DOMDocument corrupts them.
-		if ( self::content_has_js_framework_directives( $content ) ) {
+		// The HTML API edits attributes in place. Unlike the DOMDocument pass this
+		// replaced in 1.6.0 it never reserializes the document, so Vue and Alpine
+		// directives, mustache interpolation, and any other unknown attribute
+		// survive untouched — which is what the old JS-framework guard existed to
+		// work around.
+		if ( ! class_exists( '\WP_HTML_Tag_Processor' ) ) {
 			return $content;
 		}
 
 		$opts              = self::get_options();
 		$manual_exceptions = self::parse_exceptions( (string) $opts['exceptions'] );
-		$exceptions        = array_unique( array_merge( $manual_exceptions, self::$cached_exceptions ) );
+		$exceptions        = array_unique( array_merge( $manual_exceptions, self::get_preset_exceptions() ) );
 		$internal_ex       = self::parse_exceptions( (string) $opts['internal_new_tab_exceptions'] );
 		$site_host         = (string) \wp_parse_url( \home_url(), PHP_URL_HOST );
 
-		$libxml_previous = libxml_use_internal_errors( true );
-		$dom             = new \DOMDocument( '1.0', 'UTF-8' );
-		$html            = '<div id="__functionalities_wrapper">' . $content . '</div>';
-		$dom->loadHTML( '<?xml encoding="utf-8" ?>' . $html );
+		$nofollow_external = ! empty( $opts['nofollow_external'] );
+		$external_new_tab  = ! empty( $opts['open_external_new_tab'] );
+		$internal_new_tab  = ! empty( $opts['open_internal_new_tab'] );
 
-		$xpath = new \DOMXPath( $dom );
-		$nodes = $xpath->query( '//a[@href]' );
-		if ( $nodes instanceof \DOMNodeList ) {
-			foreach ( $nodes as $a ) {
-				$href        = (string) $a->getAttribute( 'href' );
-				$is_external = self::is_external_url( $href, $site_host );
+		if ( ! $nofollow_external && ! $external_new_tab && ! $internal_new_tab ) {
+			return $content;
+		}
 
-				// Nofollow external
-				if ( $is_external && ! self::is_exception( $href, $exceptions ) && ! empty( $opts['nofollow_external'] ) ) {
-					$rel   = (string) $a->getAttribute( 'rel' );
-					$parts = preg_split( '/\s+/', strtolower( $rel ) );
-					$parts = array_filter( array_unique( array_map( 'trim', (array) $parts ) ) );
-					if ( ! in_array( 'nofollow', $parts, true ) ) {
-						$parts[] = 'nofollow'; }
-					$a->setAttribute( 'rel', implode( ' ', $parts ) );
+		$processor = new \WP_HTML_Tag_Processor( $content );
+
+		while ( $processor->next_tag( 'A' ) ) {
+			$href = $processor->get_attribute( 'href' );
+			if ( ! is_string( $href ) || '' === trim( $href ) ) {
+				continue;
+			}
+
+			$is_external = self::is_external_url( $href, $site_host );
+			$rel_tokens  = self::rel_tokens( $processor->get_attribute( 'rel' ) );
+			$rel_changed = false;
+
+			if ( $is_external && $nofollow_external && ! self::is_exception( $href, $exceptions ) && ! in_array( 'nofollow', $rel_tokens, true ) ) {
+				$rel_tokens[] = 'nofollow';
+				$rel_changed  = true;
+			}
+
+			if ( $is_external && $external_new_tab ) {
+				$processor->set_attribute( 'target', '_blank' );
+				if ( ! in_array( 'noopener', $rel_tokens, true ) ) {
+					$rel_tokens[] = 'noopener';
+					$rel_changed  = true;
 				}
+			}
 
-				// New tab external
-				if ( $is_external && ! empty( $opts['open_external_new_tab'] ) ) {
-					$a->setAttribute( 'target', '_blank' );
-					// add noopener
-					$rel   = strtolower( (string) $a->getAttribute( 'rel' ) );
-					$parts = array_filter( array_unique( preg_split( '/\s+/', $rel ) ) );
-					if ( ! in_array( 'noopener', $parts, true ) ) {
-						$parts[] = 'noopener'; }
-					$a->setAttribute( 'rel', implode( ' ', $parts ) );
-				}
+			if ( ! $is_external && $internal_new_tab && ! self::host_matches_exception( $href, $internal_ex ) ) {
+				$processor->set_attribute( 'target', '_blank' );
+			}
 
-				// New tab internal (same-domain) except certain domains
-				if ( ! $is_external && ! empty( $opts['open_internal_new_tab'] ) ) {
-					// If link host matches an exception domain, skip
-					$test = $href;
-					if ( strpos( $href, '//' ) === 0 ) {
-						$test = 'http:' . $href; }
-					$host = (string) \wp_parse_url( $test, PHP_URL_HOST );
-					$host = strtolower( $host );
-					$skip = false;
-					foreach ( $internal_ex as $exd ) {
-						if ( $exd === '' ) {
-							continue; }
-						if ( $host === $exd || ( $host !== '' && substr( $host, - ( strlen( $exd ) + 1 ) ) === '.' . $exd ) ) {
-							$skip = true;
-							break;
-						}
-					}
-					if ( ! $skip ) {
-						$a->setAttribute( 'target', '_blank' );
-					}
-				}
+			if ( $rel_changed ) {
+				$processor->set_attribute( 'rel', implode( ' ', $rel_tokens ) );
 			}
 		}
 
-		$out     = '';
-		$wrapper = $dom->getElementById( '__functionalities_wrapper' );
-		if ( $wrapper ) {
-			foreach ( $wrapper->childNodes as $child ) {
-				$out .= $dom->saveHTML( $child );
+		return $processor->get_updated_html();
+	}
+
+	/**
+	 * Split a rel attribute into lowercase tokens.
+	 *
+	 * @since 1.6.0
+	 *
+	 * @param string|true|null $rel Raw rel attribute value.
+	 * @return array
+	 */
+	private static function rel_tokens( $rel ): array {
+		if ( ! is_string( $rel ) || '' === trim( $rel ) ) {
+			return array();
+		}
+
+		$parts = preg_split( '/\s+/', strtolower( trim( $rel ) ) );
+
+		return array_values( array_filter( array_unique( (array) $parts ) ) );
+	}
+
+	/**
+	 * Check whether an internal link host is on the new-tab exception list.
+	 *
+	 * @since 1.6.0
+	 *
+	 * @param string $href       Link URL.
+	 * @param array  $exceptions Exception domains.
+	 * @return bool
+	 */
+	private static function host_matches_exception( string $href, array $exceptions ): bool {
+		$test = 0 === strpos( $href, '//' ) ? 'http:' . $href : $href;
+		$host = strtolower( (string) \wp_parse_url( $test, PHP_URL_HOST ) );
+
+		foreach ( $exceptions as $domain ) {
+			$domain = trim( (string) $domain );
+			if ( '' === $domain ) {
+				continue;
+			}
+			if ( $host === $domain ) {
+				return true;
+			}
+			if ( '' !== $host && substr( $host, - ( strlen( $domain ) + 1 ) ) === '.' . $domain ) {
+				return true;
 			}
 		}
 
-		libxml_clear_errors();
-		libxml_use_internal_errors( $libxml_previous );
-		return $out !== '' ? $out : $content;
+		return false;
 	}
 
 	/**
@@ -401,9 +546,10 @@ class Link_Management {
 	 * Bulk update links in database.
 	 *
 	 * @param string $target_url The URL to add nofollow to.
+	 * @param int    $after_id   Only consider posts with an ID above this cursor.
 	 * @return array Results with success count and errors.
 	 */
-	public static function update_links_in_database( string $target_url ): array {
+	public static function update_links_in_database( string $target_url, int $after_id = 0 ): array {
 		global $wpdb;
 
 		$target_url = trim( $target_url );
@@ -424,33 +570,47 @@ class Link_Management {
 		 */
 		$batch_limit = \apply_filters( 'functionalities_link_update_batch_limit', 100 );
 
-		// Query posts containing the target URL with limit for performance.
+		// Page by ascending ID. Without a cursor the same first batch is returned
+		// on every run, because posts that already carry nofollow still match the
+		// LIKE, so a site with more matches than the batch limit could never
+		// finish.
+		$after_id = max( 0, $after_id );
+
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Direct query needed for bulk operation.
 		$posts = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT ID, post_content FROM {$wpdb->posts}
 				WHERE post_content LIKE %s
+				AND ID > %d
 				AND post_status IN ('publish', 'draft', 'pending', 'future', 'private')
 				AND post_type NOT IN ('revision', 'nav_menu_item')
+				ORDER BY ID ASC
 				LIMIT %d",
 				'%' . $wpdb->esc_like( $target_url ) . '%',
+				$after_id,
 				$batch_limit
 			)
 		);
 
 		if ( empty( $posts ) ) {
 			return array(
-				'success' => true,
-				'count'   => 0,
-				'message' => \__( 'No posts found containing this URL.', 'functionalities' ),
+				'success'  => true,
+				'count'    => 0,
+				'has_more' => false,
+				'last_id'  => $after_id,
+				'message'  => $after_id > 0
+					? \__( 'Finished. No further posts contain this URL.', 'functionalities' )
+					: \__( 'No posts found containing this URL.', 'functionalities' ),
 			);
 		}
 
 		$updated_count = 0;
 		$processed     = 0;
+		$last_id       = $after_id;
 
 		foreach ( $posts as $post ) {
 			++$processed;
+			$last_id = (int) $post->ID;
 
 			// Process links in content.
 			$new_content = self::add_nofollow_to_url_in_content( $post->post_content, $target_url );
@@ -467,29 +627,27 @@ class Link_Management {
 				\clean_post_cache( $post->ID );
 				++$updated_count;
 			}
-
-			// Prevent timeout on large batches.
-			if ( $processed >= $batch_limit ) {
-				break;
-			}
 		}
 
+		$has_more = count( $posts ) >= $batch_limit;
+
 		$message = sprintf(
-			/* translators: %d: Number of posts updated. */
-			\__( 'Successfully updated %d post(s).', 'functionalities' ),
-			$updated_count
+			/* translators: 1: number of posts updated, 2: number of posts scanned. */
+			\__( 'Updated %1$d of %2$d post(s) scanned.', 'functionalities' ),
+			$updated_count,
+			$processed
 		);
 
-		// Indicate if there may be more posts to process.
-		if ( count( $posts ) >= $batch_limit ) {
-			$message .= ' ' . \__( 'There may be more posts - run again to continue.', 'functionalities' );
+		if ( $has_more ) {
+			$message .= ' ' . \__( 'More posts remain — continuing.', 'functionalities' );
 		}
 
 		return array(
 			'success'   => true,
 			'count'     => $updated_count,
 			'processed' => $processed,
-			'has_more'  => count( $posts ) >= $batch_limit,
+			'has_more'  => $has_more,
+			'last_id'   => $last_id,
 			'message'   => $message,
 		);
 	}

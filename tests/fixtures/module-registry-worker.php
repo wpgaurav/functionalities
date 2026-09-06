@@ -46,6 +46,8 @@ function did_action( $hook ) {
 	return 'init' === $hook ? 1 : 0;
 }
 function get_bloginfo() { return 'Test Site'; }
+function delete_transient() {}
+function update_option( $name, $value, $autoload = null ) { return true; }
 function wp_get_attachment_image_url() { return false; }
 function add_rewrite_rule() {}
 

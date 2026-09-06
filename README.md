@@ -2,7 +2,7 @@
 
 All-in-one WordPress optimization toolkit with 16 modules for performance, security, SEO, and content management. Built with modern WordPress coding standards and a clean module-based dashboard. Optimized for performance with modular initialization, static property caching, and intelligent transients.
 
-**Version:** 1.5.0
+**Version:** 1.6.0
 **License:** GPL-2.0-or-later
 **Text Domain:** `functionalities`
 **Pricing:** Free
@@ -278,6 +278,9 @@ Enhanced login protection and security measures for your WordPress site.
 
 **Features:**
 - Limit login attempts to prevent brute force attacks
+- Per-username throttling, so a distributed attempt against one account is caught
+- IP allowlist, so a shared address behind a CDN cannot lock you out of your own site
+- Unlock any address or username directly from the lockout log
 - Configurable lockout durations
 - Disable XML-RPC authentication and application passwords
 - Hide detailed login errors to prevent user enumeration
@@ -394,52 +397,38 @@ add_filter( 'functionalities_svg_icons_sanitize', function( $svg, $slug ) {
 ```
 functionalities/
 ├── assets/
-│   ├── css/
-│   │   ├── admin.css
-│   │   ├── admin-ui.css
-│   │   ├── content-regression.css
-│   │   └── svg-icons-editor.css
-│   └── js/
-│       ├── admin.js
-│       ├── admin-redirects.js
-│       ├── admin-tools.js
-│       ├── admin-ui.js
-│       ├── content-regression.js
-│       └── svg-icons-editor.js
+│   ├── blocks/svg-icon/        Block metadata for the SVG Icon block
+│   ├── css/                    admin, admin-ui, content-regression, svg-icons-editor
+│   ├── js/                     admin*, content-regression, svg-icons-editor, wp7-*
+│   └── vendor/prism/           Bundled Prism.js (MIT), admin syntax highlighting
 ├── includes/
 │   ├── admin/
-│   │   ├── class-admin.php
-│   │   ├── class-admin-ui.php
-│   │   ├── class-module-controller.php
-│   │   ├── class-module-docs.php
+│   │   ├── class-admin.php                             Thin entry point
+│   │   ├── class-admin-ui.php                          Shared UI helpers
+│   │   ├── class-module-controller.php                 Settings + custom pages
+│   │   ├── class-module-docs.php                       Per-module docs text
+│   │   ├── class-settings-portability-controller.php   Export / import / diagnostics
+│   │   ├── class-site-health-controller.php            Scans, schedules, exposure probe
 │   │   ├── class-redirect-manager-controller.php
-│   │   ├── class-settings-portability-controller.php
-│   │   ├── class-site-health-controller.php
 │   │   ├── class-svg-icons-controller.php
-│   │   └── class-task-manager-controller.php
+│   │   ├── class-task-manager-controller.php
+│   │   ├── trait-admin-ajax.php
+│   │   ├── trait-admin-options.php
+│   │   └── trait-admin-sanitizers.php
 │   ├── core/
-│   │   └── class-module-registry.php
-│   ├── features/
-│   │   ├── class-assumption-detection.php
-│   │   ├── class-block-cleanup.php
-│   │   ├── class-components.php
-│   │   ├── class-content-regression.php
-│   │   ├── class-editor-links.php
-│   │   ├── class-fonts.php
-│   │   ├── class-link-management.php
-│   │   ├── class-login-security.php
-│   │   ├── class-meta.php
-│   │   ├── class-misc.php
-│   │   ├── class-pwa.php
-│   │   ├── class-redirect-manager.php
-│   │   ├── class-schema.php
-│   │   ├── class-snippets.php
-│   │   ├── class-svg-icons.php
-│   │   └── class-task-manager.php
-│   └── storage/
-│       └── class-atomic-json-store.php
+│   │   ├── class-module-registry.php                   Module list + lazy loader
+│   │   └── class-wordpress-7-integration.php           Abilities, DataViews, AI
+│   ├── features/                                       One class per module (16)
+│   ├── storage/
+│   │   ├── class-atomic-json-store.php                 Locked, atomic JSON writes
+│   │   └── class-data-directory.php                    Private data path + hardening
+│   └── traits/
+│       └── trait-css-sanitizer.php
 ├── languages/
-├── exception-urls.json.sample
+├── src/                        Source for the WordPress 7 admin bundle (not shipped)
+├── tests/                      PHPUnit suite
+├── docs/                       Performance baseline notes (not shipped)
+├── exception-urls-sample.json
 ├── functionalities.php
 ├── index.php
 └── uninstall.php

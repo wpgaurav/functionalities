@@ -153,6 +153,7 @@ trait Admin_Sanitizers {
 		}
 
 		$allowed_tags = \Functionalities\Features\Snippets::snippet_allowed_tags();
+		$unfiltered   = \current_user_can( 'unfiltered_html' );
 
 		foreach ( array( 'header', 'body_open', 'footer' ) as $location ) {
 			if ( empty( $input[ $location ] ) || ! \is_array( $input[ $location ] ) ) {
@@ -164,14 +165,18 @@ trait Admin_Sanitizers {
 					continue;
 				}
 
-				if ( ! \current_user_can( 'unfiltered_html' ) ) {
+				// Filter once, here, against the capability of the user saving
+				// the snippet. Output is verbatim, so a snippet containing JS
+				// operators such as && survives to the front end intact.
+				if ( ! $unfiltered ) {
 					$code = \Functionalities\Features\Snippets::kses_with_styles( $code, $allowed_tags );
 				}
 
 				$out[ $location ][] = array(
-					'label'   => \sanitize_text_field( $item['label'] ?? '' ),
-					'code'    => $code,
-					'enabled' => ! empty( $item['enabled'] ),
+					'label'      => \sanitize_text_field( $item['label'] ?? '' ),
+					'code'       => $code,
+					'enabled'    => ! empty( $item['enabled'] ),
+					'unfiltered' => $unfiltered,
 				);
 			}
 		}
@@ -257,6 +262,7 @@ trait Admin_Sanitizers {
 			'limit_revisions',
 			'disable_dashicons_for_guests',
 			'disable_heartbeat',
+			'disable_heartbeat_admin',
 			'disable_admin_bar_front',
 			'remove_jquery_migrate',
 			'enable_prism_admin',
@@ -266,6 +272,9 @@ trait Admin_Sanitizers {
 		foreach ( $keys as $k ) {
 			$out[ $k ] = ! empty( $input[ $k ] );
 		}
+
+		$out['revisions_limit'] = max( 0, min( 100, (int) ( $input['revisions_limit'] ?? 10 ) ) );
+
 		return $out;
 	}
 
@@ -424,6 +433,8 @@ trait Admin_Sanitizers {
 			'disable_application_passwords' => ! empty( $input['disable_application_passwords'] ),
 			'hide_login_errors'             => ! empty( $input['hide_login_errors'] ),
 			'trust_proxy_headers'           => ! empty( $input['trust_proxy_headers'] ),
+			'lock_usernames'                => ! empty( $input['lock_usernames'] ),
+			'allowlist_ips'                 => \sanitize_textarea_field( $input['allowlist_ips'] ?? '' ),
 			'custom_logo_url'               => \esc_url_raw( $input['custom_logo_url'] ?? '' ),
 			'custom_background_color'       => \sanitize_hex_color( $input['custom_background_color'] ?? '' ) ?: '',
 			'custom_form_background'        => \sanitize_hex_color( $input['custom_form_background'] ?? '' ) ?: '',

@@ -40,7 +40,7 @@ class Task_Manager {
 	 * @return void
 	 */
 	public static function init(): void {
-		self::$tasks_dir = WP_CONTENT_DIR . '/functionalities/tasks/';
+		self::$tasks_dir = \Functionalities\Storage\Data_Directory::file( 'tasks' ) . '/';
 
 		// Only run in admin - no frontend footprint.
 		if ( ! \is_admin() ) {
@@ -94,32 +94,16 @@ class Task_Manager {
 	 * @return string|false Directory path or false on failure.
 	 */
 	public static function get_tasks_dir() {
-		if ( ! file_exists( self::$tasks_dir ) ) {
-			if ( ! wp_mkdir_p( self::$tasks_dir ) ) {
-				return false;
-			}
-
-			$fs = self::get_filesystem();
-
-			// Add index.php for security.
-			$index_file = self::$tasks_dir . 'index.php';
-			if ( ! file_exists( $index_file ) ) {
-				$result = $fs
-					? $fs->put_contents( $index_file, '<?php // Silence is golden.', FS_CHMOD_FILE )
-					: false;
-				if ( false === $result && defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-					// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Intentional debug logging when WP_DEBUG is enabled.
-					error_log( 'Functionalities: Failed to create index.php in tasks directory.' );
-				}
-			}
-			// Add .htaccess for Apache servers.
-			$htaccess_file = self::$tasks_dir . '.htaccess';
-			if ( ! file_exists( $htaccess_file ) ) {
-				if ( $fs ) {
-					$fs->put_contents( $htaccess_file, "Order deny,allow\nDeny from all", FS_CHMOD_FILE );
-				}
-			}
+		if ( '' === self::$tasks_dir ) {
+			self::$tasks_dir = \Functionalities\Storage\Data_Directory::file( 'tasks' ) . '/';
 		}
+
+		if ( ! file_exists( self::$tasks_dir ) && ! wp_mkdir_p( self::$tasks_dir ) ) {
+			return false;
+		}
+
+		\Functionalities\Storage\Data_Directory::harden( rtrim( self::$tasks_dir, '/' ) );
+
 		return self::$tasks_dir;
 	}
 

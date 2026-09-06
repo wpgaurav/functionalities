@@ -5,7 +5,7 @@ Tags: performance, security, seo, redirection, cleanup
 Requires at least: 6.3
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.5.0
+Stable tag: 1.6.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -133,6 +133,29 @@ Before uninstalling, go to the Functionalities dashboard and check **"Delete all
 3. Assumption Detection module
 
 == Changelog ==
+
+= 1.6.0 =
+* Security: Abilities API operations now use a permission callback per ability and reject undeclared input properties. A shared callback previously widened to `edit_post` whenever the request carried a `post_id`, so any user who could edit one post could toggle modules, create redirects, create tasks, and trigger scans.
+* Security: Redirects, the bounded 404 log, and Task Manager projects moved to a private folder with a random name under `wp-content/functionalities/`. Existing files are migrated automatically. Apache, IIS, and directory-listing rules are written alongside them, and a new Site Health check confirms over HTTP that the folder really is unreachable.
+* Fixed: Header and footer snippets are no longer re-filtered against the *visitor's* capability at output time. Anonymous visitors were receiving mangled code — `&&` became `&amp;&amp;` and comparison operators were eaten as tags — while the logged-in administrator saw the snippet work. Filtering now happens once, at save time, against the author's capability.
+* Fixed: A JSON exception preset served from a URL is fetched at most once per cache window instead of on every page load. The cache clears whenever the module settings change, a post or page is edited, or the theme changes, and the last good list is kept when a fetch fails.
+* Fixed: The bulk nofollow tool pages through posts with an ID cursor and now finishes on sites with more than 100 matches. It previously returned the same first batch on every run.
+* Improved: Link Management, Block Cleanup, and Schema use the WordPress HTML API instead of DOMDocument. Attributes are edited in place, so Vue, Alpine, and mustache syntax survive untouched and the JS-framework skip guard added in 1.4.3 and 1.4.4 is gone. Content that used to be skipped is now processed correctly.
+* Improved: Redirect hits and 404 aggregates are buffered and written in batches rather than rewriting the whole JSON file under an exclusive lock on every request.
+* Improved: Redirects run at `parse_request`, before WordPress queries the database for a page it is about to discard. WordPress's own entry points are never redirected.
+* Improved: The Content Integrity column on the posts list reads a result cached at save time instead of rendering and parsing every row on every page load.
+* Improved: The SVG icon library is stored without autoloading, so full SVG markup no longer loads on every request.
+* Improved: The service worker skips wp-admin, the login page, REST responses, cross-origin requests, and anything marked no-store or private; caps the runtime cache; and precaches URLs individually so one stale entry cannot stop it installing. The manifest now includes an `id`.
+* Improved: Login Security adds per-username throttling, an IP allowlist, an unlock button on the lockout log, and a warning when every recent lockout shares one address, which is the signature of a site behind a CDN.
+* Improved: Prism.js is bundled with the plugin instead of being loaded from a third-party CDN.
+* Improved: Performance & Cleanup makes the revision limit configurable, and disabling Heartbeat now applies to the frontend only unless the new admin option is also enabled, so autosave and post locking keep working.
+* Improved: Content Integrity and Assumption Detection gained the filters their documentation promised, and the module documentation now lists hook names that exist. Nineteen documented hooks were never fired.
+* Fixed: Settings export no longer redacts the GA4 measurement ID as if it were custom code.
+* Fixed: Core icons get the same definition-ID prefixing as custom icons, so two gradient icons on one page no longer collide.
+* Fixed: Saving PWA settings flushes rewrite rules once instead of twice.
+* Fixed: Disabling feeds falls back to a message only when a redirect is genuinely impossible, making the documented message filter reachable.
+* Changed: The translation template is generated from the source. It was a one-string placeholder.
+* Changed: `src/` and `docs/` are excluded from the distribution, and `build.sh` now uses the same exclude list as the release workflow so a local build and a tagged release cannot drift.
 
 = 1.5.0 =
 * Added: WordPress 7 Abilities API operations for module status, privacy-safe diagnostics, assumption scans, content-integrity checks, redirect import previews, redirect creation, task creation, module toggles, and opt-in AI explanations.
@@ -322,6 +345,9 @@ Before uninstalling, go to the Functionalities dashboard and check **"Delete all
 * Added: Assumption Detection module
 
 == Upgrade Notice ==
+
+= 1.6.0 =
+Security release. Fixes an Abilities API permission flaw that let any user who could edit a post reach administrator-only operations, moves redirect and task data into a private folder, and stops header/footer snippets being mangled for logged-out visitors. Also replaces DOMDocument with the WordPress HTML API in three content filters, so pages using Vue or Alpine are processed correctly instead of skipped. Existing settings, hooks, admin URLs, and data files are migrated automatically.
 
 = 1.4.8 =
 Adds the upgraded SVG Icon block, safe settings portability, CSV redirects, an opt-in 404 monitor, native Site Health signals, true lazy module loading, atomic file storage, and pull-request quality gates. Existing option names, block names, shortcode syntax, admin URLs, hooks, and JSON formats remain compatible.

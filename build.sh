@@ -29,26 +29,31 @@ rm -rf "${BUILD_DIR}"
 rm -f "${ZIP_NAME}"
 mkdir -p "${BUILD_DIR}/${PLUGIN_SLUG}"
 
-# Files and directories to include
-INCLUDE=(
-    "assets"
-    "includes"
-    "languages"
+# Assemble with the same exclude list the release workflow uses, so a local
+# build and a tagged release cannot drift apart.
+echo "Copying files (excluding .distignore entries)..."
+rsync -a \
+    --exclude-from=".distignore" \
+    --exclude="${BUILD_DIR}" \
+    . "${BUILD_DIR}/${PLUGIN_SLUG}/"
+
+# Fail loudly if something the plugin needs at runtime did not make it in.
+REQUIRED=(
     "functionalities.php"
     "index.php"
     "readme.txt"
     "uninstall.php"
-    "exception-urls-sample.json"
+    "includes/core/class-module-registry.php"
+    "includes/core/class-wordpress-7-integration.php"
+    "includes/storage/class-data-directory.php"
+    "assets/js/wp7-admin.js"
+    "assets/vendor/prism/prism.min.js"
+    "assets/blocks/svg-icon/block.json"
 )
-
-# Copy files to build directory
-echo "Copying files..."
-for item in "${INCLUDE[@]}"; do
-    if [ -e "$item" ]; then
-        cp -r "$item" "${BUILD_DIR}/${PLUGIN_SLUG}/"
-        echo "  + $item"
-    else
-        echo "  - $item (not found, skipping)"
+for required in "${REQUIRED[@]}"; do
+    if [ ! -f "${BUILD_DIR}/${PLUGIN_SLUG}/${required}" ]; then
+        echo "  ERROR: missing ${required}" >&2
+        exit 1
     fi
 done
 

@@ -159,65 +159,45 @@ class Assumption_Detection {
 		// Clear the trigger.
 		\delete_transient( 'functionalities_run_assumption_detection' );
 
-		// Run detectors.
-		if ( ! empty( $opts['detect_schema_collision'] ) ) {
-			$schema_warnings = self::detect_schema_collisions();
-			$warnings        = array_merge( $warnings, $schema_warnings );
-		}
+		// Run detectors. Each is keyed by its option so a single filter can turn
+		// one on or off without touching stored settings.
+		$detectors = array(
+			'detect_schema_collision'         => 'detect_schema_collisions',
+			'detect_analytics_dupe'           => 'detect_analytics_duplication',
+			'detect_font_redundancy'          => 'detect_font_redundancy',
+			'detect_inline_css_growth'        => 'detect_inline_css_growth',
+			'detect_jquery_conflicts'         => 'detect_jquery_conflicts',
+			'detect_meta_duplication'         => 'detect_meta_duplication',
+			'detect_rest_exposure'            => 'detect_rest_exposure',
+			'detect_lazy_load_conflict'       => 'detect_lazy_load_conflicts',
+			'detect_mixed_content'            => 'detect_mixed_content',
+			'detect_missing_security_headers' => 'detect_missing_security_headers',
+			'detect_debug_exposure'           => 'detect_debug_exposure',
+			'detect_cron_issues'              => 'detect_cron_issues',
+		);
 
-		if ( ! empty( $opts['detect_analytics_dupe'] ) ) {
-			$analytics_warnings = self::detect_analytics_duplication();
-			$warnings           = array_merge( $warnings, $analytics_warnings );
-		}
+		foreach ( $detectors as $key => $method ) {
+			$enabled = ! empty( $opts[ $key ] );
 
-		if ( ! empty( $opts['detect_font_redundancy'] ) ) {
-			$font_warnings = self::detect_font_redundancy();
-			$warnings      = array_merge( $warnings, $font_warnings );
-		}
+			/**
+			 * Filters whether one detector runs.
+			 *
+			 * @since 1.6.0
+			 *
+			 * @param bool   $enabled Whether the detector is enabled.
+			 * @param string $key     Detector option key.
+			 */
+			if ( ! \apply_filters( 'functionalities_assumption_detection_enabled', $enabled, $key ) ) {
+				continue;
+			}
 
-		if ( ! empty( $opts['detect_inline_css_growth'] ) ) {
-			$css_warnings = self::detect_inline_css_growth( $opts );
-			$warnings     = array_merge( $warnings, $css_warnings );
-		}
+			$found = 'detect_inline_css_growth' === $key
+				? self::detect_inline_css_growth( $opts )
+				: call_user_func( array( __CLASS__, $method ) );
 
-		if ( ! empty( $opts['detect_jquery_conflicts'] ) ) {
-			$jquery_warnings = self::detect_jquery_conflicts();
-			$warnings        = array_merge( $warnings, $jquery_warnings );
-		}
-
-		if ( ! empty( $opts['detect_meta_duplication'] ) ) {
-			$meta_warnings = self::detect_meta_duplication();
-			$warnings      = array_merge( $warnings, $meta_warnings );
-		}
-
-		if ( ! empty( $opts['detect_rest_exposure'] ) ) {
-			$rest_warnings = self::detect_rest_exposure();
-			$warnings      = array_merge( $warnings, $rest_warnings );
-		}
-
-		if ( ! empty( $opts['detect_lazy_load_conflict'] ) ) {
-			$lazy_warnings = self::detect_lazy_load_conflicts();
-			$warnings      = array_merge( $warnings, $lazy_warnings );
-		}
-
-		if ( ! empty( $opts['detect_mixed_content'] ) ) {
-			$mixed_warnings = self::detect_mixed_content();
-			$warnings       = array_merge( $warnings, $mixed_warnings );
-		}
-
-		if ( ! empty( $opts['detect_missing_security_headers'] ) ) {
-			$header_warnings = self::detect_missing_security_headers();
-			$warnings        = array_merge( $warnings, $header_warnings );
-		}
-
-		if ( ! empty( $opts['detect_debug_exposure'] ) ) {
-			$debug_warnings = self::detect_debug_exposure();
-			$warnings       = array_merge( $warnings, $debug_warnings );
-		}
-
-		if ( ! empty( $opts['detect_cron_issues'] ) ) {
-			$cron_warnings = self::detect_cron_issues();
-			$warnings      = array_merge( $warnings, $cron_warnings );
+			if ( is_array( $found ) && $found ) {
+				$warnings = array_merge( $warnings, $found );
+			}
 		}
 
 		// Filter out ignored warnings.
@@ -228,6 +208,15 @@ class Assumption_Detection {
 				return ! isset( $ignored[ $hash ] ) || $ignored[ $hash ]['expires'] < time();
 			}
 		);
+
+		/**
+		 * Filters the detected findings before they are stored.
+		 *
+		 * @since 1.6.0
+		 *
+		 * @param array $warnings Detected findings.
+		 */
+		$warnings = (array) \apply_filters( 'functionalities_assumption_detection_warnings', array_values( $warnings ) );
 
 		// Store results.
 		\update_option( self::OPTION_KEY, $warnings );

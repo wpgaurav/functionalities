@@ -363,7 +363,10 @@ class SVG_Icons {
 			return '';
 		}
 
-		$root    = $doc->documentElement;
+		$root = $doc->documentElement;
+		++self::$render_instance;
+		self::prefix_definition_ids( $root, 'func-core-' . self::$render_instance . '-' );
+
 		$classes = array( 'func-svg-icon', 'is-core-icon' );
 		foreach ( preg_split( '/\s+/', trim( $root->getAttribute( 'class' ) . ' ' . $extra_class ) ) as $class ) {
 			$class = \sanitize_html_class( $class );
@@ -887,8 +890,9 @@ class SVG_Icons {
 			'svg'  => $sanitized_svg,
 		);
 
-		// Save options.
-		\update_option( 'functionalities_svg_icons', $opts );
+		// Save options. The library holds full SVG markup and is only read when an
+		// icon renders, so it must never join the autoloaded option set.
+		\update_option( 'functionalities_svg_icons', $opts, false );
 		self::$options = $opts;
 
 		\wp_send_json_success(
@@ -934,7 +938,7 @@ class SVG_Icons {
 		// Remove the icon.
 		if ( isset( $opts['icons'][ $slug ] ) ) {
 			unset( $opts['icons'][ $slug ] );
-			\update_option( 'functionalities_svg_icons', $opts );
+			\update_option( 'functionalities_svg_icons', $opts, false );
 			self::$options = $opts;
 		}
 

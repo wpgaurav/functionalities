@@ -93,8 +93,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Schema {
 
-	use \Functionalities\Traits\Has_Dom_Parser;
-
 	/**
 	 * Initialize the schema module.
 	 *
@@ -340,11 +338,6 @@ class Schema {
 			return $content;
 		}
 
-		// Skip content containing JS-framework directives — DOMDocument corrupts them.
-		if ( self::content_has_js_framework_directives( $content ) ) {
-			return $content;
-		}
-
 		// Store original for filter.
 		$original = $content;
 
@@ -358,83 +351,62 @@ class Schema {
 		$type = \apply_filters( 'functionalities_schema_article_itemtype', $opts['article_itemtype'] ?? 'Article' );
 		$type = preg_replace( '/[^A-Za-z]/', '', (string) $type );
 
-		// Parse HTML with DOMDocument.
-		$libxml_prev = libxml_use_internal_errors( true );
-		$dom         = new \DOMDocument( '1.0', 'UTF-8' );
-		$dom->loadHTML( '<?xml encoding="utf-8" ?><div id="___fwrap">' . $content . '</div>' );
-		$xpath = new \DOMXPath( $dom );
-		$wrap  = $dom->getElementById( '___fwrap' );
-
-		if ( ! $wrap ) {
+		// Edit attributes in place with the HTML API. The DOMDocument pass this
+		// replaced in 1.6.0 reserialized the fragment, which corrupted Vue and
+		// Alpine templates and required a separate guard.
+		if ( ! class_exists( '\WP_HTML_Tag_Processor' ) ) {
 			return $content;
 		}
 
-		// Find target element: prefer existing <article>, else first element child.
-		$target  = null;
-		$article = $xpath->query( './/article', $wrap );
+		$processor    = new \WP_HTML_Tag_Processor( $content );
+		$has_article  = false;
+		$did_headline = false;
+		$did_author   = false;
+		$add_headline = ! empty( $opts['add_headline'] );
+		$add_dates    = ! empty( $opts['add_dates'] );
+		$add_author   = ! empty( $opts['add_author'] );
 
-		if ( $article instanceof \DOMNodeList && $article->length > 0 ) {
-			$node = $article->item( 0 );
-			if ( $node instanceof \DOMElement ) {
-				$target = $node;
+		while ( $processor->next_tag() ) {
+			$tag = $processor->get_tag();
+
+			// Article schema is only applied when the content carries a real
+			// <article> element, matching the behaviour before 1.6.0.
+			if ( ! $has_article && 'ARTICLE' === $tag ) {
+				$processor->set_attribute( 'itemscope', true );
+				$processor->set_attribute( 'itemtype', 'https://schema.org/' . $type );
+				$has_article = true;
+				continue;
 			}
-		}
 
-		// Add article schema attributes only if <article> tag exists.
-		if ( $target instanceof \DOMElement ) {
-			$target->setAttribute( 'itemscope', '' );
-			$target->setAttribute( 'itemtype', 'https://schema.org/' . $type );
-		}
+			if ( $add_headline && ! $did_headline && ( 'H1' === $tag || 'H2' === $tag ) ) {
+				$processor->set_attribute( 'itemprop', 'headline' );
+				$did_headline = true;
+				continue;
+			}
 
-		// Add headline itemprop.
-		if ( ! empty( $opts['add_headline'] ) ) {
-			$headings = $xpath->query( './/h1|.//h2' );
-			if ( $headings instanceof \DOMNodeList && $headings->length > 0 ) {
-				$el = $headings->item( 0 );
-				if ( $el instanceof \DOMElement ) {
-					$el->setAttribute( 'itemprop', 'headline' );
+			if ( $add_dates && 'TIME' === $tag ) {
+				$class = $processor->get_attribute( 'class' );
+				$class = is_string( $class ) ? strtolower( $class ) : '';
+				if ( false !== strpos( $class, 'published' ) ) {
+					$processor->set_attribute( 'itemprop', 'datePublished' );
+				} elseif ( false !== strpos( $class, 'updated' ) || false !== strpos( $class, 'modified' ) ) {
+					$processor->set_attribute( 'itemprop', 'dateModified' );
+				}
+				continue;
+			}
+
+			if ( $add_author && ! $did_author ) {
+				$class = $processor->get_attribute( 'class' );
+				if ( is_string( $class ) && false !== strpos( strtolower( $class ), 'author' ) ) {
+					$processor->set_attribute( 'itemprop', 'author' );
+					$did_author = true;
 				}
 			}
 		}
 
-		// Add date itemprops.
-		if ( ! empty( $opts['add_dates'] ) ) {
-			$times = $xpath->query( './/time' );
-			if ( $times instanceof \DOMNodeList ) {
-				foreach ( $times as $time ) {
-					if ( $time instanceof \DOMElement ) {
-						$cls = strtolower( (string) $time->getAttribute( 'class' ) );
-						if ( strpos( $cls, 'published' ) !== false ) {
-							$time->setAttribute( 'itemprop', 'datePublished' );
-						} elseif ( strpos( $cls, 'updated' ) !== false || strpos( $cls, 'modified' ) !== false ) {
-							$time->setAttribute( 'itemprop', 'dateModified' );
-						}
-					}
-				}
-			}
-		}
+		$out = $processor->get_updated_html();
 
-		// Add author itemprop.
-		if ( ! empty( $opts['add_author'] ) ) {
-			$author = $xpath->query( './/*[contains(@class, "author")]' );
-			if ( $author instanceof \DOMNodeList && $author->length > 0 ) {
-				$el = $author->item( 0 );
-				if ( $el instanceof \DOMElement ) {
-					$el->setAttribute( 'itemprop', 'author' );
-				}
-			}
-		}
-
-		// Extract processed content.
-		$out = '';
-		foreach ( $wrap->childNodes as $child ) {
-			$out .= $dom->saveHTML( $child );
-		}
-
-		libxml_clear_errors();
-		libxml_use_internal_errors( $libxml_prev );
-
-		$result = $out !== '' ? $out : $content;
+		$result = '' !== $out ? $out : $content;
 
 		/**
 		 * Filters the content after article schema has been applied.

@@ -16,7 +16,11 @@ final class SettingsPortabilityTest extends TestCase {
 	protected function setUp(): void {
 		$GLOBALS['functionalities_test_options'] = array(
 			'functionalities_misc' => array( 'enabled' => false ),
-			'functionalities_snippets' => array( 'enabled' => false, 'header_snippets' => array( 'existing-code' ) ),
+			'functionalities_snippets' => array(
+				'enabled'    => false,
+				'ga4_id'     => 'G-EXISTING',
+				'header'     => array( array( 'code' => 'existing-code' ) ),
+			),
 		);
 	}
 
@@ -49,11 +53,31 @@ final class SettingsPortabilityTest extends TestCase {
 			array(
 				'schema'   => 1,
 				'plugin'   => 'dynamic-functionalities',
-				'settings' => array( 'snippets' => array( 'enabled' => true, 'header_snippets' => array( '<script>secret()</script>' ) ) ),
+				'settings' => array(
+					'snippets' => array(
+						'enabled' => true,
+						'header'  => array( array( 'code' => '<script>secret()</script>' ) ),
+					),
+				),
 			)
 		);
 
-		$this->assertSame( array( 'existing-code' ), $preview['validated']['snippets']['header_snippets'] );
-		$this->assertContains( 'header_snippets', $preview['skipped']['snippets'] );
+		$this->assertSame(
+			array( array( 'code' => 'existing-code' ) ),
+			$preview['validated']['snippets']['header']
+		);
+		$this->assertContains( 'header', $preview['skipped']['snippets'] );
+	}
+
+	/**
+	 * The GA4 measurement ID is an ordinary setting, not custom code.
+	 *
+	 * @return void
+	 */
+	public function test_analytics_id_survives_a_default_export(): void {
+		$document = \Functionalities\Admin\Settings_Portability_Controller::build_export( array( 'snippets' ) );
+
+		$this->assertSame( 'G-EXISTING', $document['settings']['snippets']['ga4_id'] );
+		$this->assertArrayNotHasKey( 'header', $document['settings']['snippets'] );
 	}
 }

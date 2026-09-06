@@ -38,11 +38,68 @@ class Site_Health_Controller {
 	 * @return array
 	 */
 	public static function register_site_health_test( array $tests ): array {
-		$tests['direct']['functionalities_assumptions'] = array(
+		$tests['direct']['functionalities_assumptions']  = array(
 			'label' => \__( 'Functionalities assumption scan', 'functionalities' ),
 			'test'  => array( __CLASS__, 'get_site_health_result' ),
 		);
+		$tests['async']['functionalities_data_exposure'] = array(
+			'label'             => \__( 'Functionalities data files are private', 'functionalities' ),
+			'test'              => 'functionalities_data_exposure',
+			'has_rest'          => true,
+			'async_direct_test' => array( __CLASS__, 'get_data_exposure_result' ),
+		);
 		return $tests;
+	}
+
+	/**
+	 * Confirm the private data directory is not served over HTTP.
+	 *
+	 * Redirects, the 404 log, and task notes are JSON files under wp-content.
+	 * Server rules are written next to them, but nginx and Caddy ignore
+	 * .htaccess, so the only way to know is to ask the server.
+	 *
+	 * @since 1.6.0
+	 * @return array
+	 */
+	public static function get_data_exposure_result(): array {
+		$result = array(
+			'label'       => \__( 'Functionalities data files are not publicly readable', 'functionalities' ),
+			'status'      => 'good',
+			'badge'       => array(
+				'label' => \__( 'Functionalities', 'functionalities' ),
+				'color' => 'blue',
+			),
+			'description' => '<p>' . \esc_html__( 'Redirects, the 404 log, and task notes are stored in a private folder that the web server does not serve.', 'functionalities' ) . '</p>',
+			'actions'     => '',
+			'test'        => 'functionalities_data_exposure',
+		);
+
+		$response = \wp_remote_get(
+			\Functionalities\Storage\Data_Directory::probe_url(),
+			array(
+				'timeout'   => 5,
+				'sslverify' => false,
+			)
+		);
+
+		if ( \is_wp_error( $response ) ) {
+			$result['status']      = 'recommended';
+			$result['label']       = \__( 'The privacy of Functionalities data files could not be checked', 'functionalities' );
+			$result['description'] = '<p>' . \esc_html__( 'A loopback request to the data folder failed, so this check could not complete. This is usually a loopback restriction rather than a problem with the files themselves.', 'functionalities' ) . '</p>';
+			return $result;
+		}
+
+		if ( 200 === (int) \wp_remote_retrieve_response_code( $response ) ) {
+			// The folder name carries 20 random characters and directory listing
+			// is blocked, so the path is not discoverable — this is a defence in
+			// depth gap, not an open door. Saying "critical" here would cry wolf
+			// on every nginx and Caddy site, which ignore .htaccess by design.
+			$result['status']      = 'recommended';
+			$result['label']       = \__( 'Functionalities data files would be served if their folder name were known', 'functionalities' );
+			$result['description'] = '<p>' . \esc_html__( 'The plugin stores redirects, the 404 log, and task notes in a folder with a random name, and the server does serve files from it. The name is not guessable and the folder cannot be listed, so this is not an open door. For defence in depth, add a rule to your server configuration denying access to the plugin data folder under wp-content. The bundled .htaccess and web.config already do this on Apache and IIS; nginx and Caddy ignore them.', 'functionalities' ) . '</p>';
+		}
+
+		return $result;
 	}
 
 	/**

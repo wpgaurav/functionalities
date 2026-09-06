@@ -1,9 +1,4941 @@
+# Copyright (C) 2026 Gaurav Tiwari
+# This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Functionalities 1.0.0\n"
+"Project-Id-Version: Dynamic Functionalities 1.6.0\n"
+"Report-Msgid-Bugs-To: https://github.com/wpgaurav/functionalities/issues\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-02-03 19:11+0530\n"
-"MIME-Version: 1.0\n"
+"POT-Creation-Date: 2026-09-06T03:56:34+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: functionalities\n"
 
-# Placeholder POT file. Use a tool like wp i18n make-pot to regenerate.
+#. Plugin Name of the plugin
+#: functionalities.php
+#: includes/admin/class-module-controller.php:242
+msgid "Dynamic Functionalities"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: functionalities.php
+msgid "https://functionalities.dev"
+msgstr ""
+
+#. Description of the plugin
+#: functionalities.php
+#: includes/admin/class-module-controller.php:244
+msgid "All-in-one WordPress optimization toolkit. 15+ modules for performance, security, SEO, and content management."
+msgstr ""
+
+#. Author of the plugin
+#: functionalities.php
+msgid "Gaurav Tiwari"
+msgstr ""
+
+#. Author URI of the plugin
+#: functionalities.php
+msgid "https://gauravtiwari.org"
+msgstr ""
+
+#: functionalities.php:98
+msgid "Settings"
+msgstr ""
+
+#: functionalities.php:108
+#: includes/admin/class-module-controller.php:320
+msgid "Support"
+msgstr ""
+
+#: functionalities.php:109
+#: includes/admin/class-module-controller.php:324
+msgid "Report Issues"
+msgstr ""
+
+#: includes/admin/class-admin-ui.php:55
+#: includes/admin/class-module-controller.php:701
+#: includes/admin/class-module-controller.php:777
+#: includes/admin/class-module-controller.php:899
+#: includes/admin/class-module-controller.php:1085
+#: includes/admin/class-module-controller.php:1171
+#: includes/admin/class-module-controller.php:1265
+#: includes/admin/class-module-controller.php:2804
+#: includes/admin/class-module-controller.php:3351
+#: includes/admin/class-module-controller.php:4850
+#: includes/admin/class-module-controller.php:4915
+#: includes/admin/class-module-controller.php:4953
+#: includes/admin/class-module-controller.php:6626
+msgid "What This Module Does"
+msgstr ""
+
+#: includes/admin/class-admin-ui.php:69
+#: includes/admin/class-module-controller.php:710
+#: includes/admin/class-module-controller.php:1095
+#: includes/admin/class-module-controller.php:1275
+#: includes/admin/class-module-controller.php:4957
+#: includes/admin/class-module-controller.php:6629
+msgid "How to Use"
+msgstr ""
+
+#: includes/admin/class-admin-ui.php:90
+#: includes/admin/class-module-controller.php:715
+#: includes/admin/class-module-controller.php:794
+#: includes/admin/class-module-controller.php:917
+#: includes/admin/class-module-controller.php:1100
+#: includes/admin/class-module-controller.php:1186
+#: includes/admin/class-module-controller.php:1280
+msgid "For Developers"
+msgstr ""
+
+#: includes/admin/class-admin-ui.php:104
+#: includes/admin/class-module-controller.php:1181
+msgid "Caution"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:81
+#: includes/admin/class-module-controller.php:82
+#: includes/admin/class-module-controller.php:110
+#: includes/admin/class-module-controller.php:366
+#: includes/admin/class-module-controller.php:5213
+#: includes/admin/class-module-controller.php:6411
+#: includes/admin/class-module-controller.php:6599
+#: includes/admin/class-site-health-controller.php:69
+#: includes/admin/class-site-health-controller.php:125
+#: includes/core/class-wordpress-7-integration.php:55
+#: includes/features/class-svg-icons.php:239
+msgid "Functionalities"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:93
+#: includes/admin/class-module-controller.php:94
+msgid "Dashboard"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:153
+msgid "Both URLs are required."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:154
+msgid "Delete this redirect?"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:155
+msgid "Purge the retained 404 log?"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:188
+msgid "Running..."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:189
+#: includes/admin/class-module-controller.php:2249
+msgid "Run Detection Now"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:201
+msgid "Insufficient permissions"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:260
+msgid "Configure"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:263
+#: includes/admin/class-module-controller.php:6451
+msgid "Active"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:265
+msgid "Inactive"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:277
+msgid "Data Management"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:287
+msgid "Delete all plugin data when uninstalling"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:290
+msgid "Removes all options, post metadata, transients, and files created by this plugin. This cannot be undone."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:308
+msgid "Help & Support"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:311
+msgid "Need help with Dynamic Functionalities? Check out these resources:"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:316
+msgid "Documentation"
+msgstr ""
+
+#. translators: %1$s: Plugin version number, %2$s: Website link
+#: includes/admin/class-module-controller.php:331
+#, php-format
+msgid "Dynamic Functionalities v%1$s | Visit %2$s for more information."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:413
+msgid "Link Management Settings"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:420
+msgid "Enable Link Management"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:425
+msgid "Enable link management features"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:433
+msgid "Add nofollow to external links"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:441
+msgid "Exceptions"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:450
+msgid "Open external links in new tab"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:457
+msgid "Open internal links in new tab"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:464
+msgid "Internal new-tab exceptions (domains)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:473
+msgid "JSON Preset File Path"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:480
+msgid "Enable Developer Filters"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:487
+msgid "Database Update Tool"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:520
+msgid "Frontend Block Class Cleanup"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:527
+msgid "Enable Block Cleanup"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:532
+msgid "Enable block class cleanup on frontend"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:540
+msgid "Headings"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:547
+msgid "Lists"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:554
+msgid "Images"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:561
+msgid "Paragraphs"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:566
+msgid "Remove \"wp-block-paragraph\" from paragraph elements"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:573
+msgid "Quotes"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:578
+msgid "Remove \"wp-block-quote\" from blockquote elements"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:585
+msgid "Tables"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:590
+msgid "Remove \"wp-block-table\" from table elements"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:597
+msgid "Separators"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:602
+msgid "Remove \"wp-block-separator\" from hr/separator elements"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:609
+msgid "Groups"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:614
+msgid "Remove \"wp-block-group\" from group containers"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:621
+msgid "Columns"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:626
+msgid "Remove \"wp-block-columns\" and \"wp-block-column\" from column layouts"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:633
+msgid "Buttons"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:638
+msgid "Remove \"wp-block-button(s)\" from button elements"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:645
+msgid "Covers"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:650
+msgid "Remove \"wp-block-cover\" from cover blocks"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:657
+msgid "Media & Text"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:662
+msgid "Remove \"wp-block-media-text\" from media-text blocks"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:669
+msgid "Custom Classes"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:674
+msgid "Enter additional CSS classes to remove from content output (one per line). Example: my-plugin-class"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:696
+#: includes/core/class-module-registry.php:46
+msgid "Editor Link Suggestions"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:698
+msgid "Control which post types appear in the block editor link search suggestions."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:703
+#: includes/admin/class-module-docs.php:94
+msgid "Limits link search results to specific post types when inserting links in Gutenberg"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:704
+#: includes/admin/class-module-docs.php:95
+msgid "Reduces clutter by hiding unwanted content types from search results"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:705
+#: includes/admin/class-module-docs.php:96
+msgid "Works with posts, pages, and custom post types"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:711
+#: includes/admin/class-module-docs.php:98
+msgid "Enable limitation, then check only the post types you want to appear when searching for links in the editor. Unchecked post types will be hidden from link search results."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:717
+#: includes/admin/class-module-controller.php:718
+#: includes/admin/class-module-controller.php:796
+#: includes/admin/class-module-controller.php:797
+#: includes/admin/class-module-controller.php:798
+#: includes/admin/class-module-controller.php:799
+#: includes/admin/class-module-controller.php:919
+#: includes/admin/class-module-controller.php:920
+#: includes/admin/class-module-controller.php:921
+#: includes/admin/class-module-controller.php:922
+#: includes/admin/class-module-controller.php:1102
+#: includes/admin/class-module-controller.php:1103
+#: includes/admin/class-module-controller.php:1104
+#: includes/admin/class-module-controller.php:1188
+#: includes/admin/class-module-controller.php:1189
+#: includes/admin/class-module-controller.php:1190
+#: includes/admin/class-module-controller.php:1282
+#: includes/admin/class-module-controller.php:1283
+#: includes/admin/class-module-controller.php:1284
+msgid "Filter:"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:717
+msgid "toggle feature"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:718
+msgid "modify allowed post types"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:727
+msgid "Enable Editor Link Suggestions"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:732
+msgid "Enable editor link suggestion filtering"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:740
+msgid "Enable limitation"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:747
+msgid "Allowed post types"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:772
+msgid "Header & Footer Code"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:774
+msgid "Insert custom code snippets into your site header and footer without editing theme files."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:779
+#: includes/admin/class-module-docs.php:113
+msgid "Native Google Analytics 4 integration - just enter your Measurement ID"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:780
+msgid "Multiple snippets per location — each independently toggleable"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:781
+msgid "Custom code for meta tags, scripts, styles, and tracking codes"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:782
+#: includes/admin/class-module-docs.php:116
+msgid "Automatically skips admin pages, feeds, and REST API requests"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:787
+msgid "Allowed Tags"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:796
+msgid "disable on specific pages"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:797
+msgid "control GA4 per user/page"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:798
+msgid "modify header code"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:799
+msgid "modify footer code"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:800
+msgid "Actions:"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:809
+msgid "Enable Header & Footer"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:814
+msgid "Enable header and footer code injection"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:822
+msgid "Enable Google Analytics 4"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:826
+msgid "Insert GA4 gtag in head"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:833
+msgid "GA4 Measurement ID"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:844
+msgid "Header Snippets"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:853
+msgid "Body Open Snippets"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:862
+msgid "Footer Snippets"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:894
+#: includes/core/class-module-registry.php:39
+msgid "Schema Settings"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:896
+msgid "Add Schema.org microdata attributes to improve search engine understanding of your content."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:901
+#: includes/admin/class-module-docs.php:141
+msgid "Adds itemscope/itemtype to the HTML element for page-level schema"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:902
+#: includes/admin/class-module-docs.php:142
+msgid "Wraps article content with Article/BlogPosting microdata"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:903
+#: includes/admin/class-module-docs.php:143
+msgid "Adds structured data for headlines, dates, and authors"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:904
+#: includes/admin/class-module-docs.php:144
+msgid "Marks header and footer regions with WPHeader/WPFooter types"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:909
+msgid "Supported Types"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:911
+msgid "Site:"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:912
+msgid "Article:"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:919
+msgid "toggle all schema output"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:920
+msgid "modify site itemtype"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:921
+msgid "modify article itemtype"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:922
+msgid "modify wrapped content"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:931
+msgid "Enable Schema"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:936
+msgid "Enable schema microdata output"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:944
+msgid "Enable site schema (html tag)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:948
+msgid "Add itemscope/itemtype to <html>"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:955
+msgid "Site itemtype"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:972
+msgid "Add WPHeader microdata"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:976
+msgid "Output a microdata hasPart for header"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:983
+msgid "Add WPFooter microdata"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:987
+msgid "Output a microdata hasPart for footer"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:994
+msgid "Enable Article microdata in content"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:998
+msgid "Wrap content with Article microdata on singular"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1005
+msgid "Article itemtype"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1022
+msgid "Add headline from first heading"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1026
+msgid "Add itemprop=\"headline\""
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1033
+msgid "Add published/modified dates"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1037
+msgid "Add itemprop dates to time tags"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1044
+msgid "Add author microdata"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1048
+msgid "Add itemprop=\"author\" where possible"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1055
+msgid "Enable BreadcrumbList"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1059
+msgid "Add BreadcrumbList JSON-LD to singular pages"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1080
+#: includes/core/class-module-registry.php:44
+msgid "Components"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1082
+msgid "Create reusable CSS components that are automatically loaded across your entire site."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1087
+#: includes/admin/class-module-docs.php:173
+msgid "Define CSS class names and their style rules in one place"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1088
+#: includes/admin/class-module-docs.php:174
+msgid "Components are compiled into a single CSS file for optimal caching"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1089
+#: includes/admin/class-module-docs.php:175
+msgid "Available on both frontend and admin pages"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1090
+#: includes/admin/class-module-docs.php:176
+msgid "Includes default utility components like visually-hidden, skip-link, and marquee"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1096
+#: includes/admin/class-module-docs.php:178
+msgid "Add components by entering a CSS selector (e.g., .my-button) and CSS rules (e.g., background: blue; color: white;). Use the grid below to manage your components."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1102
+#: includes/admin/class-module-controller.php:1282
+msgid "toggle output"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1103
+msgid "add components dynamically"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1104
+#: includes/admin/class-module-controller.php:1284
+msgid "modify generated CSS"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1105
+#: includes/admin/class-module-controller.php:1285
+msgid "Action:"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1105
+msgid "fires when CSS file regenerates"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1113
+msgid "Enable components CSS"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1117
+msgid "Output components CSS on frontend"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1124
+msgid "Component list"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1166
+msgid "Miscellaneous (Bloat Control)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1168
+msgid "Remove unnecessary WordPress features to improve performance and security."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1173
+#: includes/admin/class-module-docs.php:255
+msgid "Remove bloat like emojis, oEmbeds, and unnecessary meta tags"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1174
+#: includes/admin/class-module-docs.php:256
+msgid "Disable security concerns like XML-RPC and version disclosure"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1175
+#: includes/admin/class-module-docs.php:257
+msgid "Improve performance by removing unused scripts and styles"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1176
+#: includes/admin/class-module-docs.php:258
+msgid "Add useful enhancements like PrismJS and fullscreen textareas"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1182
+#: includes/admin/class-module-docs.php:260
+msgid "Some options may break functionality if plugins depend on them. Test after enabling. Disable Heartbeat API with care if you use auto-save or real-time features."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1188
+msgid "modify options before application"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1189
+msgid "control emoji removal"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1190
+msgid "control embed removal"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1199
+msgid "Enable Performance & Cleanup"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1204
+msgid "Enable performance and cleanup features"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1210
+msgid "Disable block-based widget editor (use classic widgets)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1211
+msgid "Load core block styles separately (per-block CSS)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1212
+msgid "Disable emojis scripts/styles"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1213
+msgid "Disable oEmbed scripts and endpoints"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1214
+msgid "Remove REST API and oEmbed discovery links from <head>"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1215
+msgid "Remove RSD, WLWManifest, and shortlink tags"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1216
+msgid "Remove WordPress version meta (generator)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1217
+msgid "Disable XML-RPC (complete)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1218
+msgid "Disable only XML-RPC Pingbacks"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1219
+msgid "Disable RSS/Atom feeds (redirect to homepage)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1220
+msgid "Disable Gravatars (site-wide)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1221
+msgid "Disable self-pingbacks (pings to own site)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1222
+msgid "Remove query strings from static resources (?ver=)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1223
+msgid "Remove DNS prefetch links from <head>"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1224
+msgid "Remove Recent Comments inline CSS"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1225
+msgid "Limit post revisions"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1228
+msgid "Revisions to keep"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1233
+msgid "revisions per post. Applies when the option above is enabled. Zero keeps none."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1238
+msgid "Disable Dashicons on frontend for non-logged-in users"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1239
+msgid "Disable Heartbeat API on the frontend"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1240
+msgid "Also disable Heartbeat in wp-admin (breaks autosave and post locking)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1241
+msgid "Disable admin bar on the frontend"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1242
+msgid "Remove jQuery Migrate from frontend"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1243
+msgid "Load PrismJS on admin screens (code highlighting where applicable)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1244
+msgid "Enable fullscreen toggle for all backend textareas"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1260
+msgid "Font Families"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1262
+msgid "Self-host custom fonts with automatic @font-face CSS generation."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1267
+#: includes/admin/class-module-docs.php:201
+msgid "Generate @font-face CSS rules for self-hosted fonts"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1268
+#: includes/admin/class-module-docs.php:202
+msgid "Support for variable fonts with weight ranges (e.g., 100 900)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1269
+#: includes/admin/class-module-docs.php:203
+msgid "WOFF2 format for modern browsers, optional WOFF fallback"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1270
+#: includes/admin/class-module-docs.php:204
+msgid "Configurable font-display strategy (swap, auto, block, etc.)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1276
+#: includes/admin/class-module-docs.php:206
+msgid "Upload font files to your media library or server, then add font entries below with the family name and file URLs. Use the generated font-family name in your CSS."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1283
+msgid "add fonts dynamically"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1293
+msgid "Enable fonts output"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1297
+msgid "Output @font-face CSS across site (front and admin)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1304
+msgid "Families"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1311
+msgid "Typography Assignments"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1340
+msgid "Login Security Settings"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1342
+msgid "Protect your login page and customize its appearance."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1344
+msgid "Security Features"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1346
+msgid "Limit failed login attempts to prevent brute force attacks"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1347
+msgid "Disable XML-RPC authentication to block remote login attacks"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1348
+msgid "Hide specific login errors to prevent username enumeration"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1349
+msgid "Customize the login page with your logo and colors"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1354
+msgid "Every recent lockout came from the same address."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1355
+msgid "That usually means this site sits behind a proxy or CDN and all visitors share one address, so an IP lockout blocks everyone. Enable \"Trust Proxy Headers\" if the proxy is trusted, and add your own address to the allowlist below."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1363
+msgid "Recent Lockouts"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1368
+msgid "Unlock"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1376
+msgid "Unlocked"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1377
+msgid "Failed"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1385
+msgid "Enable Login Security"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1388
+msgid "Enable login security features"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1395
+msgid "Limit Login Attempts"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1398
+msgid "Block IPs after too many failed attempts"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1405
+msgid "Max Attempts"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1408
+msgid "failed attempts before lockout"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1415
+msgid "Lockout Duration"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1418
+msgid "minutes"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1425
+msgid "Disable XML-RPC"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1428
+msgid "Disable XML-RPC authentication (recommended)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1435
+msgid "Disable App Passwords"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1438
+msgid "Disable WordPress Application Passwords"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1445
+msgid "Hide Login Errors"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1448
+msgid "Show generic error instead of specific username/password errors"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1455
+msgid "Trust Proxy Headers"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1458
+msgid "Read client IP from X-Forwarded-For / Client-IP headers"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1459
+msgid "Only enable when this site sits behind a trusted reverse proxy or CDN (Cloudflare, nginx, etc.). With this OFF, lockouts are keyed by REMOTE_ADDR and cannot be spoofed via headers — the secure default."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1466
+msgid "Throttle by Username"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1469
+msgid "Also lock a username after repeated failures from any address"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1470
+msgid "Catches distributed attempts against one account. Triggers at twice the attempt limit above."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1477
+msgid "Never Lock These IPs"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1481
+msgid "One per line. A trailing * matches a prefix. Add your own address so a lockout cannot shut you out."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1488
+msgid "Custom Logo URL"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1498
+#: includes/admin/class-module-controller.php:2425
+msgid "Background Color"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1531
+msgid "Meta & Copyright Settings"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1538
+msgid "Enable Meta Module"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1543
+msgid "Enable copyright, Dublin Core, and licensing features"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1551
+msgid "Copyright Meta Tags"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1556
+msgid "Output copyright, author, owner, and rights meta tags"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1564
+msgid "Dublin Core (DCMI) Metadata"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1569
+msgid "Output Dublin Core metadata (DC.title, DC.creator, DC.rights, etc.)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1577
+msgid "License Metabox"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1582
+msgid "Show license selection metabox in post editor"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1590
+msgid "SEO Plugin Schema Integration"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1601
+msgid "None detected"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1604
+msgid "Add copyright data to SEO plugin Schema.org output"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1607
+#: includes/admin/class-module-controller.php:4863
+msgid "Detected:"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1609
+msgid "Supports: Rank Math, Yoast SEO, The SEO Framework, SEOPress, AIOSEO"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1619
+msgid "Default License"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1624
+#: includes/features/class-meta.php:100
+#: includes/features/class-meta.php:108
+msgid "All Rights Reserved"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1639
+msgid "Default license for new posts (can be overridden per-post)."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1647
+msgid "Custom License URL"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1652
+msgid "Custom URL for \"All Rights Reserved\" license (e.g., your terms/disclaimer page)."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1660
+#: includes/admin/class-module-controller.php:1780
+msgid "Post Types"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1672
+msgid "Select post types where meta tags and license metabox should appear."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1680
+msgid "Copyright Holder"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1685
+msgid "Post Author"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1686
+msgid "Site Name"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1687
+msgid "Custom Name"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1695
+msgid "Who should be listed as the copyright holder."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1703
+msgid "Custom Copyright Holder Name"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1707
+msgid "Company Name or Person"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1708
+msgid "Used when \"Custom Name\" is selected above."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1716
+msgid "Dublin Core Language"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1722
+msgid "Leave empty to use site language. Use ISO 639 codes (en, en-US, de, etc.)."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1758
+msgid "Content Integrity Settings"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1766
+msgid "Enable Content Integrity"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1771
+msgid "Detect structural regressions when posts are updated"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1803
+msgid "Internal Link Detection"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1805
+msgid "Detect when internal links are removed from content."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1813
+msgid "Enable Link Detection"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1818
+msgid "Warn when internal links drop significantly"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1826
+msgid "Link Drop Threshold (%)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1831
+msgid "Warn if internal links drop by this percentage or more."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1839
+msgid "Link Drop Absolute Threshold"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1843
+msgid "links"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1844
+msgid "Also warn if this many links are removed (whichever triggers first)."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1852
+msgid "Exclude Nofollow Links"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1857
+msgid "Do not count links with rel=\"nofollow\""
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1866
+msgid "Word Count Detection"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1868
+msgid "Detect when content is shortened significantly."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1876
+msgid "Enable Word Count Detection"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1881
+msgid "Warn when word count drops significantly"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1889
+msgid "Word Count Drop Threshold (%)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1894
+msgid "Warn if word count drops by this percentage."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1902
+msgid "Minimum Post Age (days)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1906
+msgid "days"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1907
+msgid "Only check word count for posts older than this (to avoid alerts on new posts)."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1915
+msgid "Exclude Shortcodes"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1920
+msgid "Remove shortcode content from word count"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1929
+msgid "Heading Structure Detection"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1931
+msgid "Detect accessibility issues with heading hierarchy."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1939
+msgid "Enable Heading Detection"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1944
+msgid "Check heading structure for accessibility issues"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1952
+msgid "Detect Missing H1"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1957
+msgid "Warn when no H1 heading is present"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1965
+msgid "Detect Multiple H1s"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1970
+msgid "Warn when multiple H1 headings exist"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1978
+msgid "Detect Skipped Levels"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1983
+msgid "Warn when heading levels are skipped (e.g., H2 to H4)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1992
+msgid "Advanced Settings"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:1994
+msgid "Configure snapshot and display options."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2002
+msgid "Snapshots to Keep"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2007
+msgid "Number of historical snapshots to retain per post."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2015
+msgid "Show Post List Column"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2020
+msgid "Display integrity status icon in post list table"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2053
+msgid "Assumption Detection Settings"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2060
+msgid "Enable Assumption Detection"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2065
+msgid "Detect when implicit site assumptions stop being true"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2073
+msgid "Schema Collision Detection"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2078
+msgid "Warn when multiple sources output the same schema type"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2086
+msgid "Analytics Duplication Detection"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2091
+msgid "Warn when analytics scripts load multiple times"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2099
+msgid "Font Redundancy Detection"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2104
+msgid "Warn when fonts load from multiple sources"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2112
+msgid "Inline CSS Growth Detection"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2117
+msgid "Track inline CSS size over time"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2125
+msgid "Inline CSS Threshold (KB)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2130
+msgid "Warn when inline CSS exceeds this size."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2138
+msgid "jQuery Conflict Detection"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2143
+msgid "Warn when multiple jQuery versions or sources are loaded"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2151
+msgid "Meta Tag Duplication Detection"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2156
+msgid "Warn when duplicate meta tags are detected (viewport, robots, OG tags)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2164
+msgid "REST API Exposure Detection"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2169
+msgid "Warn when REST API exposes user information publicly"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2177
+msgid "Lazy Loading Conflict Detection"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2182
+msgid "Warn when multiple lazy loading implementations are detected"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2190
+msgid "Mixed Content Detection"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2195
+msgid "Warn when HTTP resources are loaded on HTTPS pages"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2203
+msgid "Security Headers Detection"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2208
+msgid "Warn when critical security headers are missing"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2216
+msgid "Debug Mode Exposure"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2221
+msgid "Warn when WP_DEBUG or error display is enabled in production"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2229
+msgid "Cron Issues Detection"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2234
+msgid "Warn when WP-Cron is disabled or has stuck jobs"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2246
+msgid "Save Settings"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2259
+msgid "Detected Assumptions"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2279
+msgid "App Identity"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2281
+msgid "Basic information about your progressive web app."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2288
+msgid "Enable PWA"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2293
+msgid "Enable Progressive Web App features"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2301
+msgid "App Name"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2305
+msgid "Full name displayed on install. Leave blank to use site title."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2313
+msgid "Short Name"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2317
+msgid "Short name for the home screen (12 chars max)."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2325
+#: includes/admin/class-module-controller.php:7216
+msgid "Description"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2329
+msgid "Shown in app stores and install dialogs. Leave blank to use site tagline."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2337
+msgid "Start URL"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2348
+msgid "Scope"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2352
+msgid "Navigation scope. \"/\" means the entire site."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2360
+msgid "Categories"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2364
+msgid "Comma-separated W3C categories (e.g. news, education, business)."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2372
+msgid "Display Mode"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2388
+msgid "Orientation"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2405
+msgid "Appearance & Icons"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2407
+msgid "Theme colors and app icons. Icons must be square PNG files."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2414
+msgid "Theme Color"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2436
+msgid "Icon 512x512"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2439
+msgid "Primary app icon (required for installability)."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2447
+msgid "Icon 192x192"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2450
+msgid "Smaller icon for home screen and splash."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2458
+msgid "Maskable Icon 512x512"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2461
+msgid "Maskable icon for adaptive icon support (safe zone padding recommended)."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2469
+msgid "Maskable Icon 192x192"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2472
+msgid "Smaller maskable icon."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2481
+msgid "Install Prompt"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2483
+msgid "Customize the in-page install prompt shown to visitors."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2490
+msgid "Show Install Prompt"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2495
+msgid "Display a custom install prompt to visitors"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2503
+msgid "Prompt Title"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2506
+msgid "Install App"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2514
+msgid "Prompt Text"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2517
+msgid "Add this site to your home screen for quick access."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2525
+msgid "Button Text"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2528
+#: includes/features/class-pwa.php:822
+msgid "Install"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2536
+msgid "Dismiss Text"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2539
+#: includes/features/class-pwa.php:823
+msgid "Not now"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2547
+msgid "Position"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2551
+msgid "Bottom"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2552
+msgid "Top"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2553
+msgid "Center (modal)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2567
+#: includes/admin/class-module-controller.php:4366
+#: includes/admin/class-module-controller.php:4456
+msgid "Style"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2571
+msgid "Banner"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2572
+msgid "Card"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2586
+msgid "Re-show After (days)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2590
+msgid "Days to wait before showing prompt again after dismissal."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2599
+msgid "Offline & Caching"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2601
+msgid "Service worker caching and offline behavior."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2608
+msgid "Cache Version"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2612
+msgid "Increment to force cache refresh (e.g. v1, v2)."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2620
+msgid "Precache URLs"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2624
+msgid "One URL per line. These pages will be cached immediately when the service worker installs."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2633
+#: includes/admin/class-module-controller.php:2642
+msgid "Shortcuts"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2635
+msgid "App shortcut links shown on long-press of the app icon. Up to 4 shortcuts."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2651
+#: includes/admin/class-module-controller.php:2660
+msgid "Screenshots"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2653
+msgid "App screenshots shown in install dialogs and app stores. Provide wide and narrow sizes."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2669
+msgid "Advanced"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2671
+msgid "Advanced PWA features. Only change these if you know what you're doing."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2678
+msgid "Display Override"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2683
+msgid "Enable display_override with window-controls-overlay fallback chain"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2691
+msgid "Edge Side Panel"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2696
+msgid "Allow opening in Microsoft Edge side panel"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2704
+msgid "Launch Handler"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2708
+msgid "Default"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2718
+msgid "Controls behavior when the app is already open and a new navigation is triggered."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2726
+msgid "Share Target"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2731
+msgid "Register as a Web Share Target"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2733
+msgid "Action URL:"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2741
+msgid "Method:"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2755
+msgid "Custom Manifest JSON"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2759
+msgid "Raw JSON to merge into the manifest. Must be a valid JSON object."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2769
+msgid "Enable rel=\"nofollow\" for all external links"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2781
+msgid "One per line. Supports full URLs (https://example.com/page), domains (example.com), or partial matches (e.g., /partner/)."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2790
+msgid "Control how external and internal links are handled across your site."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2814
+#: includes/admin/class-module-controller.php:3369
+#: includes/admin/class-module-controller.php:4889
+#: includes/admin/class-module-controller.php:4929
+#: includes/admin/class-module-controller.php:4967
+#: includes/admin/class-module-controller.php:6638
+msgid "Developer Hooks"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2829
+msgid "Adds target=\"_blank\" and rel=\"noopener\" to external links"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2841
+msgid "Adds target=\"_blank\" to same-domain links (see exceptions)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2853
+msgid "One domain per line. Matching hosts will NOT be forced to open in a new tab when internal option is enabled."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2875
+msgid "Browse..."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2878
+msgid "Create JSON"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2883
+msgid "Enter a local file path or external URL to a JSON file containing exception URLs."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2886
+msgid "Format: {\"urls\": [\"https://example.com\", \"https://another.com\"]}"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2891
+msgid "Theme JSON Detected:"
+msgstr ""
+
+#. translators: %s: theme name
+#: includes/admin/class-module-controller.php:2897
+#, php-format
+msgid "✓ Your active theme (%s) has an exception-urls.json file. It will be loaded automatically if no custom path is set."
+msgstr ""
+
+#. translators: %s: parent theme name
+#: includes/admin/class-module-controller.php:2909
+#, php-format
+msgid "✓ Parent theme (%s) has an exception-urls.json file."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2919
+msgid "Tip:"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2920
+msgid "You can place an exception-urls.json file in your active theme's root folder and it will be loaded automatically without entering a path here."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2925
+msgid "⚠️ Security Warning:"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2927
+msgid "If using an external URL, ensure you trust the source completely. Malicious JSON files could add unwanted domains to your exception list, potentially allowing spam links to pass through without nofollow."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2930
+msgid "For security, prefer local JSON files within your WordPress installation over external URLs."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2935
+msgid "Filter available: functionalities_json_preset_path"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2943
+msgid "Create Exception URLs JSON File"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2944
+msgid "This will create a new exception-urls.json file in your active theme directory."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2946
+msgid "Edit the JSON above, then click \"Create File\" to save it to your theme."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2948
+#: includes/admin/class-module-controller.php:3032
+msgid "Create File"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2949
+#: includes/admin/class-module-controller.php:3764
+#: includes/admin/class-module-controller.php:3827
+#: includes/admin/class-module-controller.php:4423
+#: includes/admin/class-module-controller.php:4513
+#: includes/admin/class-module-controller.php:5404
+#: includes/admin/class-module-controller.php:5753
+#: includes/admin/class-module-controller.php:6562
+msgid "Cancel"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2962
+msgid "Select JSON File"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:2963
+#: includes/admin/class-module-controller.php:4658
+msgid "Use this file"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3000
+msgid "Invalid JSON format. Please check your syntax."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3004
+#: includes/admin/class-module-controller.php:5437
+msgid "Creating..."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3029
+#: includes/admin/class-module-controller.php:3318
+msgid "An error occurred."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3085
+msgid "Enable developer filters for exception customization"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3088
+msgid "Available filters: functionalities_exception_domains, functionalities_exception_urls"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3092
+msgid "Code Snippets (copy to your theme's functions.php or a custom plugin)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3096
+msgid "Add Exception Domains"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3099
+msgid "Add trusted domains that should never get nofollow:"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3115
+#: includes/admin/class-module-controller.php:3140
+#: includes/admin/class-module-controller.php:3175
+#: includes/admin/class-module-controller.php:3202
+msgid "Copy Code"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3121
+msgid "Add Exception URLs"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3124
+msgid "Add specific URLs (with wildcards) that should never get nofollow:"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3146
+msgid "Dynamic Exceptions (e.g., based on user role)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3149
+msgid "Add exceptions dynamically based on conditions:"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3181
+msgid "Custom JSON File Path"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3184
+msgid "Override the JSON file path programmatically:"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3219
+#: includes/admin/class-module-controller.php:3233
+#: includes/admin/class-module-controller.php:5501
+#: includes/admin/class-module-controller.php:6144
+msgid "Copied!"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3253
+msgid "Bulk add nofollow to a specific URL across all posts in the database. Use with caution!"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3257
+#: includes/admin/class-module-controller.php:3285
+msgid "Update Database"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3268
+msgid "Please enter a URL."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3272
+msgid "This will update all posts containing this URL. Are you sure?"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3276
+#: includes/admin/class-module-controller.php:3277
+msgid "Processing..."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3315
+msgid "Done."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3337
+msgid "Remove Gutenberg block-specific CSS classes from your frontend HTML for cleaner markup."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3356
+msgid "from h1-h6 elements"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3357
+msgid "from ul/ol elements"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3358
+msgid "from figure/div elements"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3360
+msgid "Classes Removed"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3379
+msgid "Remove class \"wp-block-heading\" from headings (h1–h6)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3384
+msgid "Remove class \"wp-block-list\" from ul/ol"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3389
+msgid "Remove class \".wp-block-image\" from frontend"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3396
+msgid "Limit editor link suggestions to selected post types"
+msgstr ""
+
+#. translators: %d: Number of components.
+#: includes/admin/class-module-controller.php:3714
+#, php-format
+msgid "%d components"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3719
+msgid "Add Component"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3741
+#: includes/admin/class-module-controller.php:3864
+msgid "Untitled"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3745
+#: includes/admin/class-module-controller.php:3808
+#: includes/admin/class-module-controller.php:4355
+#: includes/admin/class-module-controller.php:4445
+#: includes/admin/class-module-controller.php:5681
+msgid "Edit"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3746
+#: includes/admin/class-module-controller.php:3809
+#: includes/admin/class-module-controller.php:4356
+#: includes/admin/class-module-controller.php:4446
+#: includes/admin/class-module-controller.php:5389
+#: includes/admin/class-module-controller.php:5684
+#: includes/admin/class-module-controller.php:6514
+#: includes/admin/class-module-controller.php:6697
+msgid "Delete"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3751
+#: includes/admin/class-module-controller.php:3814
+#: includes/admin/class-module-controller.php:7214
+msgid "Name"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3752
+#: includes/admin/class-module-controller.php:3815
+msgid "Component Name"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3755
+#: includes/admin/class-module-controller.php:3818
+msgid "CSS Selector"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3759
+#: includes/admin/class-module-controller.php:3822
+msgid "CSS Rules"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3763
+#: includes/admin/class-module-controller.php:3826
+#: includes/admin/class-module-controller.php:4422
+#: includes/admin/class-module-controller.php:4512
+msgid "Done"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3777
+msgid "Prev"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3785
+msgid "Next"
+msgstr ""
+
+#. translators: 1: current page number, 2: total pages
+#: includes/admin/class-module-controller.php:3790
+#, php-format
+msgid "Page %1$d of %2$d"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3804
+msgid "New Component"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3899
+msgid "Page"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3899
+msgid "of"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3910
+msgid "components"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:3956
+msgid "Delete this component?"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4022
+msgid "Click \"Edit\" to modify a component. Changes are applied when you click \"Save Changes\" below. Preview shows how CSS rules are applied."
+msgstr ""
+
+#. translators: %d: number of fonts
+#: includes/admin/class-module-controller.php:4308
+#, php-format
+msgid "%d font"
+msgid_plural "%d fonts"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/admin/class-module-controller.php:4313
+msgid "Add Font"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4321
+msgid "No fonts added yet"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4322
+msgid "Click \"Add Font\" to start adding custom web fonts to your site."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4343
+#: includes/admin/class-module-controller.php:4551
+msgid "Untitled Font"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4347
+#: includes/admin/class-module-controller.php:4569
+msgid "Variable"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4350
+#: includes/admin/class-module-controller.php:4575
+msgid "Preload"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4362
+#: includes/admin/class-module-controller.php:4452
+msgid "Font Family"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4370
+#: includes/admin/class-module-controller.php:4460
+msgid "Display"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4382
+#: includes/admin/class-module-controller.php:4472
+msgid "Static Weight"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4386
+#: includes/admin/class-module-controller.php:4476
+msgid "Variable Weight Range"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4393
+#: includes/admin/class-module-controller.php:4483
+msgid "Variable font"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4397
+#: includes/admin/class-module-controller.php:4487
+msgid "Preload this font"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4401
+#: includes/admin/class-module-controller.php:4491
+msgid "WOFF2 URL (required)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4404
+#: includes/admin/class-module-controller.php:4411
+#: includes/admin/class-module-controller.php:4494
+#: includes/admin/class-module-controller.php:4501
+#: includes/admin/class-module-controller.php:7004
+msgid "Upload"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4408
+#: includes/admin/class-module-controller.php:4498
+msgid "WOFF URL (fallback)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4415
+#: includes/admin/class-module-controller.php:4505
+msgid "Character Range (unicode-range)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4418
+#: includes/admin/class-module-controller.php:4508
+msgid "Limit which characters trigger this font download. Leave empty to apply to all characters. Comma-separated tokens like U+26, U+0-7F, U+4??."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4439
+msgid "New Font"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4519
+msgid "Basic Latin + Latin-1"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4520
+msgid "Latin Extended"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4521
+msgid "Greek"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4522
+msgid "Cyrillic"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4523
+msgid "Vietnamese"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4524
+msgid "Punctuation, sub/super, currency, letterlike"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4586
+msgid "1 font"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4586
+msgid "fonts"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4636
+msgid "Delete this font?"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4657
+msgid "Select or Upload Font File"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4712
+msgid "Add multiple fonts and upload WOFF2/WOFF files directly. Each font generates a separate @font-face rule. Enable \"Preload\" for critical fonts to improve performance."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4745
+msgid "Assign fonts to body text and headings"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4747
+msgid "When enabled, outputs CSS that sets font-family on body and heading elements at highest priority."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4752
+msgid "Add at least one font family above before assigning fonts."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4756
+msgid "Body / Content Font"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4759
+#: includes/admin/class-module-controller.php:4771
+msgid "— None —"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4764
+msgid "Applied to body, p, li, td, input, textarea, select, button."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4768
+msgid "Headings Font"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4776
+msgid "Applied to h1–h6. Override individual levels below."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4780
+msgid "Per-Heading Override"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4784
+msgid "Set a different font for each heading level"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4794
+msgid "— Use default heading font —"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4836
+msgid "Add copyright metadata, Dublin Core (DCMI) tags, and per-post licensing options. Works standalone or integrates with major SEO plugins."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4864
+msgid "Copyright data will be added to your SEO plugin's existing schema output."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4866
+msgid "Standalone Mode"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4867
+msgid "No SEO plugin detected. Complete Article schema with copyright will be output independently."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4869
+msgid "Schema.org Support"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4878
+msgid "or Standalone"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4880
+msgid "Compatible SEO Plugins"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4901
+msgid "Detect structural regressions when posts are updated. This module compares each post against its own historical baseline."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4919
+msgid "Philosophy"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4941
+msgid "Detects when technical assumptions stop being true. This module notices changes, not problems."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:4995
+#: includes/admin/class-module-controller.php:5159
+msgid "No assumption changes detected. All monitored items are consistent."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5017
+msgid "Where:"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5031
+msgid "Why it matters:"
+msgstr ""
+
+#. translators: %s: human-readable time difference
+#: includes/admin/class-module-controller.php:5042
+#, php-format
+msgid "Detected %s ago"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5050
+msgid "Dismiss"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5053
+msgid "Snooze 7 days"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5056
+msgid "Ignore permanently"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5202
+#: includes/admin/class-module-controller.php:6391
+#: includes/admin/class-module-controller.php:6588
+msgid "Settings saved."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5232
+msgid "Enable Task Manager"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5233
+msgid "File-based project task management"
+msgstr ""
+
+#. translators: %s: comma-separated storage error codes.
+#: includes/admin/class-module-controller.php:5243
+#, php-format
+msgid "Task storage error(s): %s. Existing JSON files were preserved."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5273
+msgid "About Task Manager"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5275
+msgid "A lightweight, file-based task management system with zero frontend footprint. Tasks are stored as JSON files in your wp-content directory."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5280
+msgid "Check/Uncheck Tasks"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5281
+msgid "Click the checkbox to mark tasks complete or pending."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5287
+msgid "Tags with #hashtags"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5288
+msgid "Add #tag to tasks for categorization. Example: \"Review code #urgent #frontend\""
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5294
+msgid "Priority Levels (!1, !2, !3)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5295
+msgid "Add !1 (high), !2 (medium), or !3 (low) priority. Example: \"Fix bug !1\""
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5301
+msgid "Notes for Each Task"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5302
+msgid "Add detailed notes and context to any task."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5308
+msgid "Export & Import"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5309
+msgid "Export projects as JSON for backup or sharing. Import projects from JSON."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5315
+msgid "Dashboard Widget"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5316
+msgid "Show any project as a dashboard widget for quick access."
+msgstr ""
+
+#. translators: %s: directory path
+#: includes/admin/class-module-controller.php:5325
+#, php-format
+msgid "Tasks are stored in a private folder under %s that is not reachable over the web."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5334
+msgid "New Project"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5335
+msgid "Enter project name..."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5338
+#: includes/admin/class-module-controller.php:5448
+#: includes/admin/class-module-controller.php:5452
+msgid "Create Project"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5341
+#: includes/admin/class-module-controller.php:6526
+msgid "Import JSON"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5348
+msgid "No Projects Yet"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5349
+msgid "Create your first project to start managing tasks."
+msgstr ""
+
+#. translators: 1: completed count, 2: total count
+#: includes/admin/class-module-controller.php:5366
+#, php-format
+msgid "%1$d of %2$d tasks completed"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5378
+msgid "Shown on Dashboard"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5383
+msgid "Open"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5386
+#: includes/admin/class-module-controller.php:5601
+msgid "Export"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5400
+msgid "Import Project"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5401
+msgid "Paste the JSON content exported from another project:"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5405
+#: includes/admin/class-module-controller.php:5536
+#: includes/admin/class-module-controller.php:5540
+#: includes/admin/class-module-controller.php:6564
+msgid "Import"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5413
+#: includes/admin/class-module-controller.php:5762
+msgid "Export Project"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5414
+#: includes/admin/class-module-controller.php:5763
+msgid "Copy this JSON to save or share your project:"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5417
+#: includes/admin/class-module-controller.php:5766
+msgid "Close"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5418
+#: includes/admin/class-module-controller.php:5503
+#: includes/admin/class-module-controller.php:5767
+#: includes/admin/class-module-controller.php:6146
+msgid "Copy to Clipboard"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5432
+msgid "Please enter a project name."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5447
+#: includes/features/class-task-manager.php:783
+msgid "Failed to create project."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5451
+#: includes/admin/class-module-controller.php:5539
+#: includes/admin/class-module-controller.php:5926
+#: includes/admin/class-module-controller.php:5972
+#: includes/admin/class-module-controller.php:6075
+msgid "Request failed."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5460
+msgid "Are you sure you want to delete the project:"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5472
+#: includes/features/class-task-manager.php:805
+msgid "Failed to delete project."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5489
+#: includes/admin/class-module-controller.php:6132
+msgid "Failed to export project."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5520
+msgid "Please paste JSON content."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5525
+#: includes/admin/class-module-controller.php:6104
+msgid "Importing..."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5535
+#: includes/features/class-task-manager.php:1045
+msgid "Failed to import project."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5586
+msgid "List View"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5589
+msgid "Column View"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5595
+msgid "Show on Dashboard"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5598
+msgid "Import Drafts"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5610
+msgid "Search tasks..."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5613
+msgid "All Priorities"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5614
+msgid "High (!1)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5615
+msgid "Medium (!2)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5616
+msgid "Low (!3)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5619
+msgid "All Status"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5620
+msgid "Pending"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5621
+#: assets/js/wp7-admin.js:160
+msgid "Completed"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5625
+msgid "Clear Completed"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5631
+msgid "Add a new task... (use @post to link, #tag for tags, !1/!2/!3 for priority)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5635
+msgid "Examples: \"Review @my-post-title !1\" or \"Update documentation #docs !3\" — Type @ to search posts"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5637
+msgid "Optional notes..."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5639
+msgid "Add Task"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5646
+#: includes/admin/class-module-controller.php:5999
+msgid "No tasks yet. Add your first task above."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5654
+msgid "Drag to reorder"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5698
+msgid "High"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5705
+msgid "Medium"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5712
+msgid "Low"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5719
+msgid "No Priority"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5729
+msgid "Edit Task"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5732
+#: assets/js/wp7-admin.js:160
+msgid "Task"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5736
+#: assets/js/wp7-admin.js:160
+msgid "Notes"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5740
+#: assets/js/wp7-admin.js:160
+msgid "Priority"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5742
+msgid "No priority"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5743
+msgid "!1 - High"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5744
+msgid "!2 - Medium"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5745
+msgid "!3 - Low"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5749
+#: assets/js/wp7-admin.js:160
+msgid "Tags"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5750
+msgid "Comma-separated: urgent, frontend, bug"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5754
+msgid "Save"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5839
+msgid "No completed tasks to clear."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5843
+msgid "Are you sure you want to delete all completed tasks?"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5900
+msgid "Please enter task text."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5922
+#: includes/features/class-task-manager.php:838
+msgid "Failed to add task."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5968
+#: includes/admin/class-module-controller.php:6071
+#: includes/features/class-task-manager.php:892
+msgid "Failed to update task."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:5978
+msgid "Delete this task?"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6003
+#: includes/features/class-task-manager.php:917
+msgid "Failed to delete task."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6051
+msgid "Task text is required."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6090
+#: includes/features/class-task-manager.php:1114
+msgid "Failed to update setting."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6098
+msgid "Import all draft posts as tasks? This will scan for all drafts and add them to this project."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6115
+msgid "Failed to import drafts."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6213
+msgid "No tasks"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6303
+msgid "Searching..."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6322
+msgid "No posts found"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6399
+msgid "404 monitor settings saved."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6422
+msgid "Enable Redirect Manager"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6423
+msgid "Create and manage URL redirects"
+msgstr ""
+
+#. translators: %s: storage error code.
+#: includes/admin/class-module-controller.php:6433
+#, php-format
+msgid "Redirect storage error: %s. The existing file was not overwritten."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6442
+msgid "URL Redirects"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6443
+msgid "Manage 301 (permanent) and 302 (temporary) redirects. Redirects are stored in a JSON file with zero database overhead."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6447
+msgid "Total"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6455
+msgid "Total Hits"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6461
+msgid "Add New Redirect"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6464
+msgid "From URL"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6468
+msgid "To URL"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6472
+#: includes/admin/class-module-controller.php:6497
+msgid "Type"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6479
+msgid "Add Redirect"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6481
+msgid "Use * at the end for wildcard matching (e.g., /old-section/*)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6488
+msgid "Search redirects..."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6494
+msgid "On"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6495
+msgid "From"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6496
+msgid "To"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6498
+#: assets/js/wp7-admin.js:160
+msgid "Hits"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6499
+#: includes/admin/class-module-controller.php:6542
+msgid "Actions"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6504
+msgid "No redirects yet. Add one above."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6524
+msgid "Export JSON"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6525
+msgid "Export CSV"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6527
+msgid "Import CSV"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6531
+msgid "Bounded 404 Monitor"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6535
+msgid "Log privacy-conscious 404 aggregates (opt-in)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6536
+msgid "Maximum rows"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6536
+msgid "Retention days"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6537
+msgid "Excluded path prefixes, one per line"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6538
+msgid "Save Monitor Settings"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6539
+msgid "Purge Log"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6542
+msgid "Path"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6542
+msgid "Count"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6542
+#: assets/js/wp7-admin.js:160
+msgid "Last seen"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6542
+msgid "Referrer origin"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6547
+msgid "No retained 404 entries."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6549
+msgid "ago"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6549
+#: includes/core/class-wordpress-7-integration.php:156
+#: assets/js/wp7-admin.js:160
+msgid "Create redirect"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6549
+msgid "Ignore"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6557
+msgid "Import Redirects"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6563
+msgid "Dry-run Preview"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6611
+msgid "Enable SVG Icons"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6612
+msgid "Allow inserting custom SVG icons in the block editor"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6645
+msgid "Add New Icon"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6647
+msgid "Slug (unique identifier)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6648
+msgid "Lowercase letters, numbers, and hyphens only"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6649
+msgid "Lowercase letters, numbers, and hyphens only. This will be used to reference the icon."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6652
+msgid "Display Name"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6656
+msgid "SVG Code"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6658
+msgid "Paste your SVG code. It will be sanitized to remove any potentially harmful content."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6662
+msgid "Preview:"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6667
+msgid "Save Icon"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6673
+msgid "Your Icons"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6678
+msgid "No icons yet. Add your first icon above."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6694
+msgid "Copy shortcode"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6756
+msgid "Slug is required."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6760
+msgid "Valid SVG code is required."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6765
+msgid "Saving..."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6776
+msgid "Icon saved!"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6785
+msgid "Error saving icon."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6789
+msgid "Network error."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6796
+msgid "Delete this icon?"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:6807
+msgid "Error deleting icon."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:7037
+msgid "+ Add Snippet"
+msgstr ""
+
+#. translators: %s: WordPress hook name
+#: includes/admin/class-module-controller.php:7040
+#, php-format
+msgid "Output in %s. Each snippet can be individually toggled."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:7104
+msgid "Label this snippet…"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:7108
+msgid "Expand / Collapse"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:7109
+msgid "Remove snippet"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:7114
+msgid "Paste your <script>, <style>, <meta>, or <link> tag here…"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:7180
+msgid "+ Add Shortcut"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:7181
+msgid "Maximum 4 shortcuts. Each needs a name and URL."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:7215
+msgid "URL (e.g. /blog/)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:7217
+msgid "Icon URL (96x96 PNG)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:7219
+#: includes/admin/class-module-controller.php:7291
+msgid "Remove"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:7251
+msgid "+ Add Screenshot"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:7283
+msgid "Image URL"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:7284
+msgid "1280x720"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:7285
+msgid "Label"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:7287
+msgid "Wide (desktop)"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:7288
+msgid "Narrow (mobile)"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:41
+msgid "Automatically adds rel=\"nofollow\" to external links in post content"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:42
+msgid "Opens external links in new tabs with proper security attributes"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:43
+msgid "Whitelist trusted domains that should not get nofollow"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:44
+msgid "Bulk update existing links in your database"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:49
+msgid "Modify the exception domain list"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:53
+msgid "Modify the exception URL list"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:57
+msgid "Override the JSON preset file path or URL"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:61
+msgid "Change how long a resolved JSON preset stays cached"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:65
+msgid "Change the bulk database update batch size"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:72
+msgid "Reduces HTML bloat by removing unnecessary block classes"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:73
+msgid "Useful when your theme provides custom styling for headings, lists, images"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:74
+msgid "Only affects frontend output, block editor remains unchanged"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:79
+msgid "Toggle cleanup globally"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:83
+msgid "Modify classes to remove"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:87
+msgid "Modify content after classes are removed"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:102
+msgid "Toggle feature"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:106
+msgid "Modify allowed post types"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:114
+msgid "Custom header code for meta tags, scripts, styles, and tracking codes"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:115
+msgid "Custom footer code for chat widgets, tracking pixels, and deferred scripts"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:118
+msgid "Allowed tags: script, style, link, meta, noscript."
+msgstr ""
+
+#: includes/admin/class-module-docs.php:122
+msgid "Disable on specific pages"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:126
+msgid "Control GA4 per user/page"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:130
+msgid "Modify header code"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:134
+msgid "Modify footer code"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:146
+msgid "Site types: WebPage, AboutPage, ContactPage, Blog, SearchResultsPage. Article types: Article, BlogPosting, NewsArticle."
+msgstr ""
+
+#: includes/admin/class-module-docs.php:150
+msgid "Toggle all schema output"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:154
+msgid "Modify site itemtype"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:158
+msgid "Modify article itemtype"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:162
+msgid "Modify wrapped content"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:166
+msgid "Modify the html element attributes"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:182
+#: includes/admin/class-module-docs.php:210
+msgid "Toggle output"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:186
+msgid "Add components dynamically"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:190
+#: includes/admin/class-module-docs.php:218
+msgid "Modify generated CSS"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:194
+msgid "Action: fires when CSS file regenerates"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:214
+msgid "Add fonts dynamically"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:222
+msgid "Action: before output"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:229
+msgid "Upload or paste custom SVG icons with unique namespaces"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:230
+msgid "Insert icons inline in the block editor via RichText toolbar"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:231
+msgid "Icons automatically inherit the font size of surrounding text"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:232
+msgid "Secure SVG sanitization prevents XSS and malicious content"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:233
+msgid "Zero frontend footprint - icons only render where used"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:234
+msgid "Also available via shortcode: [func_icon name=\"icon-slug\"]"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:236
+msgid "Add icons by pasting SVG code in the admin. Each icon gets a unique slug. In the block editor, use the icon button in the toolbar to insert icons inline. Icons will scale with the surrounding text."
+msgstr ""
+
+#: includes/admin/class-module-docs.php:240
+msgid "Toggle feature on/off"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:244
+msgid "Filter available icons"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:248
+msgid "Modify SVG before saving"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:264
+msgid "Control any single toggle, for example functionalities_misc_option_disable_emojis"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:268
+msgid "Action: fires after all toggles are processed"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:272
+msgid "Change the disabled-feeds message"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:279
+msgid "Adds copyright meta tags with configurable holder"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:280
+msgid "Dublin Core (DCMI) metadata support"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:281
+msgid "Per-post license selection metabox"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:282
+msgid "Integration with popular SEO plugins for Schema.org output"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:287
+msgid "Add or modify available licenses"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:291
+msgid "Modify the standalone JSON-LD output"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:295
+msgid "Toggle any module, receives the module slug"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:302
+msgid "Detects when internal links are accidentally removed"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:303
+msgid "Warns when content is shortened significantly"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:304
+msgid "Checks heading structure for accessibility issues"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:305
+msgid "Stores snapshots to compare against historical baselines"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:307
+msgid "This is content integrity, not SEO. The system answers: \"Did this update accidentally damage something important?\" It never scores content, never suggests fixes, and always compares a post to itself."
+msgstr ""
+
+#: includes/admin/class-module-docs.php:311
+msgid "Modify the monitored post types"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:315
+msgid "Modify detected warnings for a post"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:319
+msgid "Modify a snapshot before it is stored"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:323
+msgid "Action: after a snapshot is saved"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:330
+msgid "Detects when multiple sources output the same schema type"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:331
+msgid "Warns when analytics scripts are loaded multiple times"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:332
+msgid "Notices when fonts are loaded from redundant sources"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:333
+msgid "Tracks inline CSS growth over time"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:335
+msgid "This module notices when assumptions stop being true. It does not optimize, does not enforce best practices, and does not recommend plugins. It simply says: \"This used to be true. Now it isn't.\""
+msgstr ""
+
+#: includes/admin/class-module-docs.php:339
+msgid "Modify detected findings before they are stored"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:343
+msgid "Toggle individual detectors, receives the detector key"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:350
+msgid "Web App Manifest for installability on mobile and desktop"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:351
+msgid "Service worker with cache-first, network-first, and stale-while-revalidate strategies"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:352
+msgid "Custom offline page with cached pages list and auto-reload"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:353
+msgid "Customizable install prompt with position and style options"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:354
+msgid "App shortcuts, screenshots, share target, and display override support"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:356
+msgid "Enable this module to make your site installable as a standalone app. Configure icons, colors, and caching behavior. Visitors can install it from the browser or a custom prompt. The service worker handles offline access and smart caching."
+msgstr ""
+
+#: includes/admin/class-module-docs.php:360
+msgid "Toggle PWA output"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:364
+msgid "Filter manifest data before output"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:368
+msgid "Filter service worker configuration"
+msgstr ""
+
+#: includes/admin/class-settings-portability-controller.php:73
+msgid "Settings Portability & Diagnostics"
+msgstr ""
+
+#: includes/admin/class-settings-portability-controller.php:74
+msgid "Move validated module settings between sites or download a privacy-conscious support report."
+msgstr ""
+
+#: includes/admin/class-settings-portability-controller.php:76
+msgid "Choose modules"
+msgstr ""
+
+#: includes/admin/class-settings-portability-controller.php:83
+msgid "Include custom snippets and component code"
+msgstr ""
+
+#: includes/admin/class-settings-portability-controller.php:85
+msgid "Export Settings"
+msgstr ""
+
+#: includes/admin/class-settings-portability-controller.php:86
+msgid "Choose Import File"
+msgstr ""
+
+#: includes/admin/class-settings-portability-controller.php:87
+msgid "Preview Import"
+msgstr ""
+
+#: includes/admin/class-settings-portability-controller.php:88
+msgid "Apply Import"
+msgstr ""
+
+#: includes/admin/class-settings-portability-controller.php:89
+msgid "Download Diagnostics"
+msgstr ""
+
+#: includes/admin/class-settings-portability-controller.php:261
+msgid "Import failed and previous settings were restored."
+msgstr ""
+
+#: includes/admin/class-settings-portability-controller.php:318
+#: includes/admin/trait-admin-ajax.php:36
+#: includes/admin/trait-admin-ajax.php:70
+#: includes/admin/trait-admin-ajax.php:153
+#: includes/admin/trait-admin-ajax.php:179
+#: includes/features/class-login-security.php:595
+#: includes/features/class-redirect-manager.php:1091
+#: includes/features/class-svg-icons.php:843
+#: includes/features/class-svg-icons.php:923
+#: includes/features/class-task-manager.php:752
+msgid "Insufficient permissions."
+msgstr ""
+
+#: includes/admin/class-settings-portability-controller.php:332
+msgid "Invalid JSON document."
+msgstr ""
+
+#: includes/admin/class-site-health-controller.php:42
+msgid "Functionalities assumption scan"
+msgstr ""
+
+#: includes/admin/class-site-health-controller.php:46
+msgid "Functionalities data files are private"
+msgstr ""
+
+#: includes/admin/class-site-health-controller.php:66
+msgid "Functionalities data files are not publicly readable"
+msgstr ""
+
+#: includes/admin/class-site-health-controller.php:72
+msgid "Redirects, the 404 log, and task notes are stored in a private folder that the web server does not serve."
+msgstr ""
+
+#: includes/admin/class-site-health-controller.php:87
+msgid "The privacy of Functionalities data files could not be checked"
+msgstr ""
+
+#: includes/admin/class-site-health-controller.php:88
+msgid "A loopback request to the data folder failed, so this check could not complete. This is usually a loopback restriction rather than a problem with the files themselves."
+msgstr ""
+
+#: includes/admin/class-site-health-controller.php:98
+msgid "Functionalities data files would be served if their folder name were known"
+msgstr ""
+
+#: includes/admin/class-site-health-controller.php:99
+msgid "The plugin stores redirects, the 404 log, and task notes in a folder with a random name, and the server does serve files from it. The name is not guessable and the folder cannot be listed, so this is not an open door. For defence in depth, add a rule to your server configuration denying access to the plugin data folder under wp-content. The bundled .htaccess and web.config already do this on Apache and IIS; nginx and Caddy ignore them."
+msgstr ""
+
+#: includes/admin/class-site-health-controller.php:122
+msgid "Assumption Detection is current"
+msgstr ""
+
+#: includes/admin/class-site-health-controller.php:128
+msgid "No active technical assumption changes were detected."
+msgstr ""
+
+#: includes/admin/class-site-health-controller.php:135
+msgid "Assumption Detection is disabled"
+msgstr ""
+
+#: includes/admin/class-site-health-controller.php:136
+msgid "Enable the module to monitor schema, analytics, security, and runtime assumptions."
+msgstr ""
+
+#: includes/admin/class-site-health-controller.php:141
+msgid "The assumption scan is not scheduled"
+msgstr ""
+
+#: includes/admin/class-site-health-controller.php:142
+msgid "WordPress does not have a future background scan event. Save the module settings to reschedule it, then check WP-Cron if it disappears again."
+msgstr ""
+
+#: includes/admin/class-site-health-controller.php:149
+msgid "The assumption scan is stale"
+msgstr ""
+
+#: includes/admin/class-site-health-controller.php:150
+msgid "The scheduled scan has not completed within two expected intervals. This is different from a clean scan."
+msgstr ""
+
+#. translators: %d: number of findings.
+#: includes/admin/class-site-health-controller.php:165
+#, php-format
+msgid "%d assumption change needs review"
+msgid_plural "%d assumption changes need review"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/admin/class-site-health-controller.php:168
+msgid "Review the findings in Functionalities. You can acknowledge, snooze, or ignore each finding."
+msgstr ""
+
+#. translators: %s: human-readable time difference.
+#: includes/admin/class-site-health-controller.php:172
+#, php-format
+msgid "The last successful scan completed %s ago and found no active changes."
+msgstr ""
+
+#: includes/admin/class-site-health-controller.php:188
+msgid "Background scans"
+msgstr ""
+
+#: includes/admin/class-site-health-controller.php:195
+msgid "Email summaries"
+msgstr ""
+
+#: includes/admin/class-site-health-controller.php:212
+msgid "Hourly"
+msgstr ""
+
+#: includes/admin/class-site-health-controller.php:213
+msgid "Twice daily"
+msgstr ""
+
+#: includes/admin/class-site-health-controller.php:214
+msgid "Daily"
+msgstr ""
+
+#: includes/admin/class-site-health-controller.php:215
+msgid "Weekly"
+msgstr ""
+
+#: includes/admin/class-site-health-controller.php:229
+msgid "Email the site administrator only when the finding set changes"
+msgstr ""
+
+#. translators: %d: number of findings.
+#: includes/admin/class-site-health-controller.php:290
+#, php-format
+msgid "[Functionalities] Assumption scan found %d item(s)"
+msgstr ""
+
+#: includes/admin/class-site-health-controller.php:293
+msgid "The finding set changed. Review it in WordPress under Functionalities > Assumption Detection. No content, URLs, or diagnostics are included in this email."
+msgstr ""
+
+#: includes/admin/trait-admin-ajax.php:30
+#: includes/admin/trait-admin-ajax.php:64
+#: includes/admin/trait-admin-ajax.php:148
+#: includes/admin/trait-admin-ajax.php:173
+#: includes/features/class-redirect-manager.php:1086
+#: includes/features/class-svg-icons.php:837
+#: includes/features/class-svg-icons.php:917
+#: includes/features/class-task-manager.php:747
+msgid "Security check failed."
+msgstr ""
+
+#: includes/admin/trait-admin-ajax.php:81
+#: includes/features/class-redirect-manager.php:1255
+msgid "Invalid JSON format."
+msgstr ""
+
+#: includes/admin/trait-admin-ajax.php:87
+msgid "JSON must contain a \"urls\" array."
+msgstr ""
+
+#. translators: %s: directory path
+#: includes/admin/trait-admin-ajax.php:102
+#, php-format
+msgid "Theme directory is not writable: %s"
+msgstr ""
+
+#: includes/admin/trait-admin-ajax.php:118
+msgid "Could not initialize filesystem."
+msgstr ""
+
+#: includes/admin/trait-admin-ajax.php:124
+msgid "Failed to write file."
+msgstr ""
+
+#. translators: %s: file path
+#: includes/admin/trait-admin-ajax.php:131
+#, php-format
+msgid "JSON file created successfully: %s"
+msgstr ""
+
+#. translators: %d: number of warnings
+#: includes/admin/trait-admin-ajax.php:190
+#, php-format
+msgid "Detection complete. Found %d issue(s)."
+msgstr ""
+
+#: includes/core/class-module-registry.php:33
+msgid "Task Manager"
+msgstr ""
+
+#: includes/core/class-module-registry.php:33
+msgid "File-based project task management with JSON storage."
+msgstr ""
+
+#: includes/core/class-module-registry.php:34
+msgid "Performance & Cleanup"
+msgstr ""
+
+#: includes/core/class-module-registry.php:34
+msgid "Disable bloat, emojis, embeds, heartbeat, and more."
+msgstr ""
+
+#: includes/core/class-module-registry.php:35
+msgid "Header & Footer"
+msgstr ""
+
+#: includes/core/class-module-registry.php:35
+msgid "Add GA4, custom header and footer code."
+msgstr ""
+
+#: includes/core/class-module-registry.php:36
+msgid "Link Management"
+msgstr ""
+
+#: includes/core/class-module-registry.php:36
+msgid "Control nofollow, new tabs, and link behavior."
+msgstr ""
+
+#: includes/core/class-module-registry.php:37
+msgid "Redirect Manager"
+msgstr ""
+
+#: includes/core/class-module-registry.php:37
+msgid "Create and manage 301/302 URL redirects."
+msgstr ""
+
+#: includes/core/class-module-registry.php:38
+msgid "Block Cleanup"
+msgstr ""
+
+#: includes/core/class-module-registry.php:38
+msgid "Strip block classes from frontend output."
+msgstr ""
+
+#: includes/core/class-module-registry.php:39
+msgid "Add microdata to key areas and content."
+msgstr ""
+
+#: includes/core/class-module-registry.php:40
+#: includes/features/class-content-regression.php:1267
+#: includes/features/class-content-regression.php:1346
+msgid "Content Integrity"
+msgstr ""
+
+#: includes/core/class-module-registry.php:40
+msgid "Detect structural regressions when posts are updated."
+msgstr ""
+
+#: includes/core/class-module-registry.php:41
+msgid "Assumption Detection"
+msgstr ""
+
+#: includes/core/class-module-registry.php:41
+msgid "Notice when implicit site assumptions stop being true."
+msgstr ""
+
+#: includes/core/class-module-registry.php:42
+msgid "Login Security"
+msgstr ""
+
+#: includes/core/class-module-registry.php:42
+msgid "Limit login attempts, customize login page, block XML-RPC."
+msgstr ""
+
+#: includes/core/class-module-registry.php:43
+msgid "Meta & Copyright"
+msgstr ""
+
+#: includes/core/class-module-registry.php:43
+msgid "Copyright, Dublin Core, licensing, and SEO plugin integration."
+msgstr ""
+
+#: includes/core/class-module-registry.php:44
+msgid "Define reusable CSS components."
+msgstr ""
+
+#: includes/core/class-module-registry.php:45
+msgid "Fonts"
+msgstr ""
+
+#: includes/core/class-module-registry.php:45
+msgid "Register custom font families."
+msgstr ""
+
+#: includes/core/class-module-registry.php:46
+msgid "Limit link suggestions to selected post types."
+msgstr ""
+
+#: includes/core/class-module-registry.php:47
+msgid "SVG Icons"
+msgstr ""
+
+#: includes/core/class-module-registry.php:47
+msgid "Upload custom SVG icons and insert them inline in the block editor."
+msgstr ""
+
+#: includes/core/class-module-registry.php:48
+msgid "Progressive Web App"
+msgstr ""
+
+#: includes/core/class-module-registry.php:48
+msgid "Make your site installable and work offline."
+msgstr ""
+
+#: includes/core/class-wordpress-7-integration.php:56
+msgid "Site diagnostics, content checks, redirects, tasks, and module controls."
+msgstr ""
+
+#: includes/core/class-wordpress-7-integration.php:73
+msgid "Get module status"
+msgstr ""
+
+#: includes/core/class-wordpress-7-integration.php:74
+msgid "Returns enabled state and metadata for every Functionalities module."
+msgstr ""
+
+#: includes/core/class-wordpress-7-integration.php:88
+msgid "Run privacy-safe diagnostics"
+msgstr ""
+
+#: includes/core/class-wordpress-7-integration.php:89
+msgid "Returns software, module, storage, and rewrite health without site URLs, users, task content, redirects, or secrets."
+msgstr ""
+
+#: includes/core/class-wordpress-7-integration.php:100
+msgid "Scan site assumptions"
+msgstr ""
+
+#: includes/core/class-wordpress-7-integration.php:101
+msgid "Runs the configured Assumption Detection checks and returns the current findings."
+msgstr ""
+
+#: includes/core/class-wordpress-7-integration.php:112
+msgid "Check content integrity"
+msgstr ""
+
+#: includes/core/class-wordpress-7-integration.php:113
+msgid "Checks one post against its Content Integrity baseline."
+msgstr ""
+
+#: includes/core/class-wordpress-7-integration.php:134
+msgid "Preview redirect import"
+msgstr ""
+
+#: includes/core/class-wordpress-7-integration.php:135
+msgid "Validates CSV redirect data and reports duplicates, loops, chains, and invalid rows without saving."
+msgstr ""
+
+#: includes/core/class-wordpress-7-integration.php:157
+msgid "Creates a validated redirect in the Redirect Manager."
+msgstr ""
+
+#: includes/core/class-wordpress-7-integration.php:189
+#: assets/js/wp7-admin.js:160
+msgid "Create task"
+msgstr ""
+
+#: includes/core/class-wordpress-7-integration.php:190
+msgid "Adds a task to an existing Task Manager project."
+msgstr ""
+
+#: includes/core/class-wordpress-7-integration.php:222
+msgid "Toggle module"
+msgstr ""
+
+#: includes/core/class-wordpress-7-integration.php:223
+msgid "Enables or disables one Functionalities module while preserving its settings."
+msgstr ""
+
+#: includes/core/class-wordpress-7-integration.php:247
+msgid "Explain a finding with AI"
+msgstr ""
+
+#: includes/core/class-wordpress-7-integration.php:248
+msgid "Uses the WordPress AI Client to explain one Assumption Detection or Content Integrity finding. This requires explicit opt-in and a configured provider."
+msgstr ""
+
+#: includes/core/class-wordpress-7-integration.php:412
+msgid "Assumption Detection is disabled."
+msgstr ""
+
+#: includes/core/class-wordpress-7-integration.php:427
+msgid "The post could not be found."
+msgstr ""
+
+#: includes/core/class-wordpress-7-integration.php:430
+msgid "Content Integrity is disabled."
+msgstr ""
+
+#: includes/core/class-wordpress-7-integration.php:444
+#: includes/core/class-wordpress-7-integration.php:468
+msgid "Redirect Manager is disabled."
+msgstr ""
+
+#: includes/core/class-wordpress-7-integration.php:476
+msgid "The redirect could not be created."
+msgstr ""
+
+#: includes/core/class-wordpress-7-integration.php:487
+msgid "Task Manager is disabled."
+msgstr ""
+
+#: includes/core/class-wordpress-7-integration.php:495
+msgid "The task could not be created."
+msgstr ""
+
+#: includes/core/class-wordpress-7-integration.php:508
+msgid "Unknown module."
+msgstr ""
+
+#: includes/core/class-wordpress-7-integration.php:528
+msgid "AI explanations are disabled. Enable them in Functionalities settings first."
+msgstr ""
+
+#: includes/core/class-wordpress-7-integration.php:531
+msgid "The WordPress AI Client is not available in this environment."
+msgstr ""
+
+#: includes/core/class-wordpress-7-integration.php:542
+msgid "No configured AI provider supports text generation."
+msgstr ""
+
+#: includes/core/class-wordpress-7-integration.php:706
+msgid "WordPress 7 workspace"
+msgstr ""
+
+#: includes/core/class-wordpress-7-integration.php:707
+msgid "Loading WordPress 7 workspace…"
+msgstr ""
+
+#: includes/core/class-wordpress-7-integration.php:708
+msgid "The WordPress 7 workspace could not be loaded. The classic interface remains available below."
+msgstr ""
+
+#: includes/core/class-wordpress-7-integration.php:709
+msgid "Saved."
+msgstr ""
+
+#: includes/core/class-wordpress-7-integration.php:767
+msgid "WordPress 7 Integration"
+msgstr ""
+
+#: includes/core/class-wordpress-7-integration.php:768
+msgid "Abilities, command-palette actions, modern data workspaces, Core Icon interoperability, and optional AI explanations."
+msgstr ""
+
+#: includes/core/class-wordpress-7-integration.php:771
+msgid "Allow AI explanations for individual findings"
+msgstr ""
+
+#: includes/core/class-wordpress-7-integration.php:773
+msgid "Off by default. When enabled, only the finding you explicitly ask to explain is sent through the configured WordPress AI provider."
+msgstr ""
+
+#. translators: 1: schema type, 2: source list
+#: includes/features/class-assumption-detection.php:284
+#, php-format
+msgid "Multiple sources are outputting %1$s schema (%2$s)."
+msgstr ""
+
+#. translators: %s: source list
+#: includes/features/class-assumption-detection.php:290
+#, php-format
+msgid "Found in page &lt;head&gt; output from: %s"
+msgstr ""
+
+#: includes/features/class-assumption-detection.php:293
+msgid "Multiple schema sources cause duplicate structured data in search results, potentially confusing search engines and diluting SEO benefits. Only one source should output each schema type."
+msgstr ""
+
+#. translators: 1: analytics name, 2: ID, 3: count
+#: includes/features/class-assumption-detection.php:409
+#, php-format
+msgid "%1$s (%2$s) is loaded %3$d times from different sources."
+msgstr ""
+
+#. translators: %s: location list
+#: includes/features/class-assumption-detection.php:417
+#, php-format
+msgid "Detected in: %s"
+msgstr ""
+
+#: includes/features/class-assumption-detection.php:420
+msgid "Found in page HTML output"
+msgstr ""
+
+#: includes/features/class-assumption-detection.php:421
+msgid "Duplicate tracking codes cause inflated pageview counts, skewed session data, and can slow page load. Each analytics property should only be initialized once per page."
+msgstr ""
+
+#. translators: 1: font family, 2: count
+#: includes/features/class-assumption-detection.php:539
+#, php-format
+msgid "Font family \"%1$s\" is loaded from %2$d different sources."
+msgstr ""
+
+#. translators: %s: source list
+#: includes/features/class-assumption-detection.php:545
+#, php-format
+msgid "Loaded via: %s"
+msgstr ""
+
+#: includes/features/class-assumption-detection.php:548
+msgid "Loading the same font from multiple sources wastes bandwidth and increases page load time. Consolidate font loading to a single source."
+msgstr ""
+
+#. translators: 1: current size, 2: threshold
+#: includes/features/class-assumption-detection.php:638
+#, php-format
+msgid "Inline CSS output is %1$s KB (threshold: %2$s KB)."
+msgstr ""
+
+#. translators: %s: source breakdown
+#: includes/features/class-assumption-detection.php:645
+#, php-format
+msgid "Breakdown: %s"
+msgstr ""
+
+#: includes/features/class-assumption-detection.php:648
+msgid "In page &lt;head&gt; section"
+msgstr ""
+
+#: includes/features/class-assumption-detection.php:649
+msgid "Large inline CSS blocks the initial page render and cannot be cached by browsers. Consider moving styles to external stylesheets or reducing unused CSS."
+msgstr ""
+
+#. translators: 1: average size, 2: current size
+#: includes/features/class-assumption-detection.php:667
+#, php-format
+msgid "Inline CSS increased from %1$s KB average to %2$s KB."
+msgstr ""
+
+#: includes/features/class-assumption-detection.php:671
+msgid "In page &lt;head&gt; section &lt;style&gt; tags"
+msgstr ""
+
+#. translators: %d: percentage increase
+#: includes/features/class-assumption-detection.php:674
+#, php-format
+msgid "A %d%% spike in inline CSS suggests a plugin, theme update, or content change added significant styles. This may indicate CSS bloat from unused features."
+msgstr ""
+
+#. translators: 1: number of jQuery instances, 2: sources
+#: includes/features/class-assumption-detection.php:755
+#, php-format
+msgid "Multiple jQuery instances detected (%1$d scripts from: %2$s)."
+msgstr ""
+
+#. translators: %s: script handle list
+#: includes/features/class-assumption-detection.php:761
+#, php-format
+msgid "Registered script handles: %s"
+msgstr ""
+
+#: includes/features/class-assumption-detection.php:764
+msgid "Multiple jQuery versions cause JavaScript errors, plugin conflicts, and wasted bandwidth. Only WordPress Core jQuery should be loaded; plugins/themes should use wp_enqueue_script dependencies."
+msgstr ""
+
+#. translators: %s: list of duplicate meta tags
+#: includes/features/class-assumption-detection.php:846
+#, php-format
+msgid "Duplicate meta tags detected: %s."
+msgstr ""
+
+#: includes/features/class-assumption-detection.php:849
+msgid "In page &lt;head&gt; section &lt;meta&gt; tags"
+msgstr ""
+
+#: includes/features/class-assumption-detection.php:850
+msgid "Duplicate meta tags confuse search engines and social platforms about which value to use. Common causes: multiple SEO plugins, theme meta output, or manual code additions."
+msgstr ""
+
+#: includes/features/class-assumption-detection.php:890
+msgid "REST API users endpoint is publicly accessible (user enumeration possible)."
+msgstr ""
+
+#. translators: %s: REST API URL
+#: includes/features/class-assumption-detection.php:893
+#, php-format
+msgid "Endpoint: %s"
+msgstr ""
+
+#: includes/features/class-assumption-detection.php:896
+msgid "Publicly accessible user endpoints allow attackers to enumerate usernames for targeted brute-force or social engineering attacks. Consider restricting REST API access to authenticated users."
+msgstr ""
+
+#. translators: %s: author name
+#: includes/features/class-assumption-detection.php:927
+#, php-format
+msgid "oEmbed exposes author name publicly: %s."
+msgstr ""
+
+#: includes/features/class-assumption-detection.php:930
+msgid "oEmbed REST endpoint response"
+msgstr ""
+
+#: includes/features/class-assumption-detection.php:931
+msgid "oEmbed data is fetched when your content is embedded elsewhere. Exposing author names can reveal admin usernames to potential attackers."
+msgstr ""
+
+#. translators: 1: count, 2: list of libraries
+#: includes/features/class-assumption-detection.php:1030
+#, php-format
+msgid "Multiple lazy loading implementations detected (%1$d): %2$s."
+msgstr ""
+
+#: includes/features/class-assumption-detection.php:1034
+msgid "In page scripts and image attributes"
+msgstr ""
+
+#: includes/features/class-assumption-detection.php:1035
+msgid "Multiple lazy loading implementations can cause images to not load, flash of invisible content, or JavaScript errors. Disable all but one lazy loading method."
+msgstr ""
+
+#. translators: %d: number of HTTP resources
+#: includes/features/class-assumption-detection.php:1086
+#, php-format
+msgid "Mixed content detected: %d HTTP resource(s) on HTTPS site."
+msgstr ""
+
+#. translators: %s: list of resources
+#: includes/features/class-assumption-detection.php:1091
+#, php-format
+msgid "Resources: %s"
+msgstr ""
+
+#: includes/features/class-assumption-detection.php:1094
+msgid "HTTP resources on HTTPS pages cause browser security warnings, may be blocked entirely, and break the secure padlock indicator. Update all resource URLs to HTTPS."
+msgstr ""
+
+#. translators: %s: list of missing headers
+#: includes/features/class-assumption-detection.php:1154
+#, php-format
+msgid "Missing security headers: %s."
+msgstr ""
+
+#: includes/features/class-assumption-detection.php:1157
+msgid "HTTP response headers from server"
+msgstr ""
+
+#: includes/features/class-assumption-detection.php:1158
+msgid "Security headers protect against clickjacking, XSS attacks, and MIME-type sniffing. These are typically configured in .htaccess, nginx config, or via a security plugin."
+msgstr ""
+
+#. translators: %s: list of debug issues
+#: includes/features/class-assumption-detection.php:1204
+#, php-format
+msgid "Debug mode exposure: %s."
+msgstr ""
+
+#: includes/features/class-assumption-detection.php:1207
+msgid "wp-config.php constants and PHP ini settings"
+msgstr ""
+
+#: includes/features/class-assumption-detection.php:1208
+msgid "Debug settings expose sensitive error messages, file paths, and database queries to visitors. These should be disabled on production sites."
+msgstr ""
+
+#. translators: %d: number of stuck jobs
+#: includes/features/class-assumption-detection.php:1250
+#, php-format
+msgid "%d cron job(s) are overdue"
+msgstr ""
+
+#. translators: %s: list of cron issues
+#: includes/features/class-assumption-detection.php:1266
+#, php-format
+msgid "Cron issues detected: %s."
+msgstr ""
+
+#: includes/features/class-assumption-detection.php:1269
+msgid "WordPress scheduled tasks (wp-cron.php)"
+msgstr ""
+
+#: includes/features/class-assumption-detection.php:1270
+msgid "Cron issues prevent scheduled tasks like publishing posts, sending emails, or running backups. Check if a server-level cron is configured or if WP-Cron needs to be re-enabled."
+msgstr ""
+
+#: includes/features/class-assumption-detection.php:1341
+#: includes/features/class-assumption-detection.php:1370
+#: includes/features/class-assumption-detection.php:1402
+#: includes/features/class-content-regression.php:1408
+#: includes/features/class-content-regression.php:1436
+#: includes/features/class-content-regression.php:1465
+msgid "Permission denied."
+msgstr ""
+
+#: includes/features/class-assumption-detection.php:1347
+#: includes/features/class-assumption-detection.php:1376
+#: includes/features/class-assumption-detection.php:1409
+msgid "Invalid request."
+msgstr ""
+
+#. translators: 1: previous link count, 2: current link count
+#: includes/features/class-content-regression.php:770
+#, php-format
+msgid "This update reduced internal links from %1$d to %2$d compared to the previous version."
+msgstr ""
+
+#. translators: %d: percentage drop
+#: includes/features/class-content-regression.php:828
+#, php-format
+msgid "This post is %d%% shorter than its previous published version."
+msgstr ""
+
+#: includes/features/class-content-regression.php:869
+msgid "No H1 heading detected in this post."
+msgstr ""
+
+#. translators: %d: number of H1 headings in content
+#: includes/features/class-content-regression.php:882
+#, php-format
+msgid "Post title serves as H1, but %d additional H1 heading found in content."
+msgid_plural "Post title serves as H1, but %d additional H1 headings found in content."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: number of H1 headings found
+#: includes/features/class-content-regression.php:899
+#, php-format
+msgid "Multiple H1 headings detected (%d found in content)."
+msgstr ""
+
+#. translators: %d: first heading level in content
+#: includes/features/class-content-regression.php:921
+#, php-format
+msgid "Content should start with H2 after title, but starts with H%d."
+msgstr ""
+
+#. translators: %d: first heading level
+#: includes/features/class-content-regression.php:926
+#, php-format
+msgid "Content starts with H%d instead of H1."
+msgstr ""
+
+#. translators: 1: previous heading level, 2: current heading level
+#: includes/features/class-content-regression.php:943
+#, php-format
+msgid "Heading level skipped: H%1$d followed by H%2$d."
+msgstr ""
+
+#. translators: 1: number of images missing alt, 2: total images
+#: includes/features/class-content-regression.php:990
+#, php-format
+msgid "%1$d of %2$d image is missing alt text."
+msgid_plural "%1$d of %2$d images are missing alt text."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/features/class-content-regression.php:1289
+msgid "Not checked yet. Update this post to record a baseline."
+msgstr ""
+
+#: includes/features/class-content-regression.php:1296
+msgid "No issues detected at the last update"
+msgstr ""
+
+#. translators: %d: number of warnings
+#: includes/features/class-content-regression.php:1302
+#, php-format
+msgid "%d issue detected at the last update"
+msgid_plural "%d issues detected at the last update"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/features/class-content-regression.php:1347
+msgid "No structural issues detected."
+msgstr ""
+
+#: includes/features/class-content-regression.php:1348
+msgid "No baseline snapshot available yet. Changes will be tracked after first publish."
+msgstr ""
+
+#: includes/features/class-content-regression.php:1349
+msgid "Review changes"
+msgstr ""
+
+#: includes/features/class-content-regression.php:1350
+msgid "Ignore for this update"
+msgstr ""
+
+#: includes/features/class-content-regression.php:1351
+msgid "Mark change as intentional"
+msgstr ""
+
+#: includes/features/class-content-regression.php:1352
+msgid "Reset baseline"
+msgstr ""
+
+#: includes/features/class-content-regression.php:1353
+msgid "Disable detection for this post"
+msgstr ""
+
+#: includes/features/class-content-regression.php:1354
+msgid "Mark as short-form content"
+msgstr ""
+
+#: includes/features/class-content-regression.php:1355
+msgid "Last snapshot:"
+msgstr ""
+
+#: includes/features/class-content-regression.php:1356
+msgid "Checking content integrity..."
+msgstr ""
+
+#: includes/features/class-content-regression.php:1357
+msgid "Headings added:"
+msgstr ""
+
+#: includes/features/class-content-regression.php:1358
+msgid "Headings removed:"
+msgstr ""
+
+#: includes/features/class-content-regression.php:1415
+#: includes/features/class-content-regression.php:1443
+#: includes/features/class-content-regression.php:1472
+msgid "Invalid post."
+msgstr ""
+
+#: includes/features/class-content-regression.php:1424
+msgid "Change marked as intentional."
+msgstr ""
+
+#: includes/features/class-content-regression.php:1453
+msgid "Baseline has been reset."
+msgstr ""
+
+#: includes/features/class-link-management.php:559
+msgid "Please provide a valid URL."
+msgstr ""
+
+#: includes/features/class-link-management.php:602
+msgid "Finished. No further posts contain this URL."
+msgstr ""
+
+#: includes/features/class-link-management.php:603
+msgid "No posts found containing this URL."
+msgstr ""
+
+#. translators: 1: number of posts updated, 2: number of posts scanned.
+#: includes/features/class-link-management.php:636
+#, php-format
+msgid "Updated %1$d of %2$d post(s) scanned."
+msgstr ""
+
+#: includes/features/class-link-management.php:642
+msgid "More posts remain — continuing."
+msgstr ""
+
+#. translators: %d: lockout duration in minutes
+#: includes/features/class-login-security.php:257
+#, php-format
+msgid "Too many failed login attempts. Please try again in %d minutes."
+msgstr ""
+
+#. translators: %d: remaining attempts
+#: includes/features/class-login-security.php:356
+#, php-format
+msgid "Login failed. %d attempt(s) remaining before lockout."
+msgstr ""
+
+#: includes/features/class-login-security.php:381
+msgid "Invalid username or password."
+msgstr ""
+
+#: includes/features/class-login-security.php:610
+msgid "Unlocked."
+msgstr ""
+
+#. translators: %1$s: year, %2$s: site name
+#: includes/features/class-meta.php:103
+#, php-format
+msgid "© %1$s %2$s. All rights reserved. No reproduction without permission."
+msgstr ""
+
+#: includes/features/class-meta.php:111
+msgid "Creative Commons Attribution 4.0"
+msgstr ""
+
+#: includes/features/class-meta.php:112
+msgid "This work is licensed under CC BY 4.0"
+msgstr ""
+
+#: includes/features/class-meta.php:117
+msgid "Creative Commons Attribution-ShareAlike 4.0"
+msgstr ""
+
+#: includes/features/class-meta.php:118
+msgid "This work is licensed under CC BY-SA 4.0"
+msgstr ""
+
+#: includes/features/class-meta.php:123
+msgid "Creative Commons Attribution-NonCommercial 4.0"
+msgstr ""
+
+#: includes/features/class-meta.php:124
+msgid "This work is licensed under CC BY-NC 4.0"
+msgstr ""
+
+#: includes/features/class-meta.php:129
+msgid "Creative Commons Attribution-NonCommercial-ShareAlike 4.0"
+msgstr ""
+
+#: includes/features/class-meta.php:130
+msgid "This work is licensed under CC BY-NC-SA 4.0"
+msgstr ""
+
+#: includes/features/class-meta.php:135
+msgid "Creative Commons Attribution-NoDerivatives 4.0"
+msgstr ""
+
+#: includes/features/class-meta.php:136
+msgid "This work is licensed under CC BY-ND 4.0"
+msgstr ""
+
+#: includes/features/class-meta.php:141
+msgid "Creative Commons Attribution-NonCommercial-NoDerivatives 4.0"
+msgstr ""
+
+#: includes/features/class-meta.php:142
+msgid "This work is licensed under CC BY-NC-ND 4.0"
+msgstr ""
+
+#: includes/features/class-meta.php:147
+msgid "CC0 1.0 Universal (Public Domain)"
+msgstr ""
+
+#: includes/features/class-meta.php:148
+msgid "This work is dedicated to the public domain under CC0 1.0"
+msgstr ""
+
+#: includes/features/class-meta.php:481
+msgid "Content License"
+msgstr ""
+
+#: includes/features/class-meta.php:515
+msgid "Choose content license for this post."
+msgstr ""
+
+#. translators: %s: SEO plugin name
+#: includes/features/class-meta.php:523
+#, php-format
+msgid "Schema integration: %s"
+msgstr ""
+
+#: includes/features/class-meta.php:528
+msgid "Schema: Standalone JSON-LD"
+msgstr ""
+
+#: includes/features/class-meta.php:547
+msgid "None"
+msgstr ""
+
+#: includes/features/class-misc.php:561
+msgid "Feeds are disabled on this site."
+msgstr ""
+
+#: includes/features/class-pwa.php:820
+msgid "Install this app"
+msgstr ""
+
+#: includes/features/class-pwa.php:821
+msgid "Get a faster, full-screen experience."
+msgstr ""
+
+#: includes/features/class-pwa.php:913
+msgid "Offline"
+msgstr ""
+
+#: includes/features/class-pwa.php:952
+msgid "You're Offline"
+msgstr ""
+
+#: includes/features/class-pwa.php:953
+msgid "Check your internet connection and try again."
+msgstr ""
+
+#: includes/features/class-pwa.php:957
+msgid "Try Again"
+msgstr ""
+
+#: includes/features/class-pwa.php:960
+msgid "Go Back"
+msgstr ""
+
+#: includes/features/class-pwa.php:963
+msgid "Homepage"
+msgstr ""
+
+#: includes/features/class-pwa.php:968
+msgid "Available Offline"
+msgstr ""
+
+#: includes/features/class-redirect-manager.php:1114
+msgid "Source and destination URLs are required."
+msgstr ""
+
+#: includes/features/class-redirect-manager.php:1122
+msgid "Redirect added."
+msgstr ""
+
+#: includes/features/class-redirect-manager.php:1127
+msgid "Failed to add redirect. URL may already exist."
+msgstr ""
+
+#: includes/features/class-redirect-manager.php:1160
+#: includes/features/class-redirect-manager.php:1189
+#: includes/features/class-redirect-manager.php:1212
+msgid "Redirect ID is required."
+msgstr ""
+
+#: includes/features/class-redirect-manager.php:1168
+#: includes/features/class-redirect-manager.php:1220
+msgid "Redirect updated."
+msgstr ""
+
+#: includes/features/class-redirect-manager.php:1173
+msgid "Failed to update redirect."
+msgstr ""
+
+#: includes/features/class-redirect-manager.php:1194
+msgid "Redirect deleted."
+msgstr ""
+
+#: includes/features/class-redirect-manager.php:1196
+msgid "Failed to delete redirect."
+msgstr ""
+
+#: includes/features/class-redirect-manager.php:1225
+msgid "Failed to toggle redirect."
+msgstr ""
+
+#: includes/features/class-redirect-manager.php:1242
+msgid "Import data is required."
+msgstr ""
+
+#: includes/features/class-redirect-manager.php:1261
+msgid "Invalid redirect data format."
+msgstr ""
+
+#: includes/features/class-redirect-manager.php:1272
+msgid "The redirect set changed before import. Preview it again."
+msgstr ""
+
+#. translators: %d: Number of redirects imported.
+#: includes/features/class-redirect-manager.php:1277
+#, php-format
+msgid "Imported %d redirect(s)."
+msgstr ""
+
+#: includes/features/class-schema.php:444
+msgid "Home"
+msgstr ""
+
+#: includes/features/class-svg-icons.php:246
+msgid "Icon callout"
+msgstr ""
+
+#: includes/features/class-svg-icons.php:247
+msgid "A reusable icon and text callout whose icon and label can be overridden in synced patterns."
+msgstr ""
+
+#: includes/features/class-svg-icons.php:249
+msgid "Add a concise callout message."
+msgstr ""
+
+#: includes/features/class-svg-icons.php:486
+#: assets/js/svg-icons-editor.js:283
+#: assets/js/svg-icons-editor.js:464
+msgid "Insert icon shortcode"
+msgstr ""
+
+#: includes/features/class-svg-icons.php:487
+#: assets/js/svg-icons-editor.js:260
+msgid "Search icons"
+msgstr ""
+
+#: includes/features/class-svg-icons.php:488
+#: assets/js/svg-icons-editor.js:220
+msgid "No icons found. Add icons in Functionalities > SVG Icons."
+msgstr ""
+
+#: includes/features/class-svg-icons.php:489
+#: assets/js/svg-icons-editor.js:219
+msgid "No matching icons found."
+msgstr ""
+
+#: includes/features/class-svg-icons.php:490
+msgid "SVG Icon"
+msgstr ""
+
+#: includes/features/class-svg-icons.php:491
+msgid "Insert an SVG icon from your library as a block."
+msgstr ""
+
+#: includes/features/class-svg-icons.php:492
+#: assets/js/svg-icons-editor.js:367
+msgid "Change icon"
+msgstr ""
+
+#: includes/features/class-svg-icons.php:493
+#: assets/js/svg-icons-editor.js:376
+msgid "Icon settings"
+msgstr ""
+
+#: includes/features/class-svg-icons.php:494
+#: assets/js/svg-icons-editor.js:393
+msgid "Icon size"
+msgstr ""
+
+#: includes/features/class-svg-icons.php:495
+#: assets/js/svg-icons-editor.js:401
+msgid "Size unit"
+msgstr ""
+
+#: includes/features/class-svg-icons.php:496
+#: assets/js/svg-icons-editor.js:414
+msgid "Color mode"
+msgstr ""
+
+#: includes/features/class-svg-icons.php:497
+#: assets/js/svg-icons-editor.js:417
+msgid "Monochrome (inherit text color)"
+msgstr ""
+
+#: includes/features/class-svg-icons.php:498
+#: assets/js/svg-icons-editor.js:418
+msgid "Original SVG colors"
+msgstr ""
+
+#: includes/features/class-svg-icons.php:499
+#: assets/js/svg-icons-editor.js:423
+msgid "Decorative icon"
+msgstr ""
+
+#: includes/features/class-svg-icons.php:500
+#: assets/js/svg-icons-editor.js:424
+msgid "Decorative icons are hidden from assistive technology."
+msgstr ""
+
+#: includes/features/class-svg-icons.php:501
+#: assets/js/svg-icons-editor.js:429
+msgid "Accessibility label"
+msgstr ""
+
+#: includes/features/class-svg-icons.php:502
+#: assets/js/svg-icons-editor.js:227
+#: assets/js/svg-icons-editor.js:368
+#: assets/js/svg-icons-editor.js:450
+msgid "Select icon"
+msgstr ""
+
+#: includes/features/class-svg-icons.php:503
+#: assets/js/svg-icons-editor.js:243
+msgid "Loading icons…"
+msgstr ""
+
+#: includes/features/class-svg-icons.php:504
+#: assets/js/svg-icons-editor.js:249
+msgid "Load more"
+msgstr ""
+
+#: includes/features/class-svg-icons.php:505
+#: assets/js/svg-icons-editor.js:215
+msgid "Icons could not be loaded. Try again."
+msgstr ""
+
+#: includes/features/class-svg-icons.php:506
+#: assets/js/svg-icons-editor.js:439
+msgid "The selected icon is no longer in the library. Choose a replacement."
+msgstr ""
+
+#: includes/features/class-svg-icons.php:507
+msgid "Recent icons"
+msgstr ""
+
+#: includes/features/class-svg-icons.php:508
+#: assets/js/svg-icons-editor.js:380
+msgid "Icon source"
+msgstr ""
+
+#: includes/features/class-svg-icons.php:509
+#: assets/js/svg-icons-editor.js:383
+msgid "Custom library"
+msgstr ""
+
+#: includes/features/class-svg-icons.php:510
+#: assets/js/svg-icons-editor.js:384
+msgid "WordPress Core"
+msgstr ""
+
+#: includes/features/class-svg-icons.php:854
+msgid "Slug and SVG content are required."
+msgstr ""
+
+#: includes/features/class-svg-icons.php:862
+#: includes/features/class-svg-icons.php:876
+msgid "Invalid SVG content."
+msgstr ""
+
+#: includes/features/class-svg-icons.php:900
+msgid "Icon saved successfully."
+msgstr ""
+
+#: includes/features/class-svg-icons.php:931
+msgid "Icon slug is required."
+msgstr ""
+
+#: includes/features/class-svg-icons.php:945
+msgid "Icon deleted successfully."
+msgstr ""
+
+#. translators: %s: Project name
+#: includes/features/class-task-manager.php:652
+#, php-format
+msgid "Tasks: %s"
+msgstr ""
+
+#: includes/features/class-task-manager.php:672
+#: includes/features/class-task-manager.php:1066
+msgid "Project not found."
+msgstr ""
+
+#: includes/features/class-task-manager.php:700
+msgid "All tasks completed!"
+msgstr ""
+
+#: includes/features/class-task-manager.php:729
+msgid "Manage Tasks →"
+msgstr ""
+
+#: includes/features/class-task-manager.php:770
+msgid "Project name is required."
+msgstr ""
+
+#: includes/features/class-task-manager.php:778
+msgid "Project created."
+msgstr ""
+
+#: includes/features/class-task-manager.php:798
+#: includes/features/class-task-manager.php:1060
+#: includes/features/class-task-manager.php:1094
+msgid "Project slug is required."
+msgstr ""
+
+#: includes/features/class-task-manager.php:803
+msgid "Project deleted."
+msgstr ""
+
+#: includes/features/class-task-manager.php:825
+msgid "Project and task text are required."
+msgstr ""
+
+#: includes/features/class-task-manager.php:833
+msgid "Task added."
+msgstr ""
+
+#: includes/features/class-task-manager.php:879
+#: includes/features/class-task-manager.php:910
+#: includes/features/class-task-manager.php:935
+msgid "Project and task ID are required."
+msgstr ""
+
+#: includes/features/class-task-manager.php:887
+#: includes/features/class-task-manager.php:943
+msgid "Task updated."
+msgstr ""
+
+#: includes/features/class-task-manager.php:915
+msgid "Task deleted."
+msgstr ""
+
+#: includes/features/class-task-manager.php:948
+msgid "Failed to toggle task."
+msgstr ""
+
+#: includes/features/class-task-manager.php:968
+msgid "Project and task IDs are required."
+msgstr ""
+
+#: includes/features/class-task-manager.php:973
+msgid "Tasks reordered."
+msgstr ""
+
+#: includes/features/class-task-manager.php:975
+msgid "Failed to reorder tasks."
+msgstr ""
+
+#: includes/features/class-task-manager.php:990
+msgid "JSON data is required."
+msgstr ""
+
+#: includes/features/class-task-manager.php:996
+msgid "Invalid JSON format. Must contain \"name\" field."
+msgstr ""
+
+#: includes/features/class-task-manager.php:1040
+msgid "Project imported."
+msgstr ""
+
+#: includes/features/class-task-manager.php:1109
+msgid "Widget setting updated."
+msgstr ""
+
+#: includes/features/class-task-manager.php:1181
+msgid "Project required."
+msgstr ""
+
+#. translators: %d: number of imported draft posts
+#: includes/features/class-task-manager.php:1224
+#, php-format
+msgid "Imported %d draft posts."
+msgstr ""
+
+#. translators: %d: Number of fields that need attention
+#: assets/js/wp7-admin.js:160
+msgid "Source path"
+msgstr ""
+
+#: assets/js/wp7-admin.js:160
+msgid "Example: /old-page"
+msgstr ""
+
+#: assets/js/wp7-admin.js:160
+msgid "Destination URL"
+msgstr ""
+
+#: assets/js/wp7-admin.js:160
+msgid "Redirect code"
+msgstr ""
+
+#: assets/js/wp7-admin.js:160
+msgid "Add redirect"
+msgstr ""
+
+#: assets/js/wp7-admin.js:160
+msgid "Redirect created."
+msgstr ""
+
+#: assets/js/wp7-admin.js:160
+msgid "Project"
+msgstr ""
+
+#: assets/js/wp7-admin.js:160
+msgid "Add task"
+msgstr ""
+
+#: assets/js/wp7-admin.js:160
+msgid "Task created."
+msgstr ""
+
+#: assets/js/wp7-admin.js:160
+msgid "Create a project in the classic interface below before adding tasks here."
+msgstr ""
+
+#: assets/js/wp7-admin.js:160
+msgid "Finding to explain"
+msgstr ""
+
+#: assets/js/wp7-admin.js:160
+msgid "Paste only the warning you want to send to the configured AI provider."
+msgstr ""
+
+#: assets/js/wp7-admin.js:160
+msgid "Explain a finding"
+msgstr ""
+
+#: assets/js/wp7-admin.js:160
+msgid "Explain with AI"
+msgstr ""
+
+#: assets/js/wp7-admin.js:160
+msgid "Source"
+msgstr ""
+
+#: assets/js/wp7-admin.js:160
+msgid "Destination"
+msgstr ""
+
+#: assets/js/wp7-admin.js:160
+msgid "Code"
+msgstr ""
+
+#: assets/js/wp7-admin.js:160
+msgid "Enabled"
+msgstr ""
+
+#: assets/js/wp7-admin.js:160
+msgid "Created"
+msgstr ""
+
+#: assets/js/wp7-admin.js:160
+msgid "Missing path"
+msgstr ""
+
+#: assets/js/wp7-admin.js:160
+msgid "Requests"
+msgstr ""
+
+#: assets/js/wp7-admin.js:160
+msgid "Referrer"
+msgstr ""
+
+#: assets/js/wp7-admin.js:160
+msgid "Redirects"
+msgstr ""
+
+#: assets/js/wp7-admin.js:160
+msgid "404 activity"
+msgstr ""
+
+#: assets/js/wp7-admin.js:160
+msgid "Tasks"
+msgstr ""
+
+#: assets/js/wp7-commands.js:44
+msgid "Functionalities: Open dashboard"
+msgstr ""
+
+#: assets/js/wp7-commands.js:50
+msgid "Functionalities: Manage redirects"
+msgstr ""
+
+#: assets/js/wp7-commands.js:56
+msgid "Functionalities: Manage tasks"
+msgstr ""
+
+#: assets/js/wp7-commands.js:62
+msgid "Functionalities: Manage SVG icons"
+msgstr ""
+
+#: assets/js/wp7-commands.js:68
+msgid "Functionalities: Scan site assumptions"
+msgstr ""
+
+#: assets/js/wp7-commands.js:72
+msgid "Assumption scan completed."
+msgstr ""
+
+#: assets/blocks/svg-icon/block.json
+msgctxt "block title"
+msgid "SVG Icon"
+msgstr ""
+
+#: assets/blocks/svg-icon/block.json
+msgctxt "block description"
+msgid "Insert an SVG icon from your Functionalities library."
+msgstr ""
