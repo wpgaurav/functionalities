@@ -21,6 +21,7 @@ phpstan.neon
 
 # Build tools
 /build.sh
+/bin
 /package.json
 /package-lock.json
 /composer.json

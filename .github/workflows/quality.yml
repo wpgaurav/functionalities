@@ -55,20 +55,13 @@ jobs:
           FUNCTIONALITIES_WP_DIR: /tmp/wordpress/src
 
       - name: Translation template is current
-        run: |
-          curl -sSL -o /tmp/wp-cli.phar https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
-          php /tmp/wp-cli.phar i18n make-pot . /tmp/expected.pot \
-            --slug=functionalities --domain=functionalities \
-            --exclude=tests,src,node_modules,vendor,build,assets/vendor
-          diff \
-            <(grep -v 'POT-Creation-Date' languages/functionalities.pot) \
-            <(grep -v 'POT-Creation-Date' /tmp/expected.pot) \
-            || { echo '::error::languages/functionalities.pot is stale. Run wp i18n make-pot.'; exit 1; }
+        run: ./bin/make-pot.sh --check
       - run: |
           for file in $(find assets -name '*.js' -type f); do
             node --check "$file"
           done
       - run: bash -n build.sh
+      - run: bash -n bin/make-pot.sh
 
   package:
     name: Distribution package

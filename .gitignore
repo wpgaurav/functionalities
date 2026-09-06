@@ -12,9 +12,10 @@ Thumbs.db
 *.swo
 *~
 
-# Dependencies
-node_modules/
-vendor/
+# Dependencies. Both are anchored to the repo root: an unanchored
+# `vendor/` also matches assets/vendor/, which is shipped source.
+/node_modules/
+/vendor/
 
 # Log files
 *.log
