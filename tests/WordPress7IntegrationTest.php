@@ -39,7 +39,12 @@ final class WordPress7IntegrationTest extends TestCase {
 		);
 
 		$this->assertSame( 3, $metadata['apiVersion'] );
-		$this->assertSame( '1.6.0', $metadata['version'] );
+
+		// Pinning the literal here meant this test failed on every release.
+		// VersionConsistencyTest already asserts block.json matches the plugin
+		// header, so all this needs to check is that the key is present.
+		$this->assertArrayHasKey( 'version', $metadata );
+		$this->assertMatchesRegularExpression( '/^\d+\.\d+\.\d+$/', $metadata['version'] );
 		$this->assertSame( 'content', $metadata['attributes']['iconSlug']['role'] );
 		$this->assertSame( 'content', $metadata['attributes']['coreIcon']['role'] );
 		$this->assertSame( 'content', $metadata['attributes']['label']['role'] );

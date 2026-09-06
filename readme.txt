@@ -5,7 +5,7 @@ Tags: performance, security, seo, redirection, cleanup
 Requires at least: 6.3
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.6.0
+Stable tag: 1.6.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -169,6 +169,13 @@ Before uninstalling, go to the Functionalities dashboard and check **"Delete all
 3. Assumption Detection module
 
 == Changelog ==
+
+= 1.6.1 =
+* Fixed: The WordPress 7 data panel no longer appears for a module that is switched off. On a site with Redirect Manager disabled, its page still rendered two empty tables and a working "Add redirect" form, even though the module refuses every write while disabled, so the form could only produce an error.
+* Changed: The panel's "WordPress 7 workspace" heading is gone. Its tables already carry their own headings, and naming a section after the WordPress version labelled the implementation rather than what you are looking at.
+* Fixed: The Performance & Cleanup settings page was headed "Miscellaneous (Bloat Control)", which matched neither the module card you clicked nor any other name in the interface.
+* Changed: The dashboard box holding the AI opt-in is now called "AI explanations", after the single setting it contains, instead of advertising four platform features that are not configurable there.
+* Fixed: Link Management's JSON preset filter note now matches the format used by every other filter note in the plugin.
 
 = 1.6.0 =
 * Security: Abilities API operations now use a permission callback per ability and reject undeclared input properties. A shared callback previously widened to `edit_post` whenever the request carried a `post_id`, so any user who could edit one post could toggle modules, create redirects, create tasks, and trigger scans.
@@ -382,6 +389,9 @@ Before uninstalling, go to the Functionalities dashboard and check **"Delete all
 * Added: Assumption Detection module
 
 == Upgrade Notice ==
+
+= 1.6.1 =
+Interface fixes. The WordPress 7 data panel no longer appears for modules you have switched off, where it offered a create form that could not work. Several admin headings now match the module names they belong to. No settings, data, or hooks change.
 
 = 1.6.0 =
 Security release. Fixes an Abilities API permission flaw that let any user who could edit a post reach administrator-only operations, moves redirect and task data into a private folder, and stops header/footer snippets being mangled for logged-out visitors. Also replaces DOMDocument with the WordPress HTML API in three content filters, so pages using Vue or Alpine are processed correctly instead of skipped. Existing settings, hooks, admin URLs, and data files are migrated automatically.

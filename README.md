@@ -2,7 +2,7 @@
 
 All-in-one WordPress optimization toolkit with 16 modules for performance, security, SEO, and content management. Built with modern WordPress coding standards and a clean module-based dashboard. Optimized for performance with modular initialization, static property caching, and intelligent transients.
 
-**Version:** 1.6.0
+**Version:** 1.6.1
 **Requires WordPress:** 6.3 or later (tested up to 7.1)
 **Requires PHP:** 7.4 or later
 **License:** GPL-2.0-or-later
