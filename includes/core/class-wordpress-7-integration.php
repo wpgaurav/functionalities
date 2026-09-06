@@ -688,10 +688,20 @@ class WordPress_7_Integration {
 		$page = isset( $_GET['page'] ) ? \sanitize_key( \wp_unslash( $_GET['page'] ) ) : '';
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only routing.
 		$module = isset( $_GET['module'] ) ? \sanitize_key( \wp_unslash( $_GET['module'] ) ) : '';
+		// The workspace must not render for a module that is switched off. The
+		// REST route and every ability already refuse, so without this the page
+		// showed an empty table and a create form that could only ever error.
+		$workspace_module = $module;
+		if ( 'functionalities-task-manager' === $page ) {
+			$workspace_module = 'task-manager';
+		}
+		$module_enabled = '' !== $workspace_module && Module_Registry::is_enabled( $workspace_module );
+
 		$config = array(
 			'isFunctionalities' => $is_functionalities,
 			'page'              => $page,
 			'module'            => $module,
+			'moduleEnabled'     => $module_enabled,
 			'adminDataPath'     => '/functionalities/v1/wp7/admin-data',
 			'settingsPath'      => '/functionalities/v1/wp7/settings',
 			'abilitiesPath'     => '/wp-abilities/v1/abilities/',
@@ -703,10 +713,9 @@ class WordPress_7_Integration {
 				'assumptions' => \admin_url( 'admin.php?page=functionalities&module=assumption-detection' ),
 			),
 			'i18n'              => array(
-				'modernTools' => \__( 'WordPress 7 workspace', 'functionalities' ),
-				'loading'     => \__( 'Loading WordPress 7 workspace…', 'functionalities' ),
-				'loadError'   => \__( 'The WordPress 7 workspace could not be loaded. The classic interface remains available below.', 'functionalities' ),
-				'saved'       => \__( 'Saved.', 'functionalities' ),
+				'loading'   => \__( 'Loading…', 'functionalities' ),
+				'loadError' => \__( 'This view could not be loaded. The full interface is available below.', 'functionalities' ),
+				'saved'     => \__( 'Saved.', 'functionalities' ),
 			),
 		);
 
@@ -764,8 +773,8 @@ class WordPress_7_Integration {
 		$options = self::get_options();
 		?>
 		<section class="functionalities-tools functionalities-wp7-settings" data-functionalities-wp7-settings>
-			<h2><?php \esc_html_e( 'WordPress 7 Integration', 'functionalities' ); ?></h2>
-			<p><?php \esc_html_e( 'Abilities, command-palette actions, modern data workspaces, Core Icon interoperability, and optional AI explanations.', 'functionalities' ); ?></p>
+			<h2><?php \esc_html_e( 'AI explanations', 'functionalities' ); ?></h2>
+			<p><?php \esc_html_e( 'Assumption Detection and Content Integrity can explain a finding in plain language using your configured WordPress AI provider.', 'functionalities' ); ?></p>
 			<label>
 				<input type="checkbox" data-functionalities-ai-toggle <?php \checked( ! empty( $options['ai_explanations'] ) ); ?>>
 				<?php \esc_html_e( 'Allow AI explanations for individual findings', 'functionalities' ); ?>

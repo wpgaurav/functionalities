@@ -1163,7 +1163,7 @@ class Module_Controller {
 
 		\add_settings_section(
 			'functionalities_misc_section',
-			\__( 'Miscellaneous (Bloat Control)', 'functionalities' ),
+			\__( 'Performance & Cleanup', 'functionalities' ),
 			function () {
 				echo '<p>' . \esc_html__( 'Remove unnecessary WordPress features to improve performance and security.', 'functionalities' ) . '</p>';
 
@@ -2932,7 +2932,9 @@ class Module_Controller {
 			</div>
 
 			<p class="description">
-				<?php echo \esc_html__( 'Filter available: functionalities_json_preset_path', 'functionalities' ); ?>
+				<?php
+				echo \esc_html__( 'Filter:', 'functionalities' ) . ' <code>functionalities_json_preset_path</code> — ' . \esc_html__( 'change where the preset file is read from', 'functionalities' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Both segments escaped above; the code tag is literal.
+				?>
 			</p>
 		</div>
 
