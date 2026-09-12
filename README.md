@@ -1,5 +1,7 @@
 # Dynamic Functionalities
 
+[![Buy me a coffee](https://img.shields.io/badge/Buy%20me%20a%20coffee-FFDD00?style=flat&logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/gauravtiwari)
+
 All-in-one WordPress optimization toolkit with 16 modules for performance, security, SEO, and content management. Built with modern WordPress coding standards and a clean module-based dashboard. Optimized for performance with modular initialization, static property caching, and intelligent transients.
 
 **Version:** 1.6.1
@@ -482,6 +484,16 @@ Example module definition:
     'icon'        => 'dashicons-admin-generic',
 ),
 ```
+
+## Support This Project
+
+Functionalities is a free and open source WordPress plugin with 16 modules for performance, security, SEO and content management, each behind its own toggle. For 1.6.0 I moved Link Management, Block Cleanup and Schema to the WordPress HTML API so they edit attributes in place and leave Vue and Alpine templates alone.
+
+If it replaced a separate redirect manager or a header and footer snippets plugin on your site, you can buy me a coffee.
+
+<a href="https://buymeacoffee.com/gauravtiwari"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy me a coffee" height="50"></a>
+
+A star on the repo helps and so does an issue that lists your WordPress and PHP versions, the module you had switched on and the steps that led to the bug.
 
 ---
 
