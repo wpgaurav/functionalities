@@ -11,6 +11,16 @@
 	var applyButton = root.querySelector('[data-tools-apply]');
 	var result = root.querySelector('[data-tools-result]');
 	var documentText = '';
+	var includeCode = root.querySelector('[data-tools-include-code]');
+	var revision = 0;
+	var reviewed = null;
+
+	function invalidate() {
+		revision++;
+		reviewed = null;
+		applyButton.disabled = true;
+	}
+	includeCode.addEventListener('change', invalidate);
 
 	function request(action, data) {
 		var body = new FormData();
@@ -48,8 +58,13 @@
 	});
 
 	fileInput.addEventListener('change', function () {
+		invalidate();
+		documentText = '';
+		previewButton.disabled = true;
 		if (!fileInput.files.length) { return; }
+		var selected = revision;
 		fileInput.files[0].text().then(function (text) {
+			if (selected !== revision) { return; }
 			documentText = text;
 			previewButton.disabled = false;
 			applyButton.disabled = true;
@@ -57,16 +72,30 @@
 	});
 
 	previewButton.addEventListener('click', function () {
-		request('functionalities_settings_preview', { document: documentText, include_code: root.querySelector('[data-tools-include-code]').checked ? '1' : '' }).then(function (response) {
+		var selected = revision;
+		var payload = { document: documentText, include_code: includeCode.checked ? '1' : '' };
+		applyButton.disabled = true;
+		request('functionalities_settings_preview', payload).then(function (response) {
+			if (selected !== revision) { return; }
 			show(response.data);
+			reviewed = response.success ? { revision: selected, payload: payload } : null;
 			applyButton.disabled = !response.success;
+		}).catch(function () {
+			if (selected === revision) { invalidate(); show({ message: functionalitiesTools.requestFailed }); }
 		});
 	});
 
 	applyButton.addEventListener('click', function () {
-		request('functionalities_settings_import', { document: documentText, include_code: root.querySelector('[data-tools-include-code]').checked ? '1' : '' }).then(function (response) {
+		if (!reviewed || reviewed.revision !== revision || applyButton.disabled) { return; }
+		var selected = revision;
+		var payload = reviewed.payload;
+		applyButton.disabled = true;
+		request('functionalities_settings_import', payload).then(function (response) {
 			show(response.data);
-			applyButton.disabled = response.success;
+			if (selected !== revision) { return; }
+			if (response.success) { invalidate(); } else { applyButton.disabled = false; }
+		}).catch(function () {
+			if (selected === revision) { applyButton.disabled = false; show({ message: functionalitiesTools.requestFailed }); }
 		});
 	});
 

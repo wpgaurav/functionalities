@@ -152,8 +152,7 @@ trait Admin_Sanitizers {
 			$out['ga4_id'] = $ga4;
 		}
 
-		$allowed_tags = \Functionalities\Features\Snippets::snippet_allowed_tags();
-		$unfiltered   = \current_user_can( 'unfiltered_html' );
+		$unfiltered = \current_user_can( 'unfiltered_html' );
 
 		foreach ( array( 'header', 'body_open', 'footer' ) as $location ) {
 			if ( empty( $input[ $location ] ) || ! \is_array( $input[ $location ] ) ) {
@@ -169,7 +168,7 @@ trait Admin_Sanitizers {
 				// the snippet. Output is verbatim, so a snippet containing JS
 				// operators such as && survives to the front end intact.
 				if ( ! $unfiltered ) {
-					$code = \Functionalities\Features\Snippets::kses_with_styles( $code, $allowed_tags );
+					$code = \wp_kses_post( $code );
 				}
 
 				$out[ $location ][] = array(
@@ -424,7 +423,7 @@ trait Admin_Sanitizers {
 	 * @return array Sanitized output.
 	 */
 	public static function sanitize_login_security( $input ): array {
-		return array(
+		$out     = array(
 			'enabled'                       => ! empty( $input['enabled'] ),
 			'limit_login_attempts'          => ! empty( $input['limit_login_attempts'] ),
 			'max_attempts'                  => max( 1, min( 20, (int) ( $input['max_attempts'] ?? 5 ) ) ),
@@ -433,12 +432,31 @@ trait Admin_Sanitizers {
 			'disable_application_passwords' => ! empty( $input['disable_application_passwords'] ),
 			'hide_login_errors'             => ! empty( $input['hide_login_errors'] ),
 			'trust_proxy_headers'           => ! empty( $input['trust_proxy_headers'] ),
+			'trusted_proxy_ips'             => '',
 			'lock_usernames'                => ! empty( $input['lock_usernames'] ),
 			'allowlist_ips'                 => \sanitize_textarea_field( $input['allowlist_ips'] ?? '' ),
 			'custom_logo_url'               => \esc_url_raw( $input['custom_logo_url'] ?? '' ),
 			'custom_background_color'       => \sanitize_hex_color( $input['custom_background_color'] ?? '' ) ?: '',
 			'custom_form_background'        => \sanitize_hex_color( $input['custom_form_background'] ?? '' ) ?: '',
 		);
+		$proxies = preg_split( '/[\r\n,]+/', (string) ( $input['trusted_proxy_ips'] ?? '' ) );
+		$valid   = array();
+		foreach ( $proxies as $proxy ) {
+			$proxy = trim( $proxy );
+			$parts = explode( '/', $proxy );
+			if ( count( $parts ) > 2 || false === filter_var( $parts[0], FILTER_VALIDATE_IP ) ) {
+				continue;
+			}
+			if ( isset( $parts[1] ) ) {
+				$maximum = false !== filter_var( $parts[0], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 ) ? 32 : 128;
+				if ( ! ctype_digit( $parts[1] ) || (int) $parts[1] < 1 || (int) $parts[1] > $maximum ) {
+					continue;
+				}
+			}
+			$valid[] = $proxy;
+		}
+		$out['trusted_proxy_ips'] = implode( "\n", array_unique( $valid ) );
+		return $out;
 	}
 
 	/**

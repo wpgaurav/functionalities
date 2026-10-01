@@ -117,7 +117,12 @@ class Module_Registry {
 
 		$options = (array) get_option( $definitions[ $slug ]['option'], array( 'enabled' => $definitions[ $slug ]['default_enabled'] ) );
 		$enabled = ! empty( $options['enabled'] );
-		$enabled = (bool) apply_filters( 'functionalities_' . str_replace( '-', '_', $slug ) . '_enabled', $enabled );
+		// Only these legacy hooks control a whole module. Other similarly named
+		// hooks have distinct contracts, such as Assumption Detection's two-arg
+		// per-detector filter and Schema's site/article output switches.
+		if ( '' !== $definitions[ $slug ]['enabled_filter'] ) {
+			$enabled = (bool) apply_filters( $definitions[ $slug ]['enabled_filter'], $enabled );
+		}
 
 		return (bool) apply_filters( 'functionalities_module_enabled', $enabled, $slug, $options );
 	}
@@ -184,7 +189,9 @@ class Module_Registry {
 			'icon'            => $icon,
 			'class'           => '\\Functionalities\\Features\\' . $class_name,
 			'option'          => 'functionalities_' . str_replace( '-', '_', $slug ),
+			'autoload'        => 'svg-icons' === $slug ? false : null,
 			'default_enabled' => false,
+			'enabled_filter'  => in_array( $slug, array( 'components', 'fonts', 'svg-icons', 'pwa' ), true ) ? 'functionalities_' . str_replace( '-', '_', $slug ) . '_enabled' : '',
 			'custom_page'     => $custom_page,
 			'controller'      => $custom_page ? '\\Functionalities\\Admin\\' . $class_name . '_Controller' : '',
 		);

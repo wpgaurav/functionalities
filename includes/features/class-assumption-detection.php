@@ -53,7 +53,14 @@ class Assumption_Detection {
 	const CSS_BASELINE_KEY = 'functionalities_inline_css_baseline';
 
 	/**
-	 * Cached frontend output to avoid multiple calls to wp_head/wp_footer.
+	 * Metadata for the last scan attempt, including public-page capture failures.
+	 *
+	 * @var string
+	 */
+	const SCAN_STATUS_KEY = 'functionalities_assumption_scan_status';
+
+	/**
+	 * Cached anonymous frontend response for the current scan.
 	 *
 	 * @var array|null
 	 */
@@ -65,9 +72,7 @@ class Assumption_Detection {
 	 * @return void
 	 */
 	public static function init(): void {
-		$opts = self::get_options();
-
-		if ( empty( $opts['enabled'] ) ) {
+		if ( ! \Functionalities\Core\Module_Registry::is_enabled( 'assumption-detection' ) ) {
 			return;
 		}
 
@@ -133,6 +138,7 @@ class Assumption_Detection {
 	 * @return void
 	 */
 	public static function schedule_detection(): void {
+		self::clear_cache();
 		\set_transient( 'functionalities_run_assumption_detection', true, HOUR_IN_SECONDS );
 	}
 
@@ -176,6 +182,7 @@ class Assumption_Detection {
 			'detect_cron_issues'              => 'detect_cron_issues',
 		);
 
+		$enabled_detectors = array();
 		foreach ( $detectors as $key => $method ) {
 			$enabled = ! empty( $opts[ $key ] );
 
@@ -190,7 +197,37 @@ class Assumption_Detection {
 			if ( ! \apply_filters( 'functionalities_assumption_detection_enabled', $enabled, $key ) ) {
 				continue;
 			}
+			$enabled_detectors[ $key ] = $method;
+		}
 
+		$frontend_detectors = array(
+			'detect_schema_collision',
+			'detect_analytics_dupe',
+			'detect_font_redundancy',
+			'detect_inline_css_growth',
+			'detect_meta_duplication',
+			'detect_lazy_load_conflict',
+			'detect_mixed_content',
+		);
+		if ( array_intersect( array_keys( $enabled_detectors ), $frontend_detectors ) ) {
+			$output = self::get_frontend_output();
+			if ( ! empty( $output['error'] ) ) {
+				// An unavailable public page is a failed scan, not an empty finding set.
+				// Preserve the previous findings and successful-scan timestamp.
+				\update_option(
+					self::SCAN_STATUS_KEY,
+					array(
+						'state'   => 'error',
+						'checked' => time(),
+						'error'   => $output['error'],
+					),
+					false
+				);
+				return;
+			}
+		}
+
+		foreach ( $enabled_detectors as $key => $method ) {
 			$found = 'detect_inline_css_growth' === $key
 				? self::detect_inline_css_growth( $opts )
 				: call_user_func( array( __CLASS__, $method ) );
@@ -221,6 +258,15 @@ class Assumption_Detection {
 		// Store results.
 		\update_option( self::OPTION_KEY, $warnings );
 		\update_option( 'functionalities_assumptions_last_run', time() );
+		\update_option(
+			self::SCAN_STATUS_KEY,
+			array(
+				'state'   => 'complete',
+				'checked' => time(),
+				'error'   => null,
+			),
+			false
+		);
 	}
 
 	/**
@@ -396,17 +442,25 @@ class Assumption_Detection {
 				$ids = array_unique( $matches[1] );
 
 				foreach ( $ids as $id ) {
-					// Count occurrences.
-					$count = preg_match_all( '/' . preg_quote( $id, '/' ) . '/i', $full_output );
+					// A GA4 loader URL and its config call belong to one installation.
+					$count = 'ga4' === $key
+						? self::count_ga4_installations( $full_output, $id )
+						: preg_match_all( '/' . preg_quote( $id, '/' ) . '/i', $full_output );
 
 					if ( $count > 1 ) {
 						$locations = self::find_script_locations( $full_output, $id );
+						if ( 'ga4' === $key ) {
+							/* translators: 1: analytics name, 2: ID, 3: count */
+							$message_format = \__( '%1$s (%2$s) has %3$d independent tracking installations.', 'functionalities' );
+						} else {
+							/* translators: 1: analytics name, 2: ID, 3: count */
+							$message_format = \__( '%1$s (%2$s) is loaded %3$d times from different sources.', 'functionalities' );
+						}
 
 						$warnings[] = array(
 							'type'     => 'analytics_duplication',
 							'message'  => sprintf(
-								/* translators: 1: analytics name, 2: ID, 3: count */
-								\__( '%1$s (%2$s) is loaded %3$d times from different sources.', 'functionalities' ),
+								$message_format,
 								$config['name'],
 								$id,
 								$count
@@ -433,6 +487,40 @@ class Assumption_Detection {
 		}
 
 		return $warnings;
+	}
+
+	/**
+	 * Count independent GA4 loader/config pairs without double-counting each pair.
+	 *
+	 * @param string $output Rendered public page HTML.
+	 * @param string $id     GA4 measurement ID.
+	 * @return int
+	 */
+	private static function count_ga4_installations( string $output, string $id ): int {
+		$config_count = 0;
+		$loader_count = 0;
+		preg_match_all( '/<script\b([^>]*)>(.*?)<\/script\s*>/is', $output, $scripts, PREG_SET_ORDER );
+		foreach ( $scripts as $script ) {
+			if ( preg_match( '/\btype\s*=\s*[\'"]([^\'"]+)[\'"]/i', $script[1], $type ) && ! in_array( strtolower( trim( $type[1] ) ), array( 'text/javascript', 'application/javascript', 'text/ecmascript', 'application/ecmascript', 'module' ), true ) ) {
+				continue;
+			}
+			$config_count += (int) preg_match_all(
+				'/\bgtag\s*\(\s*[\'"]config[\'"]\s*,\s*[\'"]' . preg_quote( $id, '/' ) . '[\'"]/i',
+				$script[2]
+			);
+			if ( ! preg_match( '/\bsrc\s*=\s*[\'"]([^\'"]+)[\'"]/i', $script[1], $src ) ) {
+				continue;
+			}
+			$url = \wp_parse_url( html_entity_decode( $src[1], ENT_QUOTES | ENT_HTML5, 'UTF-8' ) );
+			if ( ! is_array( $url ) || '/gtag/js' !== ( $url['path'] ?? '' ) || ! in_array( strtolower( $url['host'] ?? '' ), array( 'googletagmanager.com', 'www.googletagmanager.com' ), true ) ) {
+				continue;
+			}
+			parse_str( $url['query'] ?? '', $query );
+			if ( isset( $query['id'] ) && is_string( $query['id'] ) && 0 === strcasecmp( $query['id'], $id ) ) {
+				++$loader_count;
+			}
+		}
+		return max( (int) $config_count, $loader_count );
 	}
 
 	/**
@@ -1289,6 +1377,15 @@ class Assumption_Detection {
 	}
 
 	/**
+	 * Return safe metadata about the most recent scan attempt.
+	 *
+	 * @return array
+	 */
+	public static function get_scan_status(): array {
+		return (array) \get_option( self::SCAN_STATUS_KEY, array() );
+	}
+
+	/**
 	 * Get ignored assumptions.
 	 *
 	 * @return array Ignored assumptions with expiry timestamps.
@@ -1450,7 +1547,6 @@ class Assumption_Detection {
 		self::$frontend_output_cache = null;
 
 		\set_transient( 'functionalities_run_assumption_detection', true, HOUR_IN_SECONDS );
-		\delete_option( 'functionalities_assumptions_last_run' );
 		self::run_detection();
 		return self::get_detected_assumptions();
 	}
@@ -1478,60 +1574,81 @@ class Assumption_Detection {
 	}
 
 	/**
-	 * Safely capture frontend output (wp_head and wp_footer).
+	 * Fetch an anonymous rendered frontend document once per scan.
 	 *
-	 * This method caches the output to avoid multiple expensive calls
-	 * to wp_head and wp_footer during a single detection run.
-	 *
-	 * @return array Array with 'head' and 'footer' keys.
+	 * @return array Captured head/body/full HTML and safe error metadata.
 	 */
 	protected static function get_frontend_output(): array {
 		if ( null !== self::$frontend_output_cache ) {
 			return self::$frontend_output_cache;
 		}
 
-		$head_output   = '';
-		$footer_output = '';
-
-		// Suppress any output during capture.
 		try {
-			// Capture wp_head output.
-			ob_start();
-			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Intentionally calling core WordPress hook to detect scripts/styles.
-			\do_action( 'wp_head' );
-			$head_output = ob_get_clean();
-
-			if ( false === $head_output ) {
-				$head_output = '';
+			$response = \wp_safe_remote_get(
+				\home_url( '/' ),
+				array(
+					'timeout'             => 10,
+					'redirection'         => 3,
+					'limit_response_size' => 2 * 1024 * 1024,
+					'cookies'             => array(),
+					'headers'             => array(
+						'Accept'        => 'text/html,application/xhtml+xml',
+						'Cache-Control' => 'no-cache',
+						'Cookie'        => '',
+					),
+				)
+			);
+			if ( \is_wp_error( $response ) ) {
+				return self::failed_frontend_output( 'request_failed', \__( 'Unable to fetch the public homepage for assumption detection.', 'functionalities' ) );
 			}
-
-			// Capture wp_footer output.
-			ob_start();
-			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Intentionally calling core WordPress hook to detect scripts/styles.
-			\do_action( 'wp_footer' );
-			$footer_output = ob_get_clean();
-
-			if ( false === $footer_output ) {
-				$footer_output = '';
+			if ( 200 !== \wp_remote_retrieve_response_code( $response ) ) {
+				return self::failed_frontend_output( 'http_status', \__( 'The public homepage did not return a successful response for assumption detection.', 'functionalities' ) );
 			}
-		} catch ( \Exception $e ) {
-			// Log but don't fail.
-			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-				// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Intentional debug logging when WP_DEBUG is enabled.
-				error_log( 'Functionalities Assumption Detection error: ' . $e->getMessage() );
+			$full_output  = \wp_remote_retrieve_body( $response );
+			$content_type = (string) \wp_remote_retrieve_header( $response, 'content-type' );
+			if ( strlen( $full_output ) >= 2 * 1024 * 1024 ) {
+				return self::failed_frontend_output( 'response_too_large', \__( 'The public homepage exceeded the assumption scan response limit.', 'functionalities' ) );
 			}
-			// Clean any remaining output buffers.
-			while ( ob_get_level() > 0 ) {
-				ob_end_clean();
+			if ( ! preg_match( '/<(?:html|head|body)\b/i', $full_output ) || ( '' !== $content_type && ! preg_match( '~^(?:text/html|application/xhtml\+xml)(?:\s*;|$)~i', $content_type ) ) ) {
+				return self::failed_frontend_output( 'invalid_content', \__( 'The public homepage did not return an HTML document for assumption detection.', 'functionalities' ) );
 			}
+		} catch ( \Throwable $e ) {
+			// Never touch output buffers owned by the admin page or its caller.
+			return self::failed_frontend_output( 'request_failed', \__( 'Unable to fetch the public homepage for assumption detection.', 'functionalities' ) );
 		}
 
+		$head_output = '';
+		if ( preg_match( '/<head\b[^>]*>(.*?)<\/head\s*>/is', $full_output, $head ) ) {
+			$head_output = $head[1];
+		}
+		$body_output                 = preg_replace( '/<head\b[^>]*>.*?<\/head\s*>/is', '', $full_output );
 		self::$frontend_output_cache = array(
 			'head'   => $head_output,
-			'footer' => $footer_output,
-			'full'   => $head_output . $footer_output,
+			'footer' => (string) $body_output,
+			'full'   => $full_output,
+			'error'  => null,
 		);
 
+		return self::$frontend_output_cache;
+	}
+
+	/**
+	 * Cache a failed capture without storing remote output or sensitive details.
+	 *
+	 * @param string $code    Safe error identifier.
+	 * @param string $message Safe error explanation.
+	 * @return array
+	 */
+	private static function failed_frontend_output( string $code, string $message ): array {
+		self::$frontend_output_cache = array(
+			'head'   => '',
+			'footer' => '',
+			'full'   => '',
+			'error'  => array(
+				'code'    => $code,
+				'message' => $message,
+			),
+		);
 		return self::$frontend_output_cache;
 	}
 

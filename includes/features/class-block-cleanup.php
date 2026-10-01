@@ -99,7 +99,7 @@ class Block_Cleanup {
 	public static function init(): void {
 		$opts = self::get_options();
 
-		if ( empty( $opts['enabled'] ) ) {
+		if ( ! \Functionalities\Core\Module_Registry::is_enabled( 'block-cleanup' ) ) {
 			return;
 		}
 
@@ -192,7 +192,7 @@ class Block_Cleanup {
 	/**
 	 * Filter content to remove block-specific classes.
 	 *
-	 * Parses the content HTML using DOMDocument and removes specified
+	 * Edits the content HTML with the HTML API and removes specified
 	 * block classes from matching elements. Skips processing in admin,
 	 * feeds, and REST API requests.
 	 *
@@ -210,7 +210,7 @@ class Block_Cleanup {
 		}
 
 		// Skip empty content.
-		if ( trim( $content ) === '' || false === strpos( $content, 'wp-block-' ) ) {
+		if ( trim( $content ) === '' || ! \Functionalities\Core\Module_Registry::is_enabled( 'block-cleanup' ) ) {
 			return $content;
 		}
 

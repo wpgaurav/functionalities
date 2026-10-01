@@ -54,6 +54,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 class PWA {
 
 	const REWRITE_VERSION = '1.0.0';
+	const CACHE_REVISION  = '2';
 
 	/**
 	 * Cached module options.
@@ -181,9 +182,7 @@ class PWA {
 	 * @return bool
 	 */
 	private static function is_enabled(): bool {
-		$opts = self::get_options();
-
-		return (bool) \apply_filters( 'functionalities_pwa_enabled', ! empty( $opts['enabled'] ) );
+		return \Functionalities\Core\Module_Registry::is_enabled( 'pwa' );
 	}
 
 	// -------------------------------------------------------------------------
@@ -625,7 +624,7 @@ class PWA {
 		header( 'Content-Type: application/javascript; charset=utf-8' );
 		header( 'X-Content-Type-Options: nosniff' );
 
-		$ver_json     = \wp_json_encode( $config['version'] );
+		$ver_json     = \wp_json_encode( self::CACHE_REVISION . '-' . $config['version'] );
 		$offline_json = \wp_json_encode( $config['offline_url'] );
 		$precache_js  = implode( ',', array_map( '\\wp_json_encode', $precache ) );
 
@@ -657,18 +656,17 @@ class PWA {
 		// Service worker body (static JS, no PHP interpolation).
 		// phpcs:disable Generic.Strings.UnnecessaryStringConcat.Found
 
-		// Precache each URL on its own. cache.addAll() rejects the whole install
-		// if any single entry 404s, so one stale precache URL used to stop the
-		// service worker installing at all.
+		// Fetch public copies without cookies. Cache.add() ignores HTTP cache
+		// privacy directives, so every response must be checked before storage.
 		echo 'self.addEventListener("install",e=>{' .
-			'e.waitUntil(caches.open(CORE_CACHE).then(c=>Promise.all(' .
-			'PRECACHE_URLS.map(u=>c.add(new Request(u,{credentials:"same-origin"})).catch(()=>null))' .
-			')).then(()=>self.skipWaiting()));' .
+			'e.waitUntil(Promise.all(PRECACHE_URLS.map(precache)).then(()=>self.skipWaiting()));' .
 			'});' . "\n";
 
 		echo 'self.addEventListener("activate",e=>{' .
 			'e.waitUntil(Promise.all([' .
-			'caches.keys().then(keys=>Promise.all(keys.filter(k=>!k.includes(CACHE_VERSION)).map(k=>caches.delete(k)))),' .
+			'caches.keys().then(keys=>Promise.all(keys.filter(k=>' .
+			'["func-pwa-core-","func-pwa-runtime-","func-pwa-images-"].some(p=>k.startsWith(p))' .
+			'&&![CORE_CACHE,RUNTIME_CACHE,IMAGE_CACHE].includes(k)).map(k=>caches.delete(k)))),' .
 			'self.clients.claim(),' .
 			'self.registration.navigationPreload?self.registration.navigationPreload.enable():Promise.resolve()' .
 			']));' .
@@ -687,6 +685,15 @@ class PWA {
 			'const cc=res.headers.get("Cache-Control")||"";' .
 			'return /no-store|private/i.test(cc);' .
 			'}' . "\n";
+
+		echo 'async function precache(value){' .
+			'try{const url=new URL(value,self.location.href);' .
+			'if(url.origin!==self.location.origin||isExcluded(url))return;' .
+			'const req=new Request(url.href,{credentials:"omit",cache:"no-store"});' .
+			'const res=await fetch(req);' .
+			'if(res.status!==200||res.type==="opaque"||isPrivate(res))return;' .
+			'const cache=await caches.open(CORE_CACHE);await cache.put(req,res.clone());' .
+			'}catch(e){}}' . "\n";
 
 		echo 'async function trim(cache){' .
 			'const keys=await cache.keys();' .
@@ -893,16 +900,17 @@ class PWA {
 		$site_name = \esc_html( \get_bloginfo( 'name' ) );
 		$home      = \esc_url( \home_url( '/' ) );
 		$theme     = \esc_attr( $opts['theme_color'] ?? '#4f46e5' );
-		$cache_ver = \esc_js( $opts['cache_version'] ?? 'v1' );
+		$cache_ver = self::CACHE_REVISION . '-' . ( $opts['cache_version'] ?? 'v1' );
 
 		while ( ob_get_level() ) {
 			ob_end_clean();
 		}
 
-		// This application shell is fetched during service-worker installation.
-		// cache.addAll() rejects non-2xx responses, so it must be cacheable.
+		// This shell contains only public site settings. Override WordPress's
+		// authenticated no-cache header so anonymous installation can cache it.
 		\status_header( 200 );
 		\nocache_headers();
+		header( 'Cache-Control: public, max-age=0, must-revalidate' );
 
 		?>
 		<!DOCTYPE html>

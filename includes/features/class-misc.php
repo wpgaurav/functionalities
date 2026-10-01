@@ -105,7 +105,7 @@ class Misc {
 	public static function init(): void {
 		$opts = self::get_options();
 
-		if ( empty( $opts['enabled'] ) ) {
+		if ( ! \Functionalities\Core\Module_Registry::is_enabled( 'misc' ) ) {
 			return;
 		}
 

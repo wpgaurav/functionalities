@@ -15,6 +15,95 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Read and mutate JSON files without exposing partially written data.
  */
 class Atomic_JSON_Store {
+	/** Executed before any private JSON can be emitted over HTTP. */
+	const PHP_GUARD = "<?php http_response_code(404); exit; ?>\n";
+
+	/**
+	 * Delete a file under the same lock used by readers and mutators.
+	 *
+	 * @param string $path Data file path.
+	 * @return array
+	 */
+	public static function delete( string $path ): array {
+		$lock = self::open_lock( $path );
+		if ( false === $lock ) {
+			return self::result( false, array(), 'lock_open_failed', file_exists( $path ) );
+		}
+		try {
+			if ( ! flock( $lock, LOCK_EX ) ) {
+				return self::result( false, array(), 'lock_failed', file_exists( $path ) );
+			}
+			if ( ! file_exists( $path ) ) {
+				return self::result( false, array(), 'missing_file', false );
+			}
+			// Keep the sidecar: removing it would create a second lock identity.
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink
+			$deleted = unlink( $path );
+			clearstatcache( true, $path );
+			return self::result( $deleted, array(), $deleted ? '' : 'delete_failed', ! $deleted );
+		} finally {
+			flock( $lock, LOCK_UN );
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
+			fclose( $lock );
+		}
+	}
+
+	/**
+	 * Copy legacy data under both file locks; remove it only after verification.
+	 *
+	 * @param string $source Legacy JSON path.
+	 * @param string $target Guarded destination path.
+	 * @return array
+	 */
+	public static function migrate( string $source, string $target ): array {
+		$paths = array( $source, $target );
+		sort( $paths, SORT_STRING );
+		$locks = array();
+		try {
+			foreach ( $paths as $path ) {
+				$lock = self::open_lock( $path );
+				if ( false === $lock ) {
+					return self::result( false, array(), 'migration_lock_failed', file_exists( $source ) );
+				}
+				$locks[] = $lock;
+				if ( ! flock( $lock, LOCK_EX ) ) {
+					return self::result( false, array(), 'migration_lock_failed', file_exists( $source ) );
+				}
+			}
+			$current = self::read_unlocked( $source, array() );
+			if ( ! $current['success'] || ! $current['exists'] ) {
+				return $current;
+			}
+			$existing = self::read_unlocked( $target, array() );
+			if ( ! $existing['success'] ) {
+				return $existing;
+			}
+			if ( $existing['exists'] && $existing['data'] !== $current['data'] ) {
+				return self::result( false, $current['data'], 'migration_conflict', true );
+			}
+			if ( ! $existing['exists'] ) {
+				$written = self::write_unlocked( $target, $current['data'] );
+				if ( ! $written['success'] ) {
+					return $written;
+				}
+			}
+			$verified = self::read_unlocked( $target, array() );
+			if ( ! $verified['success'] || $verified['data'] !== $current['data'] ) {
+				return self::result( false, $current['data'], 'migration_verification_failed', true );
+			}
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink
+			if ( ! unlink( $source ) ) {
+				return self::result( false, $current['data'], 'migration_delete_failed', true );
+			}
+			return self::result( true, $current['data'], '', true );
+		} finally {
+			foreach ( $locks as $lock ) {
+				flock( $lock, LOCK_UN );
+				// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
+				fclose( $lock );
+			}
+		}
+	}
 
 	/**
 	 * Read a JSON file under a shared lock.
@@ -130,6 +219,11 @@ class Atomic_JSON_Store {
 			return self::result( false, $default, 'read_failed', true );
 		}
 
+		if ( 0 === strpos( $json, self::PHP_GUARD ) ) {
+			$json = substr( $json, strlen( self::PHP_GUARD ) );
+		} elseif ( '.php' === substr( $path, -4 ) ) {
+			return self::result( false, $default, 'missing_php_guard', true );
+		}
 		$data = json_decode( $json, true );
 		if ( JSON_ERROR_NONE !== json_last_error() || ! is_array( $data ) ) {
 			return self::result( false, $default, 'invalid_json', true );
@@ -164,6 +258,8 @@ class Atomic_JSON_Store {
 		if ( false === $json ) {
 			return self::result( false, $data, 'encode_failed', file_exists( $path ) );
 		}
+		$guarded = '.php' === substr( $path, -4 );
+		$payload = $guarded ? self::PHP_GUARD . $json : $json;
 
 		// tempnam() in the destination directory keeps rename() atomic.
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_tempnam
@@ -171,11 +267,22 @@ class Atomic_JSON_Store {
 		if ( false === $temp ) {
 			return self::result( false, $data, 'temp_file_failed', file_exists( $path ) );
 		}
+		if ( $guarded ) {
+			// The temporary payload must also execute its guard if requested.
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.rename_rename
+			if ( ! rename( $temp, $temp . '.php' ) ) {
+				// phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink
+				unlink( $temp );
+				return self::result( false, $data, 'temp_file_failed', file_exists( $path ) );
+			}
+			$temp       .= '.php';
+			$permissions = 0600;
+		}
 
 		// Direct writes are intentional: WP_Filesystem does not expose locking or atomic rename semantics.
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
-		$bytes = file_put_contents( $temp, $json, LOCK_EX );
-		if ( false === $bytes || strlen( $json ) !== $bytes ) {
+		$bytes = file_put_contents( $temp, $payload, LOCK_EX );
+		if ( false === $bytes || strlen( $payload ) !== $bytes ) {
 			// phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink
 			unlink( $temp );
 			return self::result( false, $data, 'write_failed', file_exists( $path ) );
@@ -184,8 +291,11 @@ class Atomic_JSON_Store {
 		// Verify the temporary file before it can replace known-good data.
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
 		$verification = file_get_contents( $temp );
+		if ( $guarded && is_string( $verification ) ) {
+			$verification = substr( $verification, strlen( self::PHP_GUARD ) );
+		}
 		json_decode( false === $verification ? '' : $verification, true );
-		if ( JSON_ERROR_NONE !== json_last_error() ) {
+		if ( JSON_ERROR_NONE !== json_last_error() || $json !== $verification ) {
 			// phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink
 			unlink( $temp );
 			return self::result( false, $data, 'verification_failed', file_exists( $path ) );

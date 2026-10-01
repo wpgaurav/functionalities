@@ -2,7 +2,7 @@
 
 All-in-one WordPress optimization toolkit with 16 modules for performance, security, SEO, and content management. Built with modern WordPress coding standards and a clean module-based dashboard. Optimized for performance with modular initialization, static property caching, and intelligent transients.
 
-**Version:** 1.6.1
+**Version:** 1.6.3
 **Requires WordPress:** 6.3 or later (tested up to 7.1)
 **Requires PHP:** 7.4 or later
 **License:** GPL-2.0-or-later
@@ -302,6 +302,8 @@ Enhanced login protection and security measures for your WordPress site.
 - Hide detailed login errors to prevent user enumeration
 - Custom login page logo and background styling
 
+Proxy-header mode accepts X-Forwarded-For only from configured trusted proxy IPs or CIDR ranges. Configure the ingress proxies before enabling it; they must overwrite or append the real client address. An empty trusted list ignores forwarding headers.
+
 **Navigate to:** `?page=functionalities&module=login-security`
 
 ---
@@ -421,7 +423,7 @@ functionalities/
 │   ├── admin/
 │   │   ├── class-admin.php                             Thin entry point
 │   │   ├── class-admin-ui.php                          Shared UI helpers
-│   │   ├── class-module-controller.php                 Settings + custom pages
+│   │   ├── class-module-controller.php                 Public API + routing
 │   │   ├── class-module-docs.php                       Per-module docs text
 │   │   ├── class-settings-portability-controller.php   Export / import / diagnostics
 │   │   ├── class-site-health-controller.php            Scans, schedules, exposure probe
@@ -430,7 +432,9 @@ functionalities/
 │   │   ├── class-task-manager-controller.php
 │   │   ├── trait-admin-ajax.php
 │   │   ├── trait-admin-options.php
-│   │   └── trait-admin-sanitizers.php
+│   │   ├── trait-admin-sanitizers.php
+│   │   ├── trait-admin-settings.php                   Settings registration
+│   │   └── trait-admin-*-ui.php                       Module-specific renderers
 │   ├── core/
 │   │   ├── class-module-registry.php                   Module list + lazy loader
 │   │   └── class-wordpress-7-integration.php           Abilities, DataViews, AI
@@ -442,7 +446,7 @@ functionalities/
 │       └── trait-css-sanitizer.php
 ├── languages/
 ├── src/                        Source for the WordPress 7 admin bundle (not shipped)
-├── tests/                      PHPUnit suite
+├── tests/                      PHP and JavaScript regression suites
 ├── docs/                       Performance baseline notes (not shipped)
 ├── exception-urls-sample.json
 ├── functionalities.php
@@ -456,7 +460,7 @@ functionalities/
 
 1. Create a feature class in `includes/features/class-your-module.php`
 2. Add its definition to `Core\Module_Registry::get_definitions()`
-3. Register its settings in the module controller
+3. Register its settings in `Admin_Settings` and reuse the public module controller API
 4. Add focused tests for defaults and any pure helpers
 
 ## Local development checks
@@ -464,6 +468,7 @@ functionalities/
 ```bash
 composer install
 composer lint
+npm test
 composer phpcs
 composer test
 node --check assets/js/admin.js

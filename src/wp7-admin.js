@@ -14,6 +14,7 @@ import { Button, Notice, Spinner } from '@wordpress/components';
 import { dispatch } from '@wordpress/data';
 import { createRoot, useCallback, useEffect, useMemo, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
+import { resetSubmittedFields } from './form-state.mjs';
 import './wp7-admin.css';
 
 const config = window.functionalitiesWp7 || {};
@@ -211,10 +212,11 @@ function RedirectForm( { onCreated } ) {
 	);
 
 	const submit = () => {
+		const submitted = { ...data };
 		setBusy( true );
-		runAbility( 'create-redirect', data )
+		runAbility( 'create-redirect', submitted )
 			.then( () => {
-				setData( { from_url: '', to_url: '', type: 301 } );
+				setData( ( current ) => resetSubmittedFields( current, submitted, { from_url: '', to_url: '', type: 301 } ) );
 				notify(
 					'success',
 					__( 'Redirect created.', 'functionalities' )
@@ -291,14 +293,11 @@ function TaskForm( { projects, onCreated } ) {
 	);
 
 	const submit = () => {
+		const submitted = { ...data };
 		setBusy( true );
-		runAbility( 'create-task', data )
+		runAbility( 'create-task', submitted )
 			.then( () => {
-				setData( ( current ) => ( {
-					project: current.project,
-					text: '',
-					notes: '',
-				} ) );
+				setData( ( current ) => resetSubmittedFields( current, submitted, { text: '', notes: '' } ) );
 				notify( 'success', __( 'Task created.', 'functionalities' ) );
 				onCreated();
 			} )

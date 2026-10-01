@@ -64,17 +64,42 @@ class Redirect_Manager {
 	private static $storage_error = '';
 
 	/**
+	 * Site and data-directory identity for request-local caches.
+	 *
+	 * @var string
+	 */
+	private static $storage_context = '';
+
+	/** Resolve the active site's files and reset caches after switch_to_blog(). */
+	private static function ensure_storage(): bool {
+		$context = ( \function_exists( 'get_current_blog_id' ) ? \get_current_blog_id() : 1 ) . ':' . \Functionalities\Storage\Data_Directory::base();
+		if ( self::$storage_context !== $context ) {
+			self::$redirects_cache = null;
+			self::$index           = null;
+			self::$storage_error   = '';
+			self::$storage_context = $context;
+		}
+		self::$redirects_file = \Functionalities\Storage\Data_Directory::file( 'redirects.json' );
+		self::$log_file       = \Functionalities\Storage\Data_Directory::file( '404-log.json' );
+		if ( '' === self::$redirects_file || '' === self::$log_file ) {
+			self::$storage_error = implode( ', ', \Functionalities\Storage\Data_Directory::get_errors() );
+			return false;
+		}
+		return true;
+	}
+
+	/**
 	 * Initialize the feature.
 	 *
 	 * @return void
 	 */
 	public static function init(): void {
-		self::$redirects_file = \Functionalities\Storage\Data_Directory::file( 'redirects.json' );
-		self::$log_file       = \Functionalities\Storage\Data_Directory::file( '404-log.json' );
+		self::ensure_storage();
+		\add_action( self::FLUSH_HOOK, array( __CLASS__, 'flush_buffer' ) );
 
 		$opts = (array) \get_option( 'functionalities_redirect_manager', array( 'enabled' => false ) );
 
-		if ( empty( $opts['enabled'] ) ) {
+		if ( ! \Functionalities\Core\Module_Registry::is_enabled( 'redirect-manager' ) ) {
 			return;
 		}
 
@@ -87,7 +112,6 @@ class Redirect_Manager {
 		}
 
 		// Buffered hits and 404 aggregates reach disk in batches.
-		\add_action( self::FLUSH_HOOK, array( __CLASS__, 'flush_buffer' ) );
 		if ( ! \wp_next_scheduled( self::FLUSH_HOOK ) ) {
 			\wp_schedule_event( time() + 300, 'hourly', self::FLUSH_HOOK );
 		}
@@ -134,6 +158,9 @@ class Redirect_Manager {
 	 * @return string|false Directory path or false on failure.
 	 */
 	private static function get_redirects_dir() {
+		if ( ! self::ensure_storage() ) {
+			return false;
+		}
 		$dir = dirname( self::$redirects_file );
 		if ( ! file_exists( $dir ) && ! wp_mkdir_p( $dir ) ) {
 			return false;
@@ -150,6 +177,9 @@ class Redirect_Manager {
 	 * @return array List of redirects.
 	 */
 	public static function get_redirects(): array {
+		if ( ! self::ensure_storage() ) {
+			return array();
+		}
 		if ( null !== self::$redirects_cache ) {
 			return self::$redirects_cache;
 		}
@@ -222,6 +252,7 @@ class Redirect_Manager {
 	 * @return string
 	 */
 	public static function get_storage_error(): string {
+		self::ensure_storage();
 		return self::$storage_error;
 	}
 
@@ -231,7 +262,7 @@ class Redirect_Manager {
 	 * @param callable $mutator Redirect-list mutator.
 	 * @return array Storage operation result.
 	 */
-	private static function mutate_redirects( callable $mutator ): array {
+	private static function mutate_redirects( callable $mutator, string $batch_id = '', array $pending_ids = array() ): array {
 		if ( ! self::get_redirects_dir() ) {
 			self::$storage_error = 'directory_failed';
 			return array(
@@ -249,8 +280,14 @@ class Redirect_Manager {
 
 		$result = \Functionalities\Storage\Atomic_JSON_Store::update(
 			self::$redirects_file,
-			static function ( array $data ) use ( $mutator ) {
-				$redirects = isset( $data['redirects'] ) && is_array( $data['redirects'] ) ? $data['redirects'] : array();
+			static function ( array $data ) use ( $mutator, $batch_id, $pending_ids ) {
+				if ( '' !== $batch_id && isset( $data['applied_batches'][ $batch_id ] ) ) {
+					return $data;
+				}
+				if ( ! isset( $data['redirects'] ) || ! is_array( $data['redirects'] ) ) {
+					return false;
+				}
+				$redirects = $data['redirects'];
 				$next      = call_user_func( $mutator, $redirects );
 
 				if ( ! is_array( $next ) ) {
@@ -260,6 +297,10 @@ class Redirect_Manager {
 				$data['version']   = '1.0';
 				$data['modified']  = current_time( 'mysql' );
 				$data['redirects'] = array_values( $next );
+				if ( '' !== $batch_id ) {
+					$data['applied_batches']              = array_intersect_key( $data['applied_batches'] ?? array(), array_fill_keys( $pending_ids, true ) );
+					$data['applied_batches'][ $batch_id ] = true;
+				}
 				return $data;
 			},
 			$default
@@ -295,6 +336,9 @@ class Redirect_Manager {
 	 * @return array|false Redirect data or false on failure.
 	 */
 	public static function add_redirect( string $from_url, string $to_url, int $type = 301 ) {
+		if ( '' === trim( $from_url ) || '' === trim( esc_url_raw( $to_url ) ) ) {
+			return false;
+		}
 		// Normalize source URL.
 		$from_url = self::normalize_path( $from_url );
 		if ( empty( $from_url ) ) {
@@ -302,7 +346,7 @@ class Redirect_Manager {
 		}
 
 		// Prevent redirect loops (source === destination).
-		$to_path = self::normalize_path( $to_url );
+		$to_path = self::local_target_path( $to_url );
 		if ( $from_url === $to_path ) {
 			return false;
 		}
@@ -326,6 +370,10 @@ class Redirect_Manager {
 					}
 				}
 
+				$preview = self::prepare_import( array( $redirect ), $redirects );
+				if ( ! $preview['success'] ) {
+					return false;
+				}
 				$redirects[] = $redirect;
 				$added       = true;
 				return $redirects;
@@ -347,6 +395,9 @@ class Redirect_Manager {
 	 * @return array|false Updated redirect or false on failure.
 	 */
 	public static function update_redirect( string $id, array $updates ) {
+		if ( ( isset( $updates['from'] ) && '' === trim( $updates['from'] ) ) || ( isset( $updates['to'] ) && '' === trim( esc_url_raw( $updates['to'] ) ) ) ) {
+			return false;
+		}
 		$updated = false;
 		$result  = self::mutate_redirects(
 			static function ( array $redirects ) use ( $id, $updates, &$updated ) {
@@ -369,6 +420,18 @@ class Redirect_Manager {
 						$redirect['enabled'] = (bool) $updates['enabled'];
 					}
 
+					$others  = array_values(
+						array_filter(
+							$redirects,
+							static function ( $item ) use ( $id ) {
+								return ( $item['id'] ?? '' ) !== $id;
+							}
+						)
+					);
+					$preview = self::prepare_import( array( $redirect ), $others );
+					if ( ! $preview['success'] ) {
+						return false;
+					}
 					$updated = $redirect;
 					return $redirects;
 				}
@@ -411,14 +474,17 @@ class Redirect_Manager {
 	 * @param string $id Redirect ID.
 	 * @return bool|null New state or null on failure.
 	 */
-	public static function toggle_redirect( string $id ) {
+	public static function toggle_redirect( string $id, ?bool $enabled = null ) {
 		$new_state = null;
 		$result    = self::mutate_redirects(
-			static function ( array $redirects ) use ( $id, &$new_state ) {
+			static function ( array $redirects ) use ( $id, $enabled, &$new_state ) {
 				foreach ( $redirects as &$redirect ) {
 					if ( isset( $redirect['id'] ) && $id === $redirect['id'] ) {
-						$redirect['enabled'] = empty( $redirect['enabled'] );
-						$new_state           = $redirect['enabled'];
+						$redirect['enabled'] = null === $enabled ? empty( $redirect['enabled'] ) : $enabled;
+						if ( ! empty( self::cyclic_sources( $redirects ) ) ) {
+							return false;
+						}
+						$new_state = $redirect['enabled'];
 						return $redirects;
 					}
 				}
@@ -443,8 +509,10 @@ class Redirect_Manager {
 	 * @return string Normalized path.
 	 */
 	private static function normalize_path( string $path ): string {
-		// Remove domain if present.
-		$path = preg_replace( '#^https?://[^/]+#i', '', $path );
+		// Parse both absolute and protocol-relative HTTP destinations.
+		if ( preg_match( '#^(?:https?:)?//#i', $path ) ) {
+			$path = (string) \wp_parse_url( $path, PHP_URL_PATH );
+		}
 
 		// Strip query string and fragment.
 		$path = strtok( $path, '?#' );
@@ -461,6 +529,65 @@ class Redirect_Manager {
 		$path = sanitize_text_field( $path );
 
 		return $path;
+	}
+
+	/** A target on a different host/port cannot loop through this site's rules. */
+	private static function local_target_path( string $target ): ?string {
+		$host = \wp_parse_url( $target, PHP_URL_HOST );
+		if ( $host ) {
+			$home_host = \wp_parse_url( \home_url( '/' ), PHP_URL_HOST );
+			if ( strtolower( $host ) !== strtolower( (string) $home_host ) || \wp_parse_url( $target, PHP_URL_PORT ) !== \wp_parse_url( \home_url( '/' ), PHP_URL_PORT ) ) {
+				return null;
+			}
+		}
+		return self::normalize_path( $target );
+	}
+
+	/** Resolve graph edges with the same exact/longest-wildcard order as routing. */
+	private static function cyclic_sources( array $rules ): array {
+		$active = array();
+		foreach ( $rules as $rule ) {
+			if ( is_array( $rule ) && isset( $rule['from'], $rule['to'] ) && ( ! isset( $rule['enabled'] ) || $rule['enabled'] ) ) {
+				$active[ $rule['from'] ] = $rule;
+			}
+		}
+		$edges = array();
+		foreach ( $active as $source => $rule ) {
+			$target = self::local_target_path( $rule['to'] );
+			if ( null === $target ) {
+				continue;
+			}
+			if ( isset( $active[ $target ] ) ) {
+				$edges[ $source ] = $target;
+				continue;
+			}
+			$best = '';
+			foreach ( $active as $candidate => $unused ) {
+				if ( '*' === substr( $candidate, -1 ) && 0 === strpos( $target, rtrim( $candidate, '*' ) ) && strlen( $candidate ) > strlen( $best ) ) {
+					$best = $candidate;
+				}
+			}
+			if ( '' !== $best ) {
+				$edges[ $source ] = $best;
+			}
+		}
+		$cycles  = array();
+		$checked = array();
+		foreach ( $edges as $start => $unused ) {
+			$seen = array();
+			$node = $start;
+			while ( isset( $edges[ $node ] ) && ! isset( $checked[ $node ] ) ) {
+				if ( isset( $seen[ $node ] ) ) {
+					$cycles[] = $node;
+					break;
+				}
+				$seen[ $node ] = true;
+				$node          = $edges[ $node ];
+			}
+			$checked += $seen;
+		}
+
+		return array_unique( $cycles );
 	}
 
 	/**
@@ -588,7 +715,7 @@ class Redirect_Manager {
 		}
 
 		// Loop detection: if destination resolves to the same path, bail.
-		$dest_path = self::normalize_path( $destination );
+		$dest_path = self::local_target_path( $destination );
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitized by normalize_path.
 		$current = self::normalize_path( isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '' );
 		if ( $dest_path === $current ) {
@@ -612,16 +739,27 @@ class Redirect_Manager {
 	 *
 	 * Until 1.6.0 every redirect rewrote the entire redirects file under an
 	 * exclusive lock at shutdown, so a crawler sweeping dead URLs serialised
-	 * every request on that lock. Hits now accumulate in a non-autoloaded option
-	 * and are merged into the file in batches.
+	 * every request on that lock. Hits now accumulate in a guarded file under an independent lock
+	 * and are delivered to the redirect map in durable, retryable batches.
 	 *
 	 * @param string $id Redirect ID.
 	 * @return void
 	 */
 	private static function defer_hit_increment( string $id ): void {
+		$blog = \get_current_blog_id();
 		\register_shutdown_function(
-			function () use ( $id ) {
-				self::buffer_event( 'hits', $id );
+			function () use ( $id, $blog ) {
+				$switched = $blog !== \get_current_blog_id();
+				if ( $switched ) {
+					\switch_to_blog( $blog );
+				}
+				try {
+					self::buffer_event( 'hits', $id );
+				} finally {
+					if ( $switched ) {
+						\restore_current_blog();
+					}
+				}
 			}
 		);
 	}
@@ -637,90 +775,171 @@ class Redirect_Manager {
 	 * @return void
 	 */
 	private static function buffer_event( string $bucket, string $key, array $meta = array() ): void {
-		if ( '' === $key ) {
+		if ( '' === $key || ! in_array( $bucket, array( 'hits', 'not_found' ), true ) || ! self::ensure_storage() ) {
 			return;
 		}
-
-		$buffer = (array) \get_option( self::BUFFER_OPTION, array() );
-
-		if ( 'hits' === $bucket ) {
-			$buffer['hits'][ $key ] = (int) ( $buffer['hits'][ $key ] ?? 0 ) + 1;
-		} else {
-			$existing                    = $buffer['not_found'][ $key ] ?? array();
-			$buffer['not_found'][ $key ] = array(
-				'count'     => (int) ( $existing['count'] ?? 0 ) + 1,
-				'last_seen' => time(),
-				'origin'    => $meta['origin'] ?? ( $existing['origin'] ?? '' ),
-			);
+		$file   = \Functionalities\Storage\Data_Directory::file( 'redirect-buffer.json' );
+		$result = \Functionalities\Storage\Atomic_JSON_Store::update(
+			$file,
+			static function ( array $buffer ) use ( $bucket, $key, $meta ) {
+				if ( 'hits' === $bucket ) {
+					$buffer['hits'][ $key ] = (int) ( $buffer['hits'][ $key ] ?? 0 ) + 1;
+				} else {
+					$existing                    = $buffer['not_found'][ $key ] ?? array();
+					$buffer['not_found'][ $key ] = array(
+						'count'     => (int) ( $existing['count'] ?? 0 ) + 1,
+						'last_seen' => time(),
+						'origin'    => $meta['origin'] ?? ( $existing['origin'] ?? '' ),
+					);
+				}
+				$buffer['started'] = $buffer['started'] ?? time();
+				return $buffer;
+			},
+			array()
+		);
+		if ( ! $result['success'] ) {
+			self::$storage_error = $result['error'];
+			return;
 		}
-
-		$buffer['started'] = isset( $buffer['started'] ) ? (int) $buffer['started'] : time();
-
-		\update_option( self::BUFFER_OPTION, $buffer, false );
-
-		$pending = count( $buffer['hits'] ?? array() ) + count( $buffer['not_found'] ?? array() );
-
-		/**
-		 * Filters how many buffered events trigger a flush to disk.
-		 *
-		 * @since 1.6.0
-		 *
-		 * @param int $threshold Number of distinct buffered entries.
-		 */
-		$threshold = (int) \apply_filters( 'functionalities_redirect_buffer_threshold', 25 );
-
-		if ( $pending >= max( 1, $threshold ) || ( time() - (int) $buffer['started'] ) > 5 * MINUTE_IN_SECONDS ) {
+		$buffer    = $result['data'];
+		$pending   = count( $buffer['hits'] ?? array() ) + count( $buffer['not_found'] ?? array() );
+		$threshold = max( 1, (int) \apply_filters( 'functionalities_redirect_buffer_threshold', 25 ) );
+		if ( $pending >= $threshold || time() - (int) $buffer['started'] > 5 * MINUTE_IN_SECONDS ) {
 			self::flush_buffer();
 		}
 	}
 
 	/**
-	 * Merge buffered hits and 404 aggregates into their JSON files.
-	 *
-	 * @since 1.6.0
-	 * @return void
+	 * Deliver durable batches; acknowledge each bucket only after its file write.
+	 * Destination batch markers make retries safe even if a process stops between
+	 * the destination write and acknowledgement. Producers keep appending under
+	 * the separate buffer lock while one flusher holds the delivery lock.
 	 */
 	public static function flush_buffer(): void {
-		$buffer = (array) \get_option( self::BUFFER_OPTION, array() );
-		if ( empty( $buffer['hits'] ) && empty( $buffer['not_found'] ) ) {
+		if ( ! self::ensure_storage() ) {
 			return;
 		}
-
-		// Clear first: a failed write must not replay the same counts forever.
-		\delete_option( self::BUFFER_OPTION );
-
-		if ( ! empty( $buffer['hits'] ) ) {
-			$hits = $buffer['hits'];
-			self::mutate_redirects(
-				static function ( array $redirects ) use ( $hits ) {
-					$changed = false;
-					foreach ( $redirects as &$redirect ) {
-						$id = $redirect['id'] ?? '';
-						if ( '' !== $id && isset( $hits[ $id ] ) ) {
-							$redirect['hits'] = (int) ( $redirect['hits'] ?? 0 ) + (int) $hits[ $id ];
-							$changed          = true;
-						}
-					}
-					unset( $redirect );
-					return $changed ? $redirects : false;
-				}
-			);
+		$file = \Functionalities\Storage\Data_Directory::file( 'redirect-buffer.json' );
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+		$lock = fopen( dirname( $file ) . '/.redirect-buffer-flush.lock', 'c+' );
+		if ( false === $lock ) {
+			self::$storage_error = 'buffer_lock_failed';
+			return;
 		}
-
-		if ( ! empty( $buffer['not_found'] ) ) {
-			self::write_not_found( $buffer['not_found'] );
+		try {
+			if ( ! flock( $lock, LOCK_EX | LOCK_NB ) ) {
+				return;
+			}
+			// Retain the earlier option until its contents are durably queued.
+			$legacy    = (array) \get_option( self::BUFFER_OPTION, array() );
+			$legacy_id = empty( $legacy ) ? '' : 'legacy-' . hash( 'sha256', (string) wp_json_encode( $legacy ) );
+			$result    = \Functionalities\Storage\Atomic_JSON_Store::update(
+				$file,
+				static function ( array $buffer ) use ( $legacy, $legacy_id ) {
+					if ( '' !== $legacy_id && ( $buffer['legacy_snapshot'] ?? '' ) !== $legacy_id ) {
+						$buffer['pending'][ $legacy_id ] = array(
+							'hits'      => $legacy['hits'] ?? array(),
+							'not_found' => $legacy['not_found'] ?? array(),
+						);
+						$buffer['legacy_snapshot']       = $legacy_id;
+					}
+					if ( ! empty( $buffer['hits'] ) || ! empty( $buffer['not_found'] ) ) {
+						$id                       = bin2hex( random_bytes( 16 ) );
+						$buffer['pending'][ $id ] = array(
+							'hits'      => $buffer['hits'] ?? array(),
+							'not_found' => $buffer['not_found'] ?? array(),
+						);
+						unset( $buffer['hits'], $buffer['not_found'], $buffer['started'] );
+					}
+					return $buffer;
+				},
+				array()
+			);
+			if ( ! $result['success'] ) {
+				self::$storage_error = $result['error'];
+				return;
+			}
+			if ( '' !== $legacy_id ) {
+				\delete_option( self::BUFFER_OPTION );
+			}
+			$pending_ids = array_keys( $result['data']['pending'] ?? array() );
+			foreach ( $result['data']['pending'] ?? array() as $id => $batch ) {
+				$acknowledged = array();
+				if ( ! empty( $batch['hits'] ) ) {
+					$hits    = $batch['hits'];
+					$written = self::mutate_redirects(
+						static function ( array $redirects ) use ( $hits ) {
+							foreach ( $redirects as &$redirect ) {
+								$key = $redirect['id'] ?? '';
+								if ( isset( $hits[ $key ] ) ) {
+									$redirect['hits'] = (int) ( $redirect['hits'] ?? 0 ) + (int) $hits[ $key ];
+								}
+							}
+							unset( $redirect );
+							return $redirects;
+						},
+						$id,
+						$pending_ids
+					);
+					if ( $written['success'] ) {
+						$acknowledged[] = 'hits';
+					}
+				}
+				if ( ! empty( $batch['not_found'] ) && self::write_not_found( $batch['not_found'], $id, $pending_ids ) ) {
+					$acknowledged[] = 'not_found';
+				}
+				$ack = \Functionalities\Storage\Atomic_JSON_Store::update(
+					$file,
+					static function ( array $buffer ) use ( $id, $acknowledged ) {
+						foreach ( $acknowledged as $bucket ) {
+							unset( $buffer['pending'][ $id ][ $bucket ] );
+						}
+						if ( empty( $buffer['pending'][ $id ]['hits'] ) && empty( $buffer['pending'][ $id ]['not_found'] ) ) {
+							unset( $buffer['pending'][ $id ] );
+						}
+						return $buffer;
+					},
+					array()
+				);
+				if ( ! $ack['success'] ) {
+					self::$storage_error = $ack['error'];
+					return;
+				}
+			}
+		} finally {
+			flock( $lock, LOCK_UN );
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
+			fclose( $lock );
 		}
 	}
 
-	/**
-	 * Return buffered hit counts that have not reached the file yet.
-	 *
-	 * @since 1.6.0
-	 * @return array Redirect ID to pending count.
-	 */
+	/** Return active and unacknowledged hit counts. */
 	public static function get_buffered_hits(): array {
-		$buffer = (array) \get_option( self::BUFFER_OPTION, array() );
-		return isset( $buffer['hits'] ) && is_array( $buffer['hits'] ) ? $buffer['hits'] : array();
+		if ( ! self::ensure_storage() ) {
+			return array();
+		}
+		$result = \Functionalities\Storage\Atomic_JSON_Store::read( \Functionalities\Storage\Data_Directory::file( 'redirect-buffer.json' ) );
+		if ( ! $result['success'] ) {
+			self::$storage_error = $result['error'];
+			return array();
+		}
+		$hits        = $result['data']['hits'] ?? array();
+		$destination = \Functionalities\Storage\Atomic_JSON_Store::read( self::$redirects_file );
+		$applied     = $destination['success'] ? ( $destination['data']['applied_batches'] ?? array() ) : array();
+		foreach ( $result['data']['pending'] ?? array() as $batch_id => $batch ) {
+			if ( isset( $applied[ $batch_id ] ) ) {
+				continue;
+			}
+			foreach ( $batch['hits'] ?? array() as $id => $count ) {
+				$hits[ $id ] = (int) ( $hits[ $id ] ?? 0 ) + (int) $count;
+			}
+		}
+		$legacy    = (array) \get_option( self::BUFFER_OPTION, array() );
+		$legacy_id = empty( $legacy ) ? '' : 'legacy-' . hash( 'sha256', (string) wp_json_encode( $legacy ) );
+		foreach ( ( $result['data']['legacy_snapshot'] ?? '' ) === $legacy_id ? array() : ( $legacy['hits'] ?? array() ) as $id => $count ) {
+			$hits[ $id ] = (int) ( $hits[ $id ] ?? 0 ) + (int) $count;
+		}
+		return $hits;
 	}
 
 	/**
@@ -763,19 +982,35 @@ class Redirect_Manager {
 	 * @return array Parsed rows and errors.
 	 */
 	public static function parse_csv( string $csv, array $mapping = array() ): array {
-		$lines = preg_split( '/\r\n|\r|\n/', trim( $csv ) );
-		if ( ! $lines || count( $lines ) < 2 ) {
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+		$stream = fopen( 'php://temp', 'w+' );
+		if ( false === $stream ) {
+			return array(
+				'rows'   => array(),
+				'errors' => array( 'csv_read_failed' ),
+			);
+		}
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite -- CSV records are parsed from an in-memory stream.
+		fwrite( $stream, preg_replace( '/^\xEF\xBB\xBF/', '', trim( $csv ) ) );
+		rewind( $stream );
+		$header = fgetcsv( $stream, 0, ',', '"', '' );
+		if ( ! $header ) {
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Close the in-memory CSV stream.
+			fclose( $stream );
 			return array(
 				'rows'   => array(),
 				'errors' => array( 'csv_requires_header_and_row' ),
 			);
 		}
 
-		$headers = array_map( 'sanitize_key', str_getcsv( array_shift( $lines ), ',', '"', '\\' ) );
+		$headers = array_map( 'sanitize_key', $header );
 		$aliases = array(
-			'from' => array( 'source', 'from', 'source_url', 'old_url', 'request', 'url' ),
-			'to'   => array( 'target', 'to', 'target_url', 'new_url', 'destination', 'redirect_to' ),
-			'type' => array( 'type', 'status', 'status_code', 'code', 'action_code' ),
+			'from'    => array( 'source', 'from', 'source_url', 'old_url', 'request', 'url' ),
+			'to'      => array( 'target', 'to', 'target_url', 'new_url', 'destination', 'redirect_to' ),
+			'type'    => array( 'type', 'status', 'status_code', 'code', 'action_code' ),
+			'enabled' => array( 'enabled' ),
+			'hits'    => array( 'hits' ),
+			'created' => array( 'created' ),
 		);
 		$indexes = array();
 		foreach ( $aliases as $field => $names ) {
@@ -791,6 +1026,8 @@ class Redirect_Manager {
 		}
 
 		if ( ! isset( $indexes['from'], $indexes['to'] ) ) {
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Close the in-memory CSV stream.
+			fclose( $stream );
 			return array(
 				'rows'    => array(),
 				'errors'  => array( 'missing_source_or_target_column' ),
@@ -798,19 +1035,22 @@ class Redirect_Manager {
 			);
 		}
 
-		$rows = array();
-		foreach ( $lines as $line_number => $line ) {
-			if ( '' === trim( $line ) ) {
+		$rows        = array();
+		$line_number = 2;
+		// phpcs:ignore Generic.CodeAnalysis.AssignmentInCondition.FoundInWhileCondition -- Read until the CSV stream reaches EOF.
+		while ( false !== ( $columns = fgetcsv( $stream, 0, ',', '"', '' ) ) ) {
+			if ( array( null ) === $columns ) {
+				++$line_number;
 				continue;
 			}
-			$columns = str_getcsv( $line, ',', '"', '\\' );
-			$rows[]  = array(
-				'from' => $columns[ $indexes['from'] ] ?? '',
-				'to'   => $columns[ $indexes['to'] ] ?? '',
-				'type' => isset( $indexes['type'], $columns[ $indexes['type'] ] ) ? (int) $columns[ $indexes['type'] ] : 301,
-				'line' => $line_number + 2,
-			);
+			$row = array( 'line' => $line_number++ );
+			foreach ( $indexes as $field => $index ) {
+				$row[ $field ] = 'type' === $field ? (int) ( $columns[ $index ] ?? 301 ) : ( $columns[ $index ] ?? '' );
+			}
+			$rows[] = $row;
 		}
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Close the in-memory CSV stream.
+		fclose( $stream );
 
 		return array(
 			'rows'    => $rows,
@@ -841,12 +1081,19 @@ class Redirect_Manager {
 		}
 
 		foreach ( $rows as $index => $row ) {
+			if ( ! is_array( $row ) || ( isset( $row['from'] ) && ! is_string( $row['from'] ) ) || ( isset( $row['to'] ) && ! is_string( $row['to'] ) ) ) {
+				$errors[] = array(
+					'line' => $index + 1,
+					'code' => 'invalid_row',
+				);
+				continue;
+			}
 			$line = isset( $row['line'] ) ? (int) $row['line'] : $index + 1;
 			$from = self::normalize_path( (string) ( $row['from'] ?? '' ) );
 			$to   = esc_url_raw( trim( (string) ( $row['to'] ?? '' ) ) );
 			$type = (int) ( $row['type'] ?? 301 );
 
-			if ( '/' === $from || '' === $to ) {
+			if ( '' === trim( (string) ( $row['from'] ?? '' ) ) || '' === $to ) {
 				$errors[] = array(
 					'line' => $line,
 					'code' => 'missing_source_or_target',
@@ -868,7 +1115,8 @@ class Redirect_Manager {
 				);
 				continue;
 			}
-			if ( self::normalize_path( $to ) === $from ) {
+			$enabled = isset( $row['enabled'] ) ? filter_var( $row['enabled'], FILTER_VALIDATE_BOOLEAN ) : true;
+			if ( $enabled && self::local_target_path( $to ) === $from ) {
 				$errors[] = array(
 					'line'   => $line,
 					'code'   => 'redirect_loop',
@@ -878,20 +1126,27 @@ class Redirect_Manager {
 			}
 
 			$sources[ $from ] = true;
-			$targets[ $from ] = self::normalize_path( $to );
+			$targets[ $from ] = self::local_target_path( $to );
 			$clean[]          = array(
 				'id'      => self::generate_id(),
 				'from'    => $from,
 				'to'      => $to,
 				'type'    => in_array( $type, array( 301, 302, 307, 308 ), true ) ? $type : 301,
-				'enabled' => true,
-				'hits'    => 0,
-				'created' => current_time( 'mysql' ),
+				'enabled' => $enabled,
+				'hits'    => max( 0, (int) ( $row['hits'] ?? 0 ) ),
+				'created' => sanitize_text_field( $row['created'] ?? current_time( 'mysql' ) ),
+			);
+		}
+
+		foreach ( self::cyclic_sources( array_merge( $existing, $clean ) ) as $source ) {
+			$errors[] = array(
+				'code'   => 'redirect_loop',
+				'source' => $source,
 			);
 		}
 
 		foreach ( $targets as $from => $target ) {
-			if ( isset( $sources[ $target ] ) ) {
+			if ( null !== $target && isset( $sources[ $target ] ) ) {
 				$warnings[] = array(
 					'code'   => 'redirect_chain',
 					'source' => $from,
@@ -918,6 +1173,9 @@ class Redirect_Manager {
 	private static function apply_import( array $rows ): bool {
 		$result = self::mutate_redirects(
 			static function ( array $redirects ) use ( $rows ) {
+				if ( ! self::prepare_import( $rows, $redirects )['success'] ) {
+					return false;
+				}
 				$existing = array();
 				foreach ( $redirects as $redirect ) {
 					$existing[ $redirect['from'] ] = true;
@@ -978,15 +1236,22 @@ class Redirect_Manager {
 	 * @param array $entries Path to aggregate data.
 	 * @return void
 	 */
-	private static function write_not_found( array $entries ): void {
+	private static function write_not_found( array $entries, string $batch_id = '', array $pending_ids = array() ): bool {
+		if ( ! self::ensure_storage() ) {
+			return false;
+		}
 		$options   = (array) \get_option( 'functionalities_redirect_manager', array() );
 		$cap       = max( 25, min( 2000, (int) ( $options['monitor_cap'] ?? 500 ) ) );
 		$retention = max( 1, min( 365, (int) ( $options['monitor_retention_days'] ?? 30 ) ) );
 		$cutoff    = time() - ( $retention * DAY_IN_SECONDS );
+		$ignored   = (array) ( $options['monitor_ignored_paths'] ?? array() );
 
-		\Functionalities\Storage\Atomic_JSON_Store::update(
+		$result = \Functionalities\Storage\Atomic_JSON_Store::update(
 			self::$log_file,
-			static function ( array $data ) use ( $entries, $cap, $cutoff ) {
+			static function ( array $data ) use ( $entries, $cap, $cutoff, $batch_id, $pending_ids, $ignored ) {
+				if ( '' !== $batch_id && isset( $data['applied_batches'][ $batch_id ] ) ) {
+					return $data;
+				}
 				$items = isset( $data['items'] ) && is_array( $data['items'] ) ? $data['items'] : array();
 				$items = array_filter(
 					$items,
@@ -996,14 +1261,18 @@ class Redirect_Manager {
 				);
 
 				foreach ( $entries as $path => $entry ) {
+					if ( in_array( $path, $ignored, true ) ) {
+						continue;
+					}
 					$count  = (int) ( $entry['count'] ?? 1 );
 					$origin = (string) ( $entry['origin'] ?? '' );
 					$seen   = (int) ( $entry['last_seen'] ?? time() );
 
 					if ( isset( $items[ $path ] ) ) {
+						$previous_seen               = (int) $items[ $path ]['last_seen'];
 						$items[ $path ]['count']     = (int) $items[ $path ]['count'] + $count;
-						$items[ $path ]['last_seen'] = $seen;
-						if ( '' !== $origin ) {
+						$items[ $path ]['last_seen'] = max( $previous_seen, $seen );
+						if ( '' !== $origin && $seen >= $previous_seen ) {
 							$items[ $path ]['referrer_origin'] = $origin;
 						}
 						continue;
@@ -1025,6 +1294,10 @@ class Redirect_Manager {
 				);
 
 				$data['items'] = array_slice( $items, 0, $cap, true );
+				if ( '' !== $batch_id ) {
+					$data['applied_batches']              = array_intersect_key( $data['applied_batches'] ?? array(), array_fill_keys( $pending_ids, true ) );
+					$data['applied_batches'][ $batch_id ] = true;
+				}
 				return $data;
 			},
 			array(
@@ -1032,6 +1305,10 @@ class Redirect_Manager {
 				'items'   => array(),
 			)
 		);
+		if ( ! $result['success'] ) {
+			self::$storage_error = $result['error'];
+		}
+		return $result['success'];
 	}
 
 	/**
@@ -1040,6 +1317,9 @@ class Redirect_Manager {
 	 * @return array
 	 */
 	public static function get_404_log(): array {
+		if ( ! self::ensure_storage() ) {
+			return array();
+		}
 		$result = \Functionalities\Storage\Atomic_JSON_Store::read(
 			self::$log_file,
 			array(
@@ -1213,7 +1493,14 @@ class Redirect_Manager {
 			return;
 		}
 
-		$new_state = self::toggle_redirect( $id );
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified above.
+		$enabled = isset( $_POST['enabled'] ) ? filter_var( $_POST['enabled'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE ) : null;
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified above.
+		if ( isset( $_POST['enabled'] ) && null === $enabled ) {
+			\wp_send_json_error( array( 'message' => \__( 'Invalid enabled state.', 'functionalities' ) ) );
+			return;
+		}
+		$new_state = self::toggle_redirect( $id, $enabled );
 		if ( null !== $new_state ) {
 			\wp_send_json_success(
 				array(
@@ -1337,13 +1624,7 @@ class Redirect_Manager {
 		if ( ! self::verify_ajax() ) {
 			return;
 		}
-		$result = \Functionalities\Storage\Atomic_JSON_Store::write(
-			self::$log_file,
-			array(
-				'version' => 1,
-				'items'   => array(),
-			)
-		);
+		$result = self::clear_not_found();
 		$result['success'] ? \wp_send_json_success() : \wp_send_json_error( array( 'message' => $result['error'] ) );
 	}
 
@@ -1363,18 +1644,82 @@ class Redirect_Manager {
 		$ignored[]                        = $path;
 		$options['monitor_ignored_paths'] = array_slice( array_values( array_unique( array_filter( $ignored ) ) ), -500 );
 		\update_option( 'functionalities_redirect_manager', $options );
-		$result = \Functionalities\Storage\Atomic_JSON_Store::update(
-			self::$log_file,
-			static function ( array $data ) use ( $path ) {
-				unset( $data['items'][ $path ] );
-				return $data;
-			},
-			array(
-				'version' => 1,
-				'items'   => array(),
-			)
-		);
+		$result = self::clear_not_found( $path );
 		$result['success'] ? \wp_send_json_success() : \wp_send_json_error( array( 'message' => $result['error'] ) );
+	}
+
+	/** Clear buffered/logged 404s together while no delivery can race the action. */
+	private static function clear_not_found( ?string $path = null ): array {
+		self::flush_buffer();
+		if ( ! self::ensure_storage() ) {
+			return array(
+				'success' => false,
+				'error'   => self::$storage_error,
+			);
+		}
+		$file = \Functionalities\Storage\Data_Directory::file( 'redirect-buffer.json' );
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+		$lock = fopen( dirname( $file ) . '/.redirect-buffer-flush.lock', 'c+' );
+		if ( false === $lock ) {
+			return array(
+				'success' => false,
+				'error'   => 'buffer_lock_failed',
+			);
+		}
+		try {
+			if ( ! flock( $lock, LOCK_EX ) ) {
+				return array(
+					'success' => false,
+					'error'   => 'buffer_lock_failed',
+				);
+			}
+			$log_result = array();
+			$result     = \Functionalities\Storage\Atomic_JSON_Store::update(
+				$file,
+				static function ( array $buffer ) use ( $path, &$log_result ) {
+					$log_result = \Functionalities\Storage\Atomic_JSON_Store::update(
+						self::$log_file,
+						static function ( array $data ) use ( $path ) {
+							if ( null === $path ) {
+								$data['items'] = array();
+							} else {
+								unset( $data['items'][ $path ] );
+							}
+							return $data;
+						},
+						array(
+							'version' => 1,
+							'items'   => array(),
+						)
+					);
+					if ( ! $log_result['success'] ) {
+						return false;
+					}
+					if ( null === $path ) {
+						unset( $buffer['not_found'] );
+					} else {
+						unset( $buffer['not_found'][ $path ] );
+					}
+					foreach ( $buffer['pending'] ?? array() as $id => $batch ) {
+						if ( null === $path ) {
+							unset( $buffer['pending'][ $id ]['not_found'] );
+						} else {
+							unset( $buffer['pending'][ $id ]['not_found'][ $path ] );
+						}
+						if ( empty( $buffer['pending'][ $id ]['hits'] ) && empty( $buffer['pending'][ $id ]['not_found'] ) ) {
+							unset( $buffer['pending'][ $id ] );
+						}
+					}
+					return $buffer;
+				},
+				array()
+			);
+			return ! empty( $log_result ) && ! $log_result['success'] ? $log_result : $result;
+		} finally {
+			flock( $lock, LOCK_UN );
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
+			fclose( $lock );
+		}
 	}
 
 	/**

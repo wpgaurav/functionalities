@@ -1,7 +1,41 @@
 # Dynamic Functionalities Roadmap
 
-Version **1.6.0** is a security and correctness release built on the v1.5.0 WordPress 7 work. The
-release is tagged only after automated checks and the real-WordPress smoke gate pass.
+The next candidate is **1.6.3**. Preserve existing options, hooks, saved content, and
+site design while completing these groups in order. Keep modules disabled by default.
+
+## v1.6.3: reliability and operational safety
+
+1. **Security boundaries:** enforce snippet author capabilities; accept forwarding headers only
+   from configured proxy peers; precache public PWA responses and expire unsafe owned caches.
+2. **Storage and lifecycle:** guarded private payloads, locked/retryable migration, blog-scoped
+   caches and uninstall, concurrency-safe project deletion and replay-safe redirect counters.
+3. **Rendering and compatibility:** print Components CSS before style printers, use the HTML API
+   for schema output, honor custom class cleanup, scope editor searches, preserve hook signatures,
+   and apply one effective module enable gate.
+4. **Redirect and task integrity:** reject redirect cycles, distinguish destination origins,
+   preserve imported state, validate task entries and unique IDs, and use explicit state changes
+   with visible failure recovery.
+5. **Monitoring:** retain accepted Content Integrity baselines, inspect anonymous rendered pages,
+   distinguish failed scans from empty results, group GA4 installation sources, and retry delivery
+   after cooldown or mail failure.
+6. **Portability and admin workflows:** preserve SVG identifiers and non-autoload policy, redact
+   legacy snippets, roll back failed imports, invalidate stale previews, and retain edits made while
+   requests are pending.
+7. **Maintainability and verification:** group module UI/settings responsibilities behind the
+   existing public controller API; test failure/concurrency paths, verify generated assets and POT,
+   require quality gates on releases, and prevent prerelease deployment to WordPress.org.
+
+### Acceptance gates
+
+- Every behavior fix has a regression case that fails against the old behavior.
+- Tests exercise the minimum supported HTML API and current WordPress integration paths.
+- Concurrent producers and repeated flushes retain every redirect/404 count; failed writes can retry.
+- Migration preserves verified data and makes failed/conflicting moves visible without orphaning it.
+- Restricted authors cannot persist executable snippets; trusted authors retain byte-identical code.
+- Imports round-trip identifiers and enabled state; cleanup honors each site's retention choice.
+- Existing modules, content, settings, and frontend design survive the test deployment.
+- Snapshot before live replacement, verify the packaged payload, test actual admin/editor/frontend
+  behavior on gatilab.com, and retain a rollback path.
 
 ## v1.6.0: security, storage, and the HTML API
 

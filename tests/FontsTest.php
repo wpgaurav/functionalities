@@ -37,6 +37,7 @@ if ( ! function_exists( 'wp_print_inline_style_tag' ) ) {
 }
 
 require_once dirname( __DIR__ ) . '/includes/traits/trait-css-sanitizer.php';
+require_once dirname( __DIR__ ) . '/includes/core/class-module-registry.php';
 require_once dirname( __DIR__ ) . '/includes/features/class-fonts.php';
 
 /**
@@ -88,6 +89,7 @@ final class FontsTest extends PHPUnit\Framework\TestCase {
 	}
 
 	public function testFrontendFontFacesAreHookedImmediatelyAfterPreloads(): void {
+		$GLOBALS['functionalities_test_options']['functionalities_fonts'] = array( 'enabled' => true );
 		Functionalities\Features\Fonts::init();
 
 		$head_hooks = array_values(

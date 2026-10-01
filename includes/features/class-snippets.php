@@ -130,9 +130,7 @@ class Snippets {
 	 * @return void
 	 */
 	public static function init(): void {
-		$opts = self::get_options();
-
-		if ( empty( $opts['enabled'] ) ) {
+		if ( ! \Functionalities\Core\Module_Registry::is_enabled( 'snippets' ) ) {
 			return;
 		}
 
@@ -376,8 +374,9 @@ class Snippets {
 	/**
 	 * Allowed HTML tags and attributes for code snippets.
 	 *
-	 * Single source of truth used by both escape_snippet() (output) and
-	 * sanitize_snippets() (save) to ensure consistent filtering.
+	 * Retained for integrations that filter trusted code with kses_with_styles().
+	 * This permits executable tags and must not be used for restricted authors;
+	 * their save and output paths use WordPress's standard post HTML policy.
 	 *
 	 * @since 1.4.2
 	 *
@@ -471,7 +470,7 @@ class Snippets {
 	 */
 	private static function escape_snippet( string $code, array $snippet = array() ): string {
 		if ( array_key_exists( 'unfiltered', $snippet ) && empty( $snippet['unfiltered'] ) ) {
-			return self::kses_with_styles( $code, self::snippet_allowed_tags() );
+			return \wp_kses_post( $code );
 		}
 
 		return $code;
@@ -485,6 +484,7 @@ class Snippets {
 	 * This method extracts `<style>` blocks, validates only their tag
 	 * attributes via wp_kses(), preserves CSS content (stripping only null
 	 * bytes), and reassembles after filtering the rest.
+	 * This helper assumes a trusted author and does not make executable code safe.
 	 *
 	 * @since 1.4.0
 	 *

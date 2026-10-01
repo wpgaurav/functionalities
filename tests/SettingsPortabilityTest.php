@@ -11,6 +11,7 @@ final class SettingsPortabilityTest extends TestCase {
 	public static function setUpBeforeClass(): void {
 		require_once dirname( __DIR__ ) . '/includes/core/class-module-registry.php';
 		require_once dirname( __DIR__ ) . '/includes/admin/class-settings-portability-controller.php';
+		require_once dirname( __DIR__ ) . '/includes/features/class-snippets.php';
 	}
 
 	protected function setUp(): void {
@@ -79,5 +80,61 @@ final class SettingsPortabilityTest extends TestCase {
 
 		$this->assertSame( 'G-EXISTING', $document['settings']['snippets']['ga4_id'] );
 		$this->assertArrayNotHasKey( 'header', $document['settings']['snippets'] );
+	}
+
+	public function test_legacy_custom_code_is_redacted_before_export(): void {
+		$GLOBALS['functionalities_test_options']['functionalities_snippets'] = array(
+			'enabled'        => true,
+			'enable_header'  => true,
+			'header_code'    => '<script>privateHeader()</script>',
+			'body_open_code' => '<script>privateBody()</script>',
+			'footer_code'    => '<script>privateFooter()</script>',
+		);
+		$document = \Functionalities\Admin\Settings_Portability_Controller::build_export( array( 'snippets' ) );
+
+		foreach ( array( 'header_code', 'body_open_code', 'footer_code' ) as $field ) {
+			$this->assertArrayNotHasKey( $field, $document['settings']['snippets'] );
+		}
+		$this->assertStringNotContainsString( 'privateHeader', json_encode( $document ) );
+	}
+
+	public function test_svg_import_preserves_picker_slug_and_disables_autoload(): void {
+		require_once dirname( __DIR__ ) . '/includes/features/class-svg-icons.php';
+		$document = array(
+			'schema'   => 1,
+			'plugin'   => 'dynamic-functionalities',
+			'settings' => array(
+				'svg-icons' => array(
+					'enabled' => true,
+					'icons'   => array( 'circle' => array( 'slug' => 'circle', 'name' => 'Circle', 'svg' => '<svg xmlns="http://www.w3.org/2000/svg"><circle r="5"/></svg>' ) ),
+				),
+			),
+		);
+		$preview = \Functionalities\Admin\Settings_Portability_Controller::preview_import( $document, true );
+		$this->assertSame( 'circle', $preview['validated']['svg-icons']['icons']['circle']['slug'] ?? null );
+
+		$result = \Functionalities\Admin\Settings_Portability_Controller::apply_import( $document, true );
+		$this->assertTrue( $result['success'] );
+		$this->assertSame( 'circle', $GLOBALS['functionalities_test_options']['functionalities_svg_icons']['icons']['circle']['slug'] );
+		$this->assertFalse( $GLOBALS['functionalities_test_autoload']['functionalities_svg_icons'] ?? null );
+	}
+
+	public function test_legacy_code_export_uses_current_format_without_writing_source(): void {
+		$legacy = array( 'enabled' => true, 'enable_header' => true, 'header_code' => '<script>legacy()</script>' );
+		$GLOBALS['functionalities_test_options']['functionalities_snippets'] = $legacy;
+		$document = \Functionalities\Admin\Settings_Portability_Controller::build_export( array( 'snippets' ), true );
+		$this->assertSame( '<script>legacy()</script>', $document['settings']['snippets']['header'][0]['code'] );
+		$this->assertArrayNotHasKey( 'header_code', $document['settings']['snippets'] );
+		$this->assertSame( $legacy, $GLOBALS['functionalities_test_options']['functionalities_snippets'] );
+	}
+
+	public function test_failed_import_restores_absent_and_existing_options(): void {
+		$command = escapeshellarg( PHP_BINARY ) . ' ' . escapeshellarg( __DIR__ . '/fixtures/settings-import-worker.php' );
+		exec( $command, $output, $status );
+		$this->assertSame( 0, $status, implode( "\n", $output ) );
+		$result = json_decode( implode( "\n", $output ), true );
+		$this->assertFalse( $result['outcome']['success'] );
+		$this->assertArrayNotHasKey( 'functionalities_misc', $result['options'] );
+		$this->assertSame( array( 'enabled' => false ), $result['options']['functionalities_fonts'] );
 	}
 }

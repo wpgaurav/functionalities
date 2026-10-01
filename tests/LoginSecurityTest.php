@@ -25,6 +25,7 @@ final class LoginSecurityTest extends TestCase {
 		$GLOBALS['functionalities_test_options']    = array();
 		$GLOBALS['functionalities_test_transients'] = array();
 		$_SERVER['REMOTE_ADDR']                     = '203.0.113.7';
+		unset( $_SERVER['HTTP_CLIENT_IP'], $_SERVER['HTTP_X_FORWARDED_FOR'] );
 
 		$property = new ReflectionProperty( Login_Security::class, 'options' );
 		if ( PHP_VERSION_ID < 80100 ) {
@@ -136,5 +137,75 @@ final class LoginSecurityTest extends TestCase {
 
 		Login_Security::unlock_username( 'editor' );
 		$this->assertNull( Login_Security::check_lockout( null, 'editor', 'x' ) );
+	}
+
+	/**
+	 * A user-supplied header cannot impersonate an allowlisted address.
+	 *
+	 * @return void
+	 */
+	public function test_client_ip_cannot_override_a_trusted_proxy_header(): void {
+		$this->configure(
+			array(
+				'trust_proxy_headers' => true,
+				'trusted_proxy_ips'   => '192.0.2.0/24',
+				'allowlist_ips'       => '198.51.100.1',
+			)
+		);
+		$_SERVER['REMOTE_ADDR']          = '192.0.2.10';
+		$_SERVER['HTTP_X_FORWARDED_FOR'] = '203.0.113.100';
+		$_SERVER['HTTP_CLIENT_IP']       = '198.51.100.1';
+		for ( $i = 0; $i < 6; $i++ ) {
+			Login_Security::record_failed_attempt( 'admin' );
+		}
+		$this->assertTrue( Login_Security::is_locked_out( '203.0.113.100' ) );
+		$this->assertInstanceOf( WP_Error::class, Login_Security::check_lockout( null, 'admin', 'guess' ) );
+	}
+
+	/**
+	 * Header trust is restricted to the actual proxy peer and its trusted hops.
+	 *
+	 * @return void
+	 */
+	public function test_forwarding_chain_is_resolved_from_the_trusted_boundary(): void {
+		$this->configure( array( 'trust_proxy_headers' => true, 'trusted_proxy_ips' => "192.0.2.0/24\n2001:db8:abcd::/48" ) );
+		$_SERVER['HTTP_X_FORWARDED_FOR'] = '198.51.100.1, 203.0.113.100, 192.0.2.20';
+		$method                        = new ReflectionMethod( Login_Security::class, 'get_client_ip' );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$method->setAccessible( true );
+		}
+		$this->assertSame( '203.0.113.7', $method->invoke( null ), 'A direct connection must ignore forwarding headers.' );
+		$_SERVER['REMOTE_ADDR'] = '192.0.2.10';
+		$this->assertSame( '203.0.113.100', $method->invoke( null ), 'An attacker-prepended address must not become the client.' );
+		$_SERVER['REMOTE_ADDR']          = '2001:db8:abcd::10';
+		$_SERVER['HTTP_X_FORWARDED_FOR'] = '2001:db8:beef::20, 2001:db8:abcd::30';
+		$this->assertSame( '2001:db8:beef::20', $method->invoke( null ) );
+		$_SERVER['HTTP_X_FORWARDED_FOR'] = '198.51.100.1, invalid';
+		$this->assertSame( '2001:db8:abcd::10', $method->invoke( null ), 'Malformed chains fail closed to the peer address.' );
+	}
+
+	/**
+	 * CIDR boundaries and an empty proxy list must not broaden header trust.
+	 *
+	 * @return void
+	 */
+	public function test_proxy_configuration_fails_closed_at_network_boundaries(): void {
+		$method = new ReflectionMethod( Login_Security::class, 'get_client_ip' );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$method->setAccessible( true );
+		}
+		$this->configure( array( 'trust_proxy_headers' => true ) );
+		$_SERVER['HTTP_X_FORWARDED_FOR'] = '198.51.100.1';
+		$this->assertSame( '203.0.113.7', $method->invoke( null ) );
+
+		$this->configure( array( 'trust_proxy_headers' => true, 'trusted_proxy_ips' => "192.0.2.128/25\n2001:db8::10/127\n0.0.0.0/0" ) );
+		foreach ( array( '192.0.2.128', '192.0.2.255', '2001:db8::10', '2001:db8::11' ) as $peer ) {
+			$_SERVER['REMOTE_ADDR'] = $peer;
+			$this->assertSame( '198.51.100.1', $method->invoke( null ) );
+		}
+		foreach ( array( '192.0.2.127', '2001:db8::12', '203.0.113.7' ) as $peer ) {
+			$_SERVER['REMOTE_ADDR'] = $peer;
+			$this->assertSame( $peer, $method->invoke( null ) );
+		}
 	}
 }

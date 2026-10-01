@@ -8,6 +8,11 @@
 use PHPUnit\Framework\TestCase;
 
 final class ModuleRegistryTest extends TestCase {
+	public function test_completed_upgrades_do_not_initialize_private_storage_for_disabled_modules(): void {
+		$result = $this->run_worker( 'none', 'current-version' );
+		$this->assertSame( array(), $result['features'] );
+		$this->assertSame( array(), $result['storage'] );
+	}
 	/**
 	 * Disabled frontend requests must not include feature classes.
 	 *
@@ -55,6 +60,19 @@ final class ModuleRegistryTest extends TestCase {
 		$this->assertContains( 'admin_menu', $result['hooks'] );
 		$this->assertContains( 'functionalities_admin_dashboard_tools', $result['hooks'] );
 		$this->assertContains( 'site_status_tests', $result['hooks'] );
+	}
+
+	public function test_detector_filter_contract_is_not_used_as_a_master_gate(): void {
+		$result = $this->run_worker( 'none', 'filter-contract' );
+
+		$this->assertSame( array(), $result['features'] );
+		$this->assertTrue( $result['detector_contract'] );
+	}
+
+	public function test_master_filter_can_enable_a_stored_disabled_module(): void {
+		$result = $this->run_worker( 'misc', 'master-enable' );
+
+		$this->assertContains( 'use_widgets_block_editor', $result['hooks'] );
 	}
 
 	/**

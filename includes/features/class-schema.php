@@ -104,9 +104,7 @@ class Schema {
 	 * @return void
 	 */
 	public static function init(): void {
-		$opts = self::get_options();
-
-		if ( empty( $opts['enabled'] ) ) {
+		if ( ! \Functionalities\Core\Module_Registry::is_enabled( 'schema' ) ) {
 			return;
 		}
 
@@ -180,6 +178,10 @@ class Schema {
 	 * @return string Modified attributes string.
 	 */
 	public static function filter_language_attributes( string $output ): string {
+		if ( ! \Functionalities\Core\Module_Registry::is_enabled( 'schema' ) ) {
+			return $output;
+		}
+
 		$opts = self::get_options();
 
 		/**
@@ -235,7 +237,7 @@ class Schema {
 	 * @return void
 	 */
 	public static function start_buffer(): void {
-		if ( \is_admin() || \is_feed() ) {
+		if ( \is_admin() || \is_feed() || ! \Functionalities\Core\Module_Registry::is_enabled( 'schema' ) ) {
 			return;
 		}
 
@@ -293,6 +295,10 @@ class Schema {
 	 * @return string Modified HTML with schema attributes.
 	 */
 	public static function buffer_callback( string $html ): string {
+		if ( ! \Functionalities\Core\Module_Registry::is_enabled( 'schema' ) || ! class_exists( '\WP_HTML_Tag_Processor' ) ) {
+			return $html;
+		}
+
 		$opts = self::get_options();
 
 		$enable_header = ! empty( $opts['enable_header_part'] );
@@ -302,16 +308,25 @@ class Schema {
 			return $html;
 		}
 
-		// Use regex for performance instead of full DOM parsing of the entire page.
-		if ( $enable_header ) {
-			$html = preg_replace( '/<header\b(?![^>]*itemscope)/i', '<header itemscope itemtype="https://schema.org/WPHeader"', $html, 1 );
+		// The HTML API skips script/style contents, comments, and attribute values.
+		$processor = new \WP_HTML_Tag_Processor( $html );
+		while ( ( $enable_header || $enable_footer ) && $processor->next_tag() ) {
+			$tag = $processor->get_tag();
+			if ( null !== $processor->get_attribute( 'itemscope' ) ) {
+				continue;
+			}
+			if ( $enable_header && 'HEADER' === $tag ) {
+				$processor->set_attribute( 'itemscope', true );
+				$processor->set_attribute( 'itemtype', 'https://schema.org/WPHeader' );
+				$enable_header = false;
+			} elseif ( $enable_footer && 'FOOTER' === $tag ) {
+				$processor->set_attribute( 'itemscope', true );
+				$processor->set_attribute( 'itemtype', 'https://schema.org/WPFooter' );
+				$enable_footer = false;
+			}
 		}
 
-		if ( $enable_footer ) {
-			$html = preg_replace( '/<footer\b(?![^>]*itemscope)/i', '<footer itemscope itemtype="https://schema.org/WPFooter"', $html, 1 );
-		}
-
-		return $html;
+		return $processor->get_updated_html();
 	}
 
 	/**
@@ -327,7 +342,7 @@ class Schema {
 	 * @return string Modified content with schema attributes.
 	 */
 	public static function filter_article( string $content ): string {
-		if ( trim( $content ) === '' || ! \is_singular() ) {
+		if ( trim( $content ) === '' || ! \is_singular() || ! \Functionalities\Core\Module_Registry::is_enabled( 'schema' ) ) {
 			return $content;
 		}
 
@@ -426,7 +441,7 @@ class Schema {
 	 * @return void
 	 */
 	public static function output_breadcrumbs(): void {
-		if ( ! \is_singular() || \is_front_page() ) {
+		if ( ! \is_singular() || \is_front_page() || ! \Functionalities\Core\Module_Registry::is_enabled( 'schema' ) ) {
 			return;
 		}
 

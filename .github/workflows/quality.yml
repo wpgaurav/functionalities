@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_call:
 
 permissions:
   contents: read
@@ -25,8 +26,18 @@ jobs:
       - run: php tests/php-lint.php
 
   quality:
-    name: Coding standards and tests
+    name: PHP ${{ matrix.php }} / WordPress ${{ matrix.wordpress }} quality
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - php: '7.4'
+            wordpress: '6.3'
+          - php: '8.3'
+            wordpress: 'trunk'
+          - php: '8.5'
+            wordpress: 'trunk'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -35,10 +46,11 @@ jobs:
           cache: npm
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3'
+          php-version: ${{ matrix.php }}
           coverage: none
           tools: composer:v2
       - run: npm ci
+      - run: npm test
       - run: npm run build
       - run: git diff --exit-code -- assets/js/wp7-admin.js assets/js/wp7-admin.asset.php assets/js/wp7-admin.css assets/js/wp7-admin-rtl.css assets/js/wp7-dataviews.css assets/js/wp7-dataviews-rtl.css
       - run: composer install --no-interaction --prefer-dist
@@ -47,8 +59,10 @@ jobs:
       # The content filters run on WordPress's HTML API. Fetch just that part of
       # core so those tests execute instead of skipping.
       - name: Fetch the WordPress HTML API
+        env:
+          WP_CORE_REF: ${{ matrix.wordpress }}
         run: |
-          git clone --depth=1 --filter=blob:none --sparse https://github.com/WordPress/wordpress-develop.git /tmp/wordpress
+          git clone --depth=1 --filter=blob:none --sparse --branch "$WP_CORE_REF" https://github.com/WordPress/wordpress-develop.git /tmp/wordpress
           git -C /tmp/wordpress sparse-checkout set src/wp-includes
       - run: composer test
         env:
@@ -62,6 +76,7 @@ jobs:
           done
       - run: bash -n build.sh
       - run: bash -n bin/make-pot.sh
+      - run: bash -n bin/extract-changelog.sh
 
   package:
     name: Distribution package
@@ -83,6 +98,14 @@ jobs:
             functionalities/includes/admin/class-settings-portability-controller.php \
             functionalities/includes/admin/class-site-health-controller.php \
             functionalities/includes/core/class-module-registry.php \
+            functionalities/includes/admin/trait-admin-settings.php \
+            functionalities/includes/admin/trait-admin-components-ui.php \
+            functionalities/includes/admin/trait-admin-fonts-ui.php \
+            functionalities/includes/admin/trait-admin-task-manager-ui.php \
+            functionalities/includes/admin/trait-admin-redirect-manager-ui.php \
+            functionalities/includes/admin/trait-admin-svg-icons-ui.php \
+            functionalities/includes/admin/trait-admin-snippets-ui.php \
+            functionalities/includes/admin/trait-admin-pwa-ui.php \
             functionalities/includes/core/class-wordpress-7-integration.php \
             functionalities/includes/storage/class-atomic-json-store.php \
             functionalities/includes/storage/class-data-directory.php \

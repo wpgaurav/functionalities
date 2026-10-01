@@ -37,16 +37,25 @@ class Upgrader {
 	 */
 	public static function maybe_upgrade(): void {
 		$stored = (string) \get_option( self::VERSION_OPTION, '' );
-
 		if ( FUNCTIONALITIES_VERSION === $stored ) {
 			return;
 		}
 
+		// Guarded files first ship in 1.6.3. Retry failed upgrades, including
+		// legacy data owned by modules that are currently disabled.
+		if ( self::has_legacy_data() || '' !== (string) \get_option( \Functionalities\Storage\Data_Directory::KEY_OPTION, '' ) ) {
+			\Functionalities\Storage\Data_Directory::path();
+			if ( \Functionalities\Storage\Data_Directory::get_errors() ) {
+				return;
+			}
+		}
 		if ( '' === $stored || version_compare( $stored, '1.6.0', '<' ) ) {
 			self::upgrade_to_160();
 		}
 
-		\update_option( self::VERSION_OPTION, FUNCTIONALITIES_VERSION, true );
+		if ( ! \Functionalities\Storage\Data_Directory::get_errors() ) {
+			\update_option( self::VERSION_OPTION, FUNCTIONALITIES_VERSION, true );
+		}
 	}
 
 	/**

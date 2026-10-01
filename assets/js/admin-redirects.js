@@ -6,6 +6,7 @@
 	}
 
 	var config = functionalitiesRedirectAdmin;
+	var previewVersion = 0;
 
 	function message(response) {
 		return response && response.data && response.data.message ? response.data.message : 'Error';
@@ -42,7 +43,20 @@
 		});
 
 		$(document).on('change', '.toggle-redirect', function () {
-			$.post(config.ajaxUrl, { action: 'functionalities_redirect_toggle', nonce: config.nonce, id: $(this).closest('tr').data('id') });
+			var checkbox = $(this);
+			var desired = checkbox.prop('checked');
+			checkbox.prop('disabled', true);
+			$.post(config.ajaxUrl, { action: 'functionalities_redirect_toggle', nonce: config.nonce, id: checkbox.closest('tr').data('id'), enabled: desired ? '1' : '0' }, function (response) {
+				if (response.success) {
+					checkbox.prop('checked', Boolean(response.data.enabled));
+				} else {
+					checkbox.prop('checked', !desired);
+					window.alert(message(response));
+				}
+			}).fail(function () {
+				checkbox.prop('checked', !desired);
+				window.alert(config.requestFailed || 'Request failed.');
+			}).always(function () { checkbox.prop('disabled', false); });
 		});
 
 		$(document).on('click', '.delete-redirect', function () {
@@ -61,6 +75,7 @@
 		});
 
 		$('#import-redirects-btn, #import-redirects-csv-btn').on('click', function () {
+			previewVersion++;
 			$('#import-format').val(this.id.indexOf('csv') !== -1 ? 'csv' : 'json');
 			$('#import-preview').prop('hidden', true).text('');
 			$('#confirm-import').prop('disabled', true);
@@ -68,17 +83,29 @@
 		});
 		$('#cancel-import').on('click', function () { $('#import-modal').hide(); });
 
+		$('#import-json, #import-format').on('input change', function () {
+			previewVersion++;
+			$('#confirm-import').prop('disabled', true);
+			$('#import-preview').prop('hidden', true);
+		});
+
 		$('#preview-import').on('click', function () {
+			var version = ++previewVersion;
+			$('#confirm-import').prop('disabled', true);
 			$.post(config.ajaxUrl, { action: 'functionalities_redirect_import', nonce: config.nonce, document: $('#import-json').val(), format: $('#import-format').val(), dry_run: 1 }, function (response) {
+				if (version !== previewVersion) { return; }
 				$('#import-preview').prop('hidden', false).text(JSON.stringify(response.data, null, 2));
 				$('#confirm-import').prop('disabled', !response.success);
+			}).fail(function () {
+				if (version === previewVersion) { window.alert(config.requestFailed || 'Request failed.'); }
 			});
 		});
 
 		$('#confirm-import').on('click', function () {
+			var button = $(this).prop('disabled', true);
 			$.post(config.ajaxUrl, { action: 'functionalities_redirect_import', nonce: config.nonce, document: $('#import-json').val(), format: $('#import-format').val() }, function (response) {
 				if (response.success) { window.location.reload(); } else { window.alert(message(response)); }
-			});
+			}).fail(function () { window.alert(config.requestFailed || 'Request failed.'); }).always(function () { button.prop('disabled', false); });
 		});
 
 		$('#purge-404-btn').on('click', function () {

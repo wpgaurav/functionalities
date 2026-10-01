@@ -124,6 +124,9 @@ class Fonts {
 	 * @return void
 	 */
 	public static function init(): void {
+		if ( ! \Functionalities\Core\Module_Registry::is_enabled( 'fonts' ) ) {
+			return;
+		}
 		// Preload fonts early.
 		\add_action( 'wp_head', array( __CLASS__, 'preload_fonts' ), 1 );
 
@@ -241,7 +244,7 @@ class Fonts {
 		 *
 		 * @param bool $enabled Whether fonts are enabled.
 		 */
-		if ( ! \apply_filters( 'functionalities_fonts_enabled', ! empty( $opts['enabled'] ) ) ) {
+		if ( ! \Functionalities\Core\Module_Registry::is_enabled( 'fonts' ) ) {
 			return;
 		}
 
@@ -297,7 +300,7 @@ class Fonts {
 
 		$opts = self::get_options();
 
-		if ( ! \apply_filters( 'functionalities_fonts_enabled', ! empty( $opts['enabled'] ) ) ) {
+		if ( ! \Functionalities\Core\Module_Registry::is_enabled( 'fonts' ) ) {
 			return;
 		}
 
@@ -349,7 +352,7 @@ class Fonts {
 	public static function add_editor_settings_fonts( $settings ) {
 		$opts = self::get_options();
 
-		if ( ! \apply_filters( 'functionalities_fonts_enabled', ! empty( $opts['enabled'] ) ) ) {
+		if ( ! \Functionalities\Core\Module_Registry::is_enabled( 'fonts' ) ) {
 			return $settings;
 		}
 
@@ -452,7 +455,7 @@ class Fonts {
 
 		$opts = self::get_options();
 
-		if ( ! \apply_filters( 'functionalities_fonts_enabled', ! empty( $opts['enabled'] ) ) ) {
+		if ( ! \Functionalities\Core\Module_Registry::is_enabled( 'fonts' ) ) {
 			return;
 		}
 
@@ -512,7 +515,7 @@ class Fonts {
 
 		$opts = self::get_options();
 
-		if ( ! \apply_filters( 'functionalities_fonts_enabled', ! empty( $opts['enabled'] ) ) ) {
+		if ( ! \Functionalities\Core\Module_Registry::is_enabled( 'fonts' ) ) {
 			return;
 		}
 
@@ -559,7 +562,7 @@ class Fonts {
 	public static function inject_typography_theme_json( $theme_json ) {
 		$opts = self::get_options();
 
-		if ( ! \apply_filters( 'functionalities_fonts_enabled', ! empty( $opts['enabled'] ) ) ) {
+		if ( ! \Functionalities\Core\Module_Registry::is_enabled( 'fonts' ) ) {
 			return $theme_json;
 		}
 

@@ -38,7 +38,19 @@ function is_admin() {
 	global $mode;
 	return 'admin' === $mode;
 }
-function apply_filters( $hook, $value ) { return $value; }
+function apply_filters( $hook, $value, ...$args ) {
+	global $mode;
+	if ( 'filter-contract' === $mode && 'functionalities_assumption_detection_enabled' === $hook ) {
+		$detector = static function ( $enabled, $key ) {
+			return $enabled && 'detect_debug_exposure' !== $key;
+		};
+		return $detector( $value, ...$args );
+	}
+	if ( 'master-enable' === $mode && 'functionalities_module_enabled' === $hook && 'misc' === ( $args[0] ?? '' ) ) {
+		return true;
+	}
+	return $value;
+}
 function __( $text ) { return $text; }
 function wp_get_scheduled_event() { return false; }
 function wp_clear_scheduled_hook() {}
@@ -49,12 +61,22 @@ function did_action( $hook ) {
 function get_bloginfo() { return 'Test Site'; }
 function delete_transient() {}
 function update_option( $name, $value, $autoload = null ) { return true; }
+function wp_mkdir_p() { return false; }
 function wp_get_attachment_image_url() { return false; }
 function add_rewrite_rule() {}
 
 function get_option( $option, $default = false ) {
-	global $enabled;
+	global $enabled, $mode;
+	if ( 'current-version' === $mode && 'functionalities_version' === $option ) {
+		return FUNCTIONALITIES_VERSION;
+	}
+	if ( 'current-version' === $mode && 'functionalities_data_key' === $option ) {
+		return 'existingprivatekey123';
+	}
 	$target = 'functionalities_' . str_replace( '-', '_', $enabled );
+	if ( 'master-enable' === $mode && $target === $option ) {
+		return array( 'enabled' => false, 'disable_block_widgets' => true );
+	}
 	return $option === $target ? array( 'enabled' => true ) : $default;
 }
 
@@ -68,11 +90,15 @@ foreach ( $hooks['init'] as $callback ) {
 }
 
 $features = array();
+$storage  = array();
 foreach ( get_included_files() as $file ) {
 	if ( false !== strpos( $file, '/includes/features/' ) ) {
 		$features[] = basename( $file );
 	}
+	if ( false !== strpos( $file, '/includes/storage/' ) ) {
+		$storage[] = basename( $file );
+	}
 }
 sort( $features );
 
-echo json_encode( array( 'features' => $features, 'hooks' => array_keys( $hooks ) ) );
+echo json_encode( array( 'features' => $features, 'storage' => $storage, 'hooks' => array_keys( $hooks ), 'detector_contract' => apply_filters( 'functionalities_assumption_detection_enabled', true, 'detect_schema_collision' ) ) );

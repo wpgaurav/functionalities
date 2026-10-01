@@ -104,9 +104,9 @@ class Components {
 	 * @return void
 	 */
 	public static function init(): void {
-		// Output CSS in footer (both frontend and admin).
-		\add_action( 'wp_footer', array( __CLASS__, 'print_footer_link' ), 90 );
-		\add_action( 'admin_footer', array( __CLASS__, 'print_footer_link' ), 90 );
+		// Queue styles before WordPress prints them in the head or admin page.
+		\add_action( 'wp_enqueue_scripts', array( __CLASS__, 'print_footer_link' ) );
+		\add_action( 'admin_enqueue_scripts', array( __CLASS__, 'print_footer_link' ) );
 
 		// Serve the block editor canvas (an iframe) via the editor `styles`
 		// setting — the only channel guaranteed to reach the iframe.
@@ -179,7 +179,7 @@ class Components {
 	public static function add_editor_settings_components( $settings ) {
 		$opts = self::get_options();
 
-		if ( ! \apply_filters( 'functionalities_components_enabled', ! empty( $opts['enabled'] ) ) ) {
+		if ( ! \Functionalities\Core\Module_Registry::is_enabled( 'components' ) ) {
 			return $settings;
 		}
 
@@ -204,7 +204,7 @@ class Components {
 	}
 
 	/**
-	 * Output CSS link or inline styles in footer.
+	 * Enqueue the generated CSS file or inline fallback before styles are printed.
 	 *
 	 * Attempts to serve CSS from an external file for optimal caching.
 	 * Falls back to inline styles if file writing is not possible.
@@ -224,7 +224,7 @@ class Components {
 		 *
 		 * @param bool $enabled Whether components are enabled.
 		 */
-		if ( ! \apply_filters( 'functionalities_components_enabled', ! empty( $opts['enabled'] ) ) ) {
+		if ( ! \Functionalities\Core\Module_Registry::is_enabled( 'components' ) ) {
 			return;
 		}
 
@@ -404,7 +404,7 @@ class Components {
 	public static function on_option_update( $old_value, $value ): void {
 		$opts = is_array( $value ) ? $value : array();
 
-		if ( empty( $opts['enabled'] ) || empty( $opts['items'] ) || ! is_array( $opts['items'] ) ) {
+		if ( ! \Functionalities\Core\Module_Registry::is_enabled( 'components' ) || empty( $opts['items'] ) || ! is_array( $opts['items'] ) ) {
 			return;
 		}
 

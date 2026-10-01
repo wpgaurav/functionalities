@@ -58,7 +58,7 @@ class Meta {
 		$options = self::get_options();
 
 		// Only initialize if module is enabled.
-		if ( empty( $options['enabled'] ) ) {
+		if ( ! \Functionalities\Core\Module_Registry::is_enabled( 'meta' ) ) {
 			return;
 		}
 

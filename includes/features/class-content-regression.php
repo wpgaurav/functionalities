@@ -52,9 +52,7 @@ class Content_Regression {
 	 * @return void
 	 */
 	public static function init(): void {
-		$opts = self::get_options();
-
-		if ( empty( $opts['enabled'] ) ) {
+		if ( ! \Functionalities\Core\Module_Registry::is_enabled( 'content-regression' ) ) {
 			return;
 		}
 
@@ -211,21 +209,33 @@ class Content_Regression {
 			return;
 		}
 
-		// Compare against the previous baseline before the new snapshot replaces
-		// it, and cache the outcome for the posts list column.
+		// Keep a damaged update pending until it is fixed or explicitly accepted.
 		$warnings = self::detect_regressions( $post_id );
+		self::cache_status( $post_id, $warnings );
+
+		// Capture and store snapshot.
+		$snapshot                      = self::capture_snapshot( $post );
+		$snapshot['is_stable_version'] = empty( $warnings ) && ! empty( $snapshot['is_stable_version'] );
+		self::store_snapshot( $post_id, $snapshot, $opts );
+	}
+
+	/**
+	 * Persist the last checked warnings for the posts list and unresolved updates.
+	 *
+	 * @param int   $post_id  Post ID.
+	 * @param array $warnings Detected warnings.
+	 * @return void
+	 */
+	private static function cache_status( int $post_id, array $warnings ): void {
 		\update_post_meta(
 			$post_id,
 			self::STATUS_KEY,
 			array(
-				'count'   => count( $warnings ),
-				'checked' => time(),
+				'count'    => count( $warnings ),
+				'warnings' => $warnings,
+				'checked'  => time(),
 			)
 		);
-
-		// Capture and store snapshot.
-		$snapshot = self::capture_snapshot( $post );
-		self::store_snapshot( $post_id, $snapshot, $opts );
 	}
 
 	/**
@@ -250,7 +260,7 @@ class Content_Regression {
 			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Applying core WordPress filter.
 			$rendered = \apply_filters( 'the_content', $content );
 
-		} catch ( \Exception $e ) {
+		} catch ( \Throwable $e ) {
 			// If content filter fails, use raw content.
 			$rendered = $content;
 			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
@@ -272,16 +282,18 @@ class Content_Regression {
 		}
 
 		// Parse the content with error handling.
-		$links      = self::parse_links( $rendered, $opts );
-		$word_count = self::count_words( $content, $opts );
-		$headings   = self::parse_headings( $content );
+		$links       = self::parse_links( $rendered, $opts );
+		$word_count  = self::count_words( $content, $opts );
+		$heading_map = array();
+		$h1_count    = 0;
+		self::extract_headings_from_html( $rendered, $heading_map, $h1_count );
 
 		$snapshot = array(
 			'internal_link_count' => $links['internal'],
 			'external_link_count' => $links['external'],
 			'word_count'          => $word_count,
-			'heading_map'         => $headings['map'],
-			'h1_count'            => $headings['h1_count'],
+			'heading_map'         => $heading_map,
+			'h1_count'            => $h1_count,
 			'timestamp'           => time(),
 			'is_stable_version'   => true,
 		);
@@ -565,6 +577,20 @@ class Content_Regression {
 			);
 		}
 
+		// The accepted baseline must outlive the rolling history of pending saves.
+		// Migrate an existing stable snapshot before slicing older history away.
+		if ( empty( $existing['baseline'] ) ) {
+			foreach ( array_reverse( $existing['snapshots'] ?? array() ) as $previous ) {
+				if ( ! empty( $previous['is_stable_version'] ) ) {
+					$existing['baseline'] = $previous;
+					break;
+				}
+			}
+		}
+		if ( ! empty( $snapshot['is_stable_version'] ) ) {
+			$existing['baseline'] = $snapshot;
+		}
+
 		// Add new snapshot.
 		$existing['snapshots'][] = $snapshot;
 
@@ -635,7 +661,13 @@ class Content_Regression {
 	public static function get_last_stable_snapshot( int $post_id ): ?array {
 		$data = \get_post_meta( $post_id, self::META_KEY, true );
 
-		if ( ! is_array( $data ) || empty( $data['snapshots'] ) ) {
+		if ( ! is_array( $data ) ) {
+			return null;
+		}
+		if ( ! empty( $data['baseline']['is_stable_version'] ) ) {
+			return $data['baseline'];
+		}
+		if ( empty( $data['snapshots'] ) ) {
 			return null;
 		}
 
@@ -1154,6 +1186,7 @@ class Content_Regression {
 		$snapshot                      = self::capture_snapshot( $post );
 		$snapshot['is_stable_version'] = true;
 		self::store_snapshot( $post_id, $snapshot, $opts );
+		self::cache_status( $post_id, self::detect_regressions( $post_id ) );
 		self::record_audit( $post_id, 'mark_intentional' );
 
 		return new \WP_REST_Response( array( 'success' => true ) );
@@ -1184,6 +1217,7 @@ class Content_Regression {
 		$opts     = self::get_options();
 		$snapshot = self::capture_snapshot( $post );
 		self::store_snapshot( $post_id, $snapshot, $opts );
+		self::cache_status( $post_id, self::detect_regressions( $post_id ) );
 		self::record_audit( $post_id, 'reset_baseline' );
 
 		return new \WP_REST_Response( array( 'success' => true ) );
@@ -1313,7 +1347,7 @@ class Content_Regression {
 	public static function enqueue_editor_assets(): void {
 		$opts = self::get_options();
 
-		if ( empty( $opts['enabled'] ) ) {
+		if ( ! \Functionalities\Core\Module_Registry::is_enabled( 'content-regression' ) ) {
 			return;
 		}
 
@@ -1375,7 +1409,7 @@ class Content_Regression {
 		}
 
 		$opts = self::get_options();
-		if ( empty( $opts['enabled'] ) ) {
+		if ( ! \Functionalities\Core\Module_Registry::is_enabled( 'content-regression' ) ) {
 			return;
 		}
 
@@ -1419,6 +1453,7 @@ class Content_Regression {
 		$snapshot                      = self::capture_snapshot( $post );
 		$snapshot['is_stable_version'] = true;
 		self::store_snapshot( $post_id, $snapshot, $opts );
+		self::cache_status( $post_id, self::detect_regressions( $post_id ) );
 		self::record_audit( $post_id, 'mark_intentional' );
 
 		\wp_send_json_success( array( 'message' => \__( 'Change marked as intentional.', 'functionalities' ) ) );
@@ -1448,6 +1483,7 @@ class Content_Regression {
 		$opts     = self::get_options();
 		$snapshot = self::capture_snapshot( $post );
 		self::store_snapshot( $post_id, $snapshot, $opts );
+		self::cache_status( $post_id, self::detect_regressions( $post_id ) );
 		self::record_audit( $post_id, 'reset_baseline' );
 
 		\wp_send_json_success( array( 'message' => \__( 'Baseline has been reset.', 'functionalities' ) ) );

@@ -29,6 +29,7 @@ class Site_Health_Controller {
 		\add_action( 'admin_init', array( __CLASS__, 'reconcile_schedule' ), 5 );
 		\add_action( 'admin_init', array( __CLASS__, 'register_settings_fields' ), 20 );
 		\add_action( 'update_option_functionalities_assumption_detection', array( __CLASS__, 'reconcile_schedule' ), 10, 2 );
+		\add_action( 'add_option_functionalities_assumption_detection', array( __CLASS__, 'reconcile_schedule' ) );
 	}
 
 	/**
@@ -54,9 +55,8 @@ class Site_Health_Controller {
 	/**
 	 * Confirm the private data directory is not served over HTTP.
 	 *
-	 * Redirects, the 404 log, and task notes are JSON files under wp-content.
-	 * Server rules are written next to them, but nginx and Caddy ignore
-	 * .htaccess, so the only way to know is to ask the server.
+	 * A harmless canary uses the same file guard as redirects and task data.
+	 * The loopback distinguishes actual source exposure from a failed check.
 	 *
 	 * @since 1.6.0
 	 * @return array
@@ -69,16 +69,32 @@ class Site_Health_Controller {
 				'label' => \__( 'Functionalities', 'functionalities' ),
 				'color' => 'blue',
 			),
-			'description' => '<p>' . \esc_html__( 'Redirects, the 404 log, and task notes are stored in a private folder that the web server does not serve.', 'functionalities' ) . '</p>',
+			'description' => '<p>' . \esc_html__( 'The server refuses public access to the protected storage files used for redirects, 404 activity, and task notes.', 'functionalities' ) . '</p>',
 			'actions'     => '',
 			'test'        => 'functionalities_data_exposure',
 		);
 
+		$probe_url = \Functionalities\Storage\Data_Directory::probe_url();
+		if ( \Functionalities\Storage\Data_Directory::get_errors() ) {
+			$result['status']      = 'critical';
+			$result['label']       = \__( 'Functionalities data storage needs attention', 'functionalities' );
+			$result['description'] = '<p>' . \esc_html__( 'The protected storage directory could not be prepared or existing data could not be migrated. Resolve the storage error before saving redirects or tasks.', 'functionalities' ) . '</p>';
+			return $result;
+		}
+		if ( '' === $probe_url ) {
+			$result['status']      = 'recommended';
+			$result['label']       = \__( 'The privacy of Functionalities data files could not be checked', 'functionalities' );
+			$result['description'] = '<p>' . \esc_html__( 'The custom storage directory has no configured probe URL. Its public-access check could not be completed.', 'functionalities' ) . '</p>';
+			return $result;
+		}
+
 		$response = \wp_remote_get(
-			\Functionalities\Storage\Data_Directory::probe_url(),
+			$probe_url,
 			array(
-				'timeout'   => 5,
-				'sslverify' => false,
+				'timeout'             => 5,
+				'sslverify'           => false,
+				'redirection'         => 0,
+				'limit_response_size' => 4096,
 			)
 		);
 
@@ -89,14 +105,15 @@ class Site_Health_Controller {
 			return $result;
 		}
 
-		if ( 200 === (int) \wp_remote_retrieve_response_code( $response ) ) {
-			// The folder name carries 20 random characters and directory listing
-			// is blocked, so the path is not discoverable — this is a defence in
-			// depth gap, not an open door. Saying "critical" here would cry wolf
-			// on every nginx and Caddy site, which ignore .htaccess by design.
+		$code = (int) \wp_remote_retrieve_response_code( $response );
+		if ( false !== strpos( (string) \wp_remote_retrieve_body( $response ), 'functionalities_private_canary' ) ) {
+			$result['status']      = 'critical';
+			$result['label']       = \__( 'Functionalities storage files are publicly readable', 'functionalities' );
+			$result['description'] = '<p>' . \esc_html__( 'The server returned the protected file source instead of refusing access. Correct PHP handling or deny public access to the storage directory before storing private task notes or redirect data.', 'functionalities' ) . '</p>';
+		} elseif ( ! in_array( $code, array( 403, 404 ), true ) ) {
 			$result['status']      = 'recommended';
-			$result['label']       = \__( 'Functionalities data files would be served if their folder name were known', 'functionalities' );
-			$result['description'] = '<p>' . \esc_html__( 'The plugin stores redirects, the 404 log, and task notes in a folder with a random name, and the server does serve files from it. The name is not guessable and the folder cannot be listed, so this is not an open door. For defence in depth, add a rule to your server configuration denying access to the plugin data folder under wp-content. The bundled .htaccess and web.config already do this on Apache and IIS; nginx and Caddy ignore them.', 'functionalities' ) . '</p>';
+			$result['label']       = \__( 'The privacy of Functionalities data files could not be checked', 'functionalities' );
+			$result['description'] = '<p>' . \esc_html__( 'The storage probe received an unexpected response. This does not confirm that the files are private; check the server response and run Site Health again.', 'functionalities' ) . '</p>';
 		}
 
 		return $result;
@@ -130,10 +147,17 @@ class Site_Health_Controller {
 			'test'        => 'functionalities_assumptions',
 		);
 
-		if ( empty( $options['enabled'] ) ) {
+		if ( ! \Functionalities\Core\Module_Registry::is_enabled( 'assumption-detection' ) ) {
 			$result['status']      = 'recommended';
 			$result['label']       = \__( 'Assumption Detection is disabled', 'functionalities' );
 			$result['description'] = '<p>' . \esc_html__( 'Enable the module to monitor schema, analytics, security, and runtime assumptions.', 'functionalities' ) . '</p>';
+			return $result;
+		}
+		$scan_status = \Functionalities\Features\Assumption_Detection::get_scan_status();
+		if ( 'error' === ( $scan_status['state'] ?? '' ) ) {
+			$result['status']      = 'critical';
+			$result['label']       = \__( 'The assumption scan failed', 'functionalities' );
+			$result['description'] = '<p>' . \esc_html( $scan_status['error']['message'] ?? \__( 'The latest scan could not inspect the homepage. Previous findings were retained. Run the scan again after resolving the request failure.', 'functionalities' ) ) . '</p>';
 			return $result;
 		}
 		if ( ! \wp_next_scheduled( self::CRON_HOOK ) ) {
@@ -245,7 +269,7 @@ class Site_Health_Controller {
 		$recurrence = $options['scan_schedule'] ?? 'daily';
 		$event      = \wp_get_scheduled_event( self::CRON_HOOK );
 
-		if ( empty( $options['enabled'] ) ) {
+		if ( ! \Functionalities\Core\Module_Registry::is_enabled( 'assumption-detection' ) ) {
 			if ( $event ) {
 				\wp_clear_scheduled_hook( self::CRON_HOOK );
 			}
@@ -264,8 +288,15 @@ class Site_Health_Controller {
 	 * @return void
 	 */
 	public static function run_background_scan(): void {
+		if ( ! \Functionalities\Core\Module_Registry::is_enabled( 'assumption-detection' ) ) {
+			return;
+		}
 		\Functionalities\Core\Module_Registry::boot_module( 'assumption-detection' );
-		$findings  = \Functionalities\Features\Assumption_Detection::force_run_detection();
+		$findings    = \Functionalities\Features\Assumption_Detection::force_run_detection();
+		$scan_status = \Functionalities\Features\Assumption_Detection::get_scan_status();
+		if ( 'error' === ( $scan_status['state'] ?? '' ) ) {
+			return;
+		}
 		$signature = array_map(
 			static function ( array $finding ) {
 				unset( $finding['detected'], $finding['timestamp'] );
@@ -284,7 +315,7 @@ class Site_Health_Controller {
 		$options = (array) \get_option( 'functionalities_assumption_detection', array() );
 		$now     = time();
 
-		if ( ! empty( $options['email_notifications'] ) && $digest !== ( $state['digest'] ?? '' ) && $now - (int) ( $state['notified_at'] ?? 0 ) >= DAY_IN_SECONDS ) {
+		if ( ! empty( $options['email_notifications'] ) && $digest !== ( $state['notified_digest'] ?? '' ) && $now - (int) ( $state['notified_at'] ?? 0 ) >= DAY_IN_SECONDS ) {
 			$subject = sprintf(
 				/* translators: %d: number of findings. */
 				\__( '[Functionalities] Assumption scan found %d item(s)', 'functionalities' ),
@@ -292,7 +323,8 @@ class Site_Health_Controller {
 			);
 			$message = \__( 'The finding set changed. Review it in WordPress under Functionalities > Assumption Detection. No content, URLs, or diagnostics are included in this email.', 'functionalities' );
 			if ( \wp_mail( \get_option( 'admin_email' ), $subject, $message ) ) {
-				$state['notified_at'] = $now;
+				$state['notified_at']     = $now;
+				$state['notified_digest'] = $digest;
 			}
 		}
 		$state['digest']  = $digest;

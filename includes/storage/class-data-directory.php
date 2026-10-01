@@ -1,6 +1,6 @@
 <?php
 /**
- * Private data directory resolution and hardening.
+ * Private, guarded file storage and retryable legacy migration.
  *
  * @package Functionalities\Storage
  */
@@ -11,204 +11,232 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-/**
- * Resolve, create, and harden the directory holding plugin data files.
- *
- * Redirects, the bounded 404 log, and Task Manager projects are JSON files under
- * `wp-content/`. Until 1.6.0 they sat at a fixed, guessable path guarded only by
- * an `index.php` and, for tasks, an Apache 2.2 style `.htaccess` that nginx and
- * Caddy ignore — so `wp-content/functionalities/redirects.json` and every task
- * file were readable by URL on a large share of hosts. Task notes are the
- * author's private working list, and the redirect map describes a site's whole
- * URL history.
- *
- * Files now live in a per-site subdirectory whose name carries 20 random
- * characters. Directory listing is blocked, so the name cannot be discovered
- * over HTTP even where server rules are ignored. The server rules are still
- * written, because defense in depth costs nothing here.
- *
- * @since 1.6.0
- */
+/** Resolve each site's storage without exposing JSON over HTTP. */
 class Data_Directory {
-
-	/**
-	 * Option holding the random directory segment.
-	 *
-	 * @var string
-	 */
 	const KEY_OPTION = 'functionalities_data_key';
 
 	/**
-	 * Resolved absolute path, cached per request.
+	 * Resolved paths by blog and base directory.
 	 *
-	 * @var string
+	 * @var array
 	 */
-	private static $path = '';
+	private static $paths = array();
 
 	/**
-	 * Return the parent directory holding all plugin data.
+	 * Migration and directory errors by context.
+	 *
+	 * @var array
+	 */
+	private static $errors = array();
+
+	/** Return the storage base directory.
 	 *
 	 * @return string
 	 */
 	public static function base(): string {
-		/**
-		 * Filters the parent directory used for plugin data files.
-		 *
-		 * @since 1.6.0
-		 *
-		 * @param string $base Absolute path, without a trailing slash.
-		 */
-		return (string) \apply_filters( 'functionalities_data_base_dir', WP_CONTENT_DIR . '/functionalities' );
+		return rtrim( (string) \apply_filters( 'functionalities_data_base_dir', WP_CONTENT_DIR . '/functionalities' ), '/' );
 	}
 
-	/**
-	 * Return the private directory for data files, creating it when needed.
+	/** Identify the current blog and storage base.
 	 *
-	 * @return string Absolute path without a trailing slash.
+	 * @return string
 	 */
+	private static function context(): string {
+		return ( \function_exists( 'get_current_blog_id' ) ? \get_current_blog_id() : 1 ) . ':' . self::base();
+	}
+
+	/** Return an empty path on failure so callers cannot create fresh, split data. */
 	public static function path(): string {
-		if ( '' !== self::$path ) {
-			return self::$path;
+		$context = self::context();
+		if ( isset( self::$paths[ $context ] ) ) {
+			return self::$paths[ $context ];
 		}
-
-		$base = self::base();
-		$key  = self::key();
+		self::$errors[ $context ] = array();
+		$base                     = self::base();
+		if ( ! is_dir( $base ) && ! \wp_mkdir_p( $base ) ) {
+			self::$errors[ $context ][] = 'directory_failed';
+			return '';
+		}
+		$key = self::key();
+		if ( '' === $key ) {
+			return '';
+		}
 		$path = $base . '/' . $key;
-
-		if ( ! is_dir( $path ) ) {
-			\wp_mkdir_p( $path );
+		if ( ! is_dir( $path ) && ! \wp_mkdir_p( $path ) ) {
+			self::$errors[ $context ][] = 'directory_failed';
+			return '';
 		}
-
 		self::harden( $base );
 		self::harden( $path );
-		self::migrate_legacy_files( $base, $path );
-
-		self::$path = $path;
-
-		return self::$path;
+		// A directory lock prevents simultaneous requests from observing a partial
+		// migration. Individual file locks also synchronize with older writers.
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+		$lock = fopen( $base . '/.migration-' . $key . '.lock', 'c+' );
+		if ( false === $lock ) {
+			self::$errors[ $context ][] = 'migration_lock_failed';
+			return '';
+		}
+		try {
+			if ( ! flock( $lock, LOCK_EX ) ) {
+				self::$errors[ $context ][] = 'migration_lock_failed';
+				return '';
+			}
+			self::migrate_legacy_files( $base, $path );
+			if ( ! empty( self::$errors[ $context ] ) ) {
+				return '';
+			}
+			self::$paths[ $context ] = $path;
+			return $path;
+		} finally {
+			flock( $lock, LOCK_UN );
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
+			fclose( $lock );
+		}
 	}
 
-	/**
-	 * Return an absolute path to a file or folder inside the private directory.
-	 *
-	 * @param string $relative Relative name, for example "redirects.json".
-	 * @return string
-	 */
+	/** Return guarded PHP filenames for JSON data, or an empty string on failure. */
 	public static function file( string $relative ): string {
-		return self::path() . '/' . ltrim( $relative, '/' );
+		if ( ! preg_match( '#^[a-zA-Z0-9_./-]+$#', $relative ) || in_array( '..', explode( '/', $relative ), true ) ) {
+			return '';
+		}
+		$path = self::path();
+		if ( '' === $path ) {
+			return '';
+		}
+		if ( '.json' === substr( $relative, -5 ) ) {
+			$relative .= '.php';
+		}
+		return $path . '/' . ltrim( $relative, '/' );
 	}
 
-	/**
-	 * Return the stored random directory segment, generating it on first use.
-	 *
-	 * @return string
-	 */
+	/** Generate the option under a filesystem lock to avoid orphan directories. */
 	public static function key(): string {
 		$key = (string) \get_option( self::KEY_OPTION, '' );
-
-		if ( '' !== $key && preg_match( '/^[A-Za-z0-9]{8,64}$/', $key ) ) {
+		if ( preg_match( '/^[A-Za-z0-9]{8,64}$/', $key ) ) {
 			return $key;
 		}
-
-		$key = \function_exists( 'wp_generate_password' )
-			? \wp_generate_password( 20, false, false )
-			: substr( md5( uniqid( '', true ) ), 0, 20 );
-
-		\update_option( self::KEY_OPTION, $key, true );
-
-		return $key;
+		$base = self::base();
+		if ( ! is_dir( $base ) && ! \wp_mkdir_p( $base ) ) {
+			self::$errors[ self::context() ][] = 'directory_failed';
+			return '';
+		}
+		$blog = \function_exists( 'get_current_blog_id' ) ? \get_current_blog_id() : 1;
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+		$lock = fopen( $base . '/.directory-key-' . $blog . '.lock', 'c+' );
+		if ( false === $lock ) {
+			self::$errors[ self::context() ][] = 'key_lock_failed';
+			return '';
+		}
+		try {
+			if ( ! flock( $lock, LOCK_EX ) ) {
+				self::$errors[ self::context() ][] = 'key_lock_failed';
+				return '';
+			}
+			// Re-read after waiting: another request may have created the key.
+			\wp_cache_delete( self::KEY_OPTION, 'options' );
+			\wp_cache_delete( 'alloptions', 'options' );
+			\wp_cache_delete( 'notoptions', 'options' );
+			$key = (string) \get_option( self::KEY_OPTION, '' );
+			if ( ! preg_match( '/^[A-Za-z0-9]{8,64}$/', $key ) ) {
+				$key = \wp_generate_password( 20, false, false );
+				if ( ! \add_option( self::KEY_OPTION, $key, '', true ) ) {
+					\update_option( self::KEY_OPTION, $key, true );
+				}
+				if ( $key !== (string) \get_option( self::KEY_OPTION, '' ) ) {
+					self::$errors[ self::context() ][] = 'key_save_failed';
+					return '';
+				}
+			}
+			return $key;
+		} finally {
+			flock( $lock, LOCK_UN );
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
+			fclose( $lock );
+		}
 	}
 
-	/**
-	 * Write server rules and an index file into a directory.
-	 *
-	 * @param string $directory Absolute directory path.
-	 * @return void
-	 */
+	/** Write secondary web-server protections; PHP guards protect every payload. */
 	public static function harden( string $directory ): void {
 		if ( ! is_dir( $directory ) ) {
 			return;
 		}
-
 		$files = array(
-			'index.php'  => "<?php\n// Silence is golden.\n",
-			'.htaccess'  => "# Apache 2.4+\n<IfModule mod_authz_core.c>\n\tRequire all denied\n</IfModule>\n\n# Apache 2.2\n<IfModule !mod_authz_core.c>\n\tOrder deny,allow\n\tDeny from all\n</IfModule>\n",
-			'web.config' => "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<configuration>\n\t<system.webServer>\n\t\t<authorization>\n\t\t\t<deny users=\"*\" />\n\t\t</authorization>\n\t</system.webServer>\n</configuration>\n",
+			'index.php'  => "<?php http_response_code(404); exit;\n",
+			'.htaccess'  => "<IfModule mod_authz_core.c>\nRequire all denied\n</IfModule>\n<IfModule !mod_authz_core.c>\nOrder deny,allow\nDeny from all\n</IfModule>\n",
+			'web.config' => '<?xml version="1.0" encoding="UTF-8"?><configuration><system.webServer><authorization><deny users="*" /></authorization></system.webServer></configuration>',
 		);
-
 		foreach ( $files as $name => $contents ) {
 			$target = $directory . '/' . $name;
-			if ( file_exists( $target ) ) {
-				continue;
+			if ( ! file_exists( $target ) ) {
+				// Native local writes match the storage backend and avoid credential prompts.
+				// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+				file_put_contents( $target, $contents, LOCK_EX );
 			}
-			self::write( $target, $contents );
 		}
 	}
 
-	/**
-	 * Move data written by earlier versions into the private directory.
-	 *
-	 * @param string $base    Parent directory.
-	 * @param string $private Private directory.
-	 * @return void
-	 */
+	/** Migrate both the original public location and earlier private raw JSON. */
 	private static function migrate_legacy_files( string $base, string $private ): void {
-		if ( $base === $private ) {
-			return;
+		$directories = array( $private );
+		if ( ! \function_exists( 'is_multisite' ) || ! \is_multisite() || \is_main_site() ) {
+			array_unshift( $directories, $base );
 		}
-
-		foreach ( array( 'redirects.json', '404-log.json', 'tasks' ) as $name ) {
-			$from = $base . '/' . $name;
-			$to   = $private . '/' . $name;
-
-			if ( ! file_exists( $from ) || file_exists( $to ) ) {
-				continue;
+		foreach ( array_unique( $directories ) as $directory ) {
+			foreach ( array( 'redirects.json', '404-log.json', 'redirect-buffer.json' ) as $name ) {
+				$from = $directory . '/' . $name;
+				if ( file_exists( $from ) ) {
+					$result = Atomic_JSON_Store::migrate( $from, $private . '/' . $name . '.php' );
+					if ( ! $result['success'] ) {
+						self::$errors[ self::context() ][ $name ] = $result['error'];
+					}
+				}
 			}
-
-			// phpcs:ignore WordPress.WP.AlternativeFunctions.rename_rename, WordPress.PHP.NoSilencedErrors.Discouraged -- Same-filesystem move of the plugin's own data; a failed migration must not break the request, the caller simply creates fresh files.
-			@rename( $from, $to );
-
-			// Legacy lock sidecars are recreated on demand and never carry data.
-			if ( file_exists( $from . '.lock' ) ) {
-				\wp_delete_file( $from . '.lock' );
+			foreach ( glob( $directory . '/tasks/*.json' ) ?: array() as $from ) {
+				$target = $private . '/tasks/' . basename( $from ) . '.php';
+				$result = Atomic_JSON_Store::migrate( $from, $target );
+				if ( ! $result['success'] ) {
+					self::$errors[ self::context() ][ 'tasks/' . basename( $from ) ] = $result['error'];
+				}
 			}
+		}
+		if ( is_dir( $private . '/tasks' ) ) {
+			self::harden( $private . '/tasks' );
 		}
 	}
 
-	/**
-	 * Write a small protective file.
+	/** Return errors for the current site.
 	 *
-	 * @param string $path     Absolute path.
-	 * @param string $contents File contents.
-	 * @return void
+	 * @return array
 	 */
-	private static function write( string $path, string $contents ): void {
-		global $wp_filesystem;
-
-		if ( ! function_exists( 'WP_Filesystem' ) ) {
-			require_once ABSPATH . 'wp-admin/includes/file.php';
-		}
-
-		if ( WP_Filesystem() && $wp_filesystem ) {
-			$wp_filesystem->put_contents( $path, $contents, FS_CHMOD_FILE );
-		}
+	public static function get_errors(): array {
+		return self::$errors[ self::context() ] ?? array();
 	}
 
-	/**
-	 * Return the public URL the private directory would answer on, for probing.
+	/** Create a harmless guarded canary and resolve its HTTP URL.
 	 *
 	 * @return string
 	 */
 	public static function probe_url(): string {
-		return \content_url( 'functionalities/' . self::key() . '/redirects.json' );
+		$path = self::path();
+		if ( '' === $path ) {
+			return '';
+		}
+		$canary = $path . '/privacy-probe.json.php';
+		if ( ! file_exists( $canary ) ) {
+			$result = Atomic_JSON_Store::write( $canary, array( 'functionalities_private_canary' => true ) );
+			if ( ! $result['success'] ) {
+				self::$errors[ self::context() ][] = $result['error'];
+				return '';
+			}
+		}
+		$content = rtrim( WP_CONTENT_DIR, '/' ) . '/';
+		$url     = 0 === strpos( $canary, $content ) ? \content_url( substr( $canary, strlen( $content ) ) ) : '';
+		return (string) \apply_filters( 'functionalities_data_probe_url', $url, $canary );
 	}
 
-	/**
-	 * Reset the request-local cache. Used by tests.
-	 *
-	 * @return void
-	 */
+	/** Reset request-local site paths, for tests and explicit retry. */
 	public static function flush(): void {
-		self::$path = '';
+		self::$paths  = array();
+		self::$errors = array();
 	}
 }

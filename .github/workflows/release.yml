@@ -11,8 +11,14 @@ env:
   PLUGIN_SLUG: functionalities
 
 jobs:
+  quality:
+    uses: ./.github/workflows/quality.yml
+    permissions:
+      contents: read
+
   build:
     name: Build & Release
+    needs: quality
     runs-on: ubuntu-latest
 
     steps:
@@ -54,7 +60,7 @@ jobs:
           if [ -n "$PREV_TAG" ]; then
             echo "Generating changelog: ${PREV_TAG}..${TAG}"
 
-            SECTION=$(sed -n "/^= ${VERSION} =/,/^= [0-9]/p" readme.txt | sed '$d' | tail -n +2)
+            SECTION=$(bash bin/extract-changelog.sh "$VERSION" readme.txt)
 
             if [ -n "$SECTION" ]; then
               echo "## What's Changed" >> "$CHANGELOG_FILE"
@@ -106,6 +112,14 @@ jobs:
             "uninstall.php" \
             "includes/admin/class-admin.php" \
             "includes/admin/class-admin-ui.php" \
+            "includes/admin/trait-admin-settings.php" \
+            "includes/admin/trait-admin-components-ui.php" \
+            "includes/admin/trait-admin-fonts-ui.php" \
+            "includes/admin/trait-admin-task-manager-ui.php" \
+            "includes/admin/trait-admin-redirect-manager-ui.php" \
+            "includes/admin/trait-admin-svg-icons-ui.php" \
+            "includes/admin/trait-admin-snippets-ui.php" \
+            "includes/admin/trait-admin-pwa-ui.php" \
             "includes/core/class-wordpress-7-integration.php" \
             "includes/storage/class-data-directory.php" \
             "assets/vendor/prism/prism.min.js" \
@@ -196,6 +210,7 @@ jobs:
   # Deploy to WordPress.org
   deploy:
     name: Deploy to WordPress.org
+    if: github.event.release.prerelease == false
     runs-on: ubuntu-latest
     needs: build
 

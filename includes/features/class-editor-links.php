@@ -27,7 +27,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * - Filter classic editor link suggestions (wp_link_query)
  * - Filter REST API search results for block editor
- * - Filter REST API post queries
+ * - Preserve ordinary REST API post collection queries
  * - Configurable post type allowlist
  *
  * ## Filters
@@ -75,7 +75,7 @@ class Editor_Links {
 	public static function init(): void {
 		$opts = self::get_options();
 
-		if ( empty( $opts['enabled'] ) ) {
+		if ( ! \Functionalities\Core\Module_Registry::is_enabled( 'editor-links' ) ) {
 			return;
 		}
 
@@ -88,8 +88,7 @@ class Editor_Links {
 		\add_filter( 'wp_link_query_args', array( __CLASS__, 'filter_wp_link_query_args' ) );
 
 		// Block editor REST API filters.
-		\add_filter( 'rest_search_query', array( __CLASS__, 'filter_rest_search_query' ), 10, 2 );
-		\add_filter( 'rest_post_query', array( __CLASS__, 'filter_rest_post_query' ), 10, 2 );
+		\add_filter( 'rest_post_search_query', array( __CLASS__, 'filter_rest_search_query' ), 10, 2 );
 	}
 
 	/**
@@ -165,7 +164,7 @@ class Editor_Links {
 		 *
 		 * @param bool $enabled Whether filtering should be applied.
 		 */
-		if ( ! \apply_filters( 'functionalities_editor_links_enabled', true ) ) {
+		if ( ! \Functionalities\Core\Module_Registry::is_enabled( 'editor-links' ) || ! \apply_filters( 'functionalities_editor_links_enabled', true ) ) {
 			return $query;
 		}
 
@@ -193,7 +192,7 @@ class Editor_Links {
 	 */
 	public static function filter_rest_search_query( array $prepared_args, $request ): array {
 		/** This filter is documented in class-editor-links.php */
-		if ( ! \apply_filters( 'functionalities_editor_links_enabled', true ) ) {
+		if ( ! \Functionalities\Core\Module_Registry::is_enabled( 'editor-links' ) || ! \apply_filters( 'functionalities_editor_links_enabled', true ) ) {
 			return $prepared_args;
 		}
 
@@ -203,12 +202,13 @@ class Editor_Links {
 			return $prepared_args;
 		}
 
-		// Determine the search type from args or request.
-		$type = isset( $prepared_args['type'] ) ? $prepared_args['type'] : $request->get_param( 'type' );
-
-		// Only filter post-type searches.
-		if ( $type === 'post' || $type === null ) {
-			$prepared_args['subtype'] = $allowed;
+		// Core passes WP_Query arguments after resolving the requested subtypes.
+		// Keep that selection narrow rather than returning other allowed types.
+		$requested                  = isset( $prepared_args['post_type'] ) ? (array) $prepared_args['post_type'] : $allowed;
+		$prepared_args['post_type'] = array_values( array_intersect( $requested, $allowed ) );
+		if ( empty( $prepared_args['post_type'] ) ) {
+			// An empty post_type array otherwise falls back to posts in WP_Query.
+			$prepared_args['post__in'] = array( 0 );
 		}
 
 		return $prepared_args;
@@ -217,8 +217,8 @@ class Editor_Links {
 	/**
 	 * Filter REST API post queries.
 	 *
-	 * Modifies post endpoint queries to only return results
-	 * from allowed post types.
+	 * Preserve normal post collections. This callback remains available for
+	 * integrations that called it directly before filtering moved to search only.
 	 *
 	 * @since 0.2.0
 	 * @since 0.8.0 Added filter for enabled state.
@@ -228,17 +228,6 @@ class Editor_Links {
 	 * @return array Modified query arguments.
 	 */
 	public static function filter_rest_post_query( array $args, $request ): array {
-		/** This filter is documented in class-editor-links.php */
-		if ( ! \apply_filters( 'functionalities_editor_links_enabled', true ) ) {
-			return $args;
-		}
-
-		$allowed = self::get_allowed_post_types();
-
-		if ( ! empty( $allowed ) ) {
-			$args['post_type'] = $allowed;
-		}
-
 		return $args;
 	}
 }

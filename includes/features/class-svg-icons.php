@@ -174,18 +174,8 @@ class SVG_Icons {
 	 * @return void
 	 */
 	public static function init(): void {
-		$opts = self::get_options();
-
-		// Check if module is enabled.
-		$enabled = ! empty( $opts['enabled'] );
-
-		/**
-		 * Filters whether the SVG icons feature is enabled.
-		 *
-		 * @since 0.11.0
-		 * @param bool $enabled Whether the feature is enabled.
-		 */
-		if ( ! \apply_filters( 'functionalities_svg_icons_enabled', $enabled ) ) {
+		// The registry preserves the legacy SVG enable filter and master gate.
+		if ( ! \Functionalities\Core\Module_Registry::is_enabled( 'svg-icons' ) ) {
 			return;
 		}
 

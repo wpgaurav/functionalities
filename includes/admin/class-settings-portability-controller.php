@@ -55,8 +55,9 @@ class Settings_Portability_Controller {
 			'functionalities-admin-tools',
 			'functionalitiesTools',
 			array(
-				'ajaxUrl' => \admin_url( 'admin-ajax.php' ),
-				'nonce'   => \wp_create_nonce( self::NONCE_ACTION ),
+				'ajaxUrl'       => \admin_url( 'admin-ajax.php' ),
+				'nonce'         => \wp_create_nonce( self::NONCE_ACTION ),
+				'requestFailed' => \__( 'The request failed. Check the connection and try again.', 'functionalities' ),
 			)
 		);
 	}
@@ -110,7 +111,7 @@ class Settings_Portability_Controller {
 				continue;
 			}
 
-			$value = (array) \get_option( $definitions[ $slug ]['option'], array() );
+			$value = self::normalize_legacy_settings( $slug, (array) \get_option( $definitions[ $slug ]['option'], array() ) );
 			if ( ! $include_code ) {
 				list( $value, $removed ) = self::redact_custom_code( $slug, $value );
 				if ( $removed ) {
@@ -164,6 +165,7 @@ class Settings_Portability_Controller {
 				$skipped[ $slug ] = 'unknown_or_invalid_module';
 				continue;
 			}
+			$incoming = self::normalize_legacy_settings( $slug, $incoming );
 			if ( ! $include_code ) {
 				list( $incoming, $removed ) = self::redact_custom_code( $slug, $incoming );
 				if ( $removed ) {
@@ -239,9 +241,25 @@ class Settings_Portability_Controller {
 	public static function ajax_import(): void {
 		self::verify_request();
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by verify_request().
-		$preview = self::preview_import( self::decode_request_document(), ! empty( $_POST['include_code'] ) );
+		$result = self::apply_import( self::decode_request_document(), ! empty( $_POST['include_code'] ) );
+		if ( ! $result['success'] ) {
+			\wp_send_json_error( array( 'message' => $result['error'] ) );
+		}
+		unset( $result['success'] );
+		\wp_send_json_success( $result );
+	}
+
+	/**
+	 * Validate and persist a settings import with per-option storage policy.
+	 *
+	 * @param array $document     Versioned import document.
+	 * @param bool  $include_code Permit custom code fields.
+	 * @return array Import outcome.
+	 */
+	public static function apply_import( array $document, bool $include_code = false ): array {
+		$preview = self::preview_import( $document, $include_code );
 		if ( ! $preview['success'] ) {
-			\wp_send_json_error( array( 'message' => $preview['error'] ) );
+			return $preview;
 		}
 
 		$definitions = \Functionalities\Core\Module_Registry::get_definitions();
@@ -249,24 +267,30 @@ class Settings_Portability_Controller {
 		$originals   = array();
 		foreach ( $preview['validated'] as $slug => $value ) {
 			$option = $definitions[ $slug ]['option'];
-			$old    = (array) \get_option( $option, array() );
-			if ( $old === $value ) {
+			$old    = \get_option( $option, null );
+			if ( null !== $old && (array) $old === $value ) {
 				continue;
 			}
 			$originals[ $option ] = $old;
-			if ( ! \update_option( $option, $value ) ) {
+			if ( ! \update_option( $option, $value, $definitions[ $slug ]['autoload'] ) ) {
 				foreach ( $originals as $rollback_option => $rollback_value ) {
-					\update_option( $rollback_option, $rollback_value );
+					if ( null === $rollback_value ) {
+						\delete_option( $rollback_option );
+					} else {
+						\update_option( $rollback_option, $rollback_value );
+					}
 				}
-				\wp_send_json_error( array( 'message' => \__( 'Import failed and previous settings were restored.', 'functionalities' ) ) );
+				return array(
+					'success' => false,
+					'error'   => \__( 'Import failed and previous settings were restored.', 'functionalities' ),
+				);
 			}
 			$updated[] = $slug;
 		}
-		\wp_send_json_success(
-			array(
-				'updated' => $updated,
-				'skipped' => $preview['skipped'],
-			)
+		return array(
+			'success' => true,
+			'updated' => $updated,
+			'skipped' => $preview['skipped'],
 		);
 	}
 
@@ -345,9 +369,9 @@ class Settings_Portability_Controller {
 		$fields  = array();
 		$removed = array();
 		if ( 'snippets' === $slug ) {
-			// Only the three snippet arrays hold custom code. The GA4 toggle and
-			// measurement ID are ordinary settings and travel with an export.
-			$fields = array( 'header', 'body_open', 'footer' );
+			// Cover both current arrays and legacy single-string code fields. The
+			// GA4 measurement ID is an ordinary setting and travels with an export.
+			$fields = array( 'header', 'body_open', 'footer', 'header_code', 'body_open_code', 'footer_code' );
 		} elseif ( 'components' === $slug || 'svg-icons' === $slug ) {
 			$fields = array( 'items' );
 			if ( 'svg-icons' === $slug ) {
@@ -361,6 +385,20 @@ class Settings_Portability_Controller {
 			}
 		}
 		return array( $value, $removed );
+	}
+
+	/**
+	 * Normalize older option formats without mutating the source site.
+	 *
+	 * @param string $slug  Module slug.
+	 * @param array  $value Stored or imported settings.
+	 * @return array Current-format settings.
+	 */
+	private static function normalize_legacy_settings( string $slug, array $value ): array {
+		if ( 'snippets' === $slug && array_intersect_key( $value, array_flip( array( 'header_code', 'body_open_code', 'footer_code', 'enable_header' ) ) ) ) {
+			return \Functionalities\Features\Snippets::migrate_options( $value );
+		}
+		return $value;
 	}
 
 	/**
@@ -414,6 +452,7 @@ class Settings_Portability_Controller {
 					$icon_slug = \sanitize_key( $icon_slug );
 					if ( $icon_slug && is_array( $icon ) && isset( $icon['svg'] ) ) {
 						$clean['icons'][ $icon_slug ] = array(
+							'slug' => $icon_slug,
 							'name' => \sanitize_text_field( $icon['name'] ?? $icon_slug ),
 							'svg'  => \Functionalities\Features\SVG_Icons::sanitize_svg( (string) $icon['svg'] ),
 						);

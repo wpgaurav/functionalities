@@ -5,7 +5,7 @@ Tags: performance, security, seo, redirection, cleanup
 Requires at least: 6.3
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.6.1
+Stable tag: 1.6.3
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -91,7 +91,7 @@ Some modules solve problems no other free plugin addresses:
 * [Hooks](https://functionalities.dev/docs/hooks) and [API reference](https://functionalities.dev/docs/api-reference) — For developers extending the plugin
 * [FAQ](https://functionalities.dev/faq) — Common questions answered in more depth than this page
 * [Downloads](https://functionalities.dev/download) — Current and previous releases
-* [Training](https://gauravtiwari.org/course/functionalities-training/) — Step-by-step module walkthroughs
+* [Training](https://gauravtiwari.org/portal/course/functionalities-training/lessons) — Step-by-step module walkthroughs
 * [GitHub Issues](https://github.com/wpgaurav/functionalities/issues) — Bug reports and feature requests
 * [WordPress.org Support](https://wordpress.org/support/plugin/functionalities/) — Community support forum
 
@@ -136,7 +136,7 @@ Yes. The Meta & Copyright module detects active SEO plugins and adjusts its beha
 
 In a JSON file, not database tables, so redirects load fast and don't bloat `wp_options` or leave custom tables behind after uninstall.
 
-Since 1.6.0 that file lives in a folder with a randomly generated name under `wp-content/`, alongside `.htaccess`, `web.config`, and index files that block direct access and directory listing. A Site Health check confirms over HTTP that the folder really is unreachable on your host, and tells you what to add to your server config if it isn't. See the [Redirect Manager docs](https://functionalities.dev/docs/redirect-manager).
+The file lives in a folder with a randomly generated name under `wp-content/functionalities/`. Version 1.6.3 stores private payloads as guarded `.json.php` files and migrates existing JSON data. A Site Health probe checks the actual anonymous HTTP response and warns if your host exposes the payload. See the [Redirect Manager docs](https://functionalities.dev/docs/redirect-manager).
 
 = Can I migrate redirects from another plugin? =
 
@@ -144,11 +144,11 @@ Yes. Export your existing redirects to CSV and import them. The importer recogni
 
 = Which WordPress versions does it support? =
 
-WordPress 6.3 and later, on PHP 7.4 and later. 1.6.0 is tested on WordPress 7.1. WordPress 7 features — the Abilities API, DataViews workspaces, block bindings, and Command Palette actions — are feature-detected, so the plugin runs the same on 6.3 without them.
+WordPress 6.3 and later, on PHP 7.4 and later. Version 1.6.3 is tested on WordPress 7.1. WordPress 7 features, including the Abilities API, DataViews workspaces, block bindings, and Command Palette actions, are feature-detected and remain optional on earlier supported versions.
 
 = Does the plugin send any data anywhere? =
 
-No. Nothing is phoned home, and there is no telemetry. Two features make outbound requests, both under your control: Link Management fetches a JSON exception list only if you configure a URL for it, and AI explanations are strictly opt-in and only send a finding an administrator explicitly submits. The diagnostics download excludes task content, redirects, users, secrets, and site URLs.
+There is no telemetry. Enabled monitoring and Site Health checks request public pages and probe files on your own site. Link Management fetches an external JSON exception list only if you configure its URL. AI explanations are strictly opt-in and send only a finding an administrator explicitly submits to the configured provider. The diagnostics download excludes task content, redirects, users, secrets, and site URLs.
 
 = Where does the plugin store its files? =
 
@@ -169,6 +169,17 @@ Before uninstalling, go to the Functionalities dashboard and check **"Delete all
 3. Assumption Detection module
 
 == Changelog ==
+
+= 1.6.3 =
+* Compatibility: Tested up to WordPress 7.1.
+* Security: Executable snippets require unfiltered_html. Proxy forwarding headers require configured trusted peers, and PWA precaching excludes authenticated/private responses.
+* Fixed: Components CSS delivery, schema handling of script templates, Gutenberg link suggestions, custom class cleanup, and module enable filters.
+* Fixed: Redirect cycle detection, cross-domain redirects, import state, retry-safe hit buffering, task deletion races, task validation, and asynchronous admin forms.
+* Fixed: Content Integrity acceptance baselines, rendered-page assumption scans, analytics detection, and notification retries.
+* Improved: Protected file storage and migrations, scoped multisite cleanup, settings round trips, admin module organization, and release validation.
+
+= 1.6.2 =
+* Fixed: Training and admin help links now open the FluentCommunity course.
 
 = 1.6.1 =
 * Fixed: The WordPress 7 data panel no longer appears for a module that is switched off. On a site with Redirect Manager disabled, its page still rendered two empty tables and a working "Add redirect" form, even though the module refuses every write while disabled, so the form could only produce an error.
@@ -389,6 +400,9 @@ Before uninstalling, go to the Functionalities dashboard and check **"Delete all
 * Added: Assumption Detection module
 
 == Upgrade Notice ==
+
+= 1.6.3 =
+Security and reliability fixes. If you use proxy-header login protection, configure trusted proxy IPs or CIDR ranges before enabling it. Executable snippets require unfiltered_html. Existing private JSON files migrate automatically to guarded storage.
 
 = 1.6.1 =
 Interface fixes. The WordPress 7 data panel no longer appears for modules you have switched off, where it offered a create form that could not work. Several admin headings now match the module names they belong to. No settings, data, or hooks change.

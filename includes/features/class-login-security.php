@@ -60,7 +60,7 @@ class Login_Security {
 	public static function init(): void {
 		$opts = self::get_options();
 
-		if ( empty( $opts['enabled'] ) ) {
+		if ( ! \Functionalities\Core\Module_Registry::is_enabled( 'login-security' ) ) {
 			return;
 		}
 
@@ -131,6 +131,7 @@ class Login_Security {
 			'disable_application_passwords' => false,
 			'hide_login_errors'             => true,
 			'trust_proxy_headers'           => false,
+			'trusted_proxy_ips'             => '',
 			'lock_usernames'                => true,
 			'allowlist_ips'                 => '',
 			'custom_logo_url'               => '',
@@ -145,11 +146,12 @@ class Login_Security {
 	/**
 	 * Get client IP address.
 	 *
-	 * Defaults to REMOTE_ADDR (the actual TCP peer). Proxy/CDN headers
-	 * (HTTP_X_FORWARDED_FOR, HTTP_CLIENT_IP) are only consulted when the
-	 * site admin opts in via the "Trust proxy headers" setting — these
-	 * headers are trivially spoofable on direct connections and were
-	 * previously usable to spoof or evade lockouts.
+	 * Defaults to REMOTE_ADDR (the actual TCP peer). Forwarding headers are
+	 * consulted only when the peer belongs to the configured trusted proxies.
+	 * Walk X-Forwarded-For from right to left, stopping at the first untrusted
+	 * hop so attacker-prepended addresses cannot impersonate an allowlisted IP.
+	 * The ingress proxy must append or overwrite this header. Client-IP is
+	 * deliberately ignored because ordinary proxies forward it unchanged.
 	 *
 	 * @since 0.3.0
 	 * @since 1.4.6 Proxy headers are now opt-in via `trust_proxy_headers`.
@@ -157,31 +159,69 @@ class Login_Security {
 	 * @return string IP address (validated, or empty string on failure).
 	 */
 	private static function get_client_ip(): string {
-		$ip   = '';
 		$opts = self::get_options();
-
-		// phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Sanitized via sanitize_text_field + filter_var below.
-		if ( ! empty( $opts['trust_proxy_headers'] ) ) {
-			$candidate = '';
-			if ( ! empty( $_SERVER['HTTP_CLIENT_IP'] ) ) {
-				$candidate = \wp_unslash( $_SERVER['HTTP_CLIENT_IP'] );
-			} elseif ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
-				// Take the first hop — when behind a single trusted proxy this is the originating client.
-				$candidate = explode( ',', \wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) )[0];
-			}
-			$candidate = trim( \sanitize_text_field( $candidate ) );
-			// Only accept proxy-supplied values when they parse as a real IP.
-			if ( $candidate !== '' && false !== filter_var( $candidate, FILTER_VALIDATE_IP ) ) {
-				$ip = $candidate;
-			}
+		$peer = isset( $_SERVER['REMOTE_ADDR'] ) ? trim( \sanitize_text_field( \wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) ) : '';
+		if ( false === filter_var( $peer, FILTER_VALIDATE_IP ) ) {
+			return '';
+		}
+		$peer = inet_ntop( inet_pton( $peer ) );
+		if ( empty( $opts['trust_proxy_headers'] ) || ! self::is_trusted_proxy( $peer ) || empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
+			return $peer;
 		}
 
-		if ( $ip === '' && ! empty( $_SERVER['REMOTE_ADDR'] ) ) {
-			$ip = \wp_unslash( $_SERVER['REMOTE_ADDR'] );
+		$forwarded = \sanitize_text_field( \wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) );
+		$client    = $peer;
+		foreach ( array_reverse( explode( ',', $forwarded ) ) as $hop ) {
+			if ( ! self::is_trusted_proxy( $client ) ) {
+				break;
+			}
+			$hop = trim( $hop );
+			if ( false === filter_var( $hop, FILTER_VALIDATE_IP ) ) {
+				return $peer;
+			}
+			$client = inet_ntop( inet_pton( $hop ) );
 		}
-		// phpcs:enable
+		return $client;
+	}
 
-		return trim( \sanitize_text_field( $ip ) );
+	/**
+	 * Match an address against explicitly configured proxy IPs and CIDRs.
+	 *
+	 * @param string $ip Address to check.
+	 * @return bool
+	 */
+	private static function is_trusted_proxy( string $ip ): bool {
+		$packed = inet_pton( $ip );
+		if ( false === $packed ) {
+			return false;
+		}
+		$opts = self::get_options();
+		foreach ( preg_split( '/[\r\n,]+/', (string) ( $opts['trusted_proxy_ips'] ?? '' ) ) as $entry ) {
+			$parts   = explode( '/', trim( $entry ) );
+			$network = false !== filter_var( $parts[0], FILTER_VALIDATE_IP ) ? inet_pton( $parts[0] ) : false;
+			if ( count( $parts ) > 2 || false === $network || strlen( $network ) !== strlen( $packed ) ) {
+				continue;
+			}
+			if ( ! isset( $parts[1] ) ) {
+				if ( $network === $packed ) {
+					return true;
+				}
+				continue;
+			}
+			$bits = (int) $parts[1];
+			if ( ! ctype_digit( $parts[1] ) || $bits < 1 || $bits > strlen( $packed ) * 8 ) {
+				continue;
+			}
+			$bytes = intdiv( $bits, 8 );
+			$tail  = $bits % 8;
+			if ( $bytes > 0 && substr( $packed, 0, $bytes ) !== substr( $network, 0, $bytes ) ) {
+				continue;
+			}
+			if ( 0 === $tail || ( ord( $packed[ $bytes ] ) & ( 0xff << ( 8 - $tail ) ) ) === ( ord( $network[ $bytes ] ) & ( 0xff << ( 8 - $tail ) ) ) ) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**

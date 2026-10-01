@@ -40,7 +40,7 @@ class Task_Manager {
 	 * @return void
 	 */
 	public static function init(): void {
-		self::$tasks_dir = \Functionalities\Storage\Data_Directory::file( 'tasks' ) . '/';
+		self::get_tasks_dir();
 
 		// Only run in admin - no frontend footprint.
 		if ( ! \is_admin() ) {
@@ -64,7 +64,7 @@ class Task_Manager {
 
 		$opts = (array) \get_option( 'functionalities_task_manager', array( 'enabled' => false ) );
 
-		if ( empty( $opts['enabled'] ) ) {
+		if ( ! \Functionalities\Core\Module_Registry::is_enabled( 'task-manager' ) ) {
 			return;
 		}
 
@@ -94,9 +94,15 @@ class Task_Manager {
 	 * @return string|false Directory path or false on failure.
 	 */
 	public static function get_tasks_dir() {
-		if ( '' === self::$tasks_dir ) {
-			self::$tasks_dir = \Functionalities\Storage\Data_Directory::file( 'tasks' ) . '/';
+		$path = \Functionalities\Storage\Data_Directory::file( 'tasks' );
+		if ( '' === $path ) {
+			self::$storage_errors = \Functionalities\Storage\Data_Directory::get_errors();
+			return false;
 		}
+		if ( self::$tasks_dir !== $path . '/' ) {
+			self::$storage_errors = array();
+		}
+		self::$tasks_dir = $path . '/';
 
 		if ( ! file_exists( self::$tasks_dir ) && ! wp_mkdir_p( self::$tasks_dir ) ) {
 			return false;
@@ -130,7 +136,7 @@ class Task_Manager {
 		}
 
 		$projects = array();
-		$files    = glob( $dir . '*.json' );
+		$files    = glob( $dir . '*.json.php' );
 
 		if ( ! $files ) {
 			return array();
@@ -141,13 +147,13 @@ class Task_Manager {
 			$data   = $result['success'] ? $result['data'] : array();
 
 			if ( $data && isset( $data['name'] ) ) {
-				$slug              = basename( $file, '.json' );
+				$slug              = basename( $file, '.json.php' );
 				$data['slug']      = $slug;
 				$data['file_path'] = $file;
 				$projects[ $slug ] = $data;
 				unset( self::$storage_errors[ $slug ] );
 			} elseif ( ! $result['success'] ) {
-				self::$storage_errors[ basename( $file, '.json' ) ] = $result['error'];
+				self::$storage_errors[ basename( $file, '.json.php' ) ] = $result['error'];
 			}
 		}
 
@@ -180,16 +186,13 @@ class Task_Manager {
 		}
 
 		$safe_slug = sanitize_file_name( $slug );
-		$file      = $dir . $safe_slug . '.json';
+		$file      = $dir . $safe_slug . '.json.php';
 
 		// Verify file is within tasks directory (prevent path traversal).
 		$real_path = realpath( $file );
 		$real_dir  = realpath( $dir );
-		if ( false === $real_path || false === $real_dir || 0 !== strpos( $real_path, $real_dir ) ) {
-			// File doesn't exist or is outside tasks directory.
-			if ( ! file_exists( $file ) ) {
-				return null;
-			}
+		if ( false === $real_path || false === $real_dir || 0 !== strpos( $real_path, $real_dir . DIRECTORY_SEPARATOR ) ) {
+			return null;
 		}
 
 		$result = \Functionalities\Storage\Atomic_JSON_Store::read( $file );
@@ -222,7 +225,10 @@ class Task_Manager {
 			return false;
 		}
 
-		$file = $dir . sanitize_file_name( $slug ) . '.json';
+		if ( ! self::is_valid_slug( $slug ) ) {
+			return false;
+		}
+		$file = $dir . sanitize_file_name( $slug ) . '.json.php';
 
 		// Update modified timestamp.
 		$data['modified'] = current_time( 'mysql' );
@@ -256,7 +262,7 @@ class Task_Manager {
 		}
 
 		$safe_slug = sanitize_file_name( $slug );
-		$file      = $dir . $safe_slug . '.json';
+		$file      = $dir . $safe_slug . '.json.php';
 		$result    = \Functionalities\Storage\Atomic_JSON_Store::update(
 			$file,
 			static function ( array $project, bool $exists ) use ( $mutator ) {
@@ -303,7 +309,7 @@ class Task_Manager {
 	 */
 	private static function create_project_file( string $slug, array $data ): bool {
 		$dir  = self::get_tasks_dir();
-		$file = $dir ? $dir . sanitize_file_name( $slug ) . '.json' : '';
+		$file = $dir ? $dir . sanitize_file_name( $slug ) . '.json.php' : '';
 		if ( ! $dir || ! self::is_valid_slug( $slug ) ) {
 			return false;
 		}
@@ -353,13 +359,12 @@ class Task_Manager {
 	 * @return bool True on success.
 	 */
 	public static function delete_project( string $slug ): bool {
-		$project = self::get_project( $slug );
-		if ( ! $project ) {
+		$dir = self::get_tasks_dir();
+		if ( ! $dir || ! self::is_valid_slug( $slug ) ) {
 			return false;
 		}
-
-		\wp_delete_file( $project['file_path'] );
-		return ! file_exists( $project['file_path'] );
+		$result = \Functionalities\Storage\Atomic_JSON_Store::delete( $dir . sanitize_file_name( $slug ) . '.json.php' );
+		return $result['success'];
 	}
 
 	/**
@@ -382,7 +387,7 @@ class Task_Manager {
 		preg_match_all( '/#([a-zA-Z0-9_-]+)/', $text, $matches );
 
 		if ( ! empty( $matches[1] ) ) {
-			$tags = array_unique( $matches[1] );
+			$tags = array_values( array_unique( $matches[1] ) );
 		}
 
 		return array(
@@ -422,6 +427,9 @@ class Task_Manager {
 		// Extract tags and priority from text.
 		$tag_data      = self::extract_tags( $text );
 		$priority_data = self::extract_priority( $tag_data['text'] );
+		if ( '' === trim( $priority_data['text'] ) ) {
+			return false;
+		}
 
 		$task = array(
 			'id'        => self::generate_task_id(),
@@ -472,11 +480,14 @@ class Task_Manager {
 						$tag_data      = self::extract_tags( $updates['text'] );
 						$priority_data = self::extract_priority( $tag_data['text'] );
 
+						if ( '' === trim( $priority_data['text'] ) ) {
+							return false;
+						}
 						$task['text'] = $priority_data['text'];
 
 						// Merge new tags.
 						if ( ! empty( $tag_data['tags'] ) ) {
-							$task['tags'] = array_unique( array_merge( $task['tags'] ?? array(), $tag_data['tags'] ) );
+							$task['tags'] = array_values( array_unique( array_merge( $task['tags'] ?? array(), $tag_data['tags'] ) ) );
 						}
 
 						// Update priority if specified.
@@ -496,7 +507,7 @@ class Task_Manager {
 						$task['tags'] = (array) $updates['tags'];
 					}
 					if ( isset( $updates['priority'] ) ) {
-						$task['priority'] = (int) $updates['priority'];
+						$task['priority'] = max( 0, min( 3, (int) $updates['priority'] ) );
 					}
 
 					$updated = $task;
@@ -547,14 +558,14 @@ class Task_Manager {
 	 * @param string $task_id      Task ID.
 	 * @return bool|null New completion state or null on failure.
 	 */
-	public static function toggle_task( string $project_slug, string $task_id ) {
+	public static function toggle_task( string $project_slug, string $task_id, ?bool $completed = null ) {
 		$new_state = null;
 		$result    = self::mutate_project(
 			$project_slug,
-			static function ( array $project ) use ( $task_id, &$new_state ) {
+			static function ( array $project ) use ( $task_id, $completed, &$new_state ) {
 				foreach ( $project['tasks'] as &$task ) {
 					if ( isset( $task['id'] ) && $task_id === $task['id'] ) {
-						$task['completed'] = empty( $task['completed'] );
+						$task['completed'] = null === $completed ? empty( $task['completed'] ) : $completed;
 						$new_state         = $task['completed'];
 						return $project;
 					}
@@ -578,6 +589,9 @@ class Task_Manager {
 	 * @return bool True on success.
 	 */
 	public static function reorder_tasks( string $project_slug, array $task_ids ): bool {
+		if ( count( $task_ids ) !== count( array_unique( $task_ids ) ) ) {
+			return false;
+		}
 		$result = self::mutate_project(
 			$project_slug,
 			static function ( array $project ) use ( $task_ids ) {
@@ -871,7 +885,7 @@ class Task_Manager {
 		// phpcs:disable WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- Nonce verified in verify_ajax(). Tags are sanitized with array_map.
 		if ( isset( $_POST['tags'] ) ) {
 			$tags            = is_array( $_POST['tags'] ) ? \wp_unslash( $_POST['tags'] ) : explode( ',', \wp_unslash( $_POST['tags'] ) );
-			$updates['tags'] = array_map( 'sanitize_key', $tags );
+			$updates['tags'] = array_values( array_unique( array_filter( array_map( 'sanitize_key', $tags ) ) ) );
 		}
 		// phpcs:enable
 
@@ -936,7 +950,14 @@ class Task_Manager {
 			return;
 		}
 
-		$new_state = self::toggle_task( $project, $task_id );
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified above.
+		$completed = isset( $_POST['completed'] ) ? filter_var( $_POST['completed'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE ) : null;
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified above.
+		if ( isset( $_POST['completed'] ) && null === $completed ) {
+			\wp_send_json_error( array( 'message' => \__( 'Invalid completion state.', 'functionalities' ) ) );
+			return;
+		}
+		$new_state = self::toggle_task( $project, $task_id, $completed );
 		if ( null !== $new_state ) {
 			\wp_send_json_success(
 				array(
@@ -997,31 +1018,33 @@ class Task_Manager {
 			return;
 		}
 
-		// Sanitize imported data.
-		$data['name'] = isset( $data['name'] ) ? \sanitize_text_field( $data['name'] ) : '';
-
-		// Ensure required fields with sanitization.
-		$data['created']     = isset( $data['created'] ) ? \sanitize_text_field( $data['created'] ) : current_time( 'mysql' );
-		$data['modified']    = current_time( 'mysql' );
-		$data['show_widget'] = ! empty( $data['show_widget'] );
-		$data['tasks']       = isset( $data['tasks'] ) && is_array( $data['tasks'] ) ? $data['tasks'] : array();
-
-		// Sanitize each task.
-		foreach ( $data['tasks'] as $key => $task ) {
-			$data['tasks'][ $key ]['text']      = isset( $task['text'] ) ? \sanitize_textarea_field( $task['text'] ) : '';
-			$data['tasks'][ $key ]['notes']     = isset( $task['notes'] ) ? \sanitize_textarea_field( $task['notes'] ) : '';
-			$data['tasks'][ $key ]['status']    = isset( $task['status'] ) ? \sanitize_key( $task['status'] ) : 'open';
-			$data['tasks'][ $key ]['priority']  = isset( $task['priority'] ) ? absint( $task['priority'] ) : 0;
-			$data['tasks'][ $key ]['completed'] = ! empty( $task['completed'] );
-			$data['tasks'][ $key ]['tags']      = isset( $task['tags'] ) && is_array( $task['tags'] )
-				? array_map( '\sanitize_text_field', $task['tags'] )
-				: array();
+		if ( ! is_array( $data ) || ! is_string( $data['name'] ) || '' === trim( \sanitize_text_field( $data['name'] ) ) || ( isset( $data['tasks'] ) && ! is_array( $data['tasks'] ) ) ) {
+			\wp_send_json_error( array( 'message' => \__( 'Invalid project name or tasks collection.', 'functionalities' ) ) );
+			return;
 		}
-
-		// Re-generate task IDs to avoid conflicts.
-		foreach ( $data['tasks'] as &$task ) {
-			$task['id'] = self::generate_task_id();
+		$tasks = array();
+		foreach ( $data['tasks'] ?? array() as $task ) {
+			if ( ! is_array( $task ) || ! isset( $task['text'] ) || ! is_string( $task['text'] ) || '' === trim( \sanitize_textarea_field( $task['text'] ) ) || ( isset( $task['tags'] ) && ( ! is_array( $task['tags'] ) || count( array_filter( $task['tags'], 'is_scalar' ) ) !== count( $task['tags'] ) ) ) ) {
+				\wp_send_json_error( array( 'message' => \__( 'Every imported task must have text and a valid tags list.', 'functionalities' ) ) );
+				return;
+			}
+			$tasks[] = array(
+				'id'        => self::generate_task_id(),
+				'text'      => \sanitize_textarea_field( $task['text'] ),
+				'notes'     => \sanitize_textarea_field( $task['notes'] ?? '' ),
+				'priority'  => max( 0, min( 3, (int) ( $task['priority'] ?? 0 ) ) ),
+				'completed' => ! empty( $task['completed'] ),
+				'tags'      => array_values( array_unique( array_filter( array_map( 'sanitize_key', $task['tags'] ?? array() ) ) ) ),
+				'created'   => \sanitize_text_field( $task['created'] ?? current_time( 'mysql' ) ),
+			);
 		}
+		$data = array(
+			'name'        => \sanitize_text_field( $data['name'] ),
+			'created'     => \sanitize_text_field( $data['created'] ?? current_time( 'mysql' ) ),
+			'modified'    => current_time( 'mysql' ),
+			'show_widget' => ! empty( $data['show_widget'] ),
+			'tasks'       => $tasks,
+		);
 
 		$original_slug = sanitize_title( $data['name'] );
 		$slug          = '';

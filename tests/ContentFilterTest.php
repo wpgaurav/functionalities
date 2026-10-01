@@ -10,6 +10,7 @@ use PHPUnit\Framework\TestCase;
 require_once dirname( __DIR__ ) . '/includes/features/class-link-management.php';
 require_once dirname( __DIR__ ) . '/includes/features/class-block-cleanup.php';
 require_once dirname( __DIR__ ) . '/includes/features/class-schema.php';
+require_once dirname( __DIR__ ) . '/includes/core/class-module-registry.php';
 
 /**
  * Cover the three content filters that used to run DOMDocument.
@@ -185,5 +186,54 @@ final class ContentFilterTest extends TestCase {
 		$this->assertStringContainsString( 'itemprop="dateModified"', $result );
 		$this->assertStringContainsString( 'itemprop="author"', $result );
 		$this->assertStringContainsString( 'v-scope', $result );
+	}
+
+	/** Custom classes must work without any wp-block class in the content. */
+	public function test_block_cleanup_removes_custom_only_classes(): void {
+		$GLOBALS['functionalities_test_options']['functionalities_block_cleanup'] = array(
+			'enabled'                  => true,
+			'custom_classes_to_remove' => 'legacy-card',
+		);
+
+		$result = \Functionalities\Features\Block_Cleanup::filter_content_cleanup( '<div class="legacy-card keep">Text</div>' );
+
+		$processor = new WP_HTML_Tag_Processor( $result );
+		$this->assertTrue( $processor->next_tag( 'DIV' ) );
+		$classes = preg_split( '/\s+/', trim( (string) $processor->get_attribute( 'class' ) ) );
+		$this->assertSame( array( 'keep' ), $classes );
+		$this->assertStringEndsWith( '>Text</div>', $result );
+	}
+
+	/** Page schema must only modify actual tags, preserving raw-text templates. */
+	public function test_schema_buffer_preserves_script_templates_and_comments(): void {
+		$GLOBALS['functionalities_test_options']['functionalities_schema'] = array(
+			'enabled'            => true,
+			'enable_header_part' => true,
+			'enable_footer_part' => true,
+		);
+		$prefix = '<!-- <header>example</header> --><script>const x = "<header class=card>";const y = "<footer>";</script>';
+		$html   = $prefix . '<header class="site"></header><footer class="site"></footer>';
+
+		$result = \Functionalities\Features\Schema::buffer_callback( $html );
+
+		$this->assertStringStartsWith( $prefix, $result );
+		$processor = new \WP_HTML_Tag_Processor( $result );
+		$this->assertTrue( $processor->next_tag( 'HEADER' ) );
+		$this->assertSame( 'https://schema.org/WPHeader', $processor->get_attribute( 'itemtype' ) );
+		$this->assertTrue( $processor->next_tag( 'FOOTER' ) );
+		$this->assertSame( 'https://schema.org/WPFooter', $processor->get_attribute( 'itemtype' ) );
+	}
+
+	/** Existing scopes are preserved; at most one eligible header/footer is marked. */
+	public function test_schema_buffer_preserves_existing_scopes(): void {
+		$GLOBALS['functionalities_test_options']['functionalities_schema'] = array( 'enabled' => true );
+		$existing = '<header itemscope itemtype="https://schema.org/Organization"></header>';
+		$html     = $existing . '<header class="site"></header><header class="card"></header>';
+
+		$result = \Functionalities\Features\Schema::buffer_callback( $html );
+
+		$this->assertStringStartsWith( $existing, $result );
+		$this->assertSame( 1, substr_count( $result, 'https://schema.org/WPHeader' ) );
+		$this->assertStringEndsWith( '<header class="card"></header>', $result );
 	}
 }
