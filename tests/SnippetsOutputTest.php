@@ -131,7 +131,9 @@ final class SnippetsOutputTest extends TestCase {
 		}
 
 		$root   = dirname( __DIR__ );
-		$script = '<?php require ' . var_export( $wp_dir . '/wp-includes/kses.php', true ) . '; require ' . var_export( $root . '/tests/bootstrap.php', true ) . ';'
+		$script = '<?php define("ABSPATH", ' . var_export( rtrim( $wp_dir, '/' ) . '/', true ) . '); define("WPINC", "wp-includes");'
+			. 'require ' . var_export( $wp_dir . '/wp-includes/compat.php', true ) . ';'
+			. 'require ' . var_export( $wp_dir . '/wp-includes/kses.php', true ) . '; require ' . var_export( $root . '/tests/bootstrap.php', true ) . ';'
 			. 'function wp_allowed_protocols() { return array("http", "https"); }'
 			. 'require ' . var_export( $root . '/includes/features/class-snippets.php', true ) . ';'
 			. 'require ' . var_export( $root . '/includes/admin/trait-admin-sanitizers.php', true ) . ';'

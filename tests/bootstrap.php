@@ -5,7 +5,9 @@
  * @package FunctionalitiesTests
  */
 
-define( 'ABSPATH', dirname( __DIR__ ) . '/' );
+if ( ! defined( 'ABSPATH' ) ) {
+	define( 'ABSPATH', dirname( __DIR__ ) . '/' );
+}
 define( 'FUNCTIONALITIES_VERSION', '1.6.0-test' );
 define( 'FUNCTIONALITIES_DIR', dirname( __DIR__ ) . '/' );
 define( 'FUNCTIONALITIES_URL', 'https://example.test/wp-content/plugins/functionalities/' );
