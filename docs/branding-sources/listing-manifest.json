@@ -1,0 +1,38 @@
+[
+  {
+    "path": ".wordpress-org/icon-128x128.png",
+    "pixels": [
+      128,
+      128
+    ],
+    "bytes": 33338,
+    "sha256": "ab6be817f755dfcf41429bc697114b94f5cd1a829e4ecda19c5ad8c9e671ce06"
+  },
+  {
+    "path": ".wordpress-org/icon-256x256.png",
+    "pixels": [
+      256,
+      256
+    ],
+    "bytes": 108874,
+    "sha256": "58c923d13f7e53ec35bd43010963135b52d3b2a1af724fdaab42f1fd654441f8"
+  },
+  {
+    "path": ".wordpress-org/banner-772x250.png",
+    "pixels": [
+      772,
+      250
+    ],
+    "bytes": 238490,
+    "sha256": "3614cd7b0c8443e7a5baa86e50b46b491d2f5fec29171a3013181d454d342f6c"
+  },
+  {
+    "path": ".wordpress-org/banner-1544x500.png",
+    "pixels": [
+      1544,
+      500
+    ],
+    "bytes": 814727,
+    "sha256": "898f214095d5955b9e54da6eb3d7bfb984fda8d7a9ac094b8872d7cb9904824c"
+  }
+]
