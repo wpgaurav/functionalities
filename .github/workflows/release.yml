@@ -123,6 +123,7 @@ jobs:
             "includes/core/class-wordpress-7-integration.php" \
             "includes/storage/class-data-directory.php" \
             "assets/vendor/prism/prism.min.js" \
+            "assets/css/components-editor.css" \
             "languages/functionalities.pot" \
             "assets/js/wp7-admin.js" \
             "assets/js/wp7-admin.asset.php" \

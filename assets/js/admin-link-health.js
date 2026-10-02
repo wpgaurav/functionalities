@@ -131,6 +131,7 @@
 			const fields = Object.fromEntries(new FormData(form));
 			delete fields.action;
 			delete fields.operation;
+			delete fields.run;
 			const data = await request(operation, fields);
 			if (revision === epoch) {
 				suspended = false;

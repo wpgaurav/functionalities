@@ -24,6 +24,7 @@ require_once dirname( __DIR__ ) . '/includes/features/class-site-activity.php';
 class UtilityDatabaseSpy {
 	public $posts = 'wp_posts';
 	public $postmeta = 'wp_postmeta';
+	public $report_queries = 0;
 	private $cursor = 0;
 	private $values = array();
 	public function prepare( $sql, $cursor, ...$arguments ) {
@@ -48,6 +49,7 @@ class UtilityDatabaseSpy {
 		return 0;
 	}
 	public function get_results( $sql ) {
+		if ( false !== strpos( $sql, 'report_data' ) ) { ++$this->report_queries; }
 		$posts = $GLOBALS['functionalities_test_posts'];
 		ksort( $posts );
 		$rows = array();
@@ -105,6 +107,8 @@ final class UtilityModulesTest extends TestCase {
 		$GLOBALS['functionalities_test_revisions'] = array();
 		unset( $GLOBALS['functionalities_test_concurrent_edit'], $GLOBALS['functionalities_test_source_write_fail'] );
 		$GLOBALS['wpdb'] = new UtilityDatabaseSpy();
+		$GLOBALS['functionalities_test_action_calls'] = array();
+		unset( $GLOBALS['functionalities_action_handler'] );
 		Directory::flush();
 	}
 	protected function tearDown(): void {
@@ -573,6 +577,8 @@ final class UtilityModulesTest extends TestCase {
 		$this->assertSame( $error, Activity::upgraded( $error, $extra ) );
 		$this->assertSame( array(), Activity::entries() );
 		$this->assertTrue( Activity::upgraded( true, $extra ) );
+		$this->assertSame( array(), Activity::entries() );
+		Activity::upgrade_complete( (object) array( 'skin' => new stdClass() ), $extra );
 		$this->assertSame( 'plugin_updated', Activity::entries()[0]['event'] );
 	}
 
@@ -581,4 +587,159 @@ final class UtilityModulesTest extends TestCase {
 		$GLOBALS['functionalities_test_options']['functionalities_site_activity']['enabled'] = false;
 		$this->assertFalse( Activity::record( 'plugin_updated', 'plugin/main.php' ) );
 	}
+	public function test_release_fix_block_guards_cover_file_bindings_and_comment_whitespace(): void {
+		$this->require_core();
+		$base = 'https://example.test/';
+		$old = $base . 'old';
+		foreach ( array( '  ', "\n", "\t" ) as $space ) {
+			$content = '<!--' . $space . 'wp:custom/card {"url":"' . $old . '"} --><a href="/old">Card</a><!-- /wp:custom/card -->';
+			$this->assertSame( 'custom/card', parse_blocks( $content )[0]['blockName'] );
+			$this->assertInstanceOf( WP_Error::class, \Functionalities\Features\Link_Health_Editor::transform( $content, $base, $old, 'replace', $base . 'new' ) );
+		}
+	}
+	public function test_release_fix_file_blocks_preserve_their_filename_structure(): void {
+		$this->require_core(); $base = 'https://example.test/'; $old = $base . 'old';
+		$file = '<!-- wp:file {"href":"https://example.test/manual.pdf"} --><div class="wp-block-file"><a id="file-label" href="/old">Manual</a><a href="manual.pdf" download aria-describedby="file-label">Download</a></div><!-- /wp:file -->';
+		$this->assertInstanceOf( WP_Error::class, \Functionalities\Features\Link_Health_Editor::transform( $file, $base, $old, 'unlink' ) );
+		$this->assertIsArray( \Functionalities\Features\Link_Health_Editor::transform( $file, $base, $old, 'replace', $base . 'new' ) );
+	}
+	public function test_release_fix_bound_links_defer_to_their_source(): void {
+		$this->require_core(); $base = 'https://example.test/'; $old = $base . 'old';
+		$bound = '<!-- wp:button {"metadata":{"bindings":{"url":{"source":"core/post-meta","args":{"key":"destination"}}}}} --><div class="wp-block-button"><a class="wp-block-button__link" href="/old">Bound</a></div><!-- /wp:button -->';
+		foreach ( array( 'replace', 'unlink' ) as $mode ) {
+			$this->assertInstanceOf( WP_Error::class, \Functionalities\Features\Link_Health_Editor::transform( $bound, $base, $old, $mode, $base . 'new' ) );
+		}
+		$this->assertIsArray( \Functionalities\Features\Link_Health_Editor::transform( $bound . '<p><a href="/ordinary">Ordinary</a></p>', $base, $base . 'ordinary', 'unlink' ) );
+	}
+	public function test_release_fix_edits_rebase_a_partially_scanned_source(): void {
+		$this->require_core();
+		foreach ( array( 'unlink', 'replace' ) as $mode ) {
+			$content = '';
+			for ( $i = 0; $i < 6; ++$i ) { $content .= '<a href="https://example.test/link-' . $i . '">' . $i . '</a>'; }
+			$this->post( 10, $content );
+			$scan = Links::start_scan(); Links::run_batch(); Links::stop_scan( $scan['run'] );
+			$preview = \Functionalities\Features\Link_Health_Editor::preview( 10, 'https://example.test/link-0', $mode, 'https://example.test/replacement' );
+			$this->assertIsArray( \Functionalities\Features\Link_Health_Editor::apply( 10, $preview['token'] ) );
+			Links::resume_scan( $scan['run'] );
+			for ( $i = 0; $i < 4 && 'running' === Links::state()['status']; ++$i ) { Links::run_batch(); }
+			$report = get_post_meta( 10, Links::META_KEY, true );
+			$this->assertTrue( $report['complete'] );
+			$this->assertCount( 'unlink' === $mode ? 5 : 6, $report['rows'] );
+			foreach ( $report['rows'] as $row ) { $this->assertGreaterThan( 0, $row['checked'], $row['url'] ); }
+		}
+	}
+	public function test_release_fix_edit_overlapping_worker_cannot_restore_an_old_cursor(): void {
+		$this->require_core();
+		$content = '';
+		for ( $i = 0; $i < 6; ++$i ) { $content .= '<a href="https://example.test/overlap-' . $i . '">' . $i . '</a>'; }
+		$this->post( 10, $content );
+		Links::start_scan(); Links::run_batch();
+		$GLOBALS['functionalities_http_handler'] = static function () {
+			$GLOBALS['functionalities_http_handler'] = null;
+			$preview = \Functionalities\Features\Link_Health_Editor::preview( 10, 'https://example.test/overlap-0', 'unlink' );
+			\Functionalities\Features\Link_Health_Editor::apply( 10, $preview['token'] );
+			return array( 'response' => array( 'code' => 200 ) );
+		};
+		Links::run_batch();
+		for ( $i = 0; $i < 4 && 'running' === Links::state()['status']; ++$i ) { Links::run_batch(); }
+		$report = get_post_meta( 10, Links::META_KEY, true );
+		$this->assertSame( 'completed', Links::state()['status'] );
+		$this->assertTrue( $report['complete'] );
+		$this->assertCount( 5, $report['rows'] );
+		foreach ( $report['rows'] as $row ) { $this->assertGreaterThan( 0, $row['checked'], $row['url'] ); }
+	}
+	public function test_release_fix_content_edits_dispatch_the_published_update_lifecycle(): void {
+		$this->require_core();
+		$this->post( 10, '<a href="/old">Old</a>' );
+		$events = array();
+		$GLOBALS['functionalities_action_handler'] = static function ( $hook, ...$args ) use ( &$events ) { $events[ $hook ] = $args; };
+		$preview = \Functionalities\Features\Link_Health_Editor::preview( 10, 'https://example.test/old', 'unlink' );
+		$this->assertIsArray( \Functionalities\Features\Link_Health_Editor::apply( 10, $preview['token'] ) );
+		$this->assertArrayHasKey( 'transition_post_status', $events );
+		$this->assertSame( array( 'publish', 'publish' ), array_slice( $events['transition_post_status'], 0, 2 ) );
+		$this->assertArrayHasKey( 'edit_post', $events );
+		$this->assertArrayHasKey( 'edit_post_post', $events );
+		$this->assertArrayHasKey( 'post_updated', $events );
+		unset( $GLOBALS['functionalities_action_handler'] );
+	}
+	public function test_release_fix_export_streams_filtered_sources_once(): void {
+		for ( $id = 1; $id <= 60; ++$id ) {
+			$this->post( $id ); $rows = array();
+			for ( $i = 0; $i < 100; ++$i ) { $url = 'https://example.test/' . $id . '-' . $i; $rows[ md5( $url ) ] = array( 'url' => $url, 'status' => 'broken', 'checked' => 1, 'chain' => array(), 'code' => 404 ); }
+			update_post_meta( $id, Links::META_KEY, array( 'rows' => $rows ) );
+		}
+		$this->assertTrue( method_exists( \Functionalities\Features\Link_Health_Report::class, 'export_rows' ) );
+		$count = 0;
+		foreach ( \Functionalities\Features\Link_Health_Report::export_rows( array( 'link_status' => 'broken' ) ) as $row ) { ++$count; $this->assertSame( 'broken', $row['status'] ); }
+		$this->assertSame( 6000, $count );
+		$this->assertSame( 3, $GLOBALS['wpdb']->report_queries );
+	}
+	public function test_release_fix_bulk_and_automatic_update_outcomes(): void {
+		$this->assertTrue( method_exists( Activity::class, 'upgrade_complete' ) );
+		$manual = (object) array( 'skin' => new stdClass() );
+		Activity::upgraded( array( 'destination_name' => 'good' ), array( 'plugin' => 'good/main.php', 'temp_backup' => array() ) );
+		Activity::upgraded( new WP_Error( 'failed' ), array( 'plugin' => 'bad/main.php', 'temp_backup' => array() ) );
+		Activity::upgrade_complete( $manual, array( 'action' => 'update', 'type' => 'plugin', 'bulk' => true, 'plugins' => array( 'good/main.php', 'bad/main.php' ) ) );
+		$this->assertSame( array( 'good/main.php' ), array_column( Activity::entries(), 'target' ) );
+		Activity::upgraded( array( 'destination_name' => 'theme' ), array( 'theme' => 'test-theme', 'temp_backup' => array() ) );
+		Activity::upgrade_complete( $manual, array( 'action' => 'update', 'type' => 'theme', 'bulk' => true, 'themes' => array( 'test-theme' ) ) );
+		$this->assertSame( 'theme_updated', Activity::entries()[1]['event'] );
+		$ajax = (object) array( 'skin' => new WP_Ajax_Upgrader_Skin() );
+		Activity::upgraded( true, array( 'plugin' => 'ajax/main.php' ) );
+		Activity::upgrade_complete( $ajax, array( 'action' => 'update', 'type' => 'plugin', 'plugin' => 'ajax/main.php' ) );
+		$this->assertSame( 'ajax/main.php', Activity::entries()[2]['target'] );
+		$auto = (object) array( 'skin' => new Automatic_Upgrader_Skin() );
+		Activity::upgraded( array( 'destination_name' => 'rolled-back' ), array( 'action' => 'update', 'type' => 'plugin', 'plugin' => 'rolled-back/main.php' ) );
+		Activity::upgrade_complete( $auto, array( 'action' => 'update', 'type' => 'plugin', 'plugin' => 'rolled-back/main.php' ) );
+		$this->assertCount( 3, Activity::entries(), 'Automatic results must wait for rollback checks.' );
+		Activity::automatic_updates_complete( array( 'plugin' => array( (object) array( 'item' => (object) array( 'plugin' => 'rolled-back/main.php' ), 'result' => new WP_Error( 'rollback' ) ), (object) array( 'item' => (object) array( 'plugin' => 'auto-good/main.php' ), 'result' => true ) ) ) );
+		$this->assertSame( array( 'good/main.php', 'test-theme', 'ajax/main.php', 'auto-good/main.php' ), array_column( Activity::entries(), 'target' ) );
+	}
+
+	public function test_release_fix_native_forms_reject_stale_or_missing_generations(): void {
+		foreach ( array( 'stale', 'missing', 'current' ) as $mode ) {
+			$process = proc_open( array( PHP_BINARY, __DIR__ . '/fixtures/link-health-native-worker.php', $mode ), array( 0 => array( 'pipe', 'r' ), 1 => array( 'pipe', 'w' ), 2 => array( 'pipe', 'w' ) ), $pipes );
+			fclose( $pipes[0] ); $output = stream_get_contents( $pipes[1] ); $error = stream_get_contents( $pipes[2] ); fclose( $pipes[1] ); fclose( $pipes[2] );
+			$this->assertSame( 0, proc_close( $process ), $error );
+			$result = json_decode( $output, true );
+			$this->assertSame( 'current' === $mode ? 'redirect' : 'denied', $result['outcome'] );
+			$this->assertSame( 'current' === $mode ? 'stopped' : 'running', $result['status'] );
+			$this->assertTrue( $result['form_has_run'] );
+		}
+	}
+	public function test_release_fix_concurrent_ignore_actions_both_survive(): void {
+		$this->require_core();
+		$base = $this->base . '/ignore-concurrency'; mkdir( $base, 0700, true );
+		$spec = array( 0 => array( 'pipe', 'r' ), 1 => array( 'pipe', 'w' ), 2 => array( 'pipe', 'w' ) );
+		$first = proc_open( array( PHP_BINARY, __DIR__ . '/fixtures/link-health-ignore-worker.php', $base, 'a' ), $spec, $first_pipes );
+		$deadline = microtime( true ) + 5;
+		while ( ! is_file( $base . '/read-a' ) && microtime( true ) < $deadline ) { usleep( 10000 ); clearstatcache(); }
+		$second = proc_open( array( PHP_BINARY, __DIR__ . '/fixtures/link-health-ignore-worker.php', $base, 'b' ), $spec, $second_pipes );
+		foreach ( array( array( $first, $first_pipes ), array( $second, $second_pipes ) ) as $worker ) {
+			fclose( $worker[1][0] ); $output = stream_get_contents( $worker[1][1] ); $error = stream_get_contents( $worker[1][2] ); fclose( $worker[1][1] ); fclose( $worker[1][2] );
+			$this->assertSame( 0, proc_close( $worker[0] ), $error );
+			$this->assertTrue( json_decode( $output, true )['success'], $output );
+		}
+		$this->assertEqualsCanonicalizing( array( md5( 'https://example.test/a' ), md5( 'https://example.test/b' ) ), json_decode( file_get_contents( $base . '/meta.json' ), true ) );
+	}
+
+	public function test_release_fix_recheck_merges_current_metadata_after_waiting(): void {
+		$result = $this->cache_worker( 'recheck' );
+		$this->assertSame( 'ok', $result['result']['status'] );
+		$this->assertSame( 'ok', $result['after_rows'][ md5( 'https://example.test/a' ) ]['status'] );
+	}
+	public function test_release_fix_edit_reconciliation_reads_the_latest_source(): void {
+		$result = $this->cache_worker( 'refresh' );
+		$this->assertTrue( $result['A_response']['refreshed'] );
+		$this->assertSame( $result['current_hash'], $result['report_hash'] );
+		$this->assertSame( array( 'https://example.test/a2', 'https://example.test/b2' ), $result['report_urls'] );
+	}
+	private function cache_worker( string $mode ): array {
+		$this->require_core();
+		$process = proc_open( array( PHP_BINARY, __DIR__ . '/fixtures/link-health-' . $mode . '-cache-worker.php' ), array( 0 => array( 'pipe', 'r' ), 1 => array( 'pipe', 'w' ), 2 => array( 'pipe', 'w' ) ), $pipes );
+		fclose( $pipes[0] ); $output = stream_get_contents( $pipes[1] ); $error = stream_get_contents( $pipes[2] ); fclose( $pipes[1] ); fclose( $pipes[2] );
+		$this->assertSame( 0, proc_close( $process ), $error );
+		return json_decode( $output, true );
+	}
+
 }

@@ -214,6 +214,7 @@ class Link_Health {
 				if ( ! $post || ! in_array( $post->post_type, array( 'post', 'page' ), true ) || 'publish' !== $post->post_status || '' !== $post->post_password || self::content_hash( $post ) !== $hash ) {
 					return null;
 				}
+				\wp_cache_delete( $post_id, 'post_meta' );
 				if ( $merge ) {
 					$current = (array) \get_post_meta( $post_id, self::META_KEY, true );
 					if ( ( $current['hash'] ?? '' ) !== $hash ) {
@@ -470,7 +471,7 @@ class Link_Health {
 				$truncated = count( $urls ) > self::MAX_POST_LINKS;
 				$urls      = array_slice( $urls, 0, self::MAX_POST_LINKS );
 				$report    = (array) \get_post_meta( $post->ID, self::META_KEY, true );
-				if ( 0 === (int) $data['offset'] || ( $report['hash'] ?? '' ) !== $hash ) {
+				if ( 0 === (int) $data['offset'] || ( $data['source_hash'] ?? '' ) !== $hash || ( $report['hash'] ?? '' ) !== $hash ) {
 					$data['offset'] = 0;
 					$report         = array(
 						'hash'      => $hash,
@@ -480,8 +481,9 @@ class Link_Health {
 						'checked'   => time(),
 					);
 				}
-				$url_count = count( $urls );
-				$ignored   = (array) \get_post_meta( $post->ID, self::IGNORE_KEY, true );
+				$data['source_hash'] = $hash;
+				$url_count           = count( $urls );
+				$ignored             = (array) \get_post_meta( $post->ID, self::IGNORE_KEY, true );
 				while ( (int) $data['offset'] < $url_count && $checked < 4 && microtime( true ) < $deadline ) {
 					$url                    = $urls[ $data['offset'] ];
 					$key                    = md5( $url );
@@ -523,6 +525,10 @@ class Link_Health {
 				if ( ( $current['lease']['token'] ?? '' ) !== $token || ( $current['run'] ?? '' ) !== $data['run'] ) {
 					return null;
 				}
+				// A source edit invalidates this worker's in-memory cursor, even if it finished a post.
+				if ( ( $current['edit_revision'] ?? 0 ) !== ( $data['edit_revision'] ?? 0 ) ) {
+					$data = $current;
+				}
 				if ( 'stopping' === ( $current['status'] ?? '' ) ) {
 					$data['status']   = 'stopped';
 					$data['finished'] = time();
@@ -558,14 +564,31 @@ class Link_Health {
 		if ( \is_wp_error( $post ) ) {
 			return $post;
 		}
-		$keys = (array) \get_post_meta( $post_id, self::IGNORE_KEY, true );
-		$key  = md5( $url );
-		$keys = array_values( array_diff( $keys, array( $key ) ) );
-		if ( $ignored ) {
-			$keys[] = $key;
+		$path = Data_Directory::file( 'link-health-state.json' );
+		if ( '' === $path ) {
+			return new \WP_Error( 'storage_unavailable', \__( 'Private scan storage is unavailable.', 'functionalities' ) );
 		}
-		\update_post_meta( $post_id, self::IGNORE_KEY, array_slice( $keys, -self::MAX_POST_LINKS ) );
-		return true;
+		$result = Atomic_JSON_Store::update(
+			$path,
+			static function ( $state ) use ( $post_id, $url, $ignored ) {
+				// Another request may have changed these caches while we waited for the lock.
+				\wp_cache_delete( $post_id, 'posts' );
+				\wp_cache_delete( $post_id, 'post_meta' );
+				if ( \is_wp_error( self::action_target( $post_id, $url ) ) ) {
+					return null;
+				}
+				$keys = (array) \get_post_meta( $post_id, self::IGNORE_KEY, true );
+				$key  = md5( $url );
+				$keys = array_values( array_diff( $keys, array( $key ) ) );
+				if ( $ignored ) {
+					$keys[] = $key;
+				}
+				$keys = array_slice( $keys, -self::MAX_POST_LINKS );
+				\update_post_meta( $post_id, self::IGNORE_KEY, $keys );
+				return \get_post_meta( $post_id, self::IGNORE_KEY, true ) === $keys ? $state : null;
+			}
+		);
+		return $result['success'] ? true : new \WP_Error( 'ignore_update_failed', \__( 'The link could not be updated. Refresh the report and try again.', 'functionalities' ) );
 	}
 
 	/** Recheck only a current link and retain stale detection for the rest of the report. */
@@ -660,6 +683,8 @@ class Link_Health {
 		$result = Atomic_JSON_Store::update(
 			$path,
 			static function ( $state ) use ( $post_id, $before_hash ) {
+				\wp_cache_delete( $post_id, 'posts' );
+				\wp_cache_delete( $post_id, 'post_meta' );
 				$post = self::public_post( $post_id );
 				if ( ! $post ) {
 					return null; }
@@ -690,7 +715,17 @@ class Link_Health {
 				\update_post_meta( $post_id, self::META_KEY, $report );
 				\update_post_meta( $post_id, self::COUNT_KEY, count( $report['rows'] ) );
 				\update_post_meta( $post_id, self::IGNORE_KEY, array_values( array_intersect( $ignored, array_keys( $report['rows'] ) ) ) );
-				return \get_post_meta( $post_id, self::META_KEY, true ) === $report ? $state : null;
+				if ( \get_post_meta( $post_id, self::META_KEY, true ) !== $report || (int) \get_post_meta( $post_id, self::COUNT_KEY, true ) !== count( $report['rows'] ) ) {
+					return null;
+				}
+				if ( (int) ( $state['post'] ?? 0 ) === $post_id || (int) ( $state['lease']['until'] ?? 0 ) > time() ) {
+					$state['edit_revision'] = (int) ( $state['edit_revision'] ?? 0 ) + 1;
+					if ( (int) ( $state['post'] ?? 0 ) === $post_id ) {
+						$state['offset'] = 0;
+						unset( $state['source_hash'] );
+					}
+				}
+				return $state;
 			}
 		);
 		return $result['success'];

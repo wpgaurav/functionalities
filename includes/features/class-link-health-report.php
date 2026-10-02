@@ -39,16 +39,13 @@ class Link_Health_Report {
 		return 'unknown' === ( $row['status'] ?? 'unknown' ) && empty( $row['checked'] ) ? 'unchecked' : ( $row['status'] ?? 'unknown' );
 	}
 
-	public static function page( int $page, array $filters ): array {
+	/** Read matching sources once in bounded chunks, shared by pages and CSV exports. */
+	private static function sources( array $filters ): \Generator {
 		global $wpdb;
 		$filters = self::filters( $filters );
-		$page    = max( 1, $page );
-		$offset  = ( $page - 1 ) * Link_Health::RESULTS_PER_PAGE;
 		$cursor  = 0;
-		$total   = 0;
-		$rows    = array();
 		do {
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Read only the two report metadata fields in bounded source chunks, not unrelated builder metadata.
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Bounded keyset traversal of report metadata only.
 			$sources      = $wpdb->get_results( $wpdb->prepare( "SELECT p.ID, p.post_title, p.post_type, r.meta_value AS report_data, i.meta_value AS ignored_data FROM {$wpdb->posts} p INNER JOIN {$wpdb->postmeta} r ON r.post_id = p.ID AND r.meta_key = %s LEFT JOIN {$wpdb->postmeta} i ON i.post_id = p.ID AND i.meta_key = %s WHERE p.ID > %d AND p.post_type IN ('post','page') AND p.post_status = 'publish' AND p.post_password = '' ORDER BY p.ID ASC LIMIT 25", Link_Health::META_KEY, Link_Health::IGNORE_KEY, $cursor ) );
 			$source_count = count( (array) $sources );
 			foreach ( (array) $sources as $source ) {
@@ -62,7 +59,7 @@ class Link_Health_Report {
 				}
 				$ignored        = (array) \maybe_unserialize( $source->ignored_data ?? '' );
 				$matching_title = '' !== $filters['link_search'] && false !== stripos( $source->post_title, $filters['link_search'] );
-				$post           = null;
+				$rows           = array();
 				foreach ( (array) ( $report['rows'] ?? array() ) as $key => $row ) {
 					$row['status'] = self::status( $row, in_array( $key, $ignored, true ) );
 					if ( $filters['link_status'] && $row['status'] !== $filters['link_status'] ) {
@@ -71,23 +68,66 @@ class Link_Health_Report {
 					if ( '' !== $filters['link_search'] && ! $matching_title && false === stripos( $row['url'], $filters['link_search'] ) ) {
 						continue;
 					}
-					++$total;
-					if ( $total <= $offset || count( $rows ) >= Link_Health::RESULTS_PER_PAGE ) {
-						continue;
-					}
-					$post = $post ?? Link_Health::public_post( $cursor );
-					if ( ! $post ) {
-						continue;
-					}
-					$row['post_id']   = $cursor;
-					$row['title']     = $source->post_title;
-					$row['stale']     = ( $report['hash'] ?? '' ) !== Link_Health::content_hash( $post );
-					$row['complete']  = ! empty( $report['complete'] );
-					$row['truncated'] = ! empty( $report['truncated'] );
-					$rows[]           = $row;
+					$rows[] = $row;
+				}
+				if ( $rows ) {
+					yield array(
+						'id'        => $cursor,
+						'title'     => $source->post_title,
+						'hash'      => $report['hash'] ?? '',
+						'complete'  => ! empty( $report['complete'] ),
+						'truncated' => ! empty( $report['truncated'] ),
+						'rows'      => $rows,
+					);
 				}
 			}
 		} while ( 25 === $source_count );
+	}
+
+	/** Decorate only displayed/exported sources; do not load every post to count matches. */
+	private static function details( array $source ): array {
+		$post = Link_Health::public_post( $source['id'] );
+		return $post ? array(
+			'post_id'   => $source['id'],
+			'title'     => $source['title'],
+			'stale'     => $source['hash'] !== Link_Health::content_hash( $post ),
+			'complete'  => $source['complete'],
+			'truncated' => $source['truncated'],
+		) : array();
+	}
+
+	/** Stream each matching row once rather than rescanning for every fifty CSV rows. */
+	public static function export_rows( array $filters = array() ): \Generator {
+		foreach ( self::sources( $filters ) as $source ) {
+			$details = self::details( $source );
+			if ( ! $details ) {
+				continue;
+			}
+			foreach ( $source['rows'] as $row ) {
+				yield array_merge( $row, $details );
+			}
+		}
+	}
+
+	public static function page( int $page, array $filters ): array {
+		$page   = max( 1, $page );
+		$offset = ( $page - 1 ) * Link_Health::RESULTS_PER_PAGE;
+		$total  = 0;
+		$rows   = array();
+		foreach ( self::sources( $filters ) as $source ) {
+			$start  = $total;
+			$total += count( $source['rows'] );
+			if ( $total <= $offset || count( $rows ) >= Link_Health::RESULTS_PER_PAGE ) {
+				continue;
+			}
+			$details = self::details( $source );
+			if ( ! $details ) {
+				continue;
+			}
+			foreach ( array_slice( $source['rows'], max( 0, $offset - $start ), Link_Health::RESULTS_PER_PAGE - count( $rows ) ) as $row ) {
+				$rows[] = array_merge( $row, $details );
+			}
+		}
 		$pages = max( 1, (int) ceil( $total / Link_Health::RESULTS_PER_PAGE ) );
 		if ( $page > $pages ) {
 			return self::page( $pages, $filters );

@@ -96,6 +96,7 @@ jobs:
             functionalities/assets/css/admin-brand.css \
             functionalities/assets/css/admin-icons.css \
             functionalities/assets/css/admin-polish.css \
+            functionalities/assets/css/components-editor.css \
             functionalities/assets/js/admin-polish.js \
             functionalities/assets/js/admin-link-health.js \
             functionalities/assets/js/admin-link-health-editor.js \

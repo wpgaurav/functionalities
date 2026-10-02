@@ -92,6 +92,10 @@ trait Admin_Utilities_UI {
 		$operation = \sanitize_key( \wp_unslash( $_POST['operation'] ?? '' ) );
 		$post_id   = \absint( $_POST['post_id'] ?? 0 );
 		$url       = Link_Health_Controller::request_url();
+		$run       = isset( $_POST['run'] ) && is_string( $_POST['run'] ) ? \sanitize_text_field( \wp_unslash( $_POST['run'] ) ) : '';
+		if ( in_array( $operation, array( 'resume', 'stop' ), true ) && '' === $run ) {
+			\wp_die( \esc_html__( 'Refresh the scan status before continuing.', 'functionalities' ), '', array( 'response' => 400 ) );
+		}
 		if ( ! \Functionalities\Core\Module_Registry::is_enabled( 'link-health' ) ) {
 			\wp_die( \esc_html__( 'Enable Link Health before running an action.', 'functionalities' ), '', array( 'response' => 403 ) );
 		}
@@ -100,10 +104,10 @@ trait Admin_Utilities_UI {
 				$result = \Functionalities\Features\Link_Health::start_scan();
 				break;
 			case 'resume':
-				$result = 'stopped' === ( \Functionalities\Features\Link_Health::state()['status'] ?? '' ) ? \Functionalities\Features\Link_Health::resume_scan() : \Functionalities\Features\Link_Health::run_batch();
+				$result = 'stopped' === ( \Functionalities\Features\Link_Health::state()['status'] ?? '' ) ? \Functionalities\Features\Link_Health::resume_scan( $run ) : \Functionalities\Features\Link_Health::run_batch( $run );
 				break;
 			case 'stop':
-				$result = \Functionalities\Features\Link_Health::stop_scan();
+				$result = \Functionalities\Features\Link_Health::stop_scan( $run );
 				break;
 			case 'ignore':
 				$result = \Functionalities\Features\Link_Health::set_ignored( $post_id, $url, true );
@@ -152,16 +156,11 @@ trait Admin_Utilities_UI {
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- Stream a generated CSV download.
 		$stream = fopen( 'php://output', 'w' );
 		fputcsv( $stream, array( 'Post ID', 'Title', 'URL', 'Status', 'HTTP', 'Checked UTC', 'Stale', 'Complete', 'Truncated' ), ',', '"', '' );
-		$page = 1;
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Caller already verifies the administrator and export nonce.
 		$filters = \Functionalities\Features\Link_Health_Report::filters( \wp_unslash( $_POST ) );
-		do {
-			$report = \Functionalities\Features\Link_Health::report_page( $page, $filters );
-			foreach ( $report['rows'] as $row ) {
-				fputcsv( $stream, array( $row['post_id'], self::csv_safe( $row['title'] ), self::csv_safe( $row['url'] ), $row['status'], $row['code'], $row['checked'] ? gmdate( 'c', $row['checked'] ) : '', (int) $row['stale'], (int) $row['complete'], (int) $row['truncated'] ), ',', '"', '' );
-			}
-			++$page;
-		} while ( $page <= $report['pages'] );
+		foreach ( \Functionalities\Features\Link_Health_Report::export_rows( $filters ) as $row ) {
+			fputcsv( $stream, array( $row['post_id'], self::csv_safe( $row['title'] ), self::csv_safe( $row['url'] ), $row['status'], $row['code'], $row['checked'] ? gmdate( 'c', $row['checked'] ) : '', (int) $row['stale'], (int) $row['complete'], (int) $row['truncated'] ), ',', '"', '' );
+		}
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Complete the CSV response stream.
 		fclose( $stream );
 		exit;
@@ -177,6 +176,9 @@ trait Admin_Utilities_UI {
 			<input type="hidden" name="post_id" value="<?php echo \esc_attr( $post_id ); ?>">
 			<input type="hidden" name="url" value="<?php echo \esc_attr( $url ); ?>">
 			<?php
+			if ( in_array( $operation, array( 'resume', 'stop' ), true ) ) {
+				echo '<input type="hidden" name="run" value="' . \esc_attr( \Functionalities\Features\Link_Health::state()['run'] ?? '' ) . '">';
+			}
 			if ( 'export' === $operation ) {
 				// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only selected report filters.
 				foreach ( \Functionalities\Features\Link_Health_Report::filters( \wp_unslash( $_GET ) ) as $key => $value ) {

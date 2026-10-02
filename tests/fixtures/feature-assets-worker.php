@@ -11,8 +11,9 @@ $mode    = $argv[3];
 define( 'ABSPATH', $wp_root );
 define( 'WPINC', 'wp-includes' );
 define( 'FUNCTIONALITIES_VERSION', 'audit-test' );
+define( 'FUNCTIONALITIES_URL', 'https://example.test/wp-content/plugins/functionalities/' );
 
-function is_admin() { return 'admin' === $GLOBALS['mode']; }
+function is_admin() { return 'admin' === $GLOBALS['mode'] || 0 === strpos( $GLOBALS['mode'], 'editor-' ); }
 function wp_installing() { return false; }
 function current_theme_supports() { return true; }
 function get_site_option() { return false; }
@@ -54,7 +55,7 @@ if ( 'components' === $module ) {
 	);
 	require dirname( __DIR__, 2 ) . '/includes/traits/trait-css-sanitizer.php';
 	require dirname( __DIR__, 2 ) . '/includes/features/class-components.php';
-	if ( 'file' === $mode ) {
+	if ( 'file' === $mode || 'editor-file' === $mode ) {
 		$file = new ReflectionProperty( \Functionalities\Features\Components::class, 'css_file_info' );
 		if ( PHP_VERSION_ID < 80100 ) {
 			$file->setAccessible( true );
@@ -69,7 +70,10 @@ if ( 'components' === $module ) {
 	add_action( 'wp_print_footer_scripts', '_wp_footer_scripts' );
 	\Functionalities\Features\Components::init();
 	ob_start();
-	if ( 'admin' === $mode ) {
+	if ( 0 === strpos( $mode, 'editor-' ) ) {
+		do_action( 'enqueue_block_assets' );
+		wp_print_styles();
+	} elseif ( 'admin' === $mode ) {
 		do_action( 'admin_enqueue_scripts', 'post.php' );
 		wp_print_styles();
 	} else {

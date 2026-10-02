@@ -108,12 +108,29 @@ class Components {
 		\add_action( 'wp_enqueue_scripts', array( __CLASS__, 'print_footer_link' ) );
 		\add_action( 'admin_enqueue_scripts', array( __CLASS__, 'print_footer_link' ) );
 
-		// Serve the block editor canvas (an iframe) via the editor `styles`
-		// setting — the only channel guaranteed to reach the iframe.
+		// A real asset handle carries inline rules into the iframe on the block-assets channel.
+		\add_action( 'enqueue_block_assets', array( __CLASS__, 'enqueue_editor_assets' ) );
+
+		// Retain settings styles for editor integrations using that channel.
 		\add_filter( 'block_editor_settings_all', array( __CLASS__, 'add_editor_settings_components' ) );
 
 		// Regenerate CSS file when settings are updated.
 		\add_action( 'update_option_functionalities_components', array( __CLASS__, 'on_option_update' ), 10, 2 );
+	}
+
+	/** Deliver component rules to the canvas without depending on writable uploads. */
+	public static function enqueue_editor_assets(): void {
+		if ( ! \is_admin() || ! \Functionalities\Core\Module_Registry::is_enabled( 'components' ) ) {
+			return;
+		}
+		$opts  = self::get_options();
+		$items = \apply_filters( 'functionalities_components_items', $opts['items'] );
+		$css   = self::sanitize_css( self::build_css( $items ) );
+		if ( '' === $css ) {
+			return;
+		}
+		\wp_enqueue_style( 'functionalities-components-editor', FUNCTIONALITIES_URL . 'assets/css/components-editor.css', array(), FUNCTIONALITIES_VERSION );
+		\wp_add_inline_style( 'functionalities-components-editor', $css );
 	}
 
 	/**
@@ -160,16 +177,9 @@ class Components {
 	/**
 	 * Inject component CSS into the block editor's style settings.
 	 *
-	 * The editor canvas is iframed (WP 6.3+/7.x). Feeding CSS through the editor
-	 * `styles` setting — the channel add_editor_style() and the Font Library use —
-	 * is the reliable way into that iframe: WordPress copies it in verbatim and
-	 * scopes the selectors to the content wrapper.
-	 *
-	 * This replaces an enqueue_block_assets path that only reached the iframe when
-	 * a generated CSS file existed; its inline fallback used a src-less style handle
-	 * (wp_register_style( $h, false ) + wp_add_inline_style) that does NOT cross
-	 * into the iframe, so component CSS silently vanished in the editor whenever the
-	 * uploads file could not be written.
+	 * Retain this channel for editor integrations that consume settings styles.
+	 * The native canvas also receives the real stylesheet handle from
+	 * enqueue_editor_assets(), independent of generated uploads and theme filters.
 	 *
 	 * @since 1.4.7
 	 *

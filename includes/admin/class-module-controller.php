@@ -525,7 +525,7 @@ class Module_Controller {
 		?>
 		<div class="functionalities-json-picker">
 			<div class="functionalities-json-picker-input">
-				<input type="text" id="functionalities_json_preset_url" class="regular-text code" name="functionalities_link_management[json_preset_url]" aria-label="' . \esc_attr__( 'JSON preset path or URL', 'functionalities' ) . '" value="<?php echo \esc_attr( $val ); ?>" placeholder="<?php echo \esc_attr( FUNCTIONALITIES_DIR . 'exception-urls.json' ); ?>" />
+				<input type="text" id="functionalities_json_preset_url" class="regular-text code" name="functionalities_link_management[json_preset_url]" aria-label="<?php echo \esc_attr__( 'JSON preset path or URL', 'functionalities' ); ?>" value="<?php echo \esc_attr( $val ); ?>" placeholder="<?php echo \esc_attr( FUNCTIONALITIES_DIR . 'exception-urls.json' ); ?>" />
 				<button type="button" id="functionalities_json_browse_btn" class="button button-secondary">
 					<?php echo \esc_html__( 'Browse...', 'functionalities' ); ?>
 				</button>

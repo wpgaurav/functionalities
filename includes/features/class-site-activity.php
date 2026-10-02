@@ -25,6 +25,13 @@ class Site_Activity {
 	 */
 	private static $storage_error = '';
 
+	/**
+	 * Successful item results awaiting the upgrader completion hook.
+	 *
+	 * @var array
+	 */
+	private static $pending_updates = array();
+
 	/** Attach event hooks only while enabled. */
 	public static function init(): void {
 		if ( ! \Functionalities\Core\Module_Registry::is_enabled( 'site-activity' ) ) {
@@ -35,7 +42,9 @@ class Site_Activity {
 		\add_action( 'activated_plugin', array( __CLASS__, 'plugin_activated' ) );
 		\add_action( 'deactivated_plugin', array( __CLASS__, 'plugin_deactivated' ) );
 		\add_action( 'switch_theme', array( __CLASS__, 'theme_switched' ), 10, 2 );
-		\add_filter( 'upgrader_post_install', array( __CLASS__, 'upgraded' ), 100, 3 );
+		\add_filter( 'upgrader_install_package_result', array( __CLASS__, 'upgraded' ), PHP_INT_MAX, 2 );
+		\add_action( 'upgrader_process_complete', array( __CLASS__, 'upgrade_complete' ), 10, 2 );
+		\add_action( 'automatic_updates_complete', array( __CLASS__, 'automatic_updates_complete' ) );
 		\add_action( 'transition_post_status', array( __CLASS__, 'status_changed' ), 10, 3 );
 		\add_action( 'admin_init', array( __CLASS__, 'sync_schedule' ) );
 		\add_action( self::CRON_HOOK, array( __CLASS__, 'prune' ) );
@@ -175,16 +184,47 @@ class Site_Activity {
 		self::record( 'theme_switched', $theme->get_stylesheet() );
 	}
 
-	/** Record each successfully installed update, including items in a bulk run. */
-	public static function upgraded( $response, array $extra, array $result = array() ) {
-		if ( ! \is_wp_error( $response ) && $response && 'update' === ( $extra['action'] ?? '' ) && in_array( $extra['type'] ?? '', array( 'plugin', 'theme' ), true ) ) {
-			$type   = $extra['type'];
+	/** Capture final per-item install results; bulk calls omit action/type at this hook. */
+	public static function upgraded( $response, array $extra ) {
+		foreach ( array( 'plugin', 'theme' ) as $type ) {
 			$target = $extra[ $type ] ?? '';
 			if ( is_string( $target ) && '' !== $target ) {
-				self::record( $type . '_updated', $target );
+				self::$pending_updates[ $type ][ $target ] = ! \is_wp_error( $response ) && ! empty( $response );
 			}
 		}
 		return $response;
+	}
+
+	/** Manual single/bulk updates commit only their successful item results. */
+	public static function upgrade_complete( $upgrader, array $extra ): void {
+		$type = $extra['type'] ?? '';
+		if ( ! in_array( $type, array( 'plugin', 'theme' ), true ) ) {
+			return;
+		}
+		$targets   = (array) ( $extra[ $type . 's' ] ?? array( $extra[ $type ] ?? '' ) );
+		$automatic = isset( $upgrader->skin ) && is_object( $upgrader->skin ) && 'Automatic_Upgrader_Skin' === get_class( $upgrader->skin );
+		foreach ( $targets as $target ) {
+			if ( ! is_string( $target ) ) {
+				continue;
+			}
+			$success = self::$pending_updates[ $type ][ $target ] ?? false;
+			unset( self::$pending_updates[ $type ][ $target ] );
+			if ( $success && ! $automatic && 'update' === ( $extra['action'] ?? '' ) ) {
+				self::record( $type . '_updated', $target );
+			}
+		}
+	}
+
+	/** Automatic outcomes are final only after core's fatal-error and rollback checks. */
+	public static function automatic_updates_complete( array $results ): void {
+		foreach ( array( 'plugin', 'theme' ) as $type ) {
+			foreach ( (array) ( $results[ $type ] ?? array() ) as $update ) {
+				$target = $update->item->{$type} ?? '';
+				if ( ! empty( $update->result ) && ! \is_wp_error( $update->result ) && is_string( $target ) && '' !== $target ) {
+					self::record( $type . '_updated', $target );
+				}
+			}
+		}
 	}
 
 	/** Skip revisions, autosaves, automatic drafts, and identical states. */
