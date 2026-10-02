@@ -1,9 +1,12 @@
 /* Keep the product mark legible in every WordPress admin color scheme. */
-#toplevel_page_functionalities .wp-menu-image img {
+#toplevel_page_functionalities .wp-menu-image::before {
+	content: "";
 	display: block;
 	width: 22px;
 	height: 22px;
 	padding: 0;
-	margin: 6px auto;
-	opacity: 1;
+	margin: 7px auto 0;
+	background-color: currentColor;
+	-webkit-mask: url("../brand/functionalities-admin.svg") center / contain no-repeat;
+	mask: url("../brand/functionalities-admin.svg") center / contain no-repeat;
 }

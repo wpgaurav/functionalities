@@ -1,6 +1,6 @@
 # Backend UI and branding polish for 1.7.0
 
-The existing backend structure is preserved. The product mark now appears in the admin sidebar and every module header. Its source is the current main-site media item, [Dynamic Functionalities icon](https://r2.gauravtiwari.org/wp-content/uploads/2026/09/functionalities-icon-wporg-20260927.svg). It is bundled locally and matches the WordPress.org SVG master byte for byte.
+The original branding pass bundled the main-site media item, [Dynamic Functionalities icon](https://r2.gauravtiwari.org/wp-content/uploads/2026/09/functionalities-icon-wporg-20260927.svg), matching the WordPress.org SVG master byte for byte. The subsequent [sidebar and navigation pass](ui-sidebar-verification.md) uses a simplified color-adaptive vector in the admin menu and dashboard. Individual module pages retain only their module glyph.
 
 Backend module/action glyphs use a 53-icon subset from `~/Icons/svg/outline` (Tabler). The MIT license is bundled; paths and mappings are recorded in `admin-icon-sources.json`. Controls use WordPress's selected admin accent. Unsupported third-party Dashicons retain their native rendering.
 

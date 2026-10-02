@@ -112,3 +112,5 @@
 :is(.functionalities-dashboard,.functionalities-module) .dashicons-dismiss::before,
 :is(.functionalities-dashboard,.functionalities-module) .dashicons-no-alt::before,
 :is(.functionalities-dashboard,.functionalities-module) .dashicons-no::before { --func-icon: url("../icons/x.svg"); }
+
+.functionalities-icon--arrow-left { --func-icon: url("../icons/arrow-left.svg"); }

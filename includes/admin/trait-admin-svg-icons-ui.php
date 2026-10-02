@@ -35,17 +35,13 @@ trait Admin_SVG_Icons_UI {
 		<div class="wrap functionalities-module func-svg-icons-admin">
 			<?php Admin_UI::render_header( $module['title'], $module['description'], 'svg-icons' ); ?>
 
-			<nav class="functionalities-breadcrumb">
-				<a href="<?php echo \esc_url( \admin_url( 'admin.php?page=functionalities' ) ); ?>">
-					<?php echo \esc_html__( 'Functionalities', 'functionalities' ); ?>
-				</a>
-				<span class="separator">›</span>
-				<span class="current"><?php echo \esc_html( $module['title'] ); ?></span>
-			</nav>
-
+			<?php
+			Admin_UI::render_settings_layout(
+				static function () use ( $opts, $icons ) {
+					?>
 			<!-- Enable/Disable Toggle -->
 			<form method="post" style="background:#fff;border:1px solid #c3c4c7;border-radius:4px;padding:16px;margin-bottom:20px;">
-				<?php \wp_nonce_field( 'functionalities_svg_icons_toggle' ); ?>
+					<?php \wp_nonce_field( 'functionalities_svg_icons_toggle' ); ?>
 				<input type="hidden" name="functionalities_svg_icons_toggle" value="1" />
 				<label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
 					<input type="checkbox" name="enabled" value="1" <?php checked( ! empty( $opts['enabled'] ) ); ?> onchange="this.form.submit()" />
@@ -54,32 +50,7 @@ trait Admin_SVG_Icons_UI {
 				</label>
 			</form>
 
-			<!-- Documentation -->
-			<div class="functionalities-module-docs" style="margin-bottom:20px;padding-top:0;border-top:0;">
-				<?php
-				$docs = Module_Docs::get( 'svg-icons' );
-				if ( ! empty( $docs['features'] ) ) {
-					$list = '<ul>';
-					foreach ( $docs['features'] as $feature ) {
-						$list .= '<li>' . \esc_html( $feature ) . '</li>';
-					}
-					$list .= '</ul>';
-					Admin_UI::render_docs_section( \__( 'What This Module Does', 'functionalities' ), $list, 'info' );
-				}
-				if ( ! empty( $docs['usage'] ) ) {
-					Admin_UI::render_docs_section( \__( 'How to Use', 'functionalities' ), '<p>' . \esc_html( $docs['usage'] ) . '</p>', 'usage' );
-				}
-				if ( ! empty( $docs['hooks'] ) ) {
-					$hooks_html = '<dl class="functionalities-hooks-list">';
-					foreach ( $docs['hooks'] as $hook ) {
-						$hooks_html .= '<dt><code>' . \esc_html( $hook['name'] ) . '</code></dt>';
-						$hooks_html .= '<dd>' . \esc_html( $hook['description'] ) . '</dd>';
-					}
-					$hooks_html .= '</dl>';
-					Admin_UI::render_docs_section( \__( 'Developer Hooks', 'functionalities' ), $hooks_html, 'developer' );
-				}
-				?>
-			</div>
+					<?php Admin_UI::render_module_docs( Module_Docs::get( 'svg-icons' ) ); ?>
 
 			<!-- Add Icon Form -->
 			<div class="func-svg-add-form">
@@ -113,7 +84,7 @@ trait Admin_SVG_Icons_UI {
 			<!-- Icons List -->
 			<h2><?php echo \esc_html__( 'Your Icons', 'functionalities' ); ?> <span style="color:#646970;font-weight:normal;">(<?php echo count( $icons ); ?>)</span></h2>
 
-			<?php if ( empty( $icons ) ) : ?>
+					<?php if ( empty( $icons ) ) : ?>
 				<div class="func-svg-empty">
 					<span class="dashicons dashicons-flag"></span>
 					<p><?php echo \esc_html__( 'No icons yet. Add your first icon above.', 'functionalities' ); ?></p>
@@ -143,6 +114,10 @@ trait Admin_SVG_Icons_UI {
 					<?php endforeach; ?>
 				</div>
 			<?php endif; ?>
+					<?php
+				}
+			);
+		?>
 		</div>
 
 		<style>

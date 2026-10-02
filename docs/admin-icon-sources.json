@@ -84,5 +84,13 @@
     "editor-contract": "minimize",
     "columns": "columns-2",
     "welcome-add-page": "file-plus"
+  },
+  "navigation_icons": {
+    "back": "arrow-left"
+  },
+  "admin_brand": {
+    "source": "assets/brand/functionalities-admin.svg",
+    "design": "Original monoline simplification of the official four-module platform mark",
+    "color": "currentColor via CSS masks; no raster payload"
   }
 }

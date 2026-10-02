@@ -24,7 +24,7 @@ All modules are accessed through a unified dashboard at `wp-admin/admin.php?page
 
 ## Backend branding and controls
 
-The admin sidebar and module headers use the official Functionalities mark. Module/action icons are bundled Tabler outline SVGs with their MIT license. Backend controls share consistent spacing, sizing, focus states, and accessible labels, including responsive font and PWA repeaters. See [UI verification](docs/ui-polish-verification.md).
+The admin sidebar and dashboard use a simplified vector version of the Functionalities mark that follows WordPress's UI colors. Individual module pages show their own icon, a Back to modules button, and complete breadcrumbs. Settings and module guidance use a responsive grid, with guidance in the right sidebar on wide screens and below settings on smaller screens. Module/action icons are bundled Tabler outline SVGs with their MIT license. Backend controls share consistent spacing, sizing, focus states, and accessible labels, including responsive font and PWA repeaters. See [UI verification](docs/ui-polish-verification.md) and [sidebar verification](docs/ui-sidebar-verification.md).
 
 ## Documentation
 

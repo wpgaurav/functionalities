@@ -102,7 +102,7 @@ class Module_Controller {
 			'manage_options',
 			$parent_slug,
 			array( __CLASS__, 'render_main_page' ),
-			FUNCTIONALITIES_URL . 'assets/brand/functionalities.svg',
+			'none',
 			65
 		);
 
@@ -388,22 +388,19 @@ class Module_Controller {
 		<div class="wrap functionalities-module">
 			<?php Admin_UI::render_header( $module['title'], $module['description'], $module_slug ); ?>
 
-			<nav class="functionalities-breadcrumb">
-				<a href="<?php echo \esc_url( \admin_url( 'admin.php?page=functionalities' ) ); ?>">
-					<?php echo \esc_html__( 'Functionalities', 'functionalities' ); ?>
-				</a>
-				<span class="separator">›</span>
-				<span class="current"><?php echo \esc_html( $module['title'] ); ?></span>
-			</nav>
 
-			<form method="post" action="options.php">
-				<?php
-				$settings_group = 'functionalities_' . str_replace( '-', '_', $module_slug );
-				\settings_fields( $settings_group );
-				\do_settings_sections( $settings_group );
-				\submit_button();
-				?>
-			</form>
+			<?php
+			Admin_UI::render_settings_layout(
+				static function () use ( $module_slug ) {
+					$settings_group = 'functionalities_' . str_replace( '-', '_', $module_slug );
+					echo '<form method="post" action="options.php">';
+					\settings_fields( $settings_group );
+					\do_settings_sections( $settings_group );
+					\submit_button();
+					echo '</form>';
+				}
+			);
+			?>
 		</div>
 		<?php
 	}

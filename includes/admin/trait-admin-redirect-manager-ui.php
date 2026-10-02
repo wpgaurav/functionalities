@@ -45,13 +45,6 @@ trait Admin_Redirect_Manager_UI {
 		<div class="wrap functionalities-module functionalities-redirect-manager">
 			<?php Admin_UI::render_header( $module['title'], $module['description'], 'redirect-manager' ); ?>
 
-			<nav class="functionalities-breadcrumb">
-				<a href="<?php echo \esc_url( \admin_url( 'admin.php?page=functionalities' ) ); ?>">
-					<?php echo \esc_html__( 'Functionalities', 'functionalities' ); ?>
-				</a>
-				<span class="separator">›</span>
-				<span class="current"><?php echo \esc_html( $module['title'] ); ?></span>
-			</nav>
 
 			<form method="post" style="margin:15px 0;">
 				<?php \wp_nonce_field( 'functionalities_redirect_manager_toggle' ); ?>

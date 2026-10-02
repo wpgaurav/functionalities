@@ -24,7 +24,16 @@ trait Admin_Utilities_UI {
 					'default'           => array( 'enabled' => false ),
 				)
 			);
-			\add_settings_section( $option . '_section', '', '__return_false', $option );
+			\add_settings_section(
+				$option . '_section',
+				'',
+				static function () use ( $key ) {
+					if ( 'content_tools' === $key ) {
+						Admin_UI::render_module_docs( Module_Docs::get( 'content-tools' ) );
+					}
+				},
+				$option
+			);
 			\add_settings_field(
 				'enabled',
 				\__( 'Enable module', 'functionalities' ),
@@ -177,7 +186,12 @@ trait Admin_Utilities_UI {
 		?>
 		<div class="wrap functionalities-module functionalities-utilities">
 		<?php Admin_UI::render_header( $module['title'], $module['description'], str_replace( '_', '-', $key ) ); ?>
-		<p><a href="<?php echo \esc_url( \admin_url( 'admin.php?page=functionalities' ) ); ?>"><?php \esc_html_e( 'Functionalities', 'functionalities' ); ?></a></p>
+		<?php
+	}
+
+	/** Render settings inside the shared grid without nesting action forms. */
+	private static function utility_settings( string $key ): void {
+		?>
 		<form action="options.php" method="post">
 			<?php
 			\settings_fields( 'functionalities_' . $key );
@@ -188,14 +202,31 @@ trait Admin_Utilities_UI {
 		<?php
 	}
 
+	/** Keep the header outside the settings/report grid. */
+	private static function utility_workspace( array $module, string $key, callable $render ): void {
+		self::utility_header( $module, $key );
+		Admin_UI::render_settings_layout(
+			static function () use ( $key, $render ) {
+				self::utility_settings( $key );
+				Admin_UI::render_module_docs( Module_Docs::get( str_replace( '_', '-', $key ) ) );
+				$render();
+			}
+		);
+		echo '</div>';
+	}
+
 	/** Render scan status and results without issuing any URL requests. */
 	public static function render_module_link_health( array $module ): void {
-		self::utility_header( $module, 'link_health' );
+		self::utility_workspace( $module, 'link_health', array( __CLASS__, 'render_link_health_workspace' ) );
+	}
+
+	/** Render report controls and status alongside their own settings. */
+	private static function render_link_health_workspace(): void {
 		$enabled = \Functionalities\Core\Module_Registry::is_enabled( 'link-health' );
 		?>
 		<p><?php \esc_html_e( 'Checks links stored in public posts and pages. Password-protected content, dynamic blocks, shortcodes, and navigation are excluded. A maximum of 1,000 unique links is checked per post; truncated reports are marked. Scans never change your content.', 'functionalities' ); ?></p>
 		<?php if ( ! $enabled ) : ?>
-			<p><?php \esc_html_e( 'Enable Link Health to view reports and start a scan.', 'functionalities' ); ?></p></div>
+			<p><?php \esc_html_e( 'Enable Link Health to view reports and start a scan.', 'functionalities' ); ?></p>
 			<?php return; ?>
 		<?php endif; ?>
 		<?php
@@ -267,7 +298,6 @@ trait Admin_Utilities_UI {
 		<?php self::utility_pagination( 'link-health', 'report_page', $page, $report['pages'] ); ?>
 		<p><?php \esc_html_e( 'Links in this source post', 'functionalities' ); ?></p>
 		<?php self::utility_pagination( 'link-health', 'link_page', $link_page, $link_pages ); ?>
-		</div>
 		<?php
 	}
 
@@ -295,11 +325,15 @@ trait Admin_Utilities_UI {
 
 	/** Search and filter a bounded history in memory, then paginate. */
 	public static function render_module_site_activity( array $module ): void {
-		self::utility_header( $module, 'site_activity' );
+		self::utility_workspace( $module, 'site_activity', array( __CLASS__, 'render_site_activity_workspace' ) );
+	}
+
+	/** Render report controls and status alongside their own settings. */
+	private static function render_site_activity_workspace(): void {
 		?>
 		<p><?php \esc_html_e( 'Tracks module settings, plugin/theme changes, and post/page status changes. Stores changed field names, never their values. Keeps up to 1,000 events for 30 days. Routine visitor requests are not logged.', 'functionalities' ); ?></p>
 		<?php if ( ! \Functionalities\Core\Module_Registry::is_enabled( 'site-activity' ) ) : ?>
-			<p><?php \esc_html_e( 'Enable Site Activity to view and record events.', 'functionalities' ); ?></p></div>
+			<p><?php \esc_html_e( 'Enable Site Activity to view and record events.', 'functionalities' ); ?></p>
 			<?php return; ?>
 		<?php endif; ?>
 		<?php
@@ -362,7 +396,7 @@ trait Admin_Utilities_UI {
 			<input type="hidden" name="action" value="functionalities_activity_clear">
 			<p><label><input type="checkbox" name="confirm_clear" value="1" required> <?php \esc_html_e( 'Delete the stored activity history', 'functionalities' ); ?></label></p>
 			<button class="button" type="submit"><?php \esc_html_e( 'Clear activity log', 'functionalities' ); ?></button>
-		</form></div>
+		</form>
 		<?php
 	}
 

@@ -41,11 +41,13 @@ rsync -a \
 REQUIRED=(
     "includes/admin/class-admin-icons.php"
     "assets/brand/functionalities.svg"
+    "assets/brand/functionalities-admin.svg"
     "assets/css/admin-brand.css"
     "assets/css/admin-icons.css"
     "assets/css/admin-polish.css"
     "assets/js/admin-polish.js"
     "assets/icons/settings.svg"
+    "assets/icons/arrow-left.svg"
     "assets/icons/LICENSE"
 
     "includes/features/class-content-tools.php"

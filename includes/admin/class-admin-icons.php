@@ -37,9 +37,9 @@ class Admin_Icons {
 		$name = self::MODULES[ $slug ] ?? 'settings';
 		return '<span class="functionalities-icon functionalities-icon--' . \esc_attr( $name ) . '" aria-hidden="true"></span>';
 	}
-	/** Return the canonical product mark; nearby text supplies its accessible name. */
+	/** Return a color-adaptive vector mark; nearby text supplies its accessible name. */
 	public static function brand( int $size = 48 ): string {
 		$size = max( 20, min( 96, $size ) );
-		return '<img class="functionalities-brand-mark" src="' . \esc_url( FUNCTIONALITIES_URL . 'assets/brand/functionalities.svg' ) . '" alt="" width="' . \esc_attr( $size ) . '" height="' . \esc_attr( $size ) . '" decoding="async">';
+		return '<span class="functionalities-brand-mark" aria-hidden="true" style="width:' . \esc_attr( $size ) . 'px;height:' . \esc_attr( $size ) . 'px"></span>';
 	}
 }

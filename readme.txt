@@ -177,6 +177,8 @@ Before uninstalling, go to the Functionalities dashboard and check **"Delete all
 
 = 1.7.0 =
 * Improved: Backend branding, local outline icons, consistent form controls, accessible labels, and mobile alignment.
+* Improved: Color-adaptive SVG admin mark, module back buttons and breadcrumbs, and responsive settings layouts with guidance in a right sidebar.
+* Fixed: Link Health and Site Activity now include the current module in their breadcrumbs.
 * Added: Content Tools duplicates native posts/pages into drafts with permission checks and a metadata allowlist.
 * Added: Link Health scans stored public-content links in resumable batches, with safe HTTP checks, cached results, ignore/recheck actions, and CSV export.
 * Added: Site Activity records a bounded private history of settings, publishing, and plugin/theme changes, with privacy export and anonymization.

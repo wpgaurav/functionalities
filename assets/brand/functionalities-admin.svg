@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-labelledby="functionalities-title functionalities-description" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+  <title id="functionalities-title">Functionalities modular platform</title>
+  <desc id="functionalities-description">Four modular tiles above two platform layers, simplified for small WordPress admin icons.</desc>
+  <g id="modules">
+    <path d="m12 2 4 2.5-4 2.5-4-2.5Z"/>
+    <path d="m6 6 4 2.5-4 2.5-4-2.5Z"/>
+    <path d="m18 6 4 2.5-4 2.5-4-2.5Z"/>
+    <path d="m12 10 4 2.5-4 2.5-4-2.5Z"/>
+  </g>
+  <g id="platform">
+    <path d="m2 13 10 6 10-6M2 17l10 6 10-6"/>
+  </g>
+</svg>
