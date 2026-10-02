@@ -17,6 +17,23 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Admin UI helper class.
  */
 class Admin_UI {
+	/** Render the shared product header without changing a module's form controls. */
+	public static function render_header( string $title, string $description = '', string $slug = '' ): void {
+		echo '<div class="functionalities-header">';
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Trusted local asset markup from Admin_Icons.
+		echo Admin_Icons::brand( 64 );
+		echo '<div class="functionalities-header__copy"><h1>';
+		if ( '' !== $slug ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Allowlisted local icon markup.
+			echo Admin_Icons::module( $slug ) . ' ';
+		}
+		echo \esc_html( $title ) . ' <span class="functionalities-version">v' . \esc_html( FUNCTIONALITIES_VERSION ) . '</span></h1>';
+		if ( '' !== $description ) {
+			echo '<p>' . \esc_html( $description ) . '</p>';
+		}
+		echo '</div></div>';
+	}
+
 
 	/**
 	 * Render a documentation section with details/summary accordion.

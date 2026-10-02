@@ -43,10 +43,7 @@ trait Admin_Redirect_Manager_UI {
 		$not_found = \Functionalities\Features\Redirect_Manager::get_404_log();
 		?>
 		<div class="wrap functionalities-module functionalities-redirect-manager">
-			<h1>
-				<span class="dashicons <?php echo \esc_attr( $module['icon'] ); ?>"></span>
-				<?php echo \esc_html( $module['title'] ); ?>
-			</h1>
+			<?php Admin_UI::render_header( $module['title'], $module['description'], 'redirect-manager' ); ?>
 
 			<nav class="functionalities-breadcrumb">
 				<a href="<?php echo \esc_url( \admin_url( 'admin.php?page=functionalities' ) ); ?>">
@@ -116,6 +113,7 @@ trait Admin_Redirect_Manager_UI {
 							<option value="301">301</option>
 							<option value="302">302</option>
 							<option value="307">307</option>
+							<option value="308">308</option>
 						</select>
 					</label>
 					<button type="button" id="add-redirect-btn" class="button button-primary"><?php \esc_html_e( 'Add Redirect', 'functionalities' ); ?></button>
@@ -127,7 +125,7 @@ trait Admin_Redirect_Manager_UI {
 				<div style="padding:15px;border-bottom:1px solid #f0f0f1;display:flex;justify-content:flex-end;">
 					<div style="position:relative;">
 						<span class="dashicons dashicons-search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#646970;"></span>
-						<input type="text" id="redirect-search" placeholder="<?php \esc_attr_e( 'Search redirects...', 'functionalities' ); ?>" style="padding-left:35px;width:250px;">
+						<input type="text" id="redirect-search" aria-label="<?php \esc_attr_e( 'Search redirects', 'functionalities' ); ?>" placeholder="<?php \esc_attr_e( 'Search redirects...', 'functionalities' ); ?>" style="padding-left:35px;width:250px;">
 					</div>
 				</div>
 				<table class="wp-list-table widefat fixed striped">

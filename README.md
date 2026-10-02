@@ -22,6 +22,10 @@ All-in-one WordPress optimization toolkit with 19 modules for performance, secur
 
 All modules are accessed through a unified dashboard at `wp-admin/admin.php?page=functionalities`. Click any module card to configure its settings.
 
+## Backend branding and controls
+
+The admin sidebar and module headers use the official Functionalities mark. Module/action icons are bundled Tabler outline SVGs with their MIT license. Backend controls share consistent spacing, sizing, focus states, and accessible labels, including responsive font and PWA repeaters. See [UI verification](docs/ui-polish-verification.md).
+
 ## Documentation
 
 Full documentation is at **[functionalities.dev](https://functionalities.dev/)**:

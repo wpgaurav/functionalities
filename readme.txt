@@ -176,6 +176,7 @@ Before uninstalling, go to the Functionalities dashboard and check **"Delete all
 == Changelog ==
 
 = 1.7.0 =
+* Improved: Backend branding, local outline icons, consistent form controls, accessible labels, and mobile alignment.
 * Added: Content Tools duplicates native posts/pages into drafts with permission checks and a metadata allowlist.
 * Added: Link Health scans stored public-content links in resumable batches, with safe HTTP checks, cached results, ignore/recheck actions, and CSV export.
 * Added: Site Activity records a bounded private history of settings, publishing, and plugin/theme changes, with privacy export and anonymization.

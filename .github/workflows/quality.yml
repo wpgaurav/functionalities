@@ -90,6 +90,14 @@ jobs:
           test -s "$zip"
           unzip -t "$zip"
           for required in \
+            functionalities/includes/admin/class-admin-icons.php \
+            functionalities/assets/brand/functionalities.svg \
+            functionalities/assets/css/admin-brand.css \
+            functionalities/assets/css/admin-icons.css \
+            functionalities/assets/css/admin-polish.css \
+            functionalities/assets/js/admin-polish.js \
+            functionalities/assets/icons/settings.svg \
+            functionalities/assets/icons/LICENSE \
             functionalities/includes/features/class-content-tools.php \
             functionalities/includes/features/class-link-health.php \
             functionalities/includes/features/class-site-activity.php \

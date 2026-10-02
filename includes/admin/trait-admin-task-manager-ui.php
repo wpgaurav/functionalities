@@ -41,10 +41,7 @@ trait Admin_Task_Manager_UI {
 		}
 		?>
 		<div class="wrap functionalities-module functionalities-task-manager">
-			<h1>
-				<span class="dashicons <?php echo \esc_attr( $module['icon'] ); ?>"></span>
-				<?php echo \esc_html( $module['title'] ); ?>
-			</h1>
+			<?php Admin_UI::render_header( $module['title'], $module['description'], 'task-manager' ); ?>
 
 			<nav class="functionalities-breadcrumb">
 				<a href="<?php echo \esc_url( \admin_url( 'admin.php?page=functionalities' ) ); ?>">

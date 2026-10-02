@@ -33,10 +33,7 @@ trait Admin_SVG_Icons_UI {
 		}
 		?>
 		<div class="wrap functionalities-module func-svg-icons-admin">
-			<h1>
-				<span class="dashicons <?php echo \esc_attr( $module['icon'] ); ?>"></span>
-				<?php echo \esc_html( $module['title'] ); ?>
-			</h1>
+			<?php Admin_UI::render_header( $module['title'], $module['description'], 'svg-icons' ); ?>
 
 			<nav class="functionalities-breadcrumb">
 				<a href="<?php echo \esc_url( \admin_url( 'admin.php?page=functionalities' ) ); ?>">

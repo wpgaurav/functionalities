@@ -176,7 +176,7 @@ trait Admin_Utilities_UI {
 		}
 		?>
 		<div class="wrap functionalities-module functionalities-utilities">
-		<h1><?php echo \esc_html( $module['title'] ); ?></h1>
+		<?php Admin_UI::render_header( $module['title'], $module['description'], str_replace( '_', '-', $key ) ); ?>
 		<p><a href="<?php echo \esc_url( \admin_url( 'admin.php?page=functionalities' ) ); ?>"><?php \esc_html_e( 'Functionalities', 'functionalities' ); ?></a></p>
 		<form action="options.php" method="post">
 			<?php
@@ -336,13 +336,13 @@ trait Admin_Utilities_UI {
 			<div class="notice notice-error"><p><?php \esc_html_e( 'The activity log could not be read. Check private storage.', 'functionalities' ); ?></p></div><?php endif; ?>
 		<form method="get" action="<?php echo \esc_url( \admin_url( 'admin.php' ) ); ?>" class="functionalities-utility-actions">
 			<input type="hidden" name="page" value="functionalities"><input type="hidden" name="module" value="site-activity">
-			<label><?php \esc_html_e( 'Search target or fields', 'functionalities' ); ?> <input name="activity_search" value="<?php echo \esc_attr( $search ); ?>"></label>
-			<label><?php \esc_html_e( 'Event', 'functionalities' ); ?> <select name="activity_event"><option value=""><?php \esc_html_e( 'All events', 'functionalities' ); ?></option>
+			<label><span><?php \esc_html_e( 'Search target or fields', 'functionalities' ); ?></span> <input type="search" name="activity_search" value="<?php echo \esc_attr( $search ); ?>"></label>
+			<label><span><?php \esc_html_e( 'Event', 'functionalities' ); ?></span> <select name="activity_event" aria-label="<?php \esc_attr_e( 'Event', 'functionalities' ); ?>"><option value=""><?php \esc_html_e( 'All events', 'functionalities' ); ?></option>
 			<?php
 			foreach ( $events as $type ) :
 				?>
 				<option value="<?php echo \esc_attr( $type ); ?>" <?php \selected( $event, $type ); ?>><?php echo \esc_html( self::activity_event_label( $type ) ); ?></option><?php endforeach; ?></select></label>
-			<label><?php \esc_html_e( 'Actor ID', 'functionalities' ); ?> <input type="number" min="0" name="activity_actor" value="<?php echo \esc_attr( null === $actor ? '' : $actor ); ?>"></label>
+			<label><span><?php \esc_html_e( 'Actor ID', 'functionalities' ); ?></span> <input type="number" min="0" name="activity_actor" value="<?php echo \esc_attr( null === $actor ? '' : $actor ); ?>"></label>
 			<button class="button" type="submit"><?php \esc_html_e( 'Filter', 'functionalities' ); ?></button>
 		</form>
 		<div class="functionalities-utility-table"><table class="widefat striped"><thead><tr><th><?php \esc_html_e( 'Time (UTC)', 'functionalities' ); ?></th><th><?php \esc_html_e( 'Actor', 'functionalities' ); ?></th><th><?php \esc_html_e( 'Event', 'functionalities' ); ?></th><th><?php \esc_html_e( 'Target', 'functionalities' ); ?></th><th><?php \esc_html_e( 'Details', 'functionalities' ); ?></th></tr></thead><tbody>

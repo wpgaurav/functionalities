@@ -458,7 +458,7 @@ trait Admin_Settings {
 			function () {
 				$o   = self::get_snippets_options();
 				$val = isset( $o['ga4_id'] ) ? (string) $o['ga4_id'] : '';
-				echo '<input type="text" class="regular-text" name="functionalities_snippets[ga4_id]" value="' . \esc_attr( $val ) . '" placeholder="G-XXXXXXXXXX" />';
+				echo '<input type="text" class="regular-text" name="functionalities_snippets[ga4_id]" aria-label="' . \esc_attr__( 'GA4 Measurement ID', 'functionalities' ) . '" value="' . \esc_attr( $val ) . '" placeholder="G-XXXXXXXXXX" />';
 			},
 			'functionalities_snippets',
 			'functionalities_snippets_section'
@@ -853,7 +853,7 @@ trait Admin_Settings {
 			function () {
 				$opts = self::get_misc_options();
 				$val  = isset( $opts['revisions_limit'] ) ? (int) $opts['revisions_limit'] : 10;
-				echo '<input type="number" min="0" max="100" class="small-text" name="functionalities_misc[revisions_limit]" value="' . \esc_attr( $val ) . '"> ';
+				echo '<input type="number" min="0" max="100" class="small-text" name="functionalities_misc[revisions_limit]" aria-label="' . \esc_attr__( 'Revision limit', 'functionalities' ) . '" value="' . \esc_attr( $val ) . '"> ';
 				echo \esc_html__( 'revisions per post. Applies when the option above is enabled. Zero keeps none.', 'functionalities' );
 			},
 			'functionalities_misc',
@@ -1265,7 +1265,7 @@ trait Admin_Settings {
 					'cc-by-nc-nd'         => 'CC BY-NC-ND 4.0',
 					'cc0'                 => 'CC0 1.0 (Public Domain)',
 				);
-				echo '<select name="functionalities_meta[default_license]">';
+				echo '<select name="functionalities_meta[default_license]" aria-label="' . \esc_attr__( 'Default content license', 'functionalities' ) . '">';
 				foreach ( $licenses as $key => $label ) {
 					$sel = selected( $val, $key, false );
 					echo '<option value="' . \esc_attr( $key ) . '" ' . esc_attr( $sel ) . '>' . \esc_html( $label ) . '</option>';
@@ -1283,7 +1283,7 @@ trait Admin_Settings {
 			function () {
 				$o   = self::get_meta_options();
 				$val = isset( $o['default_license_url'] ) ? (string) $o['default_license_url'] : '';
-				echo '<input type="url" class="regular-text" name="functionalities_meta[default_license_url]" value="' . \esc_attr( $val ) . '" placeholder="https://example.com/terms/" />';
+				echo '<input type="url" class="regular-text" name="functionalities_meta[default_license_url]" aria-label="' . \esc_attr__( 'Default license URL', 'functionalities' ) . '" value="' . \esc_attr( $val ) . '" placeholder="https://example.com/terms/" />';
 				echo '<p class="description">' . \esc_html__( 'Custom URL for "All Rights Reserved" license (e.g., your terms/disclaimer page).', 'functionalities' ) . '</p>';
 			},
 			'functionalities_meta',
@@ -1321,7 +1321,7 @@ trait Admin_Settings {
 					'site'   => \__( 'Site Name', 'functionalities' ),
 					'custom' => \__( 'Custom Name', 'functionalities' ),
 				);
-				echo '<select name="functionalities_meta[copyright_holder_type]" id="meta_copyright_holder_type">';
+				echo '<select name="functionalities_meta[copyright_holder_type]" aria-label="' . \esc_attr__( 'Copyright holder', 'functionalities' ) . '" id="meta_copyright_holder_type">';
 				foreach ( $options as $key => $label ) {
 					$sel = selected( $val, $key, false );
 					echo '<option value="' . \esc_attr( $key ) . '" ' . esc_attr( $sel ) . '>' . \esc_html( $label ) . '</option>';
@@ -1339,7 +1339,7 @@ trait Admin_Settings {
 			function () {
 				$o   = self::get_meta_options();
 				$val = isset( $o['custom_copyright_holder'] ) ? (string) $o['custom_copyright_holder'] : '';
-				echo '<input type="text" class="regular-text" name="functionalities_meta[custom_copyright_holder]" value="' . \esc_attr( $val ) . '" placeholder="' . \esc_attr__( 'Company Name or Person', 'functionalities' ) . '" />';
+				echo '<input type="text" class="regular-text" name="functionalities_meta[custom_copyright_holder]" aria-label="' . \esc_attr__( 'Custom copyright holder', 'functionalities' ) . '" value="' . \esc_attr( $val ) . '" placeholder="' . \esc_attr__( 'Company Name or Person', 'functionalities' ) . '" />';
 				echo '<p class="description">' . \esc_html__( 'Used when "Custom Name" is selected above.', 'functionalities' ) . '</p>';
 			},
 			'functionalities_meta',
@@ -1353,7 +1353,7 @@ trait Admin_Settings {
 				$o         = self::get_meta_options();
 				$val       = isset( $o['dc_language'] ) ? (string) $o['dc_language'] : '';
 				$site_lang = \get_bloginfo( 'language' );
-				echo '<input type="text" class="small-text" name="functionalities_meta[dc_language]" value="' . \esc_attr( $val ) . '" placeholder="' . \esc_attr( $site_lang ) . '" />';
+				echo '<input type="text" class="small-text" name="functionalities_meta[dc_language]" aria-label="' . \esc_attr__( 'Dublin Core language', 'functionalities' ) . '" value="' . \esc_attr( $val ) . '" placeholder="' . \esc_attr( $site_lang ) . '" />';
 				echo '<p class="description">' . \esc_html__( 'Leave empty to use site language. Use ISO 639 codes (en, en-US, de, etc.).', 'functionalities' ) . '</p>';
 			},
 			'functionalities_meta',
@@ -1462,7 +1462,7 @@ trait Admin_Settings {
 			function () {
 				$o   = self::get_content_regression_options();
 				$val = isset( $o['link_drop_percent'] ) ? (int) $o['link_drop_percent'] : 30;
-				echo '<input type="number" min="1" max="100" class="small-text" name="functionalities_content_regression[link_drop_percent]" value="' . \esc_attr( $val ) . '" /> %';
+				echo '<input type="number" min="1" max="100" class="small-text" name="functionalities_content_regression[link_drop_percent]" aria-label="' . \esc_attr__( 'Internal link drop threshold (%)', 'functionalities' ) . '" value="' . \esc_attr( $val ) . '" /> %';
 				echo '<p class="description">' . \esc_html__( 'Warn if internal links drop by this percentage or more.', 'functionalities' ) . '</p>';
 			},
 			'functionalities_content_regression',
@@ -1475,7 +1475,7 @@ trait Admin_Settings {
 			function () {
 				$o   = self::get_content_regression_options();
 				$val = isset( $o['link_drop_absolute'] ) ? (int) $o['link_drop_absolute'] : 3;
-				echo '<input type="number" min="1" max="100" class="small-text" name="functionalities_content_regression[link_drop_absolute]" value="' . \esc_attr( $val ) . '" /> ' . \esc_html__( 'links', 'functionalities' );
+				echo '<input type="number" min="1" max="100" class="small-text" name="functionalities_content_regression[link_drop_absolute]" aria-label="' . \esc_attr__( 'Internal link drop threshold (count)', 'functionalities' ) . '" value="' . \esc_attr( $val ) . '" /> ' . \esc_html__( 'links', 'functionalities' );
 				echo '<p class="description">' . \esc_html__( 'Also warn if this many links are removed (whichever triggers first).', 'functionalities' ) . '</p>';
 			},
 			'functionalities_content_regression',
@@ -1525,7 +1525,7 @@ trait Admin_Settings {
 			function () {
 				$o   = self::get_content_regression_options();
 				$val = isset( $o['word_count_drop_percent'] ) ? (int) $o['word_count_drop_percent'] : 35;
-				echo '<input type="number" min="1" max="100" class="small-text" name="functionalities_content_regression[word_count_drop_percent]" value="' . \esc_attr( $val ) . '" /> %';
+				echo '<input type="number" min="1" max="100" class="small-text" name="functionalities_content_regression[word_count_drop_percent]" aria-label="' . \esc_attr__( 'Word count drop threshold (%)', 'functionalities' ) . '" value="' . \esc_attr( $val ) . '" /> %';
 				echo '<p class="description">' . \esc_html__( 'Warn if word count drops by this percentage.', 'functionalities' ) . '</p>';
 			},
 			'functionalities_content_regression',
@@ -1538,7 +1538,7 @@ trait Admin_Settings {
 			function () {
 				$o   = self::get_content_regression_options();
 				$val = isset( $o['word_count_min_age_days'] ) ? (int) $o['word_count_min_age_days'] : 30;
-				echo '<input type="number" min="0" max="365" class="small-text" name="functionalities_content_regression[word_count_min_age_days]" value="' . \esc_attr( $val ) . '" /> ' . \esc_html__( 'days', 'functionalities' );
+				echo '<input type="number" min="0" max="365" class="small-text" name="functionalities_content_regression[word_count_min_age_days]" aria-label="' . \esc_attr__( 'Minimum post age (days)', 'functionalities' ) . '" value="' . \esc_attr( $val ) . '" /> ' . \esc_html__( 'days', 'functionalities' );
 				echo '<p class="description">' . \esc_html__( 'Only check word count for posts older than this (to avoid alerts on new posts).', 'functionalities' ) . '</p>';
 			},
 			'functionalities_content_regression',
@@ -1638,7 +1638,7 @@ trait Admin_Settings {
 			function () {
 				$o   = self::get_content_regression_options();
 				$val = isset( $o['snapshot_rolling_count'] ) ? (int) $o['snapshot_rolling_count'] : 5;
-				echo '<input type="number" min="1" max="20" class="small-text" name="functionalities_content_regression[snapshot_rolling_count]" value="' . \esc_attr( $val ) . '" />';
+				echo '<input type="number" min="1" max="20" class="small-text" name="functionalities_content_regression[snapshot_rolling_count]" aria-label="' . \esc_attr__( 'Snapshots to keep', 'functionalities' ) . '" value="' . \esc_attr( $val ) . '" />';
 				echo '<p class="description">' . \esc_html__( 'Number of historical snapshots to retain per post.', 'functionalities' ) . '</p>';
 			},
 			'functionalities_content_regression',
