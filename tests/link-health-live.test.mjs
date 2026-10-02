@@ -113,3 +113,13 @@ test('live requests preserve applied filters and hold report rows while an edit 
 	await h.reply(2, progress('running', {phase: 'checking'}), 'Refreshed report');
 	assert.equal(h.report.innerHTML, 'Refreshed report');
 });
+
+test('AJAX controls use the live run instead of an old native form generation', async () => {
+	const h = harness(progress('completed', {run: 'scan-old'}));
+	h.forms.stop.fields.run = 'scan-old';
+	await h.submit('start');
+	await h.reply(0, progress('running', {run: 'scan-new'}));
+	await h.submit('stop');
+	assert.equal(h.requests[1].fields.operation, 'stop');
+	assert.equal(h.requests[1].fields.run, 'scan-new');
+});

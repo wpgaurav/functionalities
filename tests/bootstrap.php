@@ -784,3 +784,14 @@ if ( ! function_exists( 'wp_http_validate_url' ) ) {
 		return in_array( wp_parse_url( $url, PHP_URL_SCHEME ), array( 'http', 'https' ), true ) && ! wp_parse_url( $url, PHP_URL_USER ) ? $url : false;
 	}
 }
+
+if ( ! function_exists( 'wp_transition_post_status' ) ) {
+	function wp_transition_post_status( $new, $old, $post ) { do_action( 'transition_post_status', $new, $old, $post ); }
+}
+if ( ! class_exists( 'Automatic_Upgrader_Skin' ) ) {
+	class Automatic_Upgrader_Skin {}
+}
+
+if ( ! class_exists( 'WP_Ajax_Upgrader_Skin' ) ) {
+	class WP_Ajax_Upgrader_Skin extends Automatic_Upgrader_Skin {}
+}

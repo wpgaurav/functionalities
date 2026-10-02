@@ -187,6 +187,16 @@ Before uninstalling, go to the Functionalities dashboard and check **"Delete all
 == Changelog ==
 
 = 1.7.0 =
+
+* Added: Content Tools duplicates native posts/pages into drafts with permission checks and a metadata allowlist.
+* Added: Link Health scans stored public-content links in resumable batches, with safe HTTP checks, cached results, ignore/recheck actions, and CSV export.
+* Added: Site Activity records a bounded private history of settings, publishing, and plugin/theme changes, with privacy export and anonymization.
+* All three modules are disabled by default. Link Health weekly scans are separately opt-in.
+* Fixed: Component styles render inside the block editor canvas even when generated uploads CSS is unavailable.
+* Fixed: Protect File blocks, bound URLs, and serialized block settings when replacing or unlinking links.
+* Fixed: Keep partial scans and concurrent recheck/ignore actions consistent when source content changes.
+* Improved: Stream filtered CSV exports in one pass, and preserve WordPress update hooks and feed cache invalidation after link edits.
+* Fixed: Record successful manual, bulk, and automatic plugin/theme updates after their final outcome is known.
 * Added: Link Health filters for status, source type, and URL/source title, including filtered pagination and CSV export.
 * Added: Previewed URL replacement and unlinking in individual source posts, with edit permissions, revisions, and concurrent-save protection.
 * Improved: Live Link Health progress and results, continuous bounded checking while the workspace is open, and 50 link results per page across all sources.
@@ -194,10 +204,6 @@ Before uninstalling, go to the Functionalities dashboard and check **"Delete all
 * Improved: Backend branding, local outline icons, consistent form controls, accessible labels, and mobile alignment.
 * Improved: Color-adaptive SVG admin mark, module back buttons and breadcrumbs, and responsive settings layouts with guidance in a right sidebar.
 * Fixed: Link Health and Site Activity now include the current module in their breadcrumbs.
-* Added: Content Tools duplicates native posts/pages into drafts with permission checks and a metadata allowlist.
-* Added: Link Health scans stored public-content links in resumable batches, with safe HTTP checks, cached results, ignore/recheck actions, and CSV export.
-* Added: Site Activity records a bounded private history of settings, publishing, and plugin/theme changes, with privacy export and anonymization.
-* All three modules are disabled by default. Link Health weekly scans are separately opt-in.
 
 = 1.6.3 =
 * Compatibility: Tested up to WordPress 7.1.

@@ -45,6 +45,7 @@ REQUIRED=(
     "assets/css/admin-brand.css"
     "assets/css/admin-icons.css"
     "assets/css/admin-polish.css"
+    "assets/css/components-editor.css"
     "assets/js/admin-polish.js"
     "assets/js/admin-link-health.js"
     "assets/js/admin-link-health-editor.js"

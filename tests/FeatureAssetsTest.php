@@ -25,6 +25,15 @@ final class FeatureAssetsTest extends TestCase {
 		$this->assertStringContainsString( '.audit{color:red}', $result['html'] );
 	}
 
+	public function test_component_styles_reach_the_canvas_with_or_without_a_generated_file(): void {
+		foreach ( array( 'editor-file', 'editor-inline' ) as $mode ) {
+			$result = $this->run_worker( 'components', $mode );
+			$this->assertContains( 'functionalities-components-editor', $result['printed_styles'] );
+			$this->assertStringContainsString( 'assets/css/components-editor.css', $result['html'] );
+			$this->assertStringContainsString( '.audit{color:red}', $result['html'] );
+		}
+	}
+
 	/** Search limiting belongs only to the post search endpoint. */
 	public function test_editor_links_limit_search_without_changing_post_collections(): void {
 		$result = $this->run_worker( 'editor-links', 'search' );

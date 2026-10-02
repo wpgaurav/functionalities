@@ -36,8 +36,20 @@ class Link_Health_Editor {
 		return strlen( $url ) <= 2048 && ! preg_match( '/[\x00-\x20\x7f]/', $url ) && is_array( $parts ) && in_array( strtolower( $parts['scheme'] ?? '' ), array( 'http', 'https' ), true ) && ! empty( $parts['host'] ) && ! isset( $parts['user'] ) && ! isset( $parts['pass'] );
 	}
 
+	/** Safety checks must inspect all anchors, including those beyond the scan limit. */
+	private static function html_references( string $html, string $base, string $from ): bool {
+		$parser = new \WP_HTML_Tag_Processor( $html );
+		while ( $parser->next_tag( 'A' ) ) {
+			$href = $parser->get_attribute( 'href' );
+			if ( is_string( $href ) && Link_Health::normalize_url( $href, $base ) === $from ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	/** A quick HTML edit must not disagree with a block's separately serialized settings. */
-	private static function block_settings_reference( array $blocks, string $base, string $from ): bool {
+	private static function block_settings_reference( array $blocks, string $base, string $from, string $operation ): bool {
 		$contains = static function ( $values ) use ( &$contains, $base, $from ): bool {
 			foreach ( (array) $values as $key => $value ) {
 				if ( is_array( $value ) && $contains( $value ) ) {
@@ -47,13 +59,17 @@ class Link_Health_Editor {
 				$is_url = preg_match( '~^(?:https?:)?//|^[/?#]~i', $value ) || preg_match( '/(?:url|href|link|src)$/i', (string) $key );
 				if ( $is_url && Link_Health::normalize_url( $value, $base ) === $from ) {
 					return true; }
-				if ( false !== strpos( $value, '<' ) && in_array( $from, Link_Health::extract_links( $value, $base ), true ) ) {
+				if ( false !== strpos( $value, '<' ) && self::html_references( $value, $base, $from ) ) {
 					return true; }
 			}
 			return false;
 		};
 		foreach ( $blocks as $block ) {
-			if ( $contains( $block['attrs'] ?? array() ) || self::block_settings_reference( $block['innerBlocks'] ?? array(), $base, $from ) ) {
+			$structured = ! empty( $block['attrs']['metadata']['bindings'] ) || ( 'unlink' === $operation && 'core/file' === ( $block['blockName'] ?? '' ) );
+			if ( $structured && self::html_references( $block['innerHTML'] ?? '', $base, $from ) ) {
+				return true;
+			}
+			if ( $contains( $block['attrs'] ?? array() ) || self::block_settings_reference( $block['innerBlocks'] ?? array(), $base, $from, $operation ) ) {
 				return true; }
 		}
 		return false;
@@ -64,8 +80,8 @@ class Link_Health_Editor {
 		if ( ! in_array( $operation, array( 'replace', 'unlink' ), true ) || ( 'replace' === $operation && ! self::valid_destination( $to ) ) ) {
 			return new \WP_Error( 'invalid_destination', \__( 'Enter a complete http:// or https:// URL without credentials or spaces.', 'functionalities' ) );
 		}
-		if ( false !== strpos( $content, '<!-- wp:' ) && self::block_settings_reference( \parse_blocks( $content ), $base, $from ) ) {
-			return new \WP_Error( 'block_settings', \__( 'This URL is also stored in block settings. Edit it in the post editor to keep the block consistent.', 'functionalities' ) );
+		if ( self::block_settings_reference( \parse_blocks( $content ), $base, $from, $operation ) ) {
+			return new \WP_Error( 'block_settings', \__( 'This link uses block settings, bindings, or a structure that needs the post editor. Edit it there to keep the block consistent.', 'functionalities' ) );
 		}
 		$parser  = new class( $content ) extends \WP_HTML_Tag_Processor {
 			/** Isolate the core 6.3/6.5 bookmark span difference in one adapter. */
@@ -216,6 +232,9 @@ class Link_Health_Editor {
 		\update_post_meta( $post_id, '_edit_last', \get_current_user_id() );
 		\clean_post_cache( $post_id );
 		$after = \get_post( $post_id );
+		\wp_transition_post_status( $after->post_status, $post->post_status, $after );
+		\do_action( 'edit_post_' . $post->post_type, $post_id, $after );
+		\do_action( 'edit_post', $post_id, $after );
 		\do_action( 'post_updated', $post_id, $after, $post );
 		\do_action( 'save_post_' . $post->post_type, $post_id, $after, true );
 		\do_action( 'save_post', $post_id, $after, true );
