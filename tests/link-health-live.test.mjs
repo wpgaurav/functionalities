@@ -6,7 +6,7 @@ import vm from 'node:vm';
 const source = readFileSync(new URL('../assets/js/admin-link-health.js', import.meta.url), 'utf8');
 const flush = () => new Promise(resolve => setImmediate(resolve));
 const progress = (status = 'running', overrides = {}) => ({run: 'scan-a', status, phase: status === 'running' ? 'waiting' : status, label: status, summary: '2 of 10 posts · 8 links', posts: 2, total: 10, links: 8, percent: 20, ...overrides});
-function harness(initial = progress()) {
+function harness(initial = progress(), filters = {}) {
 	const nodes = {};
 	const forms = {};
 	for (const key of ['label', 'summary', 'meter', 'spinner', 'error']) nodes[key] = {hidden: true, textContent: '', classList: {active: false, toggle(name, value) { this.active = value; }}};
@@ -16,7 +16,7 @@ function harness(initial = progress()) {
 		nodes[operation] = {hidden: false};
 	}
 	const report = {innerHTML: '', querySelector() { return {dataset: {linkPage: '2'}}; }};
-	const root = {listeners: {}, querySelector() { return report; }, querySelectorAll() { return Object.values(forms).map(f => f.button); }, addEventListener(type, fn) { this.listeners[type] = fn; }};
+	const root = {listeners: {}, querySelector(selector) { return selector === '[data-link-filters]' ? {dataset: {filters: JSON.stringify(filters)}} : report; }, querySelectorAll() { return Object.values(forms).map(f => f.button); }, addEventListener(type, fn) { this.listeners[type] = fn; }};
 	const panel = {dataset: {progress: JSON.stringify(initial)}, closest() { return root; }, querySelector(selector) {
 		const control = selector.match(/data-link-control="(\w+)"/);
 		if (control) return selector.endsWith('button') ? forms[control[1]].button : nodes[control[1]];
@@ -30,7 +30,7 @@ function harness(initial = progress()) {
 		setTimeout(fn, delay) { const id = ++timerId; timers.set(id, {fn, delay}); return id; }, clearTimeout(id) { timers.delete(id); },
 		fetch(url, options) { return new Promise((resolve, reject) => requests.push({fields: Object.fromEntries(options.body), reject, resolve(data, success = true, status = 200) { resolve({status, json: async () => ({success, data})}); }})); }
 	});
-	return {nodes, forms, report, requests, document,
+	return {nodes, forms, report, requests, document, root,
 		async next() { const item = [...timers].find(([, value]) => value.delay < 25000); assert.ok(item, 'a progress timer must exist'); timers.delete(item[0]); item[1].fn(); await flush(); },
 		async reply(index, state = progress(), html = '<table>Results</table>') { requests[index].resolve({progress: state, html}); await flush(); },
 		async submit(operation) { root.listeners.submit({target: forms[operation], preventDefault() {}}); await flush(); }
@@ -92,4 +92,24 @@ test('expired authorization stops polling and reports the failure', async () => 
 	h.requests[0].resolve({message: 'Please sign in'}, false, 403); await flush();
 	assert.equal(h.nodes.error.textContent, 'Please sign in');
 	assert.equal(h.requests.length, 1);
+});
+
+test('live requests preserve applied filters and hold report rows while an edit is open', async () => {
+	const h = harness(progress('running', {phase: 'checking'}), {link_status: 'broken', source_type: 'post', link_search: 'needle'});
+	h.report.innerHTML = 'Existing report';
+	await h.next();
+	assert.equal(h.requests[0].fields.link_status, 'broken');
+	assert.equal(h.requests[0].fields.link_search, 'needle');
+	h.root.listeners['functionalities:link-editor']({detail: {open: true}});
+	await h.reply(0, progress('running', {phase: 'checking', summary: 'New progress'}), 'Replacement report');
+	assert.equal(h.report.innerHTML, 'Existing report');
+	assert.equal(h.nodes.summary.textContent, 'New progress');
+	await h.next();
+	assert.equal(h.requests[1].fields.report, '0');
+	await h.reply(1, progress('running', {phase: 'checking'}));
+	h.root.listeners['functionalities:link-editor']({detail: {open: false}});
+	await h.next();
+	assert.equal(h.requests[2].fields.report, '1');
+	await h.reply(2, progress('running', {phase: 'checking'}), 'Refreshed report');
+	assert.equal(h.report.innerHTML, 'Refreshed report');
 });

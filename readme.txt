@@ -22,7 +22,7 @@ Full documentation lives at [functionalities.dev](https://functionalities.dev/),
 = New in 1.7.0 =
 
 * **Content Tools** duplicates native posts and pages into editable drafts, preserving blocks, taxonomies, the featured image, and page template.
-* **Link Health** checks links stored in public posts and pages. The open workspace processes small batches continuously, updates its progress indicator and results automatically, and shows 50 links per page across all scanned sources. Stop and resume without losing saved progress; recheck, ignore, or export results as CSV.
+* **Link Health** checks links stored in public posts and pages. The open workspace processes small batches continuously, updates its progress indicator and results automatically, and shows 50 links per page across all scanned sources. Stop and resume without losing saved progress. Filter by result, source type, or URL/source title; recheck, ignore, or export the filtered results. Preview and replace or unlink matching URLs in an individual source post.
 * **Site Activity** records a private, searchable history of module settings, publishing status, and plugin/theme changes. History is limited to 1,000 events and 30 days.
 * **Clearer settings pages** use consistent controls, local SVG icons, Back to modules buttons, complete breadcrumbs, and a responsive sidebar for module guidance.
 
@@ -159,6 +159,12 @@ With JavaScript enabled, the open Link Health workspace advances one bounded bat
 
 Each page shows up to 50 link results across all scanned public posts and pages, with one Previous/Next navigation. A final partial page may contain fewer results. Existing reports remain visible while a scan updates them. A confirmed GET response of 404 or 410 is marked broken; authentication errors, rate limits, timeouts, and server errors remain inconclusive. Up to 1,000 unique links are checked per source post, and truncated reports are marked.
 
+= Can I filter, replace, or unlink URLs in the report? =
+
+Yes. Filter by result status, posts/pages, and URL or source-title text. Filters apply before the 50-row pagination and remain active during live updates and CSV export.
+
+Replace URL and Unlink work on the selected source post. Preview shows the number of matching anchors before you apply the change. Replacements keep existing fragments unless the new URL includes its own. Unlinking keeps text and media; native button blocks retain their structure. The post must still match the preview, and you need permission to edit it. Links also stored in serialized block settings must be edited in the post editor to keep those blocks consistent. WordPress revisions are retained when enabled. Unchanged links keep their report results; new destinations appear as Not checked until checked.
+
 = Where does the plugin store its files? =
 
 Generated CSS goes to `wp-content/uploads/functionalities/`. Redirects, the 404 log, task notes, Link Health scan state, and Site Activity history use guarded files in a private folder under `wp-content/functionalities/`. Link reports, result counts, and ignored-link hashes use post metadata; URL check results use expiring transients. Module settings use WordPress options.
@@ -181,6 +187,8 @@ Before uninstalling, go to the Functionalities dashboard and check **"Delete all
 == Changelog ==
 
 = 1.7.0 =
+* Added: Link Health filters for status, source type, and URL/source title, including filtered pagination and CSV export.
+* Added: Previewed URL replacement and unlinking in individual source posts, with edit permissions, revisions, and concurrent-save protection.
 * Improved: Live Link Health progress and results, continuous bounded checking while the workspace is open, and 50 link results per page across all sources.
 * Fixed: Stop requests are honored after an active batch, stopped scans resume their saved cursor, and stale browser requests cannot advance or stop a newer scan.
 * Improved: Backend branding, local outline icons, consistent form controls, accessible labels, and mobile alignment.

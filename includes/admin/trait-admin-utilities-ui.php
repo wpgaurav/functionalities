@@ -91,7 +91,7 @@ trait Admin_Utilities_UI {
 		\check_admin_referer( 'functionalities_link_health' );
 		$operation = \sanitize_key( \wp_unslash( $_POST['operation'] ?? '' ) );
 		$post_id   = \absint( $_POST['post_id'] ?? 0 );
-		$url       = \sanitize_text_field( \wp_unslash( $_POST['url'] ?? '' ) );
+		$url       = Link_Health_Controller::request_url();
 		if ( ! \Functionalities\Core\Module_Registry::is_enabled( 'link-health' ) ) {
 			\wp_die( \esc_html__( 'Enable Link Health before running an action.', 'functionalities' ), '', array( 'response' => 403 ) );
 		}
@@ -153,8 +153,10 @@ trait Admin_Utilities_UI {
 		$stream = fopen( 'php://output', 'w' );
 		fputcsv( $stream, array( 'Post ID', 'Title', 'URL', 'Status', 'HTTP', 'Checked UTC', 'Stale', 'Complete', 'Truncated' ), ',', '"', '' );
 		$page = 1;
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Caller already verifies the administrator and export nonce.
+		$filters = \Functionalities\Features\Link_Health_Report::filters( \wp_unslash( $_POST ) );
 		do {
-			$report = \Functionalities\Features\Link_Health::report_page( $page );
+			$report = \Functionalities\Features\Link_Health::report_page( $page, $filters );
 			foreach ( $report['rows'] as $row ) {
 				fputcsv( $stream, array( $row['post_id'], self::csv_safe( $row['title'] ), self::csv_safe( $row['url'] ), $row['status'], $row['code'], $row['checked'] ? gmdate( 'c', $row['checked'] ) : '', (int) $row['stale'], (int) $row['complete'], (int) $row['truncated'] ), ',', '"', '' );
 			}
@@ -174,6 +176,14 @@ trait Admin_Utilities_UI {
 			<input type="hidden" name="operation" value="<?php echo \esc_attr( $operation ); ?>">
 			<input type="hidden" name="post_id" value="<?php echo \esc_attr( $post_id ); ?>">
 			<input type="hidden" name="url" value="<?php echo \esc_attr( $url ); ?>">
+			<?php
+			if ( 'export' === $operation ) {
+				// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only selected report filters.
+				foreach ( \Functionalities\Features\Link_Health_Report::filters( \wp_unslash( $_GET ) ) as $key => $value ) {
+					echo '<input type="hidden" name="' . \esc_attr( $key ) . '" value="' . \esc_attr( $value ) . '">';
+				}
+			}
+			?>
 			<button class="button" type="submit"><?php echo \esc_html( $label ); ?></button>
 		</form>
 		<?php
@@ -229,9 +239,14 @@ trait Admin_Utilities_UI {
 		if ( \Functionalities\Core\Module_Registry::is_enabled( 'link-health' ) ) {
 			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only results pagination.
 			$page = max( 1, \absint( $_GET['report_page'] ?? 1 ) );
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only report filtering.
+			$filters = \Functionalities\Features\Link_Health_Report::filters( \wp_unslash( $_GET ) );
+			self::render_link_health_filters( $filters );
+			echo '<div data-link-edit-notice class="notice notice-success inline" role="status" hidden></div>';
 			echo '<div data-link-report class="functionalities-link-report">';
-			self::render_link_health_report( $page );
+			self::render_link_health_report( $page, $filters );
 			echo '</div>';
+			self::render_link_health_editor();
 		}
 		echo '</div>';
 	}
@@ -277,9 +292,10 @@ trait Admin_Utilities_UI {
 	}
 
 	/** Render one global page of 50 link results, independently of the scan controls. */
-	public static function render_link_health_report( int $page = 1 ): void {
-		$report = \Functionalities\Features\Link_Health::report_page( $page );
-		$page   = $report['page'];
+	public static function render_link_health_report( int $page = 1, array $filters = array() ): void {
+		$filters = \Functionalities\Features\Link_Health_Report::filters( $filters );
+		$report  = \Functionalities\Features\Link_Health::report_page( $page, $filters );
+		$page    = $report['page'];
 		?>
 		<h2><?php \esc_html_e( 'Link results', 'functionalities' ); ?></h2>
 		<p data-link-page="<?php echo \esc_attr( $page ); ?>"><?php echo \esc_html( sprintf( /* translators: 1: first visible result, 2: last visible result, 3: total results. */ \__( '%1$d–%2$d of %3$d results · 50 per page', 'functionalities' ), $report['total'] ? ( $page - 1 ) * 50 + 1 : 0, min( $page * 50, $report['total'] ), $report['total'] ) ); ?></p>
@@ -288,7 +304,7 @@ trait Admin_Utilities_UI {
 		<?php
 		if ( ! $report['rows'] ) :
 			?>
-			<tr><td colspan="5"><?php \esc_html_e( 'No link results on this page. Start a scan or check another results page.', 'functionalities' ); ?></td></tr><?php endif; ?>
+			<tr><td colspan="5"><?php echo '' !== implode( '', $filters ) ? \esc_html__( 'No links match these filters.', 'functionalities' ) : \esc_html__( 'No link results on this page. Start a scan or check another results page.', 'functionalities' ); ?></td></tr><?php endif; ?>
 		<?php foreach ( $report['rows'] as $row ) : ?>
 		<tr>
 			<td><a href="<?php echo \esc_url( \get_edit_post_link( $row['post_id'] ) ); ?>"><?php echo \esc_html( $row['title'] ); ?></a>
@@ -309,7 +325,7 @@ trait Admin_Utilities_UI {
 			if ( $row['chain'] ) :
 				?>
 				<p><?php echo \esc_html( implode( ' → ', $row['chain'] ) ); ?></p><?php endif; ?></td>
-			<td><?php echo \esc_html( self::link_status_label( $row['status'] ) ); ?> <?php echo \esc_html( $row['code'] ?: '' ); ?></td>
+			<td><?php echo \esc_html( self::link_status_label( \Functionalities\Features\Link_Health_Report::status( $row ) ) ); ?> <?php echo \esc_html( $row['code'] ?: '' ); ?></td>
 			<td><?php echo \esc_html( $row['checked'] ? gmdate( 'Y-m-d H:i:s', $row['checked'] ) : '—' ); ?></td>
 			<td>
 			<?php
@@ -317,11 +333,31 @@ trait Admin_Utilities_UI {
 			if ( 'ignored' !== $row['status'] ) {
 				self::link_health_button( 'ignore', \__( 'Ignore', 'functionalities' ), $row['post_id'], $row['url'] ); }
 			?>
+			<?php if ( \current_user_can( 'edit_post', $row['post_id'] ) ) : ?>
+				<button type="button" class="button" data-link-edit="replace" data-post-id="<?php echo \esc_attr( $row['post_id'] ); ?>" data-url="<?php echo \esc_attr( $row['url'] ); ?>" data-source="<?php echo \esc_attr( $row['title'] ); ?>"><?php \esc_html_e( 'Replace URL', 'functionalities' ); ?></button>
+				<button type="button" class="button" data-link-edit="unlink" data-post-id="<?php echo \esc_attr( $row['post_id'] ); ?>" data-url="<?php echo \esc_attr( $row['url'] ); ?>" data-source="<?php echo \esc_attr( $row['title'] ); ?>"><?php \esc_html_e( 'Unlink', 'functionalities' ); ?></button>
+			<?php endif; ?>
 			</td>
 		</tr>
 		<?php endforeach; ?>
 		</tbody></table></div>
-		<?php self::utility_pagination( 'link-health', 'report_page', $page, $report['pages'], \admin_url( 'admin.php' ) ); ?>
+		<?php
+		self::utility_pagination(
+			'link-health',
+			'report_page',
+			$page,
+			$report['pages'],
+			\add_query_arg(
+				array_filter(
+					$filters,
+					static function ( $value ) {
+						return '' !== $value;
+					}
+				),
+				\admin_url( 'admin.php' )
+			)
+		);
+		?>
 		<?php
 	}
 
@@ -333,8 +369,42 @@ trait Admin_Utilities_UI {
 			'unknown'    => \__( 'Inconclusive', 'functionalities' ),
 			'unsafe'     => \__( 'Unsafe URL', 'functionalities' ),
 			'ignored'    => \__( 'Ignored', 'functionalities' ),
+			'unchecked'  => \__( 'Not checked', 'functionalities' ),
 		);
 		return $labels[ $status ] ?? $labels['unknown'];
+	}
+
+	/** Keep filter inputs outside the live table so refreshes cannot reset a draft selection. */
+	private static function render_link_health_filters( array $filters ): void {
+		?>
+		<form method="get" action="<?php echo \esc_url( \admin_url( 'admin.php' ) ); ?>" class="functionalities-link-filters" data-link-filters data-filters="<?php echo \esc_attr( \wp_json_encode( $filters ) ); ?>">
+			<input type="hidden" name="page" value="functionalities"><input type="hidden" name="module" value="link-health"><input type="hidden" name="report_page" value="1">
+			<label><?php \esc_html_e( 'Result', 'functionalities' ); ?><select name="link_status"><option value=""><?php \esc_html_e( 'All results', 'functionalities' ); ?></option>
+			<?php foreach ( array( 'broken', 'redirected', 'unknown', 'unsafe', 'ignored', 'unchecked', 'ok' ) as $status ) : ?>
+				<option value="<?php echo \esc_attr( $status ); ?>" <?php \selected( $filters['link_status'], $status ); ?>><?php echo \esc_html( self::link_status_label( $status ) ); ?></option>
+			<?php endforeach; ?></select></label>
+			<label><?php \esc_html_e( 'Source type', 'functionalities' ); ?><select name="source_type"><option value=""><?php \esc_html_e( 'Posts and pages', 'functionalities' ); ?></option><option value="post" <?php \selected( $filters['source_type'], 'post' ); ?>><?php \esc_html_e( 'Posts', 'functionalities' ); ?></option><option value="page" <?php \selected( $filters['source_type'], 'page' ); ?>><?php \esc_html_e( 'Pages', 'functionalities' ); ?></option></select></label>
+			<label class="functionalities-link-search"><?php \esc_html_e( 'URL or source title', 'functionalities' ); ?><input type="search" name="link_search" maxlength="200" value="<?php echo \esc_attr( $filters['link_search'] ); ?>"></label>
+			<button class="button" type="submit"><?php \esc_html_e( 'Filter results', 'functionalities' ); ?></button>
+			<a class="button" href="<?php echo \esc_url( \admin_url( 'admin.php?page=functionalities&module=link-health' ) ); ?>"><?php \esc_html_e( 'Reset', 'functionalities' ); ?></a>
+		</form>
+		<?php
+	}
+
+	private static function render_link_health_editor(): void {
+		?>
+		<dialog class="functionalities-link-editor" data-link-editor aria-labelledby="functionalities-link-editor-title">
+			<h2 id="functionalities-link-editor-title"><?php \esc_html_e( 'Edit source link', 'functionalities' ); ?></h2>
+			<p><strong data-edit-source></strong></p><p class="description"><?php \esc_html_e( 'This action updates matching links in this source post only. Text and media are preserved.', 'functionalities' ); ?></p>
+			<p><code data-edit-url></code></p>
+			<form data-link-edit-form>
+				<label><?php \esc_html_e( 'Action', 'functionalities' ); ?><select data-edit-mode><option value="replace"><?php \esc_html_e( 'Replace URL', 'functionalities' ); ?></option><option value="unlink"><?php \esc_html_e( 'Unlink', 'functionalities' ); ?></option></select></label>
+				<label data-edit-destination><?php \esc_html_e( 'New URL', 'functionalities' ); ?><input type="url" data-edit-new-url maxlength="2048" placeholder="https://example.com/new-page/"></label>
+				<p data-edit-feedback role="status"></p><p data-edit-preview hidden></p>
+				<div class="functionalities-utility-actions"><button type="submit" class="button" data-edit-review><?php \esc_html_e( 'Preview change', 'functionalities' ); ?></button><button type="button" class="button button-primary" data-edit-apply disabled><?php \esc_html_e( 'Apply change', 'functionalities' ); ?></button><button type="button" class="button" data-edit-cancel><?php \esc_html_e( 'Cancel', 'functionalities' ); ?></button></div>
+			</form>
+		</dialog>
+		<?php
 	}
 
 	/** Search and filter a bounded history in memory, then paginate. */

@@ -16,6 +16,8 @@ require_once dirname( __DIR__ ) . '/includes/storage/class-data-directory.php';
 require_once dirname( __DIR__ ) . '/includes/storage/class-atomic-json-store.php';
 require_once dirname( __DIR__ ) . '/includes/features/class-content-tools.php';
 require_once dirname( __DIR__ ) . '/includes/features/class-link-health.php';
+require_once dirname( __DIR__ ) . '/includes/features/class-link-health-report.php';
+require_once dirname( __DIR__ ) . '/includes/features/class-link-health-editor.php';
 require_once dirname( __DIR__ ) . '/includes/admin/class-link-health-controller.php';
 require_once dirname( __DIR__ ) . '/includes/features/class-site-activity.php';
 
@@ -23,8 +25,10 @@ class UtilityDatabaseSpy {
 	public $posts = 'wp_posts';
 	public $postmeta = 'wp_postmeta';
 	private $cursor = 0;
+	private $values = array();
 	public function prepare( $sql, $cursor, ...$arguments ) {
 		$this->cursor = $cursor;
+		$this->values = array_merge( array( $cursor ), $arguments );
 		return $sql;
 	}
 	public function get_row( $sql ) {
@@ -49,10 +53,26 @@ class UtilityDatabaseSpy {
 		$rows = array();
 		foreach ( $posts as $id => $post ) {
 			if ( Links::public_post( $id ) && is_array( get_post_meta( $id, Links::META_KEY, true ) ) ) {
+				if ( false !== strpos( $sql, 'report_data' ) ) {
+					if ( $id <= $this->values[2] ) { continue; }
+					$rows[] = (object) array( 'ID' => $id, 'post_title' => $post->post_title, 'post_type' => $post->post_type, 'report_data' => serialize( get_post_meta( $id, Links::META_KEY, true ) ), 'ignored_data' => serialize( get_post_meta( $id, Links::IGNORE_KEY, true ) ) );
+					if ( count( $rows ) === 25 ) { break; }
+					continue;
+				}
 				$rows[] = (object) array( 'ID' => $id, 'link_count' => $GLOBALS['functionalities_test_post_meta'][ $id ][ Links::COUNT_KEY ] ?? null );
 			}
 		}
 		return $rows;
+	}
+	public function query( $sql ) {
+		$v = $this->values;
+		$id = $v[3];
+		if ( isset( $GLOBALS['functionalities_test_concurrent_edit'] ) ) { $GLOBALS['functionalities_test_posts'][ $id ]->post_content = $GLOBALS['functionalities_test_concurrent_edit']; }
+		if ( ! empty( $GLOBALS['functionalities_test_source_write_fail'] ) ) { return false; }
+		$post = $GLOBALS['functionalities_test_posts'][ $id ];
+		if ( $post->post_content !== $v[4] || $post->post_name !== $v[5] || $post->post_parent !== $v[6] || $post->post_type !== $v[7] || 'publish' !== $post->post_status || '' !== $post->post_password ) { return 0; }
+		$post->post_content = $v[0];
+		return 1;
 	}
 }
 
@@ -82,6 +102,8 @@ final class UtilityModulesTest extends TestCase {
 		$GLOBALS['functionalities_test_next_id'] = 100;
 		$GLOBALS['functionalities_test_user_id'] = 7;
 		$GLOBALS['functionalities_test_nonce_valid'] = true;
+		$GLOBALS['functionalities_test_revisions'] = array();
+		unset( $GLOBALS['functionalities_test_concurrent_edit'], $GLOBALS['functionalities_test_source_write_fail'] );
 		$GLOBALS['wpdb'] = new UtilityDatabaseSpy();
 		Directory::flush();
 	}
@@ -355,6 +377,119 @@ final class UtilityModulesTest extends TestCase {
 			}
 		}
 		$this->assertSame( 0, $GLOBALS['functionalities_http_calls'] );
+	}
+	public function test_report_filters_precede_pagination_and_honor_ignored_and_source_type(): void {
+		for ( $id = 1; $id <= 60; ++$id ) {
+			$post = $this->post( $id );
+			$post->post_title = 0 === $id % 2 ? 'Needle page' : 'Other post';
+			$post->post_type = 0 === $id % 2 ? 'page' : 'post';
+			$url = 'https://example.test/target-' . $id;
+			update_post_meta( $id, Links::META_KEY, array( 'rows' => array( md5( $url ) => array( 'url' => $url, 'status' => 'broken', 'checked' => 1, 'chain' => array(), 'code' => 404 ) ) ) );
+		}
+		update_post_meta( 2, Links::IGNORE_KEY, array( md5( 'https://example.test/target-2' ) ) );
+		$filters = array( 'link_status' => 'broken' );
+		$this->assertCount( 50, Links::report_page( 1, $filters )['rows'] );
+		$this->assertCount( 9, Links::report_page( 2, $filters )['rows'] );
+		$filtered = Links::report_page( 9, array( 'link_status' => 'broken', 'source_type' => 'page', 'link_search' => 'NEEDLE' ) );
+		$this->assertSame( 29, $filtered['total'] );
+		$this->assertSame( 1, $filtered['page'] );
+		$this->assertSame( 1, Links::report_page( 1, array( 'link_status' => 'ignored' ) )['total'] );
+		$this->assertSame( 6, Links::report_page( 1, array( 'link_search' => '0' ) )['total'] );
+		$this->assertSame( 0, Links::report_page( 1, array( 'link_search' => 'not present' ) )['total'] );
+		$this->assertSame( 0, $GLOBALS['functionalities_http_calls'] );
+	}
+	public function test_replacement_changes_only_anchor_attributes_and_preserves_fragments_and_scripts(): void {
+		$this->require_core();
+		$content = '<!-- wp:paragraph --><p><a data-x="a > b" href="/old?x=1&amp;y=2#part"><strong>Keep</strong></a> <a href="/other">Other</a></p><!-- /wp:paragraph --><script>const html = \'<a href="/old?x=1&amp;y=2">Code</a>\';</script>';
+		$result = \Functionalities\Features\Link_Health_Editor::transform( $content, 'https://example.test/article/', 'https://example.test/old?x=1&y=2', 'replace', 'https://new.test/path?a=1&b=2' );
+		$this->assertIsArray( $result );
+		$this->assertSame( 1, $result['count'] );
+		$this->assertSame( str_replace( 'href="/old?x=1&amp;y=2#part"', 'href="https://new.test/path?a=1&amp;b=2#part"', $content ), $result['content'] );
+	}
+	public function test_unlink_preserves_text_media_and_native_button_structure(): void {
+		$this->require_core();
+		$content = '<!-- wp:paragraph --><p><a href="/old"><em>Text</em><img src="x.png"></a> <a href="/other">Other</a></p><!-- /wp:paragraph --><!-- wp:button --><div class="wp-block-button"><a class="wp-block-button__link" href="/old#x" rel="nofollow" target="_blank">Button</a></div><!-- /wp:button -->';
+		$result = \Functionalities\Features\Link_Health_Editor::transform( $content, 'https://example.test/article/', 'https://example.test/old', 'unlink' );
+		$this->assertIsArray( $result );
+		$this->assertSame( 2, $result['count'] );
+		$this->assertStringContainsString( '<p><em>Text</em><img src="x.png"> <a href="/other">Other</a></p>', $result['content'] );
+		$this->assertMatchesRegularExpression( '/<a class="wp-block-button__link"\s*>Button<\/a>/', $result['content'] );
+		$this->assertStringContainsString( '<!-- /wp:button -->', $result['content'] );
+		$this->assertInstanceOf( WP_Error::class, \Functionalities\Features\Link_Health_Editor::transform( '<a href="/old">Unclosed', 'https://example.test/', 'https://example.test/old', 'unlink' ) );
+	}
+	public function test_reviewed_edits_save_once_preserve_other_results_and_create_revision(): void {
+		$this->require_core();
+		$post = $this->post( 10, '<p><a href="/old">Old</a><a href="/keep">Keep</a></p>' );
+		Links::start_scan(); Links::run_batch();
+		$old = $post->post_content;
+		$preview = \Functionalities\Features\Link_Health_Editor::preview( 10, 'https://example.test/old', 'replace', 'https://example.test/new' );
+		$this->assertSame( $old, $post->post_content );
+		$result = \Functionalities\Features\Link_Health_Editor::apply( 10, $preview['token'] );
+		$this->assertSame( 1, $result['count'] );
+		$this->assertStringContainsString( 'href="https://example.test/new"', $post->post_content );
+		$this->assertSame( $old, $GLOBALS['functionalities_test_revisions'][0] );
+		$report = get_post_meta( 10, Links::META_KEY, true );
+		$this->assertArrayNotHasKey( md5( 'https://example.test/old' ), $report['rows'] );
+		$this->assertSame( 'ok', $report['rows'][md5('https://example.test/keep')]['status'] );
+		$this->assertSame( 0, $report['rows'][md5('https://example.test/new')]['checked'] );
+		$this->assertInstanceOf( WP_Error::class, \Functionalities\Features\Link_Health_Editor::apply( 10, $preview['token'] ) );
+	}
+	public function test_edit_preview_rejects_unsafe_destination_unauthorized_actor_and_changed_source(): void {
+		$this->require_core();
+		$post = $this->post( 10, '<a href="/old">Text</a>' );
+		foreach ( array( 'javascript:alert(1)', '//other.test/', 'https://user:pass@example.test/', 'https://example.test/a b' ) as $url ) {
+			$this->assertInstanceOf( WP_Error::class, \Functionalities\Features\Link_Health_Editor::preview( 10, 'https://example.test/old', 'replace', $url ) );
+		}
+		$preview = \Functionalities\Features\Link_Health_Editor::preview( 10, 'https://example.test/old', 'unlink' );
+		$GLOBALS['functionalities_test_user_id'] = 8;
+		$this->assertInstanceOf( WP_Error::class, \Functionalities\Features\Link_Health_Editor::apply( 10, $preview['token'] ) );
+		$GLOBALS['functionalities_test_user_id'] = 7;
+		$GLOBALS['functionalities_test_caps']['edit_post'] = false;
+		$this->assertInstanceOf( WP_Error::class, \Functionalities\Features\Link_Health_Editor::apply( 10, $preview['token'] ) );
+		$GLOBALS['functionalities_test_caps']['edit_post'] = true;
+		$post->post_content .= '<p>New edit</p>';
+		$this->assertInstanceOf( WP_Error::class, \Functionalities\Features\Link_Health_Editor::apply( 10, $preview['token'] ) );
+		$this->assertStringContainsString( 'New edit', $post->post_content );
+	}
+	public function test_compare_and_swap_rejects_a_save_after_preview_validation(): void {
+		$this->require_core();
+		$post = $this->post( 10, '<a href="/old">Text</a>' );
+		$preview = \Functionalities\Features\Link_Health_Editor::preview( 10, 'https://example.test/old', 'unlink' );
+		$GLOBALS['functionalities_test_concurrent_edit'] = '<p>Concurrent author save</p>';
+		$this->assertInstanceOf( WP_Error::class, \Functionalities\Features\Link_Health_Editor::apply( 10, $preview['token'] ) );
+		$this->assertSame( '<p>Concurrent author save</p>', $post->post_content );
+	}
+	public function test_failed_source_write_preserves_content_and_explicit_fragment_replaces_old_fragment(): void {
+		$this->require_core();
+		$post = $this->post( 10, '<a href="/old#one">Text</a>' );
+		$preview = \Functionalities\Features\Link_Health_Editor::preview( 10, 'https://example.test/old', 'replace', 'https://example.test/new#two' );
+		$GLOBALS['functionalities_test_source_write_fail'] = true;
+		$this->assertInstanceOf( WP_Error::class, \Functionalities\Features\Link_Health_Editor::apply( 10, $preview['token'] ) );
+		$this->assertSame( '<a href="/old#one">Text</a>', $post->post_content );
+		unset( $GLOBALS['functionalities_test_source_write_fail'] );
+		$this->assertIsArray( \Functionalities\Features\Link_Health_Editor::apply( 10, $preview['token'] ) );
+		$this->assertStringContainsString( '/new#two', $post->post_content );
+		$this->assertStringNotContainsString( '#one', $post->post_content );
+	}
+	public function test_url_inputs_and_search_preserve_percent_encoding(): void {
+		$this->require_core();
+		$url = 'https://example.test/a%20b?q=%2F';
+		$_POST['url'] = $url;
+		$this->assertSame( $url, \Functionalities\Admin\Link_Health_Controller::request_url() );
+		unset( $_POST['url'] );
+		$this->assertSame( 'a%20b', \Functionalities\Features\Link_Health_Report::filters( array( 'link_search' => 'a%20b' ) )['link_search'] );
+		$change = \Functionalities\Features\Link_Health_Editor::transform( '<a href="/old">Text</a>', 'https://example.test/', 'https://example.test/old', 'replace', $url );
+		$this->assertStringContainsString( $url, $change['content'] );
+	}
+	public function test_serialized_block_urls_require_the_post_editor_instead_of_invalidating_the_block(): void {
+		$this->require_core();
+		$content = '<!-- wp:custom/card {"url":"https://example.test/old"} --><a href="/old">Card</a><!-- /wp:custom/card -->';
+		foreach ( array( 'replace', 'unlink' ) as $mode ) {
+			$result = \Functionalities\Features\Link_Health_Editor::transform( $content, 'https://example.test/', 'https://example.test/old', $mode, 'https://example.test/new' );
+			$this->assertInstanceOf( WP_Error::class, $result );
+			$this->assertSame( 'block_settings', $result->get_error_code() );
+		}
+		$this->assertIsArray( \Functionalities\Features\Link_Health_Editor::transform( str_replace( 'https://example.test/old', 'https://example.test/unrelated', $content ), 'https://example.test/', 'https://example.test/old', 'replace', 'https://example.test/new' ) );
 	}
 	public function test_content_edit_during_request_prevents_stale_result_publication(): void {
 		$this->require_core();

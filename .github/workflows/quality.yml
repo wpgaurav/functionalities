@@ -98,6 +98,9 @@ jobs:
             functionalities/assets/css/admin-polish.css \
             functionalities/assets/js/admin-polish.js \
             functionalities/assets/js/admin-link-health.js \
+            functionalities/assets/js/admin-link-health-editor.js \
+            functionalities/includes/features/class-link-health-editor.php \
+            functionalities/includes/features/class-link-health-report.php \
             functionalities/assets/icons/settings.svg \
             functionalities/assets/icons/arrow-left.svg \
             functionalities/assets/icons/LICENSE \

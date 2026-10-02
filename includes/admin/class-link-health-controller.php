@@ -7,6 +7,8 @@
 namespace Functionalities\Admin;
 
 use Functionalities\Features\Link_Health;
+use Functionalities\Features\Link_Health_Editor;
+use Functionalities\Features\Link_Health_Report;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -19,9 +21,16 @@ class Link_Health_Controller {
 		\add_action( 'wp_ajax_functionalities_link_health_live', array( __CLASS__, 'ajax' ) );
 	}
 
+	/** Preserve percent-encoded URLs; downstream checks validate protocol and source membership. */
+	public static function request_url( string $field = 'url' ): string {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Authorized callers validate URLs; sanitize_text_field would corrupt percent-encoded paths and queries.
+		return isset( $_POST[ $field ] ) && is_string( $_POST[ $field ] ) ? trim( \wp_unslash( $_POST[ $field ] ) ) : '';
+	}
+
 	/** Load only in the Link Health workspace, including its submenu alias. */
 	public static function enqueue(): void {
 		\wp_enqueue_script( 'functionalities-link-health', FUNCTIONALITIES_URL . 'assets/js/admin-link-health.js', array(), FUNCTIONALITIES_VERSION . '-' . filemtime( FUNCTIONALITIES_DIR . 'assets/js/admin-link-health.js' ), true );
+		\wp_enqueue_script( 'functionalities-link-editor', FUNCTIONALITIES_URL . 'assets/js/admin-link-health-editor.js', array( 'functionalities-link-health' ), FUNCTIONALITIES_VERSION . '-' . filemtime( FUNCTIONALITIES_DIR . 'assets/js/admin-link-health-editor.js' ), true );
 		\wp_localize_script(
 			'functionalities-link-health',
 			'functionalitiesLinkHealth',
@@ -34,6 +43,15 @@ class Link_Health_Controller {
 				'resume'          => \__( 'Resume scan', 'functionalities' ),
 				'connectionError' => \__( 'Live updates were interrupted. Reconnecting… Your background scan can continue.', 'functionalities' ),
 				'requestError'    => \__( 'The request failed. Refresh this page and try again.', 'functionalities' ),
+				'previewing'      => \__( 'Preparing preview…', 'functionalities' ),
+				'applying'        => \__( 'Saving link changes…', 'functionalities' ),
+				/* translators: 1: matching link count, 2: source post title. */
+				'previewReplace'  => \__( 'Replace %1$d matching link(s) in “%2$s”. Existing fragments are kept unless the new URL specifies one.', 'functionalities' ),
+				/* translators: 1: matching link count, 2: source post title. */
+				'previewUnlink'   => \__( 'Unlink %1$d matching link(s) in “%2$s”, preserving their text and media.', 'functionalities' ),
+				/* translators: 1: changed link count, 2: source post title. */
+				'saved'           => \__( 'Updated %1$d link(s) in “%2$s”.', 'functionalities' ),
+				'rescan'          => \__( 'Run a new scan to refresh this post’s report.', 'functionalities' ),
 			)
 		);
 	}
@@ -65,7 +83,7 @@ class Link_Health_Controller {
 		}
 		$operation = \sanitize_key( \wp_unslash( $_POST['operation'] ?? 'status' ) );
 		$run       = \sanitize_text_field( \wp_unslash( $_POST['run'] ?? '' ) );
-		if ( ! in_array( $operation, array( 'status', 'start', 'batch', 'resume', 'stop', 'recheck', 'ignore' ), true ) ) {
+		if ( ! in_array( $operation, array( 'status', 'start', 'batch', 'resume', 'stop', 'recheck', 'ignore', 'preview_edit', 'apply_edit' ), true ) ) {
 			\wp_send_json_error( array( 'message' => \__( 'Unknown action.', 'functionalities' ) ), 400 );
 			return;
 		}
@@ -94,8 +112,14 @@ class Link_Health_Controller {
 			case 'recheck':
 			case 'ignore':
 				$post_id = \absint( $_POST['post_id'] ?? 0 );
-				$url     = \sanitize_text_field( \wp_unslash( $_POST['url'] ?? '' ) );
+				$url     = self::request_url();
 				$result  = 'recheck' === $operation ? Link_Health::recheck( $post_id, $url ) : Link_Health::set_ignored( $post_id, $url, true );
+				break;
+			case 'preview_edit':
+				$result = Link_Health_Editor::preview( \absint( $_POST['post_id'] ?? 0 ), self::request_url(), \sanitize_key( \wp_unslash( $_POST['edit_mode'] ?? '' ) ), self::request_url( 'replacement' ) );
+				break;
+			case 'apply_edit':
+				$result = Link_Health_Editor::apply( \absint( $_POST['post_id'] ?? 0 ), \sanitize_text_field( \wp_unslash( $_POST['token'] ?? '' ) ) );
 				break;
 		}
 		if ( \is_wp_error( $result ) && ! ( 'batch' === $operation && 'update_aborted' === $result->get_error_code() ) ) {
@@ -103,9 +127,11 @@ class Link_Health_Controller {
 			return;
 		}
 		$data = array( 'progress' => self::progress() );
+		if ( in_array( $operation, array( 'preview_edit', 'apply_edit' ), true ) ) {
+			$data['edit'] = $result; }
 		if ( ! empty( $_POST['report'] ) && \Functionalities\Core\Module_Registry::is_enabled( 'link-health' ) ) {
 			ob_start();
-			Module_Controller::render_link_health_report( max( 1, \absint( $_POST['report_page'] ?? 1 ) ) );
+			Module_Controller::render_link_health_report( max( 1, \absint( $_POST['report_page'] ?? 1 ) ), Link_Health_Report::filters( \wp_unslash( $_POST ) ) );
 			$data['html'] = ob_get_clean();
 		}
 		\wp_send_json_success( $data );

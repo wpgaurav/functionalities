@@ -6,6 +6,7 @@
 	const config = functionalitiesLinkHealth;
 	const root = panel.closest('.functionalities-module');
 	const report = root.querySelector('[data-link-report]');
+	const filters = JSON.parse(root.querySelector('[data-link-filters]')?.dataset?.filters || '{}');
 	const label = panel.querySelector('[data-link-label]');
 	const summary = panel.querySelector('[data-link-summary]');
 	const meter = panel.querySelector('[data-link-meter]');
@@ -20,6 +21,7 @@
 	let suspended = false;
 	let autoDrive = true;
 	let actionError = false;
+	let editing = false;
 
 	function render() {
 		const active = state.status === 'running' || state.status === 'stopping';
@@ -47,7 +49,7 @@
 	}
 	async function request(operation, fields = {}) {
 		const body = new FormData();
-		Object.entries({action: 'functionalities_link_health_live', nonce: config.nonce, operation, run: state.run, report: '1', report_page: page(), ...fields}).forEach(([key, value]) => body.append(key, value));
+		Object.entries({action: 'functionalities_link_health_live', nonce: config.nonce, operation, run: state.run, report: editing ? '0' : '1', report_page: page(), ...filters, ...fields}).forEach(([key, value]) => body.append(key, value));
 		const abort = new AbortController();
 		const timeout = setTimeout(() => abort.abort(), 25000);
 		try {
@@ -63,7 +65,7 @@
 	}
 	function accept(data) {
 		state = data.progress;
-		if (report && typeof data.html === 'string' && report.innerHTML !== data.html) report.innerHTML = data.html;
+		if (!editing && report && typeof data.html === 'string' && report.innerHTML !== data.html) report.innerHTML = data.html;
 		if (!actionError) error.hidden = true;
 		render();
 	}
@@ -142,6 +144,14 @@
 	document.addEventListener('visibilitychange', () => {
 		if (document.visibilityState === 'hidden') clearTimeout(timer);
 		else schedule(0);
+	});
+	root.addEventListener('functionalities:link-editor', event => {
+		editing = !!event.detail.open;
+		if (!editing && event.detail.view?.progress) {
+			epoch++;
+			accept(event.detail.view);
+		}
+		if (!editing) schedule(0);
 	});
 	render();
 	schedule(0);

@@ -203,6 +203,22 @@
 .functionalities-link-report :is(th,td):nth-child(3) { min-width: 100px; white-space: nowrap; }
 .functionalities-link-report :is(th,td):nth-child(4) { min-width: 135px; }
 .functionalities-link-report :is(th,td):last-child { min-width: 100px; }
+.functionalities-module form.functionalities-link-filters { display: flex; flex-wrap: wrap; gap: 16px; align-items: end; margin: 24px 0 0; padding: 16px; }
+.functionalities-link-filters label, .functionalities-link-editor label { display: flex; flex-direction: column; gap: 6px; font-weight: 600; }
+.functionalities-link-filters label { flex: 1 1 170px; min-width: 0; }
+.functionalities-link-filters .functionalities-link-search { flex-grow: 2; }
+.functionalities-link-filters :is(input,select) { width: 100%; }
+.functionalities-link-report [data-link-edit] { margin: 0 4px 4px 0; }
+.functionalities-link-editor { width: min(560px,calc(100vw - 48px)); max-height: calc(100vh - 80px); box-sizing: border-box; border: 1px solid var(--func-line); border-radius: 8px; padding: 24px; color: var(--func-ink); }
+.functionalities-link-editor::backdrop { background: rgb(0 0 0 / 35%); }
+.functionalities-link-editor h2 { margin: 0 0 16px; }
+.functionalities-link-editor form { margin: 0; padding: 0; border: 0; background: transparent; }
+.functionalities-link-editor label { margin: 16px 0; }
+.functionalities-link-editor [data-edit-url] { overflow-wrap: anywhere; }
+.functionalities-link-editor [data-edit-preview] { padding: 12px; background: #f0f6fc; border-inline-start: 3px solid var(--func-accent); }
+.functionalities-link-editor .functionalities-utility-actions { flex-wrap: wrap; gap: 8px; }
+.functionalities-module [data-link-edit-notice] { padding: 12px 16px; margin: 16px 0; }
+.functionalities-link-editor [hidden], .functionalities-module [data-link-edit-notice][hidden] { display: none !important; }
 @media (prefers-reduced-motion:reduce) { .functionalities-link-state .spinner { animation: none; } }
 @media (min-width:1180px) {
 	.functionalities-settings-layout--with-guide { grid-template-columns: minmax(0,1fr) 320px; }

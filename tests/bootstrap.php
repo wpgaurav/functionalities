@@ -493,6 +493,7 @@ if ( ! function_exists( 'has_blocks' ) ) {
 
 if ( ! function_exists( 'parse_blocks' ) ) {
 	function parse_blocks( $content ) {
+		if ( class_exists( 'WP_Block_Parser' ) ) { return ( new WP_Block_Parser() )->parse( $content ); }
 		throw new LogicException( 'Use a real WordPress block parser for block fixtures.' );
 	}
 }
@@ -642,6 +643,9 @@ if ( $functionalities_wp_dir ) {
 		'/wp-includes/html-api/html5-named-character-references.php',
 		'/wp-includes/html-api/class-wp-html-decoder.php',
 		'/wp-includes/html-api/class-wp-html-tag-processor.php',
+		'/wp-includes/class-wp-block-parser-block.php',
+		'/wp-includes/class-wp-block-parser-frame.php',
+		'/wp-includes/class-wp-block-parser.php',
 	) as $functionalities_html_file ) {
 		$functionalities_html_path = $functionalities_wp_dir . $functionalities_html_file;
 		if ( file_exists( $functionalities_html_path ) ) {
@@ -725,6 +729,21 @@ if ( ! function_exists( 'get_the_title' ) ) {
 	function get_the_title( $id ) {
 		return $GLOBALS['functionalities_test_posts'][ $id ]->post_title ?? '';
 	}
+}
+if ( ! function_exists( 'maybe_unserialize' ) ) {
+	function maybe_unserialize( $value ) { return is_string( $value ) && preg_match( '/^[abisOdN]:/', $value ) ? unserialize( $value, array( 'allowed_classes' => false ) ) : $value; }
+}
+if ( ! function_exists( 'wp_strip_all_tags' ) ) {
+	function wp_strip_all_tags( $value, $remove_breaks = false ) { return strip_tags( $value ); }
+}
+if ( ! function_exists( 'clean_post_cache' ) ) {
+	function clean_post_cache( $id ) {}
+}
+if ( ! function_exists( 'esc_url' ) ) {
+	function esc_url( $value, $protocols = null, $context = 'display' ) { return esc_attr( $value ); }
+}
+if ( ! function_exists( 'wp_save_post_revision' ) ) {
+	function wp_save_post_revision( $id ) { $GLOBALS['functionalities_test_revisions'][] = get_post( $id )->post_content; return 1; }
 }
 if ( ! function_exists( 'wp_generate_uuid4' ) ) {
 	function wp_generate_uuid4() {
