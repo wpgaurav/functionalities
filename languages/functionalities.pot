@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-02T07:43:12+00:00\n"
+"POT-Creation-Date: 2026-10-02T10:28:17+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: functionalities\n"
@@ -104,77 +104,107 @@ msgstr ""
 msgid "Caution"
 msgstr ""
 
-#: includes/admin/class-link-health-controller.php:31
-#: includes/admin/class-link-health-controller.php:46
+#: includes/admin/class-link-health-controller.php:40
+#: includes/admin/class-link-health-controller.php:64
 msgid "Checking links…"
 msgstr ""
 
-#: includes/admin/class-link-health-controller.php:32
-#: includes/admin/class-link-health-controller.php:48
+#: includes/admin/class-link-health-controller.php:41
+#: includes/admin/class-link-health-controller.php:66
 msgid "Finishing the current batch…"
 msgstr ""
 
-#: includes/admin/class-link-health-controller.php:33
+#: includes/admin/class-link-health-controller.php:42
 msgid "Retry scan"
 msgstr ""
 
-#: includes/admin/class-link-health-controller.php:34
-#: includes/admin/trait-admin-utilities-ui.php:261
+#: includes/admin/class-link-health-controller.php:43
+#: includes/admin/trait-admin-utilities-ui.php:276
 msgid "Resume scan"
 msgstr ""
 
-#: includes/admin/class-link-health-controller.php:35
+#: includes/admin/class-link-health-controller.php:44
 msgid "Live updates were interrupted. Reconnecting… Your background scan can continue."
 msgstr ""
 
-#: includes/admin/class-link-health-controller.php:36
+#: includes/admin/class-link-health-controller.php:45
 msgid "The request failed. Refresh this page and try again."
 msgstr ""
 
-#: includes/admin/class-link-health-controller.php:45
-msgid "Not started"
+#: includes/admin/class-link-health-controller.php:46
+msgid "Preparing preview…"
 msgstr ""
 
 #: includes/admin/class-link-health-controller.php:47
+msgid "Saving link changes…"
+msgstr ""
+
+#. translators: 1: matching link count, 2: source post title.
+#: includes/admin/class-link-health-controller.php:49
+#, php-format
+msgid "Replace %1$d matching link(s) in “%2$s”. Existing fragments are kept unless the new URL specifies one."
+msgstr ""
+
+#. translators: 1: matching link count, 2: source post title.
+#: includes/admin/class-link-health-controller.php:51
+#, php-format
+msgid "Unlink %1$d matching link(s) in “%2$s”, preserving their text and media."
+msgstr ""
+
+#. translators: 1: changed link count, 2: source post title.
+#: includes/admin/class-link-health-controller.php:53
+#, php-format
+msgid "Updated %1$d link(s) in “%2$s”."
+msgstr ""
+
+#: includes/admin/class-link-health-controller.php:54
+msgid "Run a new scan to refresh this post’s report."
+msgstr ""
+
+#: includes/admin/class-link-health-controller.php:63
+msgid "Not started"
+msgstr ""
+
+#: includes/admin/class-link-health-controller.php:65
 msgid "Waiting for the next batch"
 msgstr ""
 
-#: includes/admin/class-link-health-controller.php:49
+#: includes/admin/class-link-health-controller.php:67
 msgid "Stopped"
 msgstr ""
 
-#: includes/admin/class-link-health-controller.php:50
+#: includes/admin/class-link-health-controller.php:68
 msgid "Scan completed"
 msgstr ""
 
-#: includes/admin/class-link-health-controller.php:51
+#: includes/admin/class-link-health-controller.php:69
 msgid "Link Health is disabled"
 msgstr ""
 
-#: includes/admin/class-link-health-controller.php:52
+#: includes/admin/class-link-health-controller.php:70
 msgid "Scan needs attention. Check private storage and retry."
 msgstr ""
 
 #. translators: 1: completed posts, 2: total posts, 3: processed links.
-#: includes/admin/class-link-health-controller.php:56
+#: includes/admin/class-link-health-controller.php:74
 #, php-format
 msgid "%1$d of %2$d posts completed · %3$d links checked"
 msgstr ""
 
-#: includes/admin/class-link-health-controller.php:63
+#: includes/admin/class-link-health-controller.php:81
 msgid "Refresh this page and sign in as an administrator."
 msgstr ""
 
-#: includes/admin/class-link-health-controller.php:69
+#: includes/admin/class-link-health-controller.php:87
 #: includes/admin/trait-admin-utilities-ui.php:118
 msgid "Unknown action."
 msgstr ""
 
-#: includes/admin/class-link-health-controller.php:73
+#: includes/admin/class-link-health-controller.php:91
 msgid "Enable Link Health before running a scan."
 msgstr ""
 
-#: includes/admin/class-link-health-controller.php:77
+#: includes/admin/class-link-health-controller.php:95
 msgid "Refresh the scan status before continuing."
 msgstr ""
 
@@ -401,6 +431,7 @@ msgstr ""
 #: includes/admin/trait-admin-redirect-manager-ui.php:195
 #: includes/admin/trait-admin-task-manager-ui.php:224
 #: includes/admin/trait-admin-task-manager-ui.php:573
+#: includes/admin/trait-admin-utilities-ui.php:404
 msgid "Cancel"
 msgstr ""
 
@@ -1438,13 +1469,13 @@ msgid "Prev"
 msgstr ""
 
 #: includes/admin/trait-admin-components-ui.php:391
-#: includes/admin/trait-admin-utilities-ui.php:437
+#: includes/admin/trait-admin-utilities-ui.php:507
 msgid "Next"
 msgstr ""
 
 #. translators: 1: current page number, 2: total pages
 #: includes/admin/trait-admin-components-ui.php:396
-#: includes/admin/trait-admin-utilities-ui.php:433
+#: includes/admin/trait-admin-utilities-ui.php:503
 #, php-format
 msgid "Page %1$d of %2$d"
 msgstr ""
@@ -1823,7 +1854,7 @@ msgstr ""
 
 #: includes/admin/trait-admin-redirect-manager-ui.php:132
 #: includes/admin/trait-admin-redirect-manager-ui.php:175
-#: includes/admin/trait-admin-utilities-ui.php:287
+#: includes/admin/trait-admin-utilities-ui.php:303
 msgid "Actions"
 msgstr ""
 
@@ -1836,7 +1867,7 @@ msgid "Export JSON"
 msgstr ""
 
 #: includes/admin/trait-admin-redirect-manager-ui.php:158
-#: includes/admin/trait-admin-utilities-ui.php:270
+#: includes/admin/trait-admin-utilities-ui.php:285
 msgid "Export CSV"
 msgstr ""
 
@@ -1909,7 +1940,7 @@ msgid "Create redirect"
 msgstr ""
 
 #: includes/admin/trait-admin-redirect-manager-ui.php:182
-#: includes/admin/trait-admin-utilities-ui.php:318
+#: includes/admin/trait-admin-utilities-ui.php:334
 msgid "Ignore"
 msgstr ""
 
@@ -3942,7 +3973,7 @@ msgid "Duplicate posts or pages into a new draft from the content list. Blocks, 
 msgstr ""
 
 #: includes/admin/trait-admin-utilities-ui.php:79
-#: includes/admin/trait-admin-utilities-ui.php:185
+#: includes/admin/trait-admin-utilities-ui.php:195
 #: includes/features/class-link-health.php:332
 #: includes/features/class-link-health.php:361
 #: includes/features/class-link-health.php:546
@@ -3957,206 +3988,281 @@ msgstr ""
 msgid "The activity log could not be cleared. Check private storage."
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:243
+#: includes/admin/trait-admin-utilities-ui.php:258
 msgid "Checks links stored in public posts and pages. Password-protected content, dynamic blocks, shortcodes, and navigation are excluded. A maximum of 1,000 unique links is checked per post; truncated reports are marked. Scans never change your content."
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:245
+#: includes/admin/trait-admin-utilities-ui.php:260
 msgid "Enable Link Health to view reports and start a scan."
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:251
-#: includes/admin/trait-admin-utilities-ui.php:252
+#: includes/admin/trait-admin-utilities-ui.php:266
+#: includes/admin/trait-admin-utilities-ui.php:267
 msgid "Scan progress"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:254
+#: includes/admin/trait-admin-utilities-ui.php:269
 msgid "Posts checked"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:260
+#: includes/admin/trait-admin-utilities-ui.php:275
 msgid "Start new scan"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:262
+#: includes/admin/trait-admin-utilities-ui.php:277
 msgid "Stop scan"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:273
+#: includes/admin/trait-admin-utilities-ui.php:288
 msgid "Keep this page open for continuous checking and live results. Scans also continue on your site’s background schedule when you leave."
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:274
+#: includes/admin/trait-admin-utilities-ui.php:289
 msgid "Enable JavaScript for live progress, or use Resume scan to process one batch at a time."
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:284
+#: includes/admin/trait-admin-utilities-ui.php:300
 msgid "Link results"
 msgstr ""
 
 #. translators: 1: first visible result, 2: last visible result, 3: total results.
-#: includes/admin/trait-admin-utilities-ui.php:285
+#: includes/admin/trait-admin-utilities-ui.php:301
 #, php-format
 msgid "%1$d–%2$d of %3$d results · 50 per page"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:287
+#: includes/admin/trait-admin-utilities-ui.php:303
 #: assets/js/wp7-admin.js:160
 msgid "Source"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:287
+#: includes/admin/trait-admin-utilities-ui.php:303
 msgid "Link"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:287
+#: includes/admin/trait-admin-utilities-ui.php:303
+#: includes/admin/trait-admin-utilities-ui.php:382
 msgid "Result"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:287
+#: includes/admin/trait-admin-utilities-ui.php:303
 msgid "Last checked (UTC)"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:291
+#: includes/admin/trait-admin-utilities-ui.php:307
+msgid "No links match these filters."
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:307
 msgid "No link results on this page. Start a scan or check another results page."
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:298
+#: includes/admin/trait-admin-utilities-ui.php:314
 msgid "Content changed. Run a new scan."
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:302
+#: includes/admin/trait-admin-utilities-ui.php:318
 msgid "Partial scan"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:306
+#: includes/admin/trait-admin-utilities-ui.php:322
 msgid "First 1,000 unique links only"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:316
+#: includes/admin/trait-admin-utilities-ui.php:332
 msgid "Recheck"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:330
+#: includes/admin/trait-admin-utilities-ui.php:337
+#: includes/admin/trait-admin-utilities-ui.php:401
+msgid "Replace URL"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:338
+#: includes/admin/trait-admin-utilities-ui.php:401
+msgid "Unlink"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:366
 msgid "OK"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:331
+#: includes/admin/trait-admin-utilities-ui.php:367
 msgid "Broken"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:332
+#: includes/admin/trait-admin-utilities-ui.php:368
 msgid "Redirected"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:333
+#: includes/admin/trait-admin-utilities-ui.php:369
 msgid "Inconclusive"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:334
+#: includes/admin/trait-admin-utilities-ui.php:370
 msgid "Unsafe URL"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:335
+#: includes/admin/trait-admin-utilities-ui.php:371
 msgid "Ignored"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:348
-msgid "Tracks module settings, plugin/theme changes, and post/page status changes. Stores changed field names, never their values. Keeps up to 1,000 events for 30 days. Routine visitor requests are not logged."
+#: includes/admin/trait-admin-utilities-ui.php:372
+msgid "Not checked"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:350
-msgid "Enable Site Activity to view and record events."
+#: includes/admin/trait-admin-utilities-ui.php:382
+msgid "All results"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:384
-msgid "The activity log could not be read. Check private storage."
+#: includes/admin/trait-admin-utilities-ui.php:386
+msgid "Source type"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:386
+msgid "Posts and pages"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:386
+msgid "Posts"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:386
+msgid "Pages"
 msgstr ""
 
 #: includes/admin/trait-admin-utilities-ui.php:387
-msgid "Search target or fields"
+msgid "URL or source title"
 msgstr ""
 
 #: includes/admin/trait-admin-utilities-ui.php:388
-#: includes/admin/trait-admin-utilities-ui.php:396
+msgid "Filter results"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:389
+msgid "Reset"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:397
+msgid "Edit source link"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:398
+msgid "This action updates matching links in this source post only. Text and media are preserved."
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:401
+msgid "Action"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:402
+msgid "New URL"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:404
+msgid "Preview change"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:404
+msgid "Apply change"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:418
+msgid "Tracks module settings, plugin/theme changes, and post/page status changes. Stores changed field names, never their values. Keeps up to 1,000 events for 30 days. Routine visitor requests are not logged."
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:420
+msgid "Enable Site Activity to view and record events."
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:454
+msgid "The activity log could not be read. Check private storage."
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:457
+msgid "Search target or fields"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:458
+#: includes/admin/trait-admin-utilities-ui.php:466
 #: includes/features/class-site-activity.php:300
 msgid "Event"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:388
+#: includes/admin/trait-admin-utilities-ui.php:458
 msgid "All events"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:393
+#: includes/admin/trait-admin-utilities-ui.php:463
 msgid "Actor ID"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:394
+#: includes/admin/trait-admin-utilities-ui.php:464
 msgid "Filter"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:396
+#: includes/admin/trait-admin-utilities-ui.php:466
 msgid "Time (UTC)"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:396
+#: includes/admin/trait-admin-utilities-ui.php:466
 msgid "Actor"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:396
+#: includes/admin/trait-admin-utilities-ui.php:466
 #: includes/features/class-site-activity.php:304
 msgid "Target"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:396
+#: includes/admin/trait-admin-utilities-ui.php:466
 msgid "Details"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:400
+#: includes/admin/trait-admin-utilities-ui.php:470
 msgid "No activity matches these filters."
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:405
+#: includes/admin/trait-admin-utilities-ui.php:475
 msgid "System or anonymized user"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:411
+#: includes/admin/trait-admin-utilities-ui.php:481
 msgid "Delete the stored activity history"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:412
+#: includes/admin/trait-admin-utilities-ui.php:482
 msgid "Clear activity log"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:419
+#: includes/admin/trait-admin-utilities-ui.php:489
 msgid "Module settings changed"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:420
+#: includes/admin/trait-admin-utilities-ui.php:490
 msgid "Plugin activated"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:421
+#: includes/admin/trait-admin-utilities-ui.php:491
 msgid "Plugin deactivated"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:422
+#: includes/admin/trait-admin-utilities-ui.php:492
 msgid "Theme switched"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:423
+#: includes/admin/trait-admin-utilities-ui.php:493
 msgid "Plugin updated"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:424
+#: includes/admin/trait-admin-utilities-ui.php:494
 msgid "Theme updated"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:425
+#: includes/admin/trait-admin-utilities-ui.php:495
 msgid "Publishing status changed"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:436
+#: includes/admin/trait-admin-utilities-ui.php:506
 msgid "Previous"
 msgstr ""
 
@@ -4863,6 +4969,50 @@ msgstr ""
 
 #: includes/features/class-content-tools.php:107
 msgid "Metadata could not be copied. The partial draft was removed."
+msgstr ""
+
+#: includes/features/class-link-health-editor.php:18
+msgid "You need permission to edit this source post."
+msgstr ""
+
+#: includes/features/class-link-health-editor.php:25
+msgid "This source is no longer a public post or page."
+msgstr ""
+
+#: includes/features/class-link-health-editor.php:28
+msgid "Another user is editing this post. Try again after they finish."
+msgstr ""
+
+#: includes/features/class-link-health-editor.php:65
+msgid "Enter a complete http:// or https:// URL without credentials or spaces."
+msgstr ""
+
+#: includes/features/class-link-health-editor.php:68
+msgid "This URL is also stored in block settings. Edit it in the post editor to keep the block consistent."
+msgstr ""
+
+#: includes/features/class-link-health-editor.php:93
+msgid "This link markup needs to be edited in the post editor."
+msgstr ""
+
+#: includes/features/class-link-health-editor.php:107
+msgid "Nested links need to be edited in the post editor."
+msgstr ""
+
+#: includes/features/class-link-health-editor.php:137
+msgid "An unclosed link needs to be edited in the post editor."
+msgstr ""
+
+#: includes/features/class-link-health-editor.php:150
+msgid "No matching links would change in this post."
+msgstr ""
+
+#: includes/features/class-link-health-editor.php:200
+msgid "The preview expired or this post changed. Preview the edit again."
+msgstr ""
+
+#: includes/features/class-link-health-editor.php:213
+msgid "The post changed or could not be saved. Preview the edit again."
 msgstr ""
 
 #: includes/features/class-link-health.php:296

@@ -191,7 +191,7 @@ class Link_Health {
 	}
 
 	/** Include the URL identity when checking whether a stored report is stale. */
-	private static function content_hash( object $post ): string {
+	public static function content_hash( object $post ): string {
 		return hash( 'sha256', $post->post_content . "\0" . $post->post_name . "\0" . $post->post_parent . "\0" . \get_permalink( $post->ID ) );
 	}
 
@@ -592,7 +592,11 @@ class Link_Health {
 	}
 
 	/** Page through link rows across all public sources, loading only selected reports. */
-	public static function report_page( int $page = 1 ): array {
+	public static function report_page( int $page = 1, array $filters = array() ): array {
+		$filters = Link_Health_Report::filters( $filters );
+		if ( '' !== implode( '', $filters ) ) {
+			return Link_Health_Report::page( $page, $filters );
+		}
 		global $wpdb;
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Lightweight counts avoid loading every serialized report on each live refresh.
 		$sources = $wpdb->get_results( $wpdb->prepare( "SELECT p.ID, c.meta_value AS link_count FROM {$wpdb->posts} p INNER JOIN {$wpdb->postmeta} r ON r.post_id = p.ID AND r.meta_key = %s LEFT JOIN {$wpdb->postmeta} c ON c.post_id = p.ID AND c.meta_key = %s WHERE p.post_type IN ('post','page') AND p.post_status = 'publish' AND p.post_password = '' ORDER BY p.ID ASC", self::META_KEY, self::COUNT_KEY ) );
@@ -646,5 +650,49 @@ class Link_Health {
 			'page'  => $page,
 			'total' => $total,
 		);
+	}
+
+	/** Reconcile only the edited source, without making network requests or resetting a scan. */
+	public static function refresh_after_edit( int $post_id, string $before_hash ): bool {
+		$path = Data_Directory::file( 'link-health-state.json' );
+		if ( '' === $path ) {
+			return false; }
+		$result = Atomic_JSON_Store::update(
+			$path,
+			static function ( $state ) use ( $post_id, $before_hash ) {
+				$post = self::public_post( $post_id );
+				if ( ! $post ) {
+					return null; }
+				$hash    = self::content_hash( $post );
+				$old     = (array) \get_post_meta( $post_id, self::META_KEY, true );
+				$reuse   = in_array( $old['hash'] ?? '', array( $before_hash, $hash ), true ) ? (array) ( $old['rows'] ?? array() ) : array();
+				$urls    = self::extract_links( $post->post_content, \get_permalink( $post_id ) );
+				$ignored = (array) \get_post_meta( $post_id, self::IGNORE_KEY, true );
+				$report  = array(
+					'hash'      => $hash,
+					'rows'      => array(),
+					'complete'  => true,
+					'truncated' => count( $urls ) > self::MAX_POST_LINKS,
+					'checked'   => time(),
+				);
+				foreach ( array_slice( $urls, 0, self::MAX_POST_LINKS ) as $url ) {
+					$key                    = md5( $url );
+					$report['rows'][ $key ] = $reuse[ $key ] ?? array(
+						'url'     => $url,
+						'status'  => 'unknown',
+						'code'    => 0,
+						'checked' => 0,
+						'chain'   => array(),
+					);
+					if ( empty( $report['rows'][ $key ]['checked'] ) && ! in_array( $key, $ignored, true ) ) {
+						$report['complete'] = false; }
+				}
+				\update_post_meta( $post_id, self::META_KEY, $report );
+				\update_post_meta( $post_id, self::COUNT_KEY, count( $report['rows'] ) );
+				\update_post_meta( $post_id, self::IGNORE_KEY, array_values( array_intersect( $ignored, array_keys( $report['rows'] ) ) ) );
+				return \get_post_meta( $post_id, self::META_KEY, true ) === $report ? $state : null;
+			}
+		);
+		return $result['success'];
 	}
 }

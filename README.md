@@ -22,7 +22,7 @@ All-in-one WordPress optimization toolkit with 19 modules for performance, secur
 
 All modules are accessed through a unified dashboard at `wp-admin/admin.php?page=functionalities`. Click any module card to configure its settings.
 
-Link Health shows live scan activity, a progress bar, checked-link counts, and 50 results per page across all scanned sources. Keep its workspace open for continuous bounded checking; Stop finishes the current batch and Resume continues from saved progress. See [live scan verification](docs/link-health-live-verification.md).
+Link Health shows live scan activity, a progress bar, checked-link counts, and 50 results per page across all scanned sources. Filter by result, source type, or URL/source-title text; CSV export uses the same filters. Preview and replace or unlink matching URLs in an individual source post, with revision support and concurrent-save protection. Keep its workspace open for continuous bounded checking; Stop finishes the current batch and Resume continues from saved progress. See [live scan verification](docs/link-health-live-verification.md).
 
 ## Backend branding and controls
 
