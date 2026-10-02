@@ -39,6 +39,9 @@ $functionalities_cleanup_site = static function (): void {
 	// Uninstall removes the code these events execute, even when data is kept.
 	wp_clear_scheduled_hook( 'functionalities_assumption_background_scan' );
 	wp_clear_scheduled_hook( 'functionalities_redirect_flush_buffer' );
+	wp_clear_scheduled_hook( 'functionalities_link_health_batch' );
+	wp_clear_scheduled_hook( 'functionalities_link_health_weekly' );
+	wp_clear_scheduled_hook( 'functionalities_activity_prune' );
 
 	// Check if user opted in to full data removal.
 	if ( ! get_option( 'functionalities_delete_data_on_uninstall', false ) ) {
@@ -52,6 +55,9 @@ $functionalities_cleanup_site = static function (): void {
 
 	// --- Plugin options ---
 	$functionalities_options = array(
+		'functionalities_content_tools',
+		'functionalities_link_health',
+		'functionalities_site_activity',
 		'functionalities_link_management',
 		'functionalities_block_cleanup',
 		'functionalities_editor_links',
@@ -95,6 +101,8 @@ $functionalities_cleanup_site = static function (): void {
 	global $wpdb;
 
 	$functionalities_meta_keys = array(
+		'_functionalities_link_health',
+		'_functionalities_link_health_ignored',
 		'_functionalities_content_snapshot',
 		'_functionalities_regression_settings',
 		'_functionalities_regression_status',
@@ -117,6 +125,10 @@ $functionalities_cleanup_site = static function (): void {
 			$wpdb->esc_like( '_transient_timeout_funct_login_' ) . '%'
 		)
 	);
+
+	// Deduplicated Link Health URL checks (bounded expiring cache).
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Uninstall cleanup.
+	$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s", $wpdb->esc_like( '_transient_functionalities_link_health_' ) . '%', $wpdb->esc_like( '_transient_timeout_functionalities_link_health_' ) . '%' ) );
 
 	// Redirect manager cache transient.
 	delete_transient( 'func_redirects_json' );

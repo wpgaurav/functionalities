@@ -1582,3 +1582,19 @@
 	background: #f6f7f7;
 	white-space: pre-wrap;
 }
+
+/* Utility workspaces use native controls and scroll independently on small screens. */
+.functionalities-utility-actions { display: flex; gap: 12px; flex-wrap: wrap; align-items: end; margin: 16px 0; }
+.functionalities-utility-action { display: inline-block; margin: 3px; }
+.functionalities-utility-table { overflow-x: auto; margin: 16px 0; }
+.functionalities-utility-table table { min-width: 650px; }
+.functionalities-utility-url { overflow-wrap: anywhere; max-width: 440px; }
+.functionalities-utilities form.functionalities-utility-action {
+	padding: 0;
+	margin: 0 4px 4px 0;
+	border: 0;
+	border-radius: 0;
+	background: transparent;
+	box-shadow: none;
+}
+.functionalities-utilities .functionalities-utility-table td { vertical-align: top; }

@@ -5,15 +5,15 @@ Tags: performance, security, seo, redirection, cleanup
 Requires at least: 6.3
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.6.3
+Stable tag: 1.7.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Replace 5+ plugins with one lightweight toolkit. 16 modules for performance, security, SEO, redirects, and content management.
+Replace 5+ plugins with one lightweight toolkit. 19 modules for performance, security, SEO, redirects, and content management.
 
 == Description ==
 
-Dynamic Functionalities replaces the stack of single-purpose plugins most WordPress sites depend on. Instead of installing separate plugins for performance cleanup, redirect management, login security, schema markup, external link control, and code snippets, you get 16 purpose-built modules in one package that loads less code than most individual plugins.
+Dynamic Functionalities replaces the stack of single-purpose plugins most WordPress sites depend on. Instead of installing separate plugins for performance cleanup, redirect management, login security, schema markup, external link control, and code snippets, you get 19 purpose-built modules in one package that loads less code than most individual plugins.
 
 Every module is independent. Enable what you need, disable what you don't. Disabled modules load zero code — no hooks, no files, no queries.
 
@@ -34,7 +34,7 @@ Existing settings, hooks, admin URLs, and data files carry over untouched. The f
 
 A typical WordPress site runs 5-10 utility plugins that each load their own CSS, JS, options, and database queries on every page load. Dynamic Functionalities consolidates these into a single plugin with shared infrastructure:
 
-* **One autoloader** instead of 16 separate plugin bootstraps
+* **One autoloader** instead of 19 separate plugin bootstraps
 * **Shared options caching** across all modules (static properties, not repeated DB calls)
 * **Zero frontend assets** unless a module explicitly requires them
 * **Single admin menu** instead of scattered settings pages
@@ -86,7 +86,7 @@ Some modules solve problems no other free plugin addresses:
 
 * [functionalities.dev](https://functionalities.dev/) — Documentation home
 * [Getting started](https://functionalities.dev/docs/getting-started) — Install, enable your first module, and verify it
-* [Module reference](https://functionalities.dev/modules) — What each of the 16 modules does
+* [Module reference](https://functionalities.dev/modules) — What each of the 19 modules does
 * [Dashboard guide](https://functionalities.dev/docs/dashboard) — Working with the module dashboard
 * [Hooks](https://functionalities.dev/docs/hooks) and [API reference](https://functionalities.dev/docs/api-reference) — For developers extending the plugin
 * [FAQ](https://functionalities.dev/faq) — Common questions answered in more depth than this page
@@ -94,6 +94,11 @@ Some modules solve problems no other free plugin addresses:
 * [Training](https://gauravtiwari.org/portal/course/functionalities-training/lessons) — Step-by-step module walkthroughs
 * [GitHub Issues](https://github.com/wpgaurav/functionalities/issues) — Bug reports and feature requests
 * [WordPress.org Support](https://wordpress.org/support/plugin/functionalities/) — Community support forum
+
+= New utility modules =
+* **Content Tools** - Duplicate native posts/pages as drafts. Preserve blocks, taxonomies, featured images, and page templates; builder metadata requires an explicit integration.
+* **Link Health** - Check links stored in published, public posts/pages. Resume background scans, ignore/recheck results, and export CSV. Dynamic output is excluded; reports mark the 1,000 unique links per post limit.
+* **Site Activity** - Review settings, publishing, and plugin/theme changes. The private history retains at most 1,000 events for 30 days and supports WordPress privacy tools.
 
 == Installation ==
 
@@ -148,7 +153,7 @@ WordPress 6.3 and later, on PHP 7.4 and later. Version 1.6.3 is tested on WordPr
 
 = Does the plugin send any data anywhere? =
 
-There is no telemetry. Enabled monitoring and Site Health checks request public pages and probe files on your own site. Link Management fetches an external JSON exception list only if you configure its URL. AI explanations are strictly opt-in and send only a finding an administrator explicitly submits to the configured provider. The diagnostics download excludes task content, redirects, users, secrets, and site URLs.
+There is no telemetry. Enabled Link Health requests destinations linked in public posts and pages, including external websites. Other enabled monitoring and Site Health checks request public pages and probe files on your own site. Link Management fetches an external JSON exception list only if you configure its URL. AI explanations are strictly opt-in and send only a finding an administrator explicitly submits to the configured provider. The diagnostics download excludes task content, redirects, users, secrets, and site URLs.
 
 = Where does the plugin store its files? =
 
@@ -169,6 +174,12 @@ Before uninstalling, go to the Functionalities dashboard and check **"Delete all
 3. Assumption Detection module
 
 == Changelog ==
+
+= 1.7.0 =
+* Added: Content Tools duplicates native posts/pages into drafts with permission checks and a metadata allowlist.
+* Added: Link Health scans stored public-content links in resumable batches, with safe HTTP checks, cached results, ignore/recheck actions, and CSV export.
+* Added: Site Activity records a bounded private history of settings, publishing, and plugin/theme changes, with privacy export and anonymization.
+* All three modules are disabled by default. Link Health weekly scans are separately opt-in.
 
 = 1.6.3 =
 * Compatibility: Tested up to WordPress 7.1.
@@ -323,7 +334,7 @@ Before uninstalling, go to the Functionalities dashboard and check **"Delete all
 * Tested up to WordPress 7.0
 
 = 1.2.0 =
-* Changed: All 16 modules now require explicit activation — no module runs code until enabled
+* Changed: All 19 modules now require explicit activation — no module runs code until enabled
 * Added: Enable/disable toggle to every module settings page
 * Added: Toggle forms for Task Manager, Redirect Manager, and SVG Icons custom pages
 * Fixed: Redirect Manager and Task Manager file paths now set before enabled gate to prevent empty-path errors in admin
@@ -447,4 +458,4 @@ WordPress 7 compatibility: editor CSS now loads inside the iframed block editor.
 All modules now require explicit activation. After updating, visit Functionalities settings and enable the modules you use.
 
 = 1.1.0 =
-All features are now free and open source. 16 modules for performance, security, SEO, and content management.
+All features are now free and open source. 19 modules for performance, security, SEO, and content management.

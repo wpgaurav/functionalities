@@ -12,6 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Load traits.
+require_once __DIR__ . '/trait-admin-utilities-ui.php';
 require_once __DIR__ . '/trait-admin-ajax.php';
 require_once __DIR__ . '/trait-admin-options.php';
 require_once __DIR__ . '/trait-admin-sanitizers.php';
@@ -34,6 +35,7 @@ require_once __DIR__ . '/trait-admin-pwa-ui.php';
  */
 class Module_Controller {
 
+	use Admin_Utilities_UI;
 	use Admin_Ajax;
 	use Admin_Options;
 	use Admin_Sanitizers;
@@ -60,6 +62,7 @@ class Module_Controller {
 	 */
 	public static function init(): void {
 		self::define_modules();
+		self::init_utility_actions();
 		\add_action( 'admin_menu', array( __CLASS__, 'register_menu' ) );
 		\add_action( 'admin_init', array( __CLASS__, 'register_settings' ) );
 		\add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_admin_assets' ) );

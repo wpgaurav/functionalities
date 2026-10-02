@@ -39,6 +39,13 @@ rsync -a \
 
 # Fail loudly if something the plugin needs at runtime did not make it in.
 REQUIRED=(
+    "includes/features/class-content-tools.php"
+    "includes/features/class-link-health.php"
+    "includes/features/class-site-activity.php"
+    "includes/admin/trait-admin-utilities-ui.php"
+    "includes/admin/class-link-health-controller.php"
+    "includes/admin/class-site-activity-controller.php"
+
     "functionalities.php"
     "index.php"
     "readme.txt"

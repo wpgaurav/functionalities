@@ -10,6 +10,7 @@ use PHPUnit\Framework\TestCase;
 final class SettingsPortabilityTest extends TestCase {
 	public static function setUpBeforeClass(): void {
 		require_once dirname( __DIR__ ) . '/includes/core/class-module-registry.php';
+		require_once dirname( __DIR__ ) . '/includes/admin/class-module-controller.php';
 		require_once dirname( __DIR__ ) . '/includes/admin/class-settings-portability-controller.php';
 		require_once dirname( __DIR__ ) . '/includes/features/class-snippets.php';
 	}
@@ -23,6 +24,27 @@ final class SettingsPortabilityTest extends TestCase {
 				'header'     => array( array( 'code' => 'existing-code' ) ),
 			),
 		);
+	}
+
+	public function test_new_module_imports_keep_only_supported_config_fields(): void {
+		$preview = \Functionalities\Admin\Settings_Portability_Controller::preview_import(
+			array( 'schema' => 1, 'plugin' => 'dynamic-functionalities', 'settings' => array(
+				'content-tools' => array( 'enabled' => true, 'copy_secrets' => true ),
+				'link-health' => array( 'enabled' => true, 'weekly_scan' => true, 'arbitrary_urls' => array( 'http://127.0.0.1/' ) ),
+				'site-activity' => array( 'enabled' => true, 'entries' => array( 'forged' ) ),
+			) )
+		);
+		$this->assertTrue( $preview['success'] );
+		$this->assertSame( array( 'enabled' => true ), $preview['validated']['content-tools'] );
+		$this->assertSame( array( 'enabled' => true, 'weekly_scan' => true ), $preview['validated']['link-health'] );
+		$this->assertSame( array( 'enabled' => true ), $preview['validated']['site-activity'] );
+	}
+
+	public function test_csv_titles_cannot_execute_spreadsheet_formulas(): void {
+		foreach ( array( '=SUM(1,1)', '+cmd', '@cmd', '-cmd', "\t=cmd" ) as $title ) {
+			$this->assertSame( "'", substr( \Functionalities\Admin\Module_Controller::csv_safe( $title ), 0, 1 ) );
+		}
+		$this->assertSame( 'Normal title', \Functionalities\Admin\Module_Controller::csv_safe( 'Normal title' ) );
 	}
 
 	public function test_preview_reports_changes_without_updating_options(): void {

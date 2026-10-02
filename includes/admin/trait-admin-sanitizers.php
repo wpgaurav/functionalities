@@ -16,6 +16,19 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Trait for sanitizer methods.
  */
 trait Admin_Sanitizers {
+	public static function sanitize_content_tools( $input ): array {
+		return array( 'enabled' => ! empty( $input['enabled'] ) );
+	}
+	public static function sanitize_link_health( $input ): array {
+		return array(
+			'enabled'     => ! empty( $input['enabled'] ),
+			'weekly_scan' => ! empty( $input['weekly_scan'] ),
+		);
+	}
+	public static function sanitize_site_activity( $input ): array {
+		return array( 'enabled' => ! empty( $input['enabled'] ) );
+	}
+
 
 	/**
 	 * Sanitize link management settings.

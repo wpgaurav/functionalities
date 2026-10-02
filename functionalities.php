@@ -2,8 +2,8 @@
 /**
  * Plugin Name:       Dynamic Functionalities
  * Plugin URI:        https://functionalities.dev
- * Description:       All-in-one WordPress optimization toolkit. 15+ modules for performance, security, SEO, and content management.
- * Version:           1.6.3
+ * Description:       All-in-one WordPress optimization toolkit. 19 modules for performance, security, SEO, and content management.
+ * Version:           1.7.0
  * Author:            Gaurav Tiwari
  * Author URI:        https://gauravtiwari.org
  * License:           GPL-2.0-or-later
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Define constants.
 if ( ! defined( 'FUNCTIONALITIES_VERSION' ) ) {
-	define( 'FUNCTIONALITIES_VERSION', '1.6.3' );
+	define( 'FUNCTIONALITIES_VERSION', '1.7.0' );
 }
 if ( ! defined( 'FUNCTIONALITIES_FILE' ) ) {
 	define( 'FUNCTIONALITIES_FILE', __FILE__ );
@@ -58,6 +58,12 @@ spl_autoload_register(
 		}
 	}
 );
+
+// Retained activity history remains erasable/exportable even with its module off.
+\add_action( 'deleted_user', array( '\\Functionalities\\Features\\Site_Activity', 'anonymize_user' ) );
+\add_action( 'wpmu_delete_user', array( '\\Functionalities\\Features\\Site_Activity', 'anonymize_network_user' ) );
+\add_filter( 'wp_privacy_personal_data_erasers', array( '\\Functionalities\\Features\\Site_Activity', 'register_eraser' ) );
+\add_filter( 'wp_privacy_personal_data_exporters', array( '\\Functionalities\\Features\\Site_Activity', 'register_exporter' ) );
 
 // Initialize admin and only the modules required for this request.
 \add_action(
@@ -119,6 +125,9 @@ spl_autoload_register(
 	function () {
 		\wp_clear_scheduled_hook( 'functionalities_assumption_background_scan' );
 		\wp_clear_scheduled_hook( 'functionalities_redirect_flush_buffer' );
+		\wp_clear_scheduled_hook( 'functionalities_link_health_batch' );
+		\wp_clear_scheduled_hook( 'functionalities_link_health_weekly' );
+		\wp_clear_scheduled_hook( 'functionalities_activity_prune' );
 		if ( function_exists( 'flush_rewrite_rules' ) ) {
 			\flush_rewrite_rules();
 		}

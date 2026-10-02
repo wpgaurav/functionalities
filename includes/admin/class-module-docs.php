@@ -36,6 +36,21 @@ class Module_Docs {
 	 */
 	public static function get_all(): array {
 		return array(
+			'content-tools'        => array(
+				'features' => array( \__( 'Duplicate posts/pages into an editable draft owned by the current user', 'functionalities' ), \__( 'Preserve block content, taxonomies, featured image, and page template', 'functionalities' ) ),
+				'hooks'    => array(
+					array(
+						'name'        => 'functionalities_content_tools_meta_keys',
+						'description' => \__( 'Allowlist additional metadata keys to copy; edit locks and scan metadata remain excluded', 'functionalities' ),
+					),
+				),
+			),
+			'link-health'          => array(
+				'features' => array( \__( 'Resumable checks of stored public post/page links with cached URL results', 'functionalities' ), \__( 'Manual/weekly scans, ignore/recheck actions, and CSV export', 'functionalities' ), \__( 'Safe HTTP requests; confirmed missing pages are separated from inconclusive failures', 'functionalities' ) ),
+			),
+			'site-activity'        => array(
+				'features' => array( \__( 'Private history of module settings, publishing status, and plugin/theme changes', 'functionalities' ), \__( 'Searchable history bounded to 1,000 events and 30 days', 'functionalities' ), \__( 'Stores field names rather than values, with privacy export and anonymization', 'functionalities' ) ),
+			),
 			'link-management'      => array(
 				'features' => array(
 					\__( 'Automatically adds rel="nofollow" to external links in post content', 'functionalities' ),

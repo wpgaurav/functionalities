@@ -15,6 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 trait Admin_Settings {
 
 	public static function register_settings(): void {
+		self::register_utility_settings();
 		\register_setting(
 			'functionalities_link_management',
 			'functionalities_link_management',

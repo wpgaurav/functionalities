@@ -16,6 +16,22 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Trait for options getter methods.
  */
 trait Admin_Options {
+	public static function get_content_tools_options(): array {
+		return array_merge( array( 'enabled' => false ), (array) \get_option( 'functionalities_content_tools', array() ) );
+	}
+	public static function get_link_health_options(): array {
+		return array_merge(
+			array(
+				'enabled'     => false,
+				'weekly_scan' => false,
+			),
+			(array) \get_option( 'functionalities_link_health', array() )
+		);
+	}
+	public static function get_site_activity_options(): array {
+		return array_merge( array( 'enabled' => false ), (array) \get_option( 'functionalities_site_activity', array() ) );
+	}
+
 
 	/**
 	 * Get link management options with defaults.

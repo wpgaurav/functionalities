@@ -2,9 +2,9 @@
 
 [![Buy me a coffee](https://img.shields.io/badge/Buy%20me%20a%20coffee-FFDD00?style=flat&logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/gauravtiwari)
 
-All-in-one WordPress optimization toolkit with 16 modules for performance, security, SEO, and content management. Built with modern WordPress coding standards and a clean module-based dashboard. Optimized for performance with modular initialization, static property caching, and intelligent transients.
+All-in-one WordPress optimization toolkit with 19 modules for performance, security, SEO, and content management. Built with modern WordPress coding standards and a clean module-based dashboard. Optimized for performance with modular initialization, static property caching, and intelligent transients.
 
-**Version:** 1.6.3
+**Version:** 1.7.0
 **Requires WordPress:** 6.3 or later (tested up to 7.1)
 **Requires PHP:** 7.4 or later
 **License:** GPL-2.0-or-later
@@ -29,7 +29,7 @@ Full documentation is at **[functionalities.dev](https://functionalities.dev/)**
 | | |
 |---|---|
 | [Getting started](https://functionalities.dev/docs/getting-started) | Install, enable a module, verify it works |
-| [Module reference](https://functionalities.dev/modules) | What each of the 16 modules does |
+| [Module reference](https://functionalities.dev/modules) | What each of the 19 modules does |
 | [Dashboard](https://functionalities.dev/docs/dashboard) | Working with the module dashboard |
 | [Hooks](https://functionalities.dev/docs/hooks) | Every action and filter the plugin fires |
 | [API reference](https://functionalities.dev/docs/api-reference) | Extending the plugin in code |
@@ -56,6 +56,24 @@ This plugin is built with a "Performance First" philosophy. Unlike many all-in-o
 ---
 
 ## Modules
+
+### Content Tools
+
+Adds **Duplicate as draft** to native post/page row actions. The new draft belongs to the current user and preserves stored block content, excerpt, taxonomies, featured image, and page template. Source identity, publication state, comments, revisions, edit locks, and scan metadata are excluded. Copying additional metadata requires the `functionalities_content_tools_meta_keys` allowlist filter and the corresponding metadata permissions. A failed copy removes the partial draft.
+
+### Link Health
+
+Checks anchor links in stored public, published posts/pages in small resumable batches. Duplicate destinations share expiring results. Safe HEAD requests use bounded GET confirmation before marking 404/410 as broken; authentication errors, rate limits, transport failures, and server errors remain inconclusive. Redirect hops are validated individually.
+
+The workspace provides manual start/resume/stop, per-link ignore/recheck, source editing links, paginated reports, and CSV export. Weekly scans are separately opt-in and use WP-Cron. Reports mark content changes, partial scans, and the 1,000 unique links per post limit. Password-protected content, dynamic output, shortcodes, and navigation are excluded. Scans never rewrite content. Results are stored in post metadata, URL checks in expiring transients, and the worker cursor in protected atomic storage.
+
+### Site Activity
+
+Stores a private history of module-setting field changes, post/page status transitions, and plugin/theme changes. Entries include actor ID, event, target, and timestamp. Setting values, snippet bodies, content, passwords, tokens, visitor IPs, and request data are excluded. The workspace supports search, event/actor filters, pagination, and explicit clearing.
+
+History is bounded to 1,000 entries and 30 days, with daily pruning. WordPress privacy export/erasure and user deletion anonymize actor references, including when recording is disabled. Logging failures leave the underlying site operation intact.
+
+All three modules are disabled by default and follow the existing uninstall retention preference.
 
 ### Link Management
 
@@ -440,7 +458,7 @@ functionalities/
 │   ├── core/
 │   │   ├── class-module-registry.php                   Module list + lazy loader
 │   │   └── class-wordpress-7-integration.php           Abilities, DataViews, AI
-│   ├── features/                                       One class per module (16)
+│   ├── features/                                       One class per module (19)
 │   ├── storage/
 │   │   ├── class-atomic-json-store.php                 Locked, atomic JSON writes
 │   │   └── class-data-directory.php                    Private data path + hardening
@@ -492,7 +510,7 @@ Example module definition:
 
 ## Support This Project
 
-Functionalities is a free and open source WordPress plugin with 16 modules for performance, security, SEO and content management, each behind its own toggle. For 1.6.0 I moved Link Management, Block Cleanup and Schema to the WordPress HTML API so they edit attributes in place and leave Vue and Alpine templates alone.
+Functionalities is a free and open source WordPress plugin with 19 modules for performance, security, SEO and content management, each behind its own toggle. For 1.6.0 I moved Link Management, Block Cleanup and Schema to the WordPress HTML API so they edit attributes in place and leave Vue and Alpine templates alone.
 
 If it replaced a separate redirect manager or a header and footer snippets plugin on your site, you can buy me a coffee.
 

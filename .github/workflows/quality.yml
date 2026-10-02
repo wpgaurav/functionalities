@@ -90,6 +90,12 @@ jobs:
           test -s "$zip"
           unzip -t "$zip"
           for required in \
+            functionalities/includes/features/class-content-tools.php \
+            functionalities/includes/features/class-link-health.php \
+            functionalities/includes/features/class-site-activity.php \
+            functionalities/includes/admin/trait-admin-utilities-ui.php \
+            functionalities/includes/admin/class-link-health-controller.php \
+            functionalities/includes/admin/class-site-activity-controller.php \
             functionalities/functionalities.php \
             functionalities/readme.txt \
             functionalities/uninstall.php \
