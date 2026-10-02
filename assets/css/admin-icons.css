@@ -1,0 +1,116 @@
+/* Bundled Tabler outline masks; geometry sourced from ~/Icons. */
+.functionalities-icon--activity { --func-icon: url("../icons/activity.svg"); }
+.functionalities-icon--alert-triangle,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-warning::before { --func-icon: url("../icons/alert-triangle.svg"); }
+.functionalities-icon--arrow-back-up,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-editor-undo::before { --func-icon: url("../icons/arrow-back-up.svg"); }
+.functionalities-icon--arrow-right,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-arrow-right-alt2::before { --func-icon: url("../icons/arrow-right.svg"); }
+.functionalities-icon--arrow-up-right,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-external::before { --func-icon: url("../icons/arrow-up-right.svg"); }
+.functionalities-icon--arrows-shuffle,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-randomize::before { --func-icon: url("../icons/arrows-shuffle.svg"); }
+.functionalities-icon--book,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-book::before { --func-icon: url("../icons/book.svg"); }
+.functionalities-icon--braces,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-block-default::before { --func-icon: url("../icons/braces.svg"); }
+.functionalities-icon--briefcase,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-portfolio::before { --func-icon: url("../icons/briefcase.svg"); }
+.functionalities-icon--check,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-yes-alt::before,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-yes::before { --func-icon: url("../icons/check.svg"); }
+.functionalities-icon--chevron-down,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-arrow-down-alt2::before { --func-icon: url("../icons/chevron-down.svg"); }
+.functionalities-icon--chevron-up,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-arrow-up-alt2::before { --func-icon: url("../icons/chevron-up.svg"); }
+.functionalities-icon--clipboard,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-clipboard::before { --func-icon: url("../icons/clipboard.svg"); }
+.functionalities-icon--code,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-editor-code::before { --func-icon: url("../icons/code.svg"); }
+.functionalities-icon--columns-2,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-columns::before { --func-icon: url("../icons/columns-2.svg"); }
+.functionalities-icon--components,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-layout::before { --func-icon: url("../icons/components.svg"); }
+.functionalities-icon--copy,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-admin-page::before { --func-icon: url("../icons/copy.svg"); }
+.functionalities-icon--copyright,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-media-text::before { --func-icon: url("../icons/copyright.svg"); }
+.functionalities-icon--dashboard,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-dashboard::before { --func-icon: url("../icons/dashboard.svg"); }
+.functionalities-icon--database,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-database::before { --func-icon: url("../icons/database.svg"); }
+.functionalities-icon--device-floppy,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-editor-save::before { --func-icon: url("../icons/device-floppy.svg"); }
+.functionalities-icon--device-mobile,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-smartphone::before { --func-icon: url("../icons/device-mobile.svg"); }
+.functionalities-icon--download,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-download::before { --func-icon: url("../icons/download.svg"); }
+.functionalities-icon--edit,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-edit::before { --func-icon: url("../icons/edit.svg"); }
+.functionalities-icon--eye,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-visibility::before { --func-icon: url("../icons/eye.svg"); }
+.functionalities-icon--file-description,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-format-aside::before { --func-icon: url("../icons/file-description.svg"); }
+.functionalities-icon--file-plus,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-welcome-add-page::before { --func-icon: url("../icons/file-plus.svg"); }
+.functionalities-icon--filter,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-filter::before { --func-icon: url("../icons/filter.svg"); }
+.functionalities-icon--flag,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-flag::before { --func-icon: url("../icons/flag.svg"); }
+.functionalities-icon--gauge,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-performance::before { --func-icon: url("../icons/gauge.svg"); }
+.functionalities-icon--help,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-sos::before,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-editor-help::before { --func-icon: url("../icons/help.svg"); }
+.functionalities-icon--hierarchy,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-networking::before { --func-icon: url("../icons/hierarchy.svg"); }
+.functionalities-icon--icons { --func-icon: url("../icons/icons.svg"); }
+.functionalities-icon--info-circle,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-info::before,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-info-outline::before { --func-icon: url("../icons/info-circle.svg"); }
+.functionalities-icon--link,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-admin-links::before { --func-icon: url("../icons/link.svg"); }
+.functionalities-icon--list-check { --func-icon: url("../icons/list-check.svg"); }
+.functionalities-icon--list-details,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-list-view::before { --func-icon: url("../icons/list-details.svg"); }
+.functionalities-icon--lock,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-lock::before { --func-icon: url("../icons/lock.svg"); }
+.functionalities-icon--maximize,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-editor-expand::before { --func-icon: url("../icons/maximize.svg"); }
+.functionalities-icon--menu-2,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-menu::before { --func-icon: url("../icons/menu-2.svg"); }
+.functionalities-icon--minimize,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-editor-contract::before { --func-icon: url("../icons/minimize.svg"); }
+.functionalities-icon--photo,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-image::before,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-format-gallery::before,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-format-image::before { --func-icon: url("../icons/photo.svg"); }
+.functionalities-icon--plus,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-plus-alt2::before,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-plus::before { --func-icon: url("../icons/plus.svg"); }
+.functionalities-icon--refresh,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-update::before { --func-icon: url("../icons/refresh.svg"); }
+.functionalities-icon--search,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-editor-unlink::before,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-search::before { --func-icon: url("../icons/search.svg"); }
+.functionalities-icon--settings,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-admin-generic::before,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-admin-settings::before { --func-icon: url("../icons/settings.svg"); }
+.functionalities-icon--shield-check,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-shield::before { --func-icon: url("../icons/shield-check.svg"); }
+.functionalities-icon--tag,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-tag::before { --func-icon: url("../icons/tag.svg"); }
+.functionalities-icon--tool,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-admin-tools::before { --func-icon: url("../icons/tool.svg"); }
+.functionalities-icon--trash,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-trash::before { --func-icon: url("../icons/trash.svg"); }
+.functionalities-icon--typography,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-editor-textcolor::before { --func-icon: url("../icons/typography.svg"); }
+.functionalities-icon--upload,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-upload::before { --func-icon: url("../icons/upload.svg"); }
+.functionalities-icon--x,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-dismiss::before,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-no-alt::before,
+:is(.functionalities-dashboard,.functionalities-module) .dashicons-no::before { --func-icon: url("../icons/x.svg"); }
+
+.functionalities-icon--arrow-left { --func-icon: url("../icons/arrow-left.svg"); }

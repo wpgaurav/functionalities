@@ -39,6 +39,25 @@ rsync -a \
 
 # Fail loudly if something the plugin needs at runtime did not make it in.
 REQUIRED=(
+    "includes/admin/class-admin-icons.php"
+    "assets/brand/functionalities.svg"
+    "assets/brand/functionalities-admin.svg"
+    "assets/css/admin-brand.css"
+    "assets/css/admin-icons.css"
+    "assets/css/admin-polish.css"
+    "assets/js/admin-polish.js"
+    "assets/js/admin-link-health.js"
+    "assets/icons/settings.svg"
+    "assets/icons/arrow-left.svg"
+    "assets/icons/LICENSE"
+
+    "includes/features/class-content-tools.php"
+    "includes/features/class-link-health.php"
+    "includes/features/class-site-activity.php"
+    "includes/admin/trait-admin-utilities-ui.php"
+    "includes/admin/class-link-health-controller.php"
+    "includes/admin/class-site-activity-controller.php"
+
     "functionalities.php"
     "index.php"
     "readme.txt"

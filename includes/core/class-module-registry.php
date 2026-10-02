@@ -30,6 +30,9 @@ class Module_Registry {
 	 */
 	public static function get_definitions(): array {
 		return array(
+			'content-tools'        => self::definition( __( 'Content Tools', 'functionalities' ), __( 'Duplicate posts and pages into safe, editable drafts.', 'functionalities' ), 'dashicons-admin-page', 'Content_Tools' ),
+			'link-health'          => self::definition( __( 'Link Health', 'functionalities' ), __( 'Find broken links with resumable, bounded scans.', 'functionalities' ), 'dashicons-admin-links', 'Link_Health', true ),
+			'site-activity'        => self::definition( __( 'Site Activity', 'functionalities' ), __( 'Review a private, bounded history of site changes.', 'functionalities' ), 'dashicons-list-view', 'Site_Activity', true ),
 			'task-manager'         => self::definition( __( 'Task Manager', 'functionalities' ), __( 'File-based project task management with JSON storage.', 'functionalities' ), 'dashicons-yes-alt', 'Task_Manager', true ),
 			'misc'                 => self::definition( __( 'Performance & Cleanup', 'functionalities' ), __( 'Disable bloat, emojis, embeds, heartbeat, and more.', 'functionalities' ), 'dashicons-performance', 'Misc' ),
 			'snippets'             => self::definition( __( 'Header & Footer', 'functionalities' ), __( 'Add GA4, custom header and footer code.', 'functionalities' ), 'dashicons-editor-code', 'Snippets' ),
@@ -147,6 +150,14 @@ class Module_Registry {
 	 * @return void
 	 */
 	public static function handle_option_update( string $option, $old_value, $value ): void {
+		if ( 'functionalities_link_health' === $option ) {
+			\Functionalities\Features\Link_Health::sync_schedule();
+			return;
+		}
+		if ( 'functionalities_site_activity' === $option ) {
+			\Functionalities\Features\Site_Activity::sync_schedule();
+			return;
+		}
 		if ( 'functionalities_pwa' !== $option ) {
 			return;
 		}

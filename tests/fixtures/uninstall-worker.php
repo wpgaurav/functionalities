@@ -18,6 +18,12 @@ $GLOBALS['options'] = array(
 	1 => array( 'functionalities_data_key' => 'Aaaaaaaa', 'functionalities_delete_data_on_uninstall' => 'custom' !== $scenario ),
 	2 => array( 'functionalities_data_key' => 'Bbbbbbbb', 'functionalities_delete_data_on_uninstall' => 'custom' === $scenario ),
 );
+foreach ( array( 1, 2 ) as $blog ) {
+	foreach ( array( 'content_tools', 'link_health', 'site_activity' ) as $module ) {
+		$GLOBALS['options'][ $blog ][ 'functionalities_' . $module ] = array( 'enabled' => true );
+	}
+}
+$GLOBALS['scheduled_clears'] = array();
 $GLOBALS['deleted_paths'] = array();
 function is_multisite() { return true; }
 function get_current_blog_id() { return $GLOBALS['current_blog']; }
@@ -27,7 +33,7 @@ function restore_current_blog() { $GLOBALS['current_blog'] = array_pop( $GLOBALS
 function get_option( $name, $default = false ) { return $GLOBALS['options'][ $GLOBALS['current_blog'] ][ $name ] ?? $default; }
 function delete_option( $name ) { unset( $GLOBALS['options'][ $GLOBALS['current_blog'] ][ $name ] ); }
 function delete_transient() {}
-function wp_clear_scheduled_hook() {}
+function wp_clear_scheduled_hook( $hook ) { $GLOBALS['scheduled_clears'][] = $hook; }
 function apply_filters( $hook, $value ) { global $base; return 'functionalities_data_base_dir' === $hook ? $base : $value; }
 function wp_delete_file( $file ) { $GLOBALS['deleted_paths'][] = $file; }
 class UninstallDatabaseSpy {
@@ -45,7 +51,7 @@ class UninstallFilesystemSpy {
 $GLOBALS['wpdb'] = new UninstallDatabaseSpy();
 function WP_Filesystem() { $GLOBALS['wp_filesystem'] = new UninstallFilesystemSpy(); return true; }
 require dirname( __DIR__, 2 ) . '/uninstall.php';
-echo json_encode( array( 'base' => $base, 'deleted_paths' => $GLOBALS['deleted_paths'], 'options' => $GLOBALS['options'], 'current_blog' => $GLOBALS['current_blog'] ) );
+echo json_encode( array( 'scheduled_clears' => $GLOBALS['scheduled_clears'], 'base' => $base, 'deleted_paths' => $GLOBALS['deleted_paths'], 'options' => $GLOBALS['options'], 'current_blog' => $GLOBALS['current_blog'] ) );
 rmdir( $base . '/Aaaaaaaa' );
 rmdir( $base . '/Bbbbbbbb' );
 rmdir( $base );

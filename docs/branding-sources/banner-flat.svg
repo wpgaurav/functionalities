@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1544 500" role="img" aria-labelledby="art-title art-desc">
+  <title id="art-title">Dynamic Functionalities: a modular WordPress toolkit</title>
+  <desc id="art-desc">A colorful bento banner with the Functionalities platform mark, 19 optional modules, and tiles for Content Tools, Link Health, reusable fonts and styles, and Site Activity. Free and open source.</desc>
+  <rect width="1544" height="500" fill="#f6f8fa" />
+  <rect x="24" y="24" width="640" height="452" rx="20" fill="#142f46" />
+  <rect x="688" y="24" width="460" height="224" rx="20" fill="#fff0d4" />
+  <rect x="1172" y="24" width="348" height="224" rx="20" fill="#dcf5ed" />
+  <rect x="688" y="272" width="348" height="204" rx="20" fill="#eee7fa" />
+  <rect x="1060" y="272" width="460" height="204" rx="20" fill="#e4edff" />
+  <svg x="64" y="60" width="82" height="82" viewBox="0 0 256 256" aria-hidden="true">
+    <rect width="256" height="256" rx="44" fill="#f3f7ff" />
+    <g id="modular-platform" transform="translate(22 17) scale(8.8333333333)" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="m12 2 4 2.5-4 2.5-4-2.5Z" stroke="#7b51c7" />
+      <path d="m6 6 4 2.5-4 2.5-4-2.5Z" stroke="#009889" />
+      <path d="m18 6 4 2.5-4 2.5-4-2.5Z" stroke="#db702e" />
+      <path d="m12 10 4 2.5-4 2.5-4-2.5Z" stroke="#2770d9" />
+      <path d="m2 13 10 6 10-6" stroke="#2c64d8" />
+      <path d="M2 17l10 6 10-6" stroke="#153d93" />
+    </g>
+  </svg>
+  <text x="168" y="109" font-family="Finlandica Text, sans-serif" font-size="28" font-weight="500" fill="#d3e4ee">WordPress toolkit</text>
+  <text x="64" y="213" font-family="Really Sans Large, sans-serif" font-size="68" font-weight="800" fill="#ffffff">Dynamic</text>
+  <text x="64" y="286" font-family="Really Sans Large, sans-serif" font-size="68" font-weight="800" fill="#ffffff">Functionalities</text>
+  <text x="64" y="342" font-family="Finlandica Text, sans-serif" font-size="32" font-weight="400" fill="#d3e4ee">Enable only what you need.</text>
+  <text x="64" y="412" font-family="Finlandica Text, sans-serif" font-size="30" font-weight="500" fill="#8ee5cc">19 optional modules</text>
+  <text x="64" y="451" font-family="Finlandica Text, sans-serif" font-size="26" font-weight="400" fill="#d3e4ee">Free and open source</text>
+  <g id="feature-copy" transform="translate(728 58) scale(2.5)" fill="none" stroke="#a05820" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M7 9.667a2.667 2.667 0 0 1 2.667 -2.667h8.666a2.667 2.667 0 0 1 2.667 2.667v8.666a2.667 2.667 0 0 1 -2.667 2.667h-8.666a2.667 2.667 0 0 1 -2.667 -2.667l0 -8.666" />
+    <path d="M4.012 16.737a2.005 2.005 0 0 1 -1.012 -1.737v-10c0 -1.1 .9 -2 2 -2h10c.75 0 1.158 .385 1.5 1" />
+  </g>
+  <g id="feature-link" transform="translate(1212 58) scale(2.5)" fill="none" stroke="#087763" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9 15l6 -6" />
+    <path d="M11 6l.463 -.536a5 5 0 0 1 7.071 7.072l-.534 .464" />
+    <path d="M13 18l-.397 .534a5.068 5.068 0 0 1 -7.127 0a4.972 4.972 0 0 1 0 -7.071l.524 -.463" />
+  </g>
+  <g id="feature-typography" transform="translate(728 302) scale(2.5)" fill="none" stroke="#7141a3" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 20l3 0" />
+    <path d="M14 20l7 0" />
+    <path d="M6.9 15l6.9 0" />
+    <path d="M10.2 6.3l5.8 13.7" />
+    <path d="M5 20l6 -16l2 0l7 16" />
+  </g>
+  <g id="feature-activity" transform="translate(1100 302) scale(2.5)" fill="none" stroke="#2b61c4" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 12h4l3 8l4 -16l3 8h4" />
+  </g>
+  <text x="728" y="177" font-family="Really Sans Large, sans-serif" font-size="42" font-weight="800" fill="#142f46">Content Tools</text>
+  <text x="728" y="216" font-family="Finlandica Text, sans-serif" font-size="30" font-weight="400" fill="#755024">Duplicate into drafts</text>
+  <text x="1212" y="177" font-family="Really Sans Large, sans-serif" font-size="40" font-weight="800" fill="#142f46">Link Health</text>
+  <text x="1212" y="216" font-family="Finlandica Text, sans-serif" font-size="30" font-weight="400" fill="#266658">Find broken links</text>
+  <text x="728" y="405" font-family="Really Sans Large, sans-serif" font-size="36" font-weight="800" fill="#142f46">Fonts &amp; styles</text>
+  <text x="728" y="447" font-family="Finlandica Text, sans-serif" font-size="28" font-weight="400" fill="#66517e">Built for reuse</text>
+  <text x="1100" y="405" font-family="Really Sans Large, sans-serif" font-size="42" font-weight="800" fill="#142f46">Site Activity</text>
+  <text x="1100" y="447" font-family="Finlandica Text, sans-serif" font-size="30" font-weight="400" fill="#385981">See what changed</text>
+</svg>

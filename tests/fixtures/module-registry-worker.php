@@ -12,6 +12,7 @@ define( 'WP_CONTENT_DIR', sys_get_temp_dir() . '/functionalities-registry-worker
 $enabled = isset( $argv[1] ) ? $argv[1] : 'none';
 $mode    = isset( $argv[2] ) ? $argv[2] : 'frontend';
 $hooks   = array();
+if ( ! defined( 'DAY_IN_SECONDS' ) ) { define( 'DAY_IN_SECONDS', 86400 ); }
 
 function plugin_dir_path( $file ) {
 	return dirname( $file ) . '/';

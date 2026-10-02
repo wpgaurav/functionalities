@@ -1,3 +1,7 @@
+# 1.7.0 implementation
+
+Approved: Content Tools, Link Health, Site Activity. See [the module design](docs/plans/2026-10-02-v1.7.0-modules-design.md). All three modules are implemented and verified on Gatilab. See [verification](docs/v1.7.0-verification.md). Public release remains a separate step.
+
 # Dynamic Functionalities Roadmap
 
 The next candidate is **1.6.3**. Preserve existing options, hooks, saved content, and

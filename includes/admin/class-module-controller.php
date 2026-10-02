@@ -12,6 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Load traits.
+require_once __DIR__ . '/trait-admin-utilities-ui.php';
 require_once __DIR__ . '/trait-admin-ajax.php';
 require_once __DIR__ . '/trait-admin-options.php';
 require_once __DIR__ . '/trait-admin-sanitizers.php';
@@ -34,6 +35,7 @@ require_once __DIR__ . '/trait-admin-pwa-ui.php';
  */
 class Module_Controller {
 
+	use Admin_Utilities_UI;
 	use Admin_Ajax;
 	use Admin_Options;
 	use Admin_Sanitizers;
@@ -60,6 +62,7 @@ class Module_Controller {
 	 */
 	public static function init(): void {
 		self::define_modules();
+		self::init_utility_actions();
 		\add_action( 'admin_menu', array( __CLASS__, 'register_menu' ) );
 		\add_action( 'admin_init', array( __CLASS__, 'register_settings' ) );
 		\add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_admin_assets' ) );
@@ -99,7 +102,7 @@ class Module_Controller {
 			'manage_options',
 			$parent_slug,
 			array( __CLASS__, 'render_main_page' ),
-			'dashicons-admin-generic',
+			'none',
 			65
 		);
 
@@ -139,6 +142,7 @@ class Module_Controller {
 	 * @return void
 	 */
 	public static function enqueue_admin_assets( $hook ): void {
+		\wp_enqueue_style( 'functionalities-admin-brand', FUNCTIONALITIES_URL . 'assets/css/admin-brand.css', array(), self::admin_asset_version( 'assets/css/admin-brand.css' ) );
 		if ( strpos( $hook, 'functionalities' ) === false ) {
 			return;
 		}
@@ -148,6 +152,9 @@ class Module_Controller {
 		$page = isset( $_GET['page'] ) ? \sanitize_key( $_GET['page'] ) : '';
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Module detection doesn't require nonce.
 		$module = isset( $_GET['module'] ) ? \sanitize_key( $_GET['module'] ) : '';
+		if ( '' === $module && 0 === strpos( $page, 'functionalities-' ) ) {
+			$module = substr( $page, strlen( 'functionalities-' ) );
+		}
 
 		if ( 'task-manager' === $module || 'functionalities-task-manager' === $page ) {
 			$deps[] = 'jquery-ui-sortable';
@@ -178,6 +185,9 @@ class Module_Controller {
 			\wp_enqueue_style( 'wp-color-picker' );
 			$deps[] = 'wp-color-picker';
 		}
+		if ( 'link-health' === $module ) {
+			Link_Health_Controller::enqueue();
+		}
 
 		\wp_enqueue_style(
 			'functionalities-admin',
@@ -185,6 +195,10 @@ class Module_Controller {
 			array( 'dashicons' ),
 			FUNCTIONALITIES_VERSION
 		);
+
+		\wp_enqueue_style( 'functionalities-admin-icons', FUNCTIONALITIES_URL . 'assets/css/admin-icons.css', array( 'functionalities-admin' ), self::admin_asset_version( 'assets/css/admin-icons.css' ) );
+		\wp_enqueue_style( 'functionalities-admin-polish', FUNCTIONALITIES_URL . 'assets/css/admin-polish.css', array( 'functionalities-admin-icons' ), self::admin_asset_version( 'assets/css/admin-polish.css' ) );
+		\wp_enqueue_script( 'functionalities-admin-polish', FUNCTIONALITIES_URL . 'assets/js/admin-polish.js', array(), self::admin_asset_version( 'assets/js/admin-polish.js' ), true );
 
 		\wp_enqueue_script(
 			'functionalities-admin',
@@ -205,6 +219,12 @@ class Module_Controller {
 				'runDetectionText'  => \__( 'Run Detection Now', 'functionalities' ),
 			)
 		);
+	}
+
+	/** Give edited backend assets a fresh cache key while a release is being tested. */
+	private static function admin_asset_version( string $relative ): string {
+		$path = FUNCTIONALITIES_DIR . $relative;
+		return FUNCTIONALITIES_VERSION . '-' . ( is_file( $path ) ? (string) filemtime( $path ) : '0' );
 	}
 
 	/**
@@ -255,10 +275,7 @@ class Module_Controller {
 	private static function render_dashboard(): void {
 		?>
 		<div class="wrap functionalities-dashboard">
-			<h1><?php echo \esc_html__( 'Dynamic Functionalities', 'functionalities' ); ?></h1>
-			<p class="description">
-				<?php echo \esc_html__( 'All-in-one WordPress optimization toolkit. 15+ modules for performance, security, SEO, and content management.', 'functionalities' ); ?>
-			</p>
+			<?php Admin_UI::render_header( \__( 'Dynamic Functionalities', 'functionalities' ), \__( 'Tools for your content, workflow, performance, and security. Enable only the modules you need.', 'functionalities' ) ); ?>
 
 			<div class="functionalities-modules-grid">
 				<?php
@@ -267,18 +284,18 @@ class Module_Controller {
 					?>
 					<div class="functionalities-module-card">
 						<div class="module-card-header">
-							<span class="dashicons <?php echo \esc_attr( $module['icon'] ); ?>"></span>
+							<?php echo Admin_Icons::module( $slug ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Trusted local icon markup. ?>
 							<h2><?php echo \esc_html( $module['title'] ); ?></h2>
 						</div>
 						<p class="module-description"><?php echo \esc_html( $module['description'] ); ?></p>
-						<div style="display:flex;align-items:center;gap:10px;">
+						<div class="functionalities-card-actions">
 							<a href="<?php echo \esc_url( self::get_module_url( $slug ) ); ?>" class="button button-primary">
 								<?php echo \esc_html__( 'Configure', 'functionalities' ); ?>
 							</a>
 							<?php if ( $is_active ) : ?>
-								<span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:#16a34a;"><span class="dashicons dashicons-yes-alt" style="font-size:14px;width:14px;height:14px;"></span><?php echo \esc_html__( 'Active', 'functionalities' ); ?></span>
+								<span class="functionalities-status functionalities-status--active"><span class="functionalities-icon functionalities-icon--check" aria-hidden="true"></span><?php echo \esc_html__( 'Active', 'functionalities' ); ?></span>
 							<?php else : ?>
-								<span style="font-size:12px;color:#94a3b8;"><?php echo \esc_html__( 'Inactive', 'functionalities' ); ?></span>
+								<span class="functionalities-status"><?php echo \esc_html__( 'Inactive', 'functionalities' ); ?></span>
 							<?php endif; ?>
 						</div>
 					</div>
@@ -372,27 +389,21 @@ class Module_Controller {
 
 		?>
 		<div class="wrap functionalities-module">
-			<h1>
-				<span class="dashicons <?php echo \esc_attr( $module['icon'] ); ?>"></span>
-				<?php echo \esc_html( $module['title'] ); ?>
-			</h1>
+			<?php Admin_UI::render_header( $module['title'], $module['description'], $module_slug ); ?>
 
-			<nav class="functionalities-breadcrumb">
-				<a href="<?php echo \esc_url( \admin_url( 'admin.php?page=functionalities' ) ); ?>">
-					<?php echo \esc_html__( 'Functionalities', 'functionalities' ); ?>
-				</a>
-				<span class="separator">›</span>
-				<span class="current"><?php echo \esc_html( $module['title'] ); ?></span>
-			</nav>
 
-			<form method="post" action="options.php">
-				<?php
-				$settings_group = 'functionalities_' . str_replace( '-', '_', $module_slug );
-				\settings_fields( $settings_group );
-				\do_settings_sections( $settings_group );
-				\submit_button();
-				?>
-			</form>
+			<?php
+			Admin_UI::render_settings_layout(
+				static function () use ( $module_slug ) {
+					$settings_group = 'functionalities_' . str_replace( '-', '_', $module_slug );
+					echo '<form method="post" action="options.php">';
+					\settings_fields( $settings_group );
+					\do_settings_sections( $settings_group );
+					\submit_button();
+					echo '</form>';
+				}
+			);
+			?>
 		</div>
 		<?php
 	}
@@ -514,7 +525,7 @@ class Module_Controller {
 		?>
 		<div class="functionalities-json-picker">
 			<div class="functionalities-json-picker-input">
-				<input type="text" id="functionalities_json_preset_url" class="regular-text code" name="functionalities_link_management[json_preset_url]" value="<?php echo \esc_attr( $val ); ?>" placeholder="<?php echo \esc_attr( FUNCTIONALITIES_DIR . 'exception-urls.json' ); ?>" />
+				<input type="text" id="functionalities_json_preset_url" class="regular-text code" name="functionalities_link_management[json_preset_url]" aria-label="' . \esc_attr__( 'JSON preset path or URL', 'functionalities' ) . '" value="<?php echo \esc_attr( $val ); ?>" placeholder="<?php echo \esc_attr( FUNCTIONALITIES_DIR . 'exception-urls.json' ); ?>" />
 				<button type="button" id="functionalities_json_browse_btn" class="button button-secondary">
 					<?php echo \esc_html__( 'Browse...', 'functionalities' ); ?>
 				</button>

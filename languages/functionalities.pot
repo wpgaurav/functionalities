@@ -2,21 +2,21 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Dynamic Functionalities 1.6.3\n"
+"Project-Id-Version: Dynamic Functionalities 1.7.0\n"
 "Report-Msgid-Bugs-To: https://github.com/wpgaurav/functionalities/issues\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-01T17:32:50+00:00\n"
+"POT-Creation-Date: 2026-10-02T07:43:12+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: functionalities\n"
 
 #. Plugin Name of the plugin
 #: functionalities.php
-#: includes/admin/class-module-controller.php:258
+#: includes/admin/class-module-controller.php:278
 msgid "Dynamic Functionalities"
 msgstr ""
 
@@ -27,8 +27,7 @@ msgstr ""
 
 #. Description of the plugin
 #: functionalities.php
-#: includes/admin/class-module-controller.php:260
-msgid "All-in-one WordPress optimization toolkit. 15+ modules for performance, security, SEO, and content management."
+msgid "All-in-one WordPress optimization toolkit. 19 modules for performance, security, SEO, and content management."
 msgstr ""
 
 #. Author of the plugin
@@ -41,507 +40,590 @@ msgstr ""
 msgid "https://gauravtiwari.org"
 msgstr ""
 
-#: functionalities.php:98
+#: functionalities.php:104
 msgid "Settings"
 msgstr ""
 
-#: functionalities.php:108
-#: includes/admin/class-module-controller.php:336
+#: functionalities.php:114
+#: includes/admin/class-module-controller.php:353
 msgid "Support"
 msgstr ""
 
-#: functionalities.php:109
-#: includes/admin/class-module-controller.php:340
+#: functionalities.php:115
+#: includes/admin/class-module-controller.php:357
 msgid "Report Issues"
 msgstr ""
 
-#: includes/admin/class-admin-ui.php:55
-#: includes/admin/class-module-controller.php:448
-#: includes/admin/class-module-controller.php:997
-#: includes/admin/class-module-controller.php:1092
-#: includes/admin/class-module-controller.php:1157
-#: includes/admin/class-module-controller.php:1195
-#: includes/admin/trait-admin-settings.php:324
-#: includes/admin/trait-admin-settings.php:400
-#: includes/admin/trait-admin-settings.php:522
-#: includes/admin/trait-admin-settings.php:708
-#: includes/admin/trait-admin-settings.php:794
-#: includes/admin/trait-admin-settings.php:888
-#: includes/admin/trait-admin-svg-icons-ui.php:70
+#: includes/admin/class-admin-ui.php:48
+msgid "Module guide"
+msgstr ""
+
+#: includes/admin/class-admin-ui.php:58
+msgid "Breadcrumb"
+msgstr ""
+
+#: includes/admin/class-admin-ui.php:59
+msgid "Back to modules"
+msgstr ""
+
+#: includes/admin/class-admin-ui.php:128
+#: includes/admin/class-module-controller.php:459
+#: includes/admin/class-module-controller.php:1008
+#: includes/admin/class-module-controller.php:1103
+#: includes/admin/class-module-controller.php:1168
+#: includes/admin/class-module-controller.php:1206
+#: includes/admin/trait-admin-settings.php:330
+#: includes/admin/trait-admin-settings.php:404
+#: includes/admin/trait-admin-settings.php:523
+#: includes/admin/trait-admin-settings.php:706
+#: includes/admin/trait-admin-settings.php:789
+#: includes/admin/trait-admin-settings.php:880
 msgid "What This Module Does"
 msgstr ""
 
-#: includes/admin/class-admin-ui.php:69
-#: includes/admin/class-module-controller.php:1199
-#: includes/admin/trait-admin-settings.php:333
-#: includes/admin/trait-admin-settings.php:718
-#: includes/admin/trait-admin-settings.php:898
-#: includes/admin/trait-admin-svg-icons-ui.php:73
+#: includes/admin/class-admin-ui.php:143
+#: includes/admin/class-module-controller.php:1210
+#: includes/admin/trait-admin-settings.php:334
+#: includes/admin/trait-admin-settings.php:710
+#: includes/admin/trait-admin-settings.php:884
 msgid "How to Use"
 msgstr ""
 
-#: includes/admin/class-admin-ui.php:90
-#: includes/admin/trait-admin-settings.php:338
-#: includes/admin/trait-admin-settings.php:417
-#: includes/admin/trait-admin-settings.php:540
-#: includes/admin/trait-admin-settings.php:723
-#: includes/admin/trait-admin-settings.php:809
-#: includes/admin/trait-admin-settings.php:903
+#: includes/admin/class-admin-ui.php:165
+#: includes/admin/trait-admin-settings.php:341
+#: includes/admin/trait-admin-settings.php:420
+#: includes/admin/trait-admin-settings.php:539
+#: includes/admin/trait-admin-settings.php:719
+#: includes/admin/trait-admin-settings.php:801
+#: includes/admin/trait-admin-settings.php:893
 msgid "For Developers"
 msgstr ""
 
-#: includes/admin/class-admin-ui.php:104
-#: includes/admin/trait-admin-settings.php:804
+#: includes/admin/class-admin-ui.php:179
+#: includes/admin/trait-admin-settings.php:793
 msgid "Caution"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:97
-#: includes/admin/class-module-controller.php:98
-#: includes/admin/class-module-controller.php:126
-#: includes/admin/class-module-controller.php:382
+#: includes/admin/class-link-health-controller.php:31
+#: includes/admin/class-link-health-controller.php:46
+msgid "Checking links…"
+msgstr ""
+
+#: includes/admin/class-link-health-controller.php:32
+#: includes/admin/class-link-health-controller.php:48
+msgid "Finishing the current batch…"
+msgstr ""
+
+#: includes/admin/class-link-health-controller.php:33
+msgid "Retry scan"
+msgstr ""
+
+#: includes/admin/class-link-health-controller.php:34
+#: includes/admin/trait-admin-utilities-ui.php:261
+msgid "Resume scan"
+msgstr ""
+
+#: includes/admin/class-link-health-controller.php:35
+msgid "Live updates were interrupted. Reconnecting… Your background scan can continue."
+msgstr ""
+
+#: includes/admin/class-link-health-controller.php:36
+msgid "The request failed. Refresh this page and try again."
+msgstr ""
+
+#: includes/admin/class-link-health-controller.php:45
+msgid "Not started"
+msgstr ""
+
+#: includes/admin/class-link-health-controller.php:47
+msgid "Waiting for the next batch"
+msgstr ""
+
+#: includes/admin/class-link-health-controller.php:49
+msgid "Stopped"
+msgstr ""
+
+#: includes/admin/class-link-health-controller.php:50
+msgid "Scan completed"
+msgstr ""
+
+#: includes/admin/class-link-health-controller.php:51
+msgid "Link Health is disabled"
+msgstr ""
+
+#: includes/admin/class-link-health-controller.php:52
+msgid "Scan needs attention. Check private storage and retry."
+msgstr ""
+
+#. translators: 1: completed posts, 2: total posts, 3: processed links.
+#: includes/admin/class-link-health-controller.php:56
+#, php-format
+msgid "%1$d of %2$d posts completed · %3$d links checked"
+msgstr ""
+
+#: includes/admin/class-link-health-controller.php:63
+msgid "Refresh this page and sign in as an administrator."
+msgstr ""
+
+#: includes/admin/class-link-health-controller.php:69
+#: includes/admin/trait-admin-utilities-ui.php:118
+msgid "Unknown action."
+msgstr ""
+
+#: includes/admin/class-link-health-controller.php:73
+msgid "Enable Link Health before running a scan."
+msgstr ""
+
+#: includes/admin/class-link-health-controller.php:77
+msgid "Refresh the scan status before continuing."
+msgstr ""
+
+#: includes/admin/class-module-controller.php:100
+#: includes/admin/class-module-controller.php:101
+#: includes/admin/class-module-controller.php:129
 #: includes/admin/class-site-health-controller.php:69
 #: includes/admin/class-site-health-controller.php:142
-#: includes/admin/trait-admin-redirect-manager-ui.php:53
-#: includes/admin/trait-admin-svg-icons-ui.php:43
-#: includes/admin/trait-admin-task-manager-ui.php:51
 #: includes/core/class-wordpress-7-integration.php:55
 #: includes/features/class-svg-icons.php:229
 msgid "Functionalities"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:109
-#: includes/admin/class-module-controller.php:110
+#: includes/admin/class-module-controller.php:112
+#: includes/admin/class-module-controller.php:113
 msgid "Dashboard"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:169
+#: includes/admin/class-module-controller.php:176
 msgid "Both URLs are required."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:170
+#: includes/admin/class-module-controller.php:177
 msgid "Delete this redirect?"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:171
+#: includes/admin/class-module-controller.php:178
 msgid "Purge the retained 404 log?"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:204
+#: includes/admin/class-module-controller.php:218
 msgid "Running..."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:205
-#: includes/admin/trait-admin-settings.php:1883
+#: includes/admin/class-module-controller.php:219
+#: includes/admin/trait-admin-settings.php:1865
 msgid "Run Detection Now"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:217
+#: includes/admin/class-module-controller.php:237
 msgid "Insufficient permissions"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:276
-msgid "Configure"
-msgstr ""
-
-#: includes/admin/class-module-controller.php:279
-#: includes/admin/trait-admin-redirect-manager-ui.php:93
-msgid "Active"
-msgstr ""
-
-#: includes/admin/class-module-controller.php:281
-msgid "Inactive"
+#: includes/admin/class-module-controller.php:278
+msgid "Tools for your content, workflow, performance, and security. Enable only the modules you need."
 msgstr ""
 
 #: includes/admin/class-module-controller.php:293
+msgid "Configure"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:296
+#: includes/admin/trait-admin-redirect-manager-ui.php:83
+msgid "Active"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:298
+msgid "Inactive"
+msgstr ""
+
+#: includes/admin/class-module-controller.php:310
 msgid "Data Management"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:303
+#: includes/admin/class-module-controller.php:320
 msgid "Delete all plugin data when uninstalling"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:306
+#: includes/admin/class-module-controller.php:323
 msgid "Removes all options, post metadata, transients, and files created by this plugin. This cannot be undone."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:324
+#: includes/admin/class-module-controller.php:341
 msgid "Help & Support"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:327
+#: includes/admin/class-module-controller.php:344
 msgid "Need help with Dynamic Functionalities? Check out these resources:"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:332
+#: includes/admin/class-module-controller.php:349
 msgid "Documentation"
 msgstr ""
 
 #. translators: %1$s: Plugin version number, %2$s: Website link
-#: includes/admin/class-module-controller.php:347
+#: includes/admin/class-module-controller.php:364
 #, php-format
 msgid "Dynamic Functionalities v%1$s | Visit %2$s for more information."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:413
+#: includes/admin/class-module-controller.php:424
 msgid "Enable rel=\"nofollow\" for all external links"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:425
+#: includes/admin/class-module-controller.php:436
 msgid "One per line. Supports full URLs (https://example.com/page), domains (example.com), or partial matches (e.g., /partner/)."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:434
+#: includes/admin/class-module-controller.php:445
 msgid "Control how external and internal links are handled across your site."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:458
-#: includes/admin/class-module-controller.php:1015
-#: includes/admin/class-module-controller.php:1131
-#: includes/admin/class-module-controller.php:1171
-#: includes/admin/class-module-controller.php:1209
-#: includes/admin/trait-admin-svg-icons-ui.php:82
+#: includes/admin/class-module-controller.php:469
+#: includes/admin/class-module-controller.php:1026
+#: includes/admin/class-module-controller.php:1142
+#: includes/admin/class-module-controller.php:1182
+#: includes/admin/class-module-controller.php:1220
 msgid "Developer Hooks"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:473
+#: includes/admin/class-module-controller.php:484
 msgid "Adds target=\"_blank\" and rel=\"noopener\" to external links"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:485
+#: includes/admin/class-module-controller.php:496
 msgid "Adds target=\"_blank\" to same-domain links (see exceptions)"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:497
+#: includes/admin/class-module-controller.php:508
 msgid "One domain per line. Matching hosts will NOT be forced to open in a new tab when internal option is enabled."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:519
+#: includes/admin/class-module-controller.php:530
 msgid "Browse..."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:522
+#: includes/admin/class-module-controller.php:533
 msgid "Create JSON"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:527
+#: includes/admin/class-module-controller.php:538
 msgid "Enter a local file path or external URL to a JSON file containing exception URLs."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:530
+#: includes/admin/class-module-controller.php:541
 msgid "Format: {\"urls\": [\"https://example.com\", \"https://another.com\"]}"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:535
+#: includes/admin/class-module-controller.php:546
 msgid "Theme JSON Detected:"
 msgstr ""
 
 #. translators: %s: theme name
-#: includes/admin/class-module-controller.php:541
+#: includes/admin/class-module-controller.php:552
 #, php-format
 msgid "✓ Your active theme (%s) has an exception-urls.json file. It will be loaded automatically if no custom path is set."
 msgstr ""
 
 #. translators: %s: parent theme name
-#: includes/admin/class-module-controller.php:553
+#: includes/admin/class-module-controller.php:564
 #, php-format
 msgid "✓ Parent theme (%s) has an exception-urls.json file."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:563
+#: includes/admin/class-module-controller.php:574
 msgid "Tip:"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:564
+#: includes/admin/class-module-controller.php:575
 msgid "You can place an exception-urls.json file in your active theme's root folder and it will be loaded automatically without entering a path here."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:569
+#: includes/admin/class-module-controller.php:580
 msgid "⚠️ Security Warning:"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:571
+#: includes/admin/class-module-controller.php:582
 msgid "If using an external URL, ensure you trust the source completely. Malicious JSON files could add unwanted domains to your exception list, potentially allowing spam links to pass through without nofollow."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:574
+#: includes/admin/class-module-controller.php:585
 msgid "For security, prefer local JSON files within your WordPress installation over external URLs."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:580
-#: includes/admin/trait-admin-settings.php:340
-#: includes/admin/trait-admin-settings.php:341
-#: includes/admin/trait-admin-settings.php:419
-#: includes/admin/trait-admin-settings.php:420
-#: includes/admin/trait-admin-settings.php:421
-#: includes/admin/trait-admin-settings.php:422
-#: includes/admin/trait-admin-settings.php:542
-#: includes/admin/trait-admin-settings.php:543
-#: includes/admin/trait-admin-settings.php:544
-#: includes/admin/trait-admin-settings.php:545
-#: includes/admin/trait-admin-settings.php:725
-#: includes/admin/trait-admin-settings.php:726
-#: includes/admin/trait-admin-settings.php:727
-#: includes/admin/trait-admin-settings.php:811
-#: includes/admin/trait-admin-settings.php:812
-#: includes/admin/trait-admin-settings.php:813
-#: includes/admin/trait-admin-settings.php:905
-#: includes/admin/trait-admin-settings.php:906
-#: includes/admin/trait-admin-settings.php:907
+#: includes/admin/class-module-controller.php:591
+#: includes/admin/trait-admin-settings.php:338
+#: includes/admin/trait-admin-settings.php:339
+#: includes/admin/trait-admin-settings.php:414
+#: includes/admin/trait-admin-settings.php:415
+#: includes/admin/trait-admin-settings.php:416
+#: includes/admin/trait-admin-settings.php:417
+#: includes/admin/trait-admin-settings.php:534
+#: includes/admin/trait-admin-settings.php:535
+#: includes/admin/trait-admin-settings.php:536
+#: includes/admin/trait-admin-settings.php:537
+#: includes/admin/trait-admin-settings.php:714
+#: includes/admin/trait-admin-settings.php:715
+#: includes/admin/trait-admin-settings.php:716
+#: includes/admin/trait-admin-settings.php:797
+#: includes/admin/trait-admin-settings.php:798
+#: includes/admin/trait-admin-settings.php:799
+#: includes/admin/trait-admin-settings.php:888
+#: includes/admin/trait-admin-settings.php:889
+#: includes/admin/trait-admin-settings.php:890
 msgid "Filter:"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:580
+#: includes/admin/class-module-controller.php:591
 msgid "change where the preset file is read from"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:589
+#: includes/admin/class-module-controller.php:600
 msgid "Create Exception URLs JSON File"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:590
+#: includes/admin/class-module-controller.php:601
 msgid "This will create a new exception-urls.json file in your active theme directory."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:592
+#: includes/admin/class-module-controller.php:603
 msgid "Edit the JSON above, then click \"Create File\" to save it to your theme."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:594
-#: includes/admin/class-module-controller.php:678
+#: includes/admin/class-module-controller.php:605
+#: includes/admin/class-module-controller.php:689
 msgid "Create File"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:595
+#: includes/admin/class-module-controller.php:606
 #: includes/admin/trait-admin-components-ui.php:370
 #: includes/admin/trait-admin-components-ui.php:433
 #: includes/admin/trait-admin-fonts-ui.php:398
 #: includes/admin/trait-admin-fonts-ui.php:488
-#: includes/admin/trait-admin-redirect-manager-ui.php:204
-#: includes/admin/trait-admin-task-manager-ui.php:242
-#: includes/admin/trait-admin-task-manager-ui.php:591
+#: includes/admin/trait-admin-redirect-manager-ui.php:195
+#: includes/admin/trait-admin-task-manager-ui.php:224
+#: includes/admin/trait-admin-task-manager-ui.php:573
 msgid "Cancel"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:608
+#: includes/admin/class-module-controller.php:619
 msgid "Select JSON File"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:609
+#: includes/admin/class-module-controller.php:620
 #: includes/admin/trait-admin-fonts-ui.php:633
 msgid "Use this file"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:646
+#: includes/admin/class-module-controller.php:657
 msgid "Invalid JSON format. Please check your syntax."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:650
-#: includes/admin/trait-admin-task-manager-ui.php:275
+#: includes/admin/class-module-controller.php:661
+#: includes/admin/trait-admin-task-manager-ui.php:257
 msgid "Creating..."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:675
-#: includes/admin/class-module-controller.php:964
+#: includes/admin/class-module-controller.php:686
+#: includes/admin/class-module-controller.php:975
 msgid "An error occurred."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:731
+#: includes/admin/class-module-controller.php:742
 msgid "Enable developer filters for exception customization"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:734
+#: includes/admin/class-module-controller.php:745
 msgid "Available filters: functionalities_exception_domains, functionalities_exception_urls"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:738
+#: includes/admin/class-module-controller.php:749
 msgid "Code Snippets (copy to your theme's functions.php or a custom plugin)"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:742
+#: includes/admin/class-module-controller.php:753
 msgid "Add Exception Domains"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:745
+#: includes/admin/class-module-controller.php:756
 msgid "Add trusted domains that should never get nofollow:"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:761
-#: includes/admin/class-module-controller.php:786
-#: includes/admin/class-module-controller.php:821
-#: includes/admin/class-module-controller.php:848
+#: includes/admin/class-module-controller.php:772
+#: includes/admin/class-module-controller.php:797
+#: includes/admin/class-module-controller.php:832
+#: includes/admin/class-module-controller.php:859
 msgid "Copy Code"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:767
+#: includes/admin/class-module-controller.php:778
 msgid "Add Exception URLs"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:770
+#: includes/admin/class-module-controller.php:781
 msgid "Add specific URLs (with wildcards) that should never get nofollow:"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:792
+#: includes/admin/class-module-controller.php:803
 msgid "Dynamic Exceptions (e.g., based on user role)"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:795
+#: includes/admin/class-module-controller.php:806
 msgid "Add exceptions dynamically based on conditions:"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:827
+#: includes/admin/class-module-controller.php:838
 msgid "Custom JSON File Path"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:830
+#: includes/admin/class-module-controller.php:841
 msgid "Override the JSON file path programmatically:"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:865
-#: includes/admin/class-module-controller.php:879
-#: includes/admin/trait-admin-task-manager-ui.php:339
-#: includes/admin/trait-admin-task-manager-ui.php:983
+#: includes/admin/class-module-controller.php:876
+#: includes/admin/class-module-controller.php:890
+#: includes/admin/trait-admin-task-manager-ui.php:321
+#: includes/admin/trait-admin-task-manager-ui.php:965
 msgid "Copied!"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:899
+#: includes/admin/class-module-controller.php:910
 msgid "Bulk add nofollow to a specific URL across all posts in the database. Use with caution!"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:903
-#: includes/admin/class-module-controller.php:931
+#: includes/admin/class-module-controller.php:914
+#: includes/admin/class-module-controller.php:942
 msgid "Update Database"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:914
+#: includes/admin/class-module-controller.php:925
 msgid "Please enter a URL."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:918
+#: includes/admin/class-module-controller.php:929
 msgid "This will update all posts containing this URL. Are you sure?"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:922
-#: includes/admin/class-module-controller.php:923
+#: includes/admin/class-module-controller.php:933
+#: includes/admin/class-module-controller.php:934
 msgid "Processing..."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:961
+#: includes/admin/class-module-controller.php:972
 msgid "Done."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:983
+#: includes/admin/class-module-controller.php:994
 msgid "Remove Gutenberg block-specific CSS classes from your frontend HTML for cleaner markup."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1002
+#: includes/admin/class-module-controller.php:1013
 msgid "from h1-h6 elements"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1003
+#: includes/admin/class-module-controller.php:1014
 msgid "from ul/ol elements"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1004
+#: includes/admin/class-module-controller.php:1015
 msgid "from figure/div elements"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1006
+#: includes/admin/class-module-controller.php:1017
 msgid "Classes Removed"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1025
+#: includes/admin/class-module-controller.php:1036
 msgid "Remove class \"wp-block-heading\" from headings (h1–h6)"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1030
+#: includes/admin/class-module-controller.php:1041
 msgid "Remove class \"wp-block-list\" from ul/ol"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1035
+#: includes/admin/class-module-controller.php:1046
 msgid "Remove class \".wp-block-image\" from frontend"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1042
+#: includes/admin/class-module-controller.php:1053
 msgid "Limit editor link suggestions to selected post types"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1078
+#: includes/admin/class-module-controller.php:1089
 msgid "Add copyright metadata, Dublin Core (DCMI) tags, and per-post licensing options. Works standalone or integrates with major SEO plugins."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1105
-#: includes/admin/trait-admin-settings.php:1241
+#: includes/admin/class-module-controller.php:1116
+#: includes/admin/trait-admin-settings.php:1223
 msgid "Detected:"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1106
+#: includes/admin/class-module-controller.php:1117
 msgid "Copyright data will be added to your SEO plugin's existing schema output."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1108
+#: includes/admin/class-module-controller.php:1119
 msgid "Standalone Mode"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1109
+#: includes/admin/class-module-controller.php:1120
 msgid "No SEO plugin detected. Complete Article schema with copyright will be output independently."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1111
+#: includes/admin/class-module-controller.php:1122
 msgid "Schema.org Support"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1120
+#: includes/admin/class-module-controller.php:1131
 msgid "or Standalone"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1122
+#: includes/admin/class-module-controller.php:1133
 msgid "Compatible SEO Plugins"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1143
+#: includes/admin/class-module-controller.php:1154
 msgid "Detect structural regressions when posts are updated. This module compares each post against its own historical baseline."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1161
+#: includes/admin/class-module-controller.php:1172
 msgid "Philosophy"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1183
+#: includes/admin/class-module-controller.php:1194
 msgid "Detects when technical assumptions stop being true. This module notices changes, not problems."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1237
-#: includes/admin/class-module-controller.php:1401
+#: includes/admin/class-module-controller.php:1248
+#: includes/admin/class-module-controller.php:1412
 msgid "No assumption changes detected. All monitored items are consistent."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1259
+#: includes/admin/class-module-controller.php:1270
 msgid "Where:"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1273
+#: includes/admin/class-module-controller.php:1284
 msgid "Why it matters:"
 msgstr ""
 
 #. translators: %s: human-readable time difference
-#: includes/admin/class-module-controller.php:1284
+#: includes/admin/class-module-controller.php:1295
 #, php-format
 msgid "Detected %s ago"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1292
+#: includes/admin/class-module-controller.php:1303
 msgid "Dismiss"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1295
+#: includes/admin/class-module-controller.php:1306
 msgid "Snooze 7 days"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1298
+#: includes/admin/class-module-controller.php:1309
 msgid "Ignore permanently"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1433
+#: includes/admin/class-module-controller.php:1444
 #: includes/admin/trait-admin-fonts-ui.php:379
 #: includes/admin/trait-admin-fonts-ui.php:386
 #: includes/admin/trait-admin-fonts-ui.php:469
@@ -549,454 +631,490 @@ msgstr ""
 msgid "Upload"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:41
-msgid "Automatically adds rel=\"nofollow\" to external links in post content"
+#: includes/admin/class-module-docs.php:40
+msgid "Duplicate posts/pages into an editable draft owned by the current user"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:42
-msgid "Opens external links in new tabs with proper security attributes"
-msgstr ""
-
-#: includes/admin/class-module-docs.php:43
-msgid "Whitelist trusted domains that should not get nofollow"
+#: includes/admin/class-module-docs.php:40
+msgid "Preserve block content, taxonomies, featured image, and page template"
 msgstr ""
 
 #: includes/admin/class-module-docs.php:44
-msgid "Bulk update existing links in your database"
+msgid "Allowlist additional metadata keys to copy; edit locks and scan metadata remain excluded"
 msgstr ""
 
 #: includes/admin/class-module-docs.php:49
-msgid "Modify the exception domain list"
+msgid "Resumable checks of stored public post/page links with cached URL results"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:53
-msgid "Modify the exception URL list"
+#: includes/admin/class-module-docs.php:49
+msgid "Manual/weekly scans, ignore/recheck actions, and CSV export"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:49
+msgid "Safe HTTP requests; confirmed missing pages are separated from inconclusive failures"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:52
+msgid "Private history of module settings, publishing status, and plugin/theme changes"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:52
+msgid "Searchable history bounded to 1,000 events and 30 days"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:52
+msgid "Stores field names rather than values, with privacy export and anonymization"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:56
+msgid "Automatically adds rel=\"nofollow\" to external links in post content"
 msgstr ""
 
 #: includes/admin/class-module-docs.php:57
-msgid "Override the JSON preset file path or URL"
+msgid "Opens external links in new tabs with proper security attributes"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:61
-msgid "Change how long a resolved JSON preset stays cached"
+#: includes/admin/class-module-docs.php:58
+msgid "Whitelist trusted domains that should not get nofollow"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:65
-msgid "Change the bulk database update batch size"
+#: includes/admin/class-module-docs.php:59
+msgid "Bulk update existing links in your database"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:64
+msgid "Modify the exception domain list"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:68
+msgid "Modify the exception URL list"
 msgstr ""
 
 #: includes/admin/class-module-docs.php:72
-msgid "Reduces HTML bloat by removing unnecessary block classes"
+msgid "Override the JSON preset file path or URL"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:73
-msgid "Useful when your theme provides custom styling for headings, lists, images"
+#: includes/admin/class-module-docs.php:76
+msgid "Change how long a resolved JSON preset stays cached"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:74
-msgid "Only affects frontend output, block editor remains unchanged"
-msgstr ""
-
-#: includes/admin/class-module-docs.php:79
-msgid "Toggle cleanup globally"
-msgstr ""
-
-#: includes/admin/class-module-docs.php:83
-msgid "Modify classes to remove"
+#: includes/admin/class-module-docs.php:80
+msgid "Change the bulk database update batch size"
 msgstr ""
 
 #: includes/admin/class-module-docs.php:87
-msgid "Modify content after classes are removed"
+msgid "Reduces HTML bloat by removing unnecessary block classes"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:88
+msgid "Useful when your theme provides custom styling for headings, lists, images"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:89
+msgid "Only affects frontend output, block editor remains unchanged"
 msgstr ""
 
 #: includes/admin/class-module-docs.php:94
+msgid "Toggle cleanup globally"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:98
+msgid "Modify classes to remove"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:102
+msgid "Modify content after classes are removed"
+msgstr ""
+
+#: includes/admin/class-module-docs.php:109
 #: includes/admin/trait-admin-settings.php:326
 msgid "Limits link search results to specific post types when inserting links in Gutenberg"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:95
+#: includes/admin/class-module-docs.php:110
 #: includes/admin/trait-admin-settings.php:327
 msgid "Reduces clutter by hiding unwanted content types from search results"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:96
+#: includes/admin/class-module-docs.php:111
 #: includes/admin/trait-admin-settings.php:328
 msgid "Works with posts, pages, and custom post types"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:98
-#: includes/admin/trait-admin-settings.php:334
+#: includes/admin/class-module-docs.php:113
+#: includes/admin/trait-admin-settings.php:333
 msgid "Enable limitation, then check only the post types you want to appear when searching for links in the editor. Unchecked post types will be hidden from link search results."
 msgstr ""
 
-#: includes/admin/class-module-docs.php:102
+#: includes/admin/class-module-docs.php:117
 msgid "Toggle feature"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:106
+#: includes/admin/class-module-docs.php:121
 msgid "Modify allowed post types"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:113
-#: includes/admin/trait-admin-settings.php:402
+#: includes/admin/class-module-docs.php:128
+#: includes/admin/trait-admin-settings.php:399
 msgid "Native Google Analytics 4 integration - just enter your Measurement ID"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:114
+#: includes/admin/class-module-docs.php:129
 msgid "Custom header code for meta tags, scripts, styles, and tracking codes"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:115
+#: includes/admin/class-module-docs.php:130
 msgid "Custom footer code for chat widgets, tracking pixels, and deferred scripts"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:116
-#: includes/admin/trait-admin-settings.php:405
+#: includes/admin/class-module-docs.php:131
+#: includes/admin/trait-admin-settings.php:402
 msgid "Automatically skips admin pages, feeds, and REST API requests"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:118
+#: includes/admin/class-module-docs.php:133
 msgid "Allowed tags: script, style, link, meta, noscript."
 msgstr ""
 
-#: includes/admin/class-module-docs.php:122
+#: includes/admin/class-module-docs.php:137
 msgid "Disable on specific pages"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:126
+#: includes/admin/class-module-docs.php:141
 msgid "Control GA4 per user/page"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:130
+#: includes/admin/class-module-docs.php:145
 msgid "Modify header code"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:134
+#: includes/admin/class-module-docs.php:149
 msgid "Modify footer code"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:141
-#: includes/admin/trait-admin-settings.php:524
+#: includes/admin/class-module-docs.php:156
+#: includes/admin/trait-admin-settings.php:518
 msgid "Adds itemscope/itemtype to the HTML element for page-level schema"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:142
-#: includes/admin/trait-admin-settings.php:525
+#: includes/admin/class-module-docs.php:157
+#: includes/admin/trait-admin-settings.php:519
 msgid "Wraps article content with Article/BlogPosting microdata"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:143
-#: includes/admin/trait-admin-settings.php:526
+#: includes/admin/class-module-docs.php:158
+#: includes/admin/trait-admin-settings.php:520
 msgid "Adds structured data for headlines, dates, and authors"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:144
-#: includes/admin/trait-admin-settings.php:527
+#: includes/admin/class-module-docs.php:159
+#: includes/admin/trait-admin-settings.php:521
 msgid "Marks header and footer regions with WPHeader/WPFooter types"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:146
+#: includes/admin/class-module-docs.php:161
 msgid "Site types: WebPage, AboutPage, ContactPage, Blog, SearchResultsPage. Article types: Article, BlogPosting, NewsArticle."
 msgstr ""
 
-#: includes/admin/class-module-docs.php:150
+#: includes/admin/class-module-docs.php:165
 msgid "Toggle all schema output"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:154
+#: includes/admin/class-module-docs.php:169
 msgid "Modify site itemtype"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:158
+#: includes/admin/class-module-docs.php:173
 msgid "Modify article itemtype"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:162
+#: includes/admin/class-module-docs.php:177
 msgid "Modify wrapped content"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:166
+#: includes/admin/class-module-docs.php:181
 msgid "Modify the html element attributes"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:173
-#: includes/admin/trait-admin-settings.php:710
+#: includes/admin/class-module-docs.php:188
+#: includes/admin/trait-admin-settings.php:701
 msgid "Define CSS class names and their style rules in one place"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:174
-#: includes/admin/trait-admin-settings.php:711
+#: includes/admin/class-module-docs.php:189
+#: includes/admin/trait-admin-settings.php:702
 msgid "Components are compiled into a single CSS file for optimal caching"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:175
-#: includes/admin/trait-admin-settings.php:712
+#: includes/admin/class-module-docs.php:190
+#: includes/admin/trait-admin-settings.php:703
 msgid "Available on both frontend and admin pages"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:176
-#: includes/admin/trait-admin-settings.php:713
+#: includes/admin/class-module-docs.php:191
+#: includes/admin/trait-admin-settings.php:704
 msgid "Includes default utility components like visually-hidden, skip-link, and marquee"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:178
-#: includes/admin/trait-admin-settings.php:719
+#: includes/admin/class-module-docs.php:193
+#: includes/admin/trait-admin-settings.php:709
 msgid "Add components by entering a CSS selector (e.g., .my-button) and CSS rules (e.g., background: blue; color: white;). Use the grid below to manage your components."
 msgstr ""
 
-#: includes/admin/class-module-docs.php:182
-#: includes/admin/class-module-docs.php:210
+#: includes/admin/class-module-docs.php:197
+#: includes/admin/class-module-docs.php:225
 msgid "Toggle output"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:186
+#: includes/admin/class-module-docs.php:201
 msgid "Add components dynamically"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:190
-#: includes/admin/class-module-docs.php:218
+#: includes/admin/class-module-docs.php:205
+#: includes/admin/class-module-docs.php:233
 msgid "Modify generated CSS"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:194
+#: includes/admin/class-module-docs.php:209
 msgid "Action: fires when CSS file regenerates"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:201
-#: includes/admin/trait-admin-settings.php:890
+#: includes/admin/class-module-docs.php:216
+#: includes/admin/trait-admin-settings.php:875
 msgid "Generate @font-face CSS rules for self-hosted fonts"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:202
-#: includes/admin/trait-admin-settings.php:891
+#: includes/admin/class-module-docs.php:217
+#: includes/admin/trait-admin-settings.php:876
 msgid "Support for variable fonts with weight ranges (e.g., 100 900)"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:203
-#: includes/admin/trait-admin-settings.php:892
+#: includes/admin/class-module-docs.php:218
+#: includes/admin/trait-admin-settings.php:877
 msgid "WOFF2 format for modern browsers, optional WOFF fallback"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:204
-#: includes/admin/trait-admin-settings.php:893
+#: includes/admin/class-module-docs.php:219
+#: includes/admin/trait-admin-settings.php:878
 msgid "Configurable font-display strategy (swap, auto, block, etc.)"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:206
-#: includes/admin/trait-admin-settings.php:899
+#: includes/admin/class-module-docs.php:221
+#: includes/admin/trait-admin-settings.php:883
 msgid "Upload font files to your media library or server, then add font entries below with the family name and file URLs. Use the generated font-family name in your CSS."
 msgstr ""
 
-#: includes/admin/class-module-docs.php:214
+#: includes/admin/class-module-docs.php:229
 msgid "Add fonts dynamically"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:222
+#: includes/admin/class-module-docs.php:237
 msgid "Action: before output"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:229
+#: includes/admin/class-module-docs.php:244
 msgid "Upload or paste custom SVG icons with unique namespaces"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:230
+#: includes/admin/class-module-docs.php:245
 msgid "Insert icons inline in the block editor via RichText toolbar"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:231
+#: includes/admin/class-module-docs.php:246
 msgid "Icons automatically inherit the font size of surrounding text"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:232
+#: includes/admin/class-module-docs.php:247
 msgid "Secure SVG sanitization prevents XSS and malicious content"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:233
+#: includes/admin/class-module-docs.php:248
 msgid "Zero frontend footprint - icons only render where used"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:234
+#: includes/admin/class-module-docs.php:249
 msgid "Also available via shortcode: [func_icon name=\"icon-slug\"]"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:236
+#: includes/admin/class-module-docs.php:251
 msgid "Add icons by pasting SVG code in the admin. Each icon gets a unique slug. In the block editor, use the icon button in the toolbar to insert icons inline. Icons will scale with the surrounding text."
 msgstr ""
 
-#: includes/admin/class-module-docs.php:240
+#: includes/admin/class-module-docs.php:255
 msgid "Toggle feature on/off"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:244
+#: includes/admin/class-module-docs.php:259
 msgid "Filter available icons"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:248
+#: includes/admin/class-module-docs.php:263
 msgid "Modify SVG before saving"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:255
-#: includes/admin/trait-admin-settings.php:796
+#: includes/admin/class-module-docs.php:270
+#: includes/admin/trait-admin-settings.php:784
 msgid "Remove bloat like emojis, oEmbeds, and unnecessary meta tags"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:256
-#: includes/admin/trait-admin-settings.php:797
+#: includes/admin/class-module-docs.php:271
+#: includes/admin/trait-admin-settings.php:785
 msgid "Disable security concerns like XML-RPC and version disclosure"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:257
-#: includes/admin/trait-admin-settings.php:798
+#: includes/admin/class-module-docs.php:272
+#: includes/admin/trait-admin-settings.php:786
 msgid "Improve performance by removing unused scripts and styles"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:258
-#: includes/admin/trait-admin-settings.php:799
+#: includes/admin/class-module-docs.php:273
+#: includes/admin/trait-admin-settings.php:787
 msgid "Add useful enhancements like PrismJS and fullscreen textareas"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:260
-#: includes/admin/trait-admin-settings.php:805
+#: includes/admin/class-module-docs.php:275
+#: includes/admin/trait-admin-settings.php:792
 msgid "Some options may break functionality if plugins depend on them. Test after enabling. Disable Heartbeat API with care if you use auto-save or real-time features."
 msgstr ""
 
-#: includes/admin/class-module-docs.php:264
+#: includes/admin/class-module-docs.php:279
 msgid "Control any single toggle, for example functionalities_misc_option_disable_emojis"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:268
+#: includes/admin/class-module-docs.php:283
 msgid "Action: fires after all toggles are processed"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:272
+#: includes/admin/class-module-docs.php:287
 msgid "Change the disabled-feeds message"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:279
+#: includes/admin/class-module-docs.php:294
 msgid "Adds copyright meta tags with configurable holder"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:280
+#: includes/admin/class-module-docs.php:295
 msgid "Dublin Core (DCMI) metadata support"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:281
+#: includes/admin/class-module-docs.php:296
 msgid "Per-post license selection metabox"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:282
+#: includes/admin/class-module-docs.php:297
 msgid "Integration with popular SEO plugins for Schema.org output"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:287
+#: includes/admin/class-module-docs.php:302
 msgid "Add or modify available licenses"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:291
+#: includes/admin/class-module-docs.php:306
 msgid "Modify the standalone JSON-LD output"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:295
+#: includes/admin/class-module-docs.php:310
 msgid "Toggle any module, receives the module slug"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:302
+#: includes/admin/class-module-docs.php:317
 msgid "Detects when internal links are accidentally removed"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:303
+#: includes/admin/class-module-docs.php:318
 msgid "Warns when content is shortened significantly"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:304
+#: includes/admin/class-module-docs.php:319
 msgid "Checks heading structure for accessibility issues"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:305
+#: includes/admin/class-module-docs.php:320
 msgid "Stores snapshots to compare against historical baselines"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:307
+#: includes/admin/class-module-docs.php:322
 msgid "This is content integrity, not SEO. The system answers: \"Did this update accidentally damage something important?\" It never scores content, never suggests fixes, and always compares a post to itself."
 msgstr ""
 
-#: includes/admin/class-module-docs.php:311
+#: includes/admin/class-module-docs.php:326
 msgid "Modify the monitored post types"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:315
+#: includes/admin/class-module-docs.php:330
 msgid "Modify detected warnings for a post"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:319
+#: includes/admin/class-module-docs.php:334
 msgid "Modify a snapshot before it is stored"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:323
+#: includes/admin/class-module-docs.php:338
 msgid "Action: after a snapshot is saved"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:330
+#: includes/admin/class-module-docs.php:345
 msgid "Detects when multiple sources output the same schema type"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:331
+#: includes/admin/class-module-docs.php:346
 msgid "Warns when analytics scripts are loaded multiple times"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:332
+#: includes/admin/class-module-docs.php:347
 msgid "Notices when fonts are loaded from redundant sources"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:333
+#: includes/admin/class-module-docs.php:348
 msgid "Tracks inline CSS growth over time"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:335
+#: includes/admin/class-module-docs.php:350
 msgid "This module notices when assumptions stop being true. It does not optimize, does not enforce best practices, and does not recommend plugins. It simply says: \"This used to be true. Now it isn't.\""
 msgstr ""
 
-#: includes/admin/class-module-docs.php:339
+#: includes/admin/class-module-docs.php:354
 msgid "Modify detected findings before they are stored"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:343
+#: includes/admin/class-module-docs.php:358
 msgid "Toggle individual detectors, receives the detector key"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:350
+#: includes/admin/class-module-docs.php:365
 msgid "Web App Manifest for installability on mobile and desktop"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:351
+#: includes/admin/class-module-docs.php:366
 msgid "Service worker with cache-first, network-first, and stale-while-revalidate strategies"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:352
+#: includes/admin/class-module-docs.php:367
 msgid "Custom offline page with cached pages list and auto-reload"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:353
+#: includes/admin/class-module-docs.php:368
 msgid "Customizable install prompt with position and style options"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:354
+#: includes/admin/class-module-docs.php:369
 msgid "App shortcuts, screenshots, share target, and display override support"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:356
+#: includes/admin/class-module-docs.php:371
 msgid "Enable this module to make your site installable as a standalone app. Configure icons, colors, and caching behavior. Visitors can install it from the browser or a custom prompt. The service worker handles offline access and smart caching."
 msgstr ""
 
-#: includes/admin/class-module-docs.php:360
+#: includes/admin/class-module-docs.php:375
 msgid "Toggle PWA output"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:364
+#: includes/admin/class-module-docs.php:379
 msgid "Filter manifest data before output"
 msgstr ""
 
-#: includes/admin/class-module-docs.php:368
+#: includes/admin/class-module-docs.php:383
 msgid "Filter service worker configuration"
 msgstr ""
 
@@ -1272,7 +1390,7 @@ msgstr ""
 #: includes/admin/trait-admin-components-ui.php:414
 #: includes/admin/trait-admin-fonts-ui.php:330
 #: includes/admin/trait-admin-fonts-ui.php:420
-#: includes/admin/trait-admin-task-manager-ui.php:519
+#: includes/admin/trait-admin-task-manager-ui.php:501
 msgid "Edit"
 msgstr ""
 
@@ -1280,10 +1398,10 @@ msgstr ""
 #: includes/admin/trait-admin-components-ui.php:415
 #: includes/admin/trait-admin-fonts-ui.php:331
 #: includes/admin/trait-admin-fonts-ui.php:421
-#: includes/admin/trait-admin-redirect-manager-ui.php:156
-#: includes/admin/trait-admin-svg-icons-ui.php:141
-#: includes/admin/trait-admin-task-manager-ui.php:227
-#: includes/admin/trait-admin-task-manager-ui.php:522
+#: includes/admin/trait-admin-redirect-manager-ui.php:147
+#: includes/admin/trait-admin-svg-icons-ui.php:109
+#: includes/admin/trait-admin-task-manager-ui.php:209
+#: includes/admin/trait-admin-task-manager-ui.php:504
 msgid "Delete"
 msgstr ""
 
@@ -1320,11 +1438,13 @@ msgid "Prev"
 msgstr ""
 
 #: includes/admin/trait-admin-components-ui.php:391
+#: includes/admin/trait-admin-utilities-ui.php:437
 msgid "Next"
 msgstr ""
 
 #. translators: 1: current page number, 2: total pages
 #: includes/admin/trait-admin-components-ui.php:396
+#: includes/admin/trait-admin-utilities-ui.php:433
 #, php-format
 msgid "Page %1$d of %2$d"
 msgstr ""
@@ -1395,7 +1515,7 @@ msgstr ""
 
 #: includes/admin/trait-admin-fonts-ui.php:341
 #: includes/admin/trait-admin-fonts-ui.php:431
-#: includes/admin/trait-admin-settings.php:2201
+#: includes/admin/trait-admin-settings.php:2183
 msgid "Style"
 msgstr ""
 
@@ -1545,13 +1665,25 @@ msgstr ""
 msgid "Maximum 4 shortcuts. Each needs a name and URL."
 msgstr ""
 
+#: includes/admin/trait-admin-pwa-ui.php:66
+msgid "Shortcut name"
+msgstr ""
+
+#: includes/admin/trait-admin-pwa-ui.php:67
+msgid "URL"
+msgstr ""
+
 #: includes/admin/trait-admin-pwa-ui.php:67
 msgid "URL (e.g. /blog/)"
 msgstr ""
 
 #: includes/admin/trait-admin-pwa-ui.php:68
-#: includes/admin/trait-admin-settings.php:1959
+#: includes/admin/trait-admin-settings.php:1941
 msgid "Description"
+msgstr ""
+
+#: includes/admin/trait-admin-pwa-ui.php:69
+msgid "Icon URL"
 msgstr ""
 
 #: includes/admin/trait-admin-pwa-ui.php:69
@@ -1572,11 +1704,23 @@ msgid "Image URL"
 msgstr ""
 
 #: includes/admin/trait-admin-pwa-ui.php:136
+msgid "Image size"
+msgstr ""
+
+#: includes/admin/trait-admin-pwa-ui.php:136
 msgid "1280x720"
 msgstr ""
 
 #: includes/admin/trait-admin-pwa-ui.php:137
+msgid "Caption"
+msgstr ""
+
+#: includes/admin/trait-admin-pwa-ui.php:137
 msgid "Label"
+msgstr ""
+
+#: includes/admin/trait-admin-pwa-ui.php:138
+msgid "Device type"
 msgstr ""
 
 #: includes/admin/trait-admin-pwa-ui.php:139
@@ -1597,380 +1741,387 @@ msgstr ""
 msgid "404 monitor settings saved."
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:64
+#: includes/admin/trait-admin-redirect-manager-ui.php:54
 msgid "Enable Redirect Manager"
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:65
+#: includes/admin/trait-admin-redirect-manager-ui.php:55
 msgid "Create and manage URL redirects"
 msgstr ""
 
 #. translators: %s: storage error code.
-#: includes/admin/trait-admin-redirect-manager-ui.php:75
+#: includes/admin/trait-admin-redirect-manager-ui.php:65
 #, php-format
 msgid "Redirect storage error: %s. The existing file was not overwritten."
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:84
+#: includes/admin/trait-admin-redirect-manager-ui.php:74
 msgid "URL Redirects"
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:85
+#: includes/admin/trait-admin-redirect-manager-ui.php:75
 msgid "Manage 301 (permanent) and 302 (temporary) redirects. Redirects are stored in a JSON file with zero database overhead."
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:89
+#: includes/admin/trait-admin-redirect-manager-ui.php:79
 msgid "Total"
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:97
+#: includes/admin/trait-admin-redirect-manager-ui.php:87
 msgid "Total Hits"
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:103
+#: includes/admin/trait-admin-redirect-manager-ui.php:93
 msgid "Add New Redirect"
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:106
+#: includes/admin/trait-admin-redirect-manager-ui.php:96
 msgid "From URL"
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:110
+#: includes/admin/trait-admin-redirect-manager-ui.php:100
 msgid "To URL"
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:114
-#: includes/admin/trait-admin-redirect-manager-ui.php:139
+#: includes/admin/trait-admin-redirect-manager-ui.php:104
+#: includes/admin/trait-admin-redirect-manager-ui.php:130
 msgid "Type"
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:121
+#: includes/admin/trait-admin-redirect-manager-ui.php:112
 msgid "Add Redirect"
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:123
+#: includes/admin/trait-admin-redirect-manager-ui.php:114
 msgid "Use * at the end for wildcard matching (e.g., /old-section/*)"
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:130
+#: includes/admin/trait-admin-redirect-manager-ui.php:121
+msgid "Search redirects"
+msgstr ""
+
+#: includes/admin/trait-admin-redirect-manager-ui.php:121
 msgid "Search redirects..."
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:136
+#: includes/admin/trait-admin-redirect-manager-ui.php:127
 msgid "On"
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:137
+#: includes/admin/trait-admin-redirect-manager-ui.php:128
 msgid "From"
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:138
+#: includes/admin/trait-admin-redirect-manager-ui.php:129
 msgid "To"
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:140
+#: includes/admin/trait-admin-redirect-manager-ui.php:131
 #: assets/js/wp7-admin.js:160
 msgid "Hits"
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:141
-#: includes/admin/trait-admin-redirect-manager-ui.php:184
+#: includes/admin/trait-admin-redirect-manager-ui.php:132
+#: includes/admin/trait-admin-redirect-manager-ui.php:175
+#: includes/admin/trait-admin-utilities-ui.php:287
 msgid "Actions"
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:146
+#: includes/admin/trait-admin-redirect-manager-ui.php:137
 msgid "No redirects yet. Add one above."
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:166
+#: includes/admin/trait-admin-redirect-manager-ui.php:157
 msgid "Export JSON"
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:167
+#: includes/admin/trait-admin-redirect-manager-ui.php:158
+#: includes/admin/trait-admin-utilities-ui.php:270
 msgid "Export CSV"
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:168
-#: includes/admin/trait-admin-task-manager-ui.php:179
+#: includes/admin/trait-admin-redirect-manager-ui.php:159
+#: includes/admin/trait-admin-task-manager-ui.php:161
 msgid "Import JSON"
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:169
+#: includes/admin/trait-admin-redirect-manager-ui.php:160
 msgid "Import CSV"
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:173
+#: includes/admin/trait-admin-redirect-manager-ui.php:164
 msgid "Bounded 404 Monitor"
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:177
+#: includes/admin/trait-admin-redirect-manager-ui.php:168
 msgid "Log privacy-conscious 404 aggregates (opt-in)"
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:178
+#: includes/admin/trait-admin-redirect-manager-ui.php:169
 msgid "Maximum rows"
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:178
+#: includes/admin/trait-admin-redirect-manager-ui.php:169
 msgid "Retention days"
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:179
+#: includes/admin/trait-admin-redirect-manager-ui.php:170
 msgid "Excluded path prefixes, one per line"
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:180
+#: includes/admin/trait-admin-redirect-manager-ui.php:171
 msgid "Save Monitor Settings"
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:181
+#: includes/admin/trait-admin-redirect-manager-ui.php:172
 msgid "Purge Log"
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:184
+#: includes/admin/trait-admin-redirect-manager-ui.php:175
 msgid "Path"
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:184
+#: includes/admin/trait-admin-redirect-manager-ui.php:175
 msgid "Count"
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:184
+#: includes/admin/trait-admin-redirect-manager-ui.php:175
 #: assets/js/wp7-admin.js:160
 msgid "Last seen"
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:184
+#: includes/admin/trait-admin-redirect-manager-ui.php:175
 msgid "Referrer origin"
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:189
+#: includes/admin/trait-admin-redirect-manager-ui.php:180
 msgid "No retained 404 entries."
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:191
+#: includes/admin/trait-admin-redirect-manager-ui.php:182
 msgid "ago"
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:191
+#: includes/admin/trait-admin-redirect-manager-ui.php:182
 #: includes/core/class-wordpress-7-integration.php:156
 #: assets/js/wp7-admin.js:160
 msgid "Create redirect"
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:191
+#: includes/admin/trait-admin-redirect-manager-ui.php:182
+#: includes/admin/trait-admin-utilities-ui.php:318
 msgid "Ignore"
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:199
+#: includes/admin/trait-admin-redirect-manager-ui.php:190
 msgid "Import Redirects"
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:205
+#: includes/admin/trait-admin-redirect-manager-ui.php:196
 msgid "Dry-run Preview"
 msgstr ""
 
-#: includes/admin/trait-admin-redirect-manager-ui.php:206
-#: includes/admin/trait-admin-task-manager-ui.php:243
-#: includes/admin/trait-admin-task-manager-ui.php:374
-#: includes/admin/trait-admin-task-manager-ui.php:378
+#: includes/admin/trait-admin-redirect-manager-ui.php:197
+#: includes/admin/trait-admin-task-manager-ui.php:225
+#: includes/admin/trait-admin-task-manager-ui.php:356
+#: includes/admin/trait-admin-task-manager-ui.php:360
 msgid "Import"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:36
+#: includes/admin/trait-admin-settings.php:37
 msgid "Link Management Settings"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:43
+#: includes/admin/trait-admin-settings.php:44
 msgid "Enable Link Management"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:48
+#: includes/admin/trait-admin-settings.php:49
 msgid "Enable link management features"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:56
+#: includes/admin/trait-admin-settings.php:57
 msgid "Add nofollow to external links"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:64
+#: includes/admin/trait-admin-settings.php:65
 msgid "Exceptions"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:73
+#: includes/admin/trait-admin-settings.php:74
 msgid "Open external links in new tab"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:80
+#: includes/admin/trait-admin-settings.php:81
 msgid "Open internal links in new tab"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:87
+#: includes/admin/trait-admin-settings.php:88
 msgid "Internal new-tab exceptions (domains)"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:96
+#: includes/admin/trait-admin-settings.php:97
 msgid "JSON Preset File Path"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:103
+#: includes/admin/trait-admin-settings.php:104
 msgid "Enable Developer Filters"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:110
+#: includes/admin/trait-admin-settings.php:111
 msgid "Database Update Tool"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:143
+#: includes/admin/trait-admin-settings.php:144
 msgid "Frontend Block Class Cleanup"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:150
+#: includes/admin/trait-admin-settings.php:151
 msgid "Enable Block Cleanup"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:155
+#: includes/admin/trait-admin-settings.php:156
 msgid "Enable block class cleanup on frontend"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:163
+#: includes/admin/trait-admin-settings.php:164
 msgid "Headings"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:170
+#: includes/admin/trait-admin-settings.php:171
 msgid "Lists"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:177
+#: includes/admin/trait-admin-settings.php:178
 msgid "Images"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:184
+#: includes/admin/trait-admin-settings.php:185
 msgid "Paragraphs"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:189
+#: includes/admin/trait-admin-settings.php:190
 msgid "Remove \"wp-block-paragraph\" from paragraph elements"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:196
+#: includes/admin/trait-admin-settings.php:197
 msgid "Quotes"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:201
+#: includes/admin/trait-admin-settings.php:202
 msgid "Remove \"wp-block-quote\" from blockquote elements"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:208
+#: includes/admin/trait-admin-settings.php:209
 msgid "Tables"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:213
+#: includes/admin/trait-admin-settings.php:214
 msgid "Remove \"wp-block-table\" from table elements"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:220
+#: includes/admin/trait-admin-settings.php:221
 msgid "Separators"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:225
+#: includes/admin/trait-admin-settings.php:226
 msgid "Remove \"wp-block-separator\" from hr/separator elements"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:232
+#: includes/admin/trait-admin-settings.php:233
 msgid "Groups"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:237
+#: includes/admin/trait-admin-settings.php:238
 msgid "Remove \"wp-block-group\" from group containers"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:244
+#: includes/admin/trait-admin-settings.php:245
 msgid "Columns"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:249
+#: includes/admin/trait-admin-settings.php:250
 msgid "Remove \"wp-block-columns\" and \"wp-block-column\" from column layouts"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:256
+#: includes/admin/trait-admin-settings.php:257
 msgid "Buttons"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:261
+#: includes/admin/trait-admin-settings.php:262
 msgid "Remove \"wp-block-button(s)\" from button elements"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:268
+#: includes/admin/trait-admin-settings.php:269
 msgid "Covers"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:273
+#: includes/admin/trait-admin-settings.php:274
 msgid "Remove \"wp-block-cover\" from cover blocks"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:280
+#: includes/admin/trait-admin-settings.php:281
 msgid "Media & Text"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:285
+#: includes/admin/trait-admin-settings.php:286
 msgid "Remove \"wp-block-media-text\" from media-text blocks"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:292
+#: includes/admin/trait-admin-settings.php:293
 msgid "Custom Classes"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:297
+#: includes/admin/trait-admin-settings.php:298
 msgid "Enter additional CSS classes to remove from content output (one per line). Example: my-plugin-class"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:319
-#: includes/core/class-module-registry.php:46
+#: includes/admin/trait-admin-settings.php:320
+#: includes/core/class-module-registry.php:49
 msgid "Editor Link Suggestions"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:321
+#: includes/admin/trait-admin-settings.php:322
 msgid "Control which post types appear in the block editor link search suggestions."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:340
+#: includes/admin/trait-admin-settings.php:338
 msgid "toggle feature"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:341
+#: includes/admin/trait-admin-settings.php:339
 msgid "modify allowed post types"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:350
+#: includes/admin/trait-admin-settings.php:348
 msgid "Enable Editor Link Suggestions"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:355
+#: includes/admin/trait-admin-settings.php:353
 msgid "Enable editor link suggestion filtering"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:363
+#: includes/admin/trait-admin-settings.php:361
 msgid "Enable limitation"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:370
+#: includes/admin/trait-admin-settings.php:368
 msgid "Allowed post types"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:395
+#: includes/admin/trait-admin-settings.php:393
 msgid "Header & Footer Code"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:397
+#: includes/admin/trait-admin-settings.php:395
 msgid "Insert custom code snippets into your site header and footer without editing theme files."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:403
+#: includes/admin/trait-admin-settings.php:400
 msgid "Multiple snippets per location — each independently toggleable"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:404
+#: includes/admin/trait-admin-settings.php:401
 msgid "Custom code for meta tags, scripts, styles, and tracking codes"
 msgstr ""
 
@@ -1978,1233 +2129,1278 @@ msgstr ""
 msgid "Allowed Tags"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:419
+#: includes/admin/trait-admin-settings.php:414
 msgid "disable on specific pages"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:420
+#: includes/admin/trait-admin-settings.php:415
 msgid "control GA4 per user/page"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:421
+#: includes/admin/trait-admin-settings.php:416
 msgid "modify header code"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:422
+#: includes/admin/trait-admin-settings.php:417
 msgid "modify footer code"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:423
+#: includes/admin/trait-admin-settings.php:418
 msgid "Actions:"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:432
+#: includes/admin/trait-admin-settings.php:427
 msgid "Enable Header & Footer"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:437
+#: includes/admin/trait-admin-settings.php:432
 msgid "Enable header and footer code injection"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:445
+#: includes/admin/trait-admin-settings.php:440
 msgid "Enable Google Analytics 4"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:449
+#: includes/admin/trait-admin-settings.php:444
 msgid "Insert GA4 gtag in head"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:456
+#: includes/admin/trait-admin-settings.php:451
+#: includes/admin/trait-admin-settings.php:455
 msgid "GA4 Measurement ID"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:467
+#: includes/admin/trait-admin-settings.php:462
 msgid "Header Snippets"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:476
+#: includes/admin/trait-admin-settings.php:471
 msgid "Body Open Snippets"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:485
+#: includes/admin/trait-admin-settings.php:480
 msgid "Footer Snippets"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:517
-#: includes/core/class-module-registry.php:39
+#: includes/admin/trait-admin-settings.php:512
+#: includes/core/class-module-registry.php:42
 msgid "Schema Settings"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:519
+#: includes/admin/trait-admin-settings.php:514
 msgid "Add Schema.org microdata attributes to improve search engine understanding of your content."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:532
+#: includes/admin/trait-admin-settings.php:527
+msgid "Site:"
+msgstr ""
+
+#: includes/admin/trait-admin-settings.php:528
+msgid "Article:"
+msgstr ""
+
+#: includes/admin/trait-admin-settings.php:530
 msgid "Supported Types"
 msgstr ""
 
 #: includes/admin/trait-admin-settings.php:534
-msgid "Site:"
-msgstr ""
-
-#: includes/admin/trait-admin-settings.php:535
-msgid "Article:"
-msgstr ""
-
-#: includes/admin/trait-admin-settings.php:542
 msgid "toggle all schema output"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:543
+#: includes/admin/trait-admin-settings.php:535
 msgid "modify site itemtype"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:544
+#: includes/admin/trait-admin-settings.php:536
 msgid "modify article itemtype"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:545
+#: includes/admin/trait-admin-settings.php:537
 msgid "modify wrapped content"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:554
+#: includes/admin/trait-admin-settings.php:546
 msgid "Enable Schema"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:559
+#: includes/admin/trait-admin-settings.php:551
 msgid "Enable schema microdata output"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:567
+#: includes/admin/trait-admin-settings.php:559
 msgid "Enable site schema (html tag)"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:571
+#: includes/admin/trait-admin-settings.php:563
 msgid "Add itemscope/itemtype to <html>"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:578
+#: includes/admin/trait-admin-settings.php:570
 msgid "Site itemtype"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:595
+#: includes/admin/trait-admin-settings.php:587
 msgid "Add WPHeader microdata"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:599
+#: includes/admin/trait-admin-settings.php:591
 msgid "Output a microdata hasPart for header"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:606
+#: includes/admin/trait-admin-settings.php:598
 msgid "Add WPFooter microdata"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:610
+#: includes/admin/trait-admin-settings.php:602
 msgid "Output a microdata hasPart for footer"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:617
+#: includes/admin/trait-admin-settings.php:609
 msgid "Enable Article microdata in content"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:621
+#: includes/admin/trait-admin-settings.php:613
 msgid "Wrap content with Article microdata on singular"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:628
+#: includes/admin/trait-admin-settings.php:620
 msgid "Article itemtype"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:645
+#: includes/admin/trait-admin-settings.php:637
 msgid "Add headline from first heading"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:649
+#: includes/admin/trait-admin-settings.php:641
 msgid "Add itemprop=\"headline\""
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:656
+#: includes/admin/trait-admin-settings.php:648
 msgid "Add published/modified dates"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:660
+#: includes/admin/trait-admin-settings.php:652
 msgid "Add itemprop dates to time tags"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:667
+#: includes/admin/trait-admin-settings.php:659
 msgid "Add author microdata"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:671
+#: includes/admin/trait-admin-settings.php:663
 msgid "Add itemprop=\"author\" where possible"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:678
+#: includes/admin/trait-admin-settings.php:670
 msgid "Enable BreadcrumbList"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:682
+#: includes/admin/trait-admin-settings.php:674
 msgid "Add BreadcrumbList JSON-LD to singular pages"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:703
-#: includes/core/class-module-registry.php:44
+#: includes/admin/trait-admin-settings.php:695
+#: includes/core/class-module-registry.php:47
 msgid "Components"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:705
+#: includes/admin/trait-admin-settings.php:697
 msgid "Create reusable CSS components that are automatically loaded across your entire site."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:725
-#: includes/admin/trait-admin-settings.php:905
+#: includes/admin/trait-admin-settings.php:714
+#: includes/admin/trait-admin-settings.php:888
 msgid "toggle output"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:726
+#: includes/admin/trait-admin-settings.php:715
 msgid "add components dynamically"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:727
-#: includes/admin/trait-admin-settings.php:907
+#: includes/admin/trait-admin-settings.php:716
+#: includes/admin/trait-admin-settings.php:890
 msgid "modify generated CSS"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:728
-#: includes/admin/trait-admin-settings.php:908
+#: includes/admin/trait-admin-settings.php:717
+#: includes/admin/trait-admin-settings.php:891
 msgid "Action:"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:728
+#: includes/admin/trait-admin-settings.php:717
 msgid "fires when CSS file regenerates"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:736
+#: includes/admin/trait-admin-settings.php:725
 msgid "Enable components CSS"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:740
+#: includes/admin/trait-admin-settings.php:729
 msgid "Output components CSS on frontend"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:747
+#: includes/admin/trait-admin-settings.php:736
 msgid "Component list"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:789
-#: includes/core/class-module-registry.php:34
+#: includes/admin/trait-admin-settings.php:778
+#: includes/core/class-module-registry.php:37
 msgid "Performance & Cleanup"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:791
+#: includes/admin/trait-admin-settings.php:780
 msgid "Remove unnecessary WordPress features to improve performance and security."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:811
+#: includes/admin/trait-admin-settings.php:797
 msgid "modify options before application"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:812
+#: includes/admin/trait-admin-settings.php:798
 msgid "control emoji removal"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:813
+#: includes/admin/trait-admin-settings.php:799
 msgid "control embed removal"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:822
+#: includes/admin/trait-admin-settings.php:808
 msgid "Enable Performance & Cleanup"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:827
+#: includes/admin/trait-admin-settings.php:813
 msgid "Enable performance and cleanup features"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:833
+#: includes/admin/trait-admin-settings.php:819
 msgid "Disable block-based widget editor (use classic widgets)"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:834
+#: includes/admin/trait-admin-settings.php:820
 msgid "Load core block styles separately (per-block CSS)"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:835
+#: includes/admin/trait-admin-settings.php:821
 msgid "Disable emojis scripts/styles"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:836
+#: includes/admin/trait-admin-settings.php:822
 msgid "Disable oEmbed scripts and endpoints"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:837
+#: includes/admin/trait-admin-settings.php:823
 msgid "Remove REST API and oEmbed discovery links from <head>"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:838
+#: includes/admin/trait-admin-settings.php:824
 msgid "Remove RSD, WLWManifest, and shortlink tags"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:839
+#: includes/admin/trait-admin-settings.php:825
 msgid "Remove WordPress version meta (generator)"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:840
+#: includes/admin/trait-admin-settings.php:826
 msgid "Disable XML-RPC (complete)"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:841
+#: includes/admin/trait-admin-settings.php:827
 msgid "Disable only XML-RPC Pingbacks"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:842
+#: includes/admin/trait-admin-settings.php:828
 msgid "Disable RSS/Atom feeds (redirect to homepage)"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:843
+#: includes/admin/trait-admin-settings.php:829
 msgid "Disable Gravatars (site-wide)"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:844
+#: includes/admin/trait-admin-settings.php:830
 msgid "Disable self-pingbacks (pings to own site)"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:845
+#: includes/admin/trait-admin-settings.php:831
 msgid "Remove query strings from static resources (?ver=)"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:846
+#: includes/admin/trait-admin-settings.php:832
 msgid "Remove DNS prefetch links from <head>"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:847
+#: includes/admin/trait-admin-settings.php:833
 msgid "Remove Recent Comments inline CSS"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:848
+#: includes/admin/trait-admin-settings.php:834
 msgid "Limit post revisions"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:851
+#: includes/admin/trait-admin-settings.php:837
 msgid "Revisions to keep"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:856
+#: includes/admin/trait-admin-settings.php:841
+msgid "Revision limit"
+msgstr ""
+
+#: includes/admin/trait-admin-settings.php:842
 msgid "revisions per post. Applies when the option above is enabled. Zero keeps none."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:861
+#: includes/admin/trait-admin-settings.php:847
 msgid "Disable Dashicons on frontend for non-logged-in users"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:862
+#: includes/admin/trait-admin-settings.php:848
 msgid "Disable Heartbeat API on the frontend"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:863
+#: includes/admin/trait-admin-settings.php:849
 msgid "Also disable Heartbeat in wp-admin (breaks autosave and post locking)"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:864
+#: includes/admin/trait-admin-settings.php:850
 msgid "Disable admin bar on the frontend"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:865
+#: includes/admin/trait-admin-settings.php:851
 msgid "Remove jQuery Migrate from frontend"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:866
+#: includes/admin/trait-admin-settings.php:852
 msgid "Load PrismJS on admin screens (code highlighting where applicable)"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:867
+#: includes/admin/trait-admin-settings.php:853
 msgid "Enable fullscreen toggle for all backend textareas"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:883
+#: includes/admin/trait-admin-settings.php:869
 msgid "Font Families"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:885
+#: includes/admin/trait-admin-settings.php:871
 msgid "Self-host custom fonts with automatic @font-face CSS generation."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:906
+#: includes/admin/trait-admin-settings.php:889
 msgid "add fonts dynamically"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:916
+#: includes/admin/trait-admin-settings.php:899
 msgid "Enable fonts output"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:920
+#: includes/admin/trait-admin-settings.php:903
 msgid "Output @font-face CSS across site (front and admin)"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:927
+#: includes/admin/trait-admin-settings.php:910
 msgid "Families"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:934
+#: includes/admin/trait-admin-settings.php:917
 msgid "Typography Assignments"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:963
+#: includes/admin/trait-admin-settings.php:946
 msgid "Login Security Settings"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:965
+#: includes/admin/trait-admin-settings.php:948
 msgid "Protect your login page and customize its appearance."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:967
-msgid "Security Features"
-msgstr ""
-
-#: includes/admin/trait-admin-settings.php:969
+#: includes/admin/trait-admin-settings.php:951
 msgid "Limit failed login attempts to prevent brute force attacks"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:970
+#: includes/admin/trait-admin-settings.php:952
 msgid "Disable XML-RPC authentication to block remote login attacks"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:971
+#: includes/admin/trait-admin-settings.php:953
 msgid "Hide specific login errors to prevent username enumeration"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:972
+#: includes/admin/trait-admin-settings.php:954
 msgid "Customize the login page with your logo and colors"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:977
+#: includes/admin/trait-admin-settings.php:956
+msgid "Security Features"
+msgstr ""
+
+#: includes/admin/trait-admin-settings.php:959
 msgid "Every recent lockout came from the same address."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:978
+#: includes/admin/trait-admin-settings.php:960
 msgid "That usually means this site sits behind a proxy or CDN and all visitors share one address, so an IP lockout blocks everyone. Enable \"Trust Proxy Headers\" if the proxy is trusted, and add your own address to the allowlist below."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:986
+#: includes/admin/trait-admin-settings.php:968
 msgid "Recent Lockouts"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:991
+#: includes/admin/trait-admin-settings.php:973
 msgid "Unlock"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:999
+#: includes/admin/trait-admin-settings.php:981
 msgid "Unlocked"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1000
+#: includes/admin/trait-admin-settings.php:982
 msgid "Failed"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1008
+#: includes/admin/trait-admin-settings.php:990
 msgid "Enable Login Security"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1011
+#: includes/admin/trait-admin-settings.php:993
 msgid "Enable login security features"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1018
+#: includes/admin/trait-admin-settings.php:1000
 msgid "Limit Login Attempts"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1021
+#: includes/admin/trait-admin-settings.php:1003
 msgid "Block IPs after too many failed attempts"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1028
+#: includes/admin/trait-admin-settings.php:1010
 msgid "Max Attempts"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1031
+#: includes/admin/trait-admin-settings.php:1013
 msgid "failed attempts before lockout"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1038
+#: includes/admin/trait-admin-settings.php:1020
 msgid "Lockout Duration"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1041
+#: includes/admin/trait-admin-settings.php:1023
 msgid "minutes"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1048
+#: includes/admin/trait-admin-settings.php:1030
 msgid "Disable XML-RPC"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1051
+#: includes/admin/trait-admin-settings.php:1033
 msgid "Disable XML-RPC authentication (recommended)"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1058
+#: includes/admin/trait-admin-settings.php:1040
 msgid "Disable App Passwords"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1061
+#: includes/admin/trait-admin-settings.php:1043
 msgid "Disable WordPress Application Passwords"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1068
+#: includes/admin/trait-admin-settings.php:1050
 msgid "Hide Login Errors"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1071
+#: includes/admin/trait-admin-settings.php:1053
 msgid "Show generic error instead of specific username/password errors"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1078
+#: includes/admin/trait-admin-settings.php:1060
 msgid "Trust Proxy Headers"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1081
+#: includes/admin/trait-admin-settings.php:1063
 msgid "Read X-Forwarded-For only from configured trusted proxies"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1082
+#: includes/admin/trait-admin-settings.php:1064
 msgid "Your proxy must overwrite or append the real client address to X-Forwarded-For. Untrusted peers and Client-IP headers are ignored. With this off, lockouts use the connecting address."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1089
+#: includes/admin/trait-admin-settings.php:1071
 msgid "Trusted Proxy Addresses"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1093
+#: includes/admin/trait-admin-settings.php:1075
 msgid "One proxy IP address or CIDR range per line. Leave empty to ignore forwarding headers. Include only proxies that sanitize incoming forwarding headers."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1100
+#: includes/admin/trait-admin-settings.php:1082
 msgid "Throttle by Username"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1103
+#: includes/admin/trait-admin-settings.php:1085
 msgid "Also lock a username after repeated failures from any address"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1104
+#: includes/admin/trait-admin-settings.php:1086
 msgid "Catches distributed attempts against one account. Triggers at twice the attempt limit above."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1111
+#: includes/admin/trait-admin-settings.php:1093
 msgid "Never Lock These IPs"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1115
+#: includes/admin/trait-admin-settings.php:1097
 msgid "One per line. A trailing * matches a prefix. Add your own address so a lockout cannot shut you out."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1122
+#: includes/admin/trait-admin-settings.php:1104
 msgid "Custom Logo URL"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1132
-#: includes/admin/trait-admin-settings.php:2059
+#: includes/admin/trait-admin-settings.php:1114
+#: includes/admin/trait-admin-settings.php:2041
 msgid "Background Color"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1165
+#: includes/admin/trait-admin-settings.php:1147
 msgid "Meta & Copyright Settings"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1172
+#: includes/admin/trait-admin-settings.php:1154
 msgid "Enable Meta Module"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1177
+#: includes/admin/trait-admin-settings.php:1159
 msgid "Enable copyright, Dublin Core, and licensing features"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1185
+#: includes/admin/trait-admin-settings.php:1167
 msgid "Copyright Meta Tags"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1190
+#: includes/admin/trait-admin-settings.php:1172
 msgid "Output copyright, author, owner, and rights meta tags"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1198
+#: includes/admin/trait-admin-settings.php:1180
 msgid "Dublin Core (DCMI) Metadata"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1203
+#: includes/admin/trait-admin-settings.php:1185
 msgid "Output Dublin Core metadata (DC.title, DC.creator, DC.rights, etc.)"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1211
+#: includes/admin/trait-admin-settings.php:1193
 msgid "License Metabox"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1216
+#: includes/admin/trait-admin-settings.php:1198
 msgid "Show license selection metabox in post editor"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1224
+#: includes/admin/trait-admin-settings.php:1206
 msgid "SEO Plugin Schema Integration"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1235
+#: includes/admin/trait-admin-settings.php:1217
 msgid "None detected"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1238
+#: includes/admin/trait-admin-settings.php:1220
 msgid "Add copyright data to SEO plugin Schema.org output"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1243
+#: includes/admin/trait-admin-settings.php:1225
 msgid "Supports: Rank Math, Yoast SEO, The SEO Framework, SEOPress, AIOSEO"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1253
+#: includes/admin/trait-admin-settings.php:1235
 msgid "Default License"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1258
+#: includes/admin/trait-admin-settings.php:1240
 #: includes/features/class-meta.php:100
 #: includes/features/class-meta.php:108
 msgid "All Rights Reserved"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1273
+#: includes/admin/trait-admin-settings.php:1249
+msgid "Default content license"
+msgstr ""
+
+#: includes/admin/trait-admin-settings.php:1255
 msgid "Default license for new posts (can be overridden per-post)."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1281
+#: includes/admin/trait-admin-settings.php:1263
 msgid "Custom License URL"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1286
+#: includes/admin/trait-admin-settings.php:1267
+msgid "Default license URL"
+msgstr ""
+
+#: includes/admin/trait-admin-settings.php:1268
 msgid "Custom URL for \"All Rights Reserved\" license (e.g., your terms/disclaimer page)."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1294
-#: includes/admin/trait-admin-settings.php:1414
+#: includes/admin/trait-admin-settings.php:1276
+#: includes/admin/trait-admin-settings.php:1396
 msgid "Post Types"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1306
+#: includes/admin/trait-admin-settings.php:1288
 msgid "Select post types where meta tags and license metabox should appear."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1314
+#: includes/admin/trait-admin-settings.php:1296
 msgid "Copyright Holder"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1319
+#: includes/admin/trait-admin-settings.php:1301
 msgid "Post Author"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1320
+#: includes/admin/trait-admin-settings.php:1302
 msgid "Site Name"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1321
+#: includes/admin/trait-admin-settings.php:1303
 msgid "Custom Name"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1329
+#: includes/admin/trait-admin-settings.php:1305
+msgid "Copyright holder"
+msgstr ""
+
+#: includes/admin/trait-admin-settings.php:1311
 msgid "Who should be listed as the copyright holder."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1337
+#: includes/admin/trait-admin-settings.php:1319
 msgid "Custom Copyright Holder Name"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1341
+#: includes/admin/trait-admin-settings.php:1323
+msgid "Custom copyright holder"
+msgstr ""
+
+#: includes/admin/trait-admin-settings.php:1323
 msgid "Company Name or Person"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1342
+#: includes/admin/trait-admin-settings.php:1324
 msgid "Used when \"Custom Name\" is selected above."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1350
+#: includes/admin/trait-admin-settings.php:1332
 msgid "Dublin Core Language"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1356
+#: includes/admin/trait-admin-settings.php:1337
+msgid "Dublin Core language"
+msgstr ""
+
+#: includes/admin/trait-admin-settings.php:1338
 msgid "Leave empty to use site language. Use ISO 639 codes (en, en-US, de, etc.)."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1392
+#: includes/admin/trait-admin-settings.php:1374
 msgid "Content Integrity Settings"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1400
+#: includes/admin/trait-admin-settings.php:1382
 msgid "Enable Content Integrity"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1405
+#: includes/admin/trait-admin-settings.php:1387
 msgid "Detect structural regressions when posts are updated"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1437
+#: includes/admin/trait-admin-settings.php:1419
 msgid "Internal Link Detection"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1439
+#: includes/admin/trait-admin-settings.php:1421
 msgid "Detect when internal links are removed from content."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1447
+#: includes/admin/trait-admin-settings.php:1429
 msgid "Enable Link Detection"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1452
+#: includes/admin/trait-admin-settings.php:1434
 msgid "Warn when internal links drop significantly"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1460
+#: includes/admin/trait-admin-settings.php:1442
 msgid "Link Drop Threshold (%)"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1465
+#: includes/admin/trait-admin-settings.php:1446
+msgid "Internal link drop threshold (%)"
+msgstr ""
+
+#: includes/admin/trait-admin-settings.php:1447
 msgid "Warn if internal links drop by this percentage or more."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1473
+#: includes/admin/trait-admin-settings.php:1455
 msgid "Link Drop Absolute Threshold"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1477
+#: includes/admin/trait-admin-settings.php:1459
+msgid "Internal link drop threshold (count)"
+msgstr ""
+
+#: includes/admin/trait-admin-settings.php:1459
 msgid "links"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1478
+#: includes/admin/trait-admin-settings.php:1460
 msgid "Also warn if this many links are removed (whichever triggers first)."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1486
+#: includes/admin/trait-admin-settings.php:1468
 msgid "Exclude Nofollow Links"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1491
+#: includes/admin/trait-admin-settings.php:1473
 msgid "Do not count links with rel=\"nofollow\""
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1500
+#: includes/admin/trait-admin-settings.php:1482
 msgid "Word Count Detection"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1502
+#: includes/admin/trait-admin-settings.php:1484
 msgid "Detect when content is shortened significantly."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1510
+#: includes/admin/trait-admin-settings.php:1492
 msgid "Enable Word Count Detection"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1515
+#: includes/admin/trait-admin-settings.php:1497
 msgid "Warn when word count drops significantly"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1523
+#: includes/admin/trait-admin-settings.php:1505
 msgid "Word Count Drop Threshold (%)"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1528
+#: includes/admin/trait-admin-settings.php:1509
+msgid "Word count drop threshold (%)"
+msgstr ""
+
+#: includes/admin/trait-admin-settings.php:1510
 msgid "Warn if word count drops by this percentage."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1536
+#: includes/admin/trait-admin-settings.php:1518
 msgid "Minimum Post Age (days)"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1540
+#: includes/admin/trait-admin-settings.php:1522
+msgid "Minimum post age (days)"
+msgstr ""
+
+#: includes/admin/trait-admin-settings.php:1522
 msgid "days"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1541
+#: includes/admin/trait-admin-settings.php:1523
 msgid "Only check word count for posts older than this (to avoid alerts on new posts)."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1549
+#: includes/admin/trait-admin-settings.php:1531
 msgid "Exclude Shortcodes"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1554
+#: includes/admin/trait-admin-settings.php:1536
 msgid "Remove shortcode content from word count"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1563
+#: includes/admin/trait-admin-settings.php:1545
 msgid "Heading Structure Detection"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1565
+#: includes/admin/trait-admin-settings.php:1547
 msgid "Detect accessibility issues with heading hierarchy."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1573
+#: includes/admin/trait-admin-settings.php:1555
 msgid "Enable Heading Detection"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1578
+#: includes/admin/trait-admin-settings.php:1560
 msgid "Check heading structure for accessibility issues"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1586
+#: includes/admin/trait-admin-settings.php:1568
 msgid "Detect Missing H1"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1591
+#: includes/admin/trait-admin-settings.php:1573
 msgid "Warn when no H1 heading is present"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1599
+#: includes/admin/trait-admin-settings.php:1581
 msgid "Detect Multiple H1s"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1604
+#: includes/admin/trait-admin-settings.php:1586
 msgid "Warn when multiple H1 headings exist"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1612
+#: includes/admin/trait-admin-settings.php:1594
 msgid "Detect Skipped Levels"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1617
+#: includes/admin/trait-admin-settings.php:1599
 msgid "Warn when heading levels are skipped (e.g., H2 to H4)"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1626
+#: includes/admin/trait-admin-settings.php:1608
 msgid "Advanced Settings"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1628
+#: includes/admin/trait-admin-settings.php:1610
 msgid "Configure snapshot and display options."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1636
+#: includes/admin/trait-admin-settings.php:1618
 msgid "Snapshots to Keep"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1641
+#: includes/admin/trait-admin-settings.php:1622
+msgid "Snapshots to keep"
+msgstr ""
+
+#: includes/admin/trait-admin-settings.php:1623
 msgid "Number of historical snapshots to retain per post."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1649
+#: includes/admin/trait-admin-settings.php:1631
 msgid "Show Post List Column"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1654
+#: includes/admin/trait-admin-settings.php:1636
 msgid "Display integrity status icon in post list table"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1687
+#: includes/admin/trait-admin-settings.php:1669
 msgid "Assumption Detection Settings"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1694
+#: includes/admin/trait-admin-settings.php:1676
 msgid "Enable Assumption Detection"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1699
+#: includes/admin/trait-admin-settings.php:1681
 msgid "Detect when implicit site assumptions stop being true"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1707
+#: includes/admin/trait-admin-settings.php:1689
 msgid "Schema Collision Detection"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1712
+#: includes/admin/trait-admin-settings.php:1694
 msgid "Warn when multiple sources output the same schema type"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1720
+#: includes/admin/trait-admin-settings.php:1702
 msgid "Analytics Duplication Detection"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1725
+#: includes/admin/trait-admin-settings.php:1707
 msgid "Warn when analytics scripts load multiple times"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1733
+#: includes/admin/trait-admin-settings.php:1715
 msgid "Font Redundancy Detection"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1738
+#: includes/admin/trait-admin-settings.php:1720
 msgid "Warn when fonts load from multiple sources"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1746
+#: includes/admin/trait-admin-settings.php:1728
 msgid "Inline CSS Growth Detection"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1751
+#: includes/admin/trait-admin-settings.php:1733
 msgid "Track inline CSS size over time"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1759
+#: includes/admin/trait-admin-settings.php:1741
 msgid "Inline CSS Threshold (KB)"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1764
+#: includes/admin/trait-admin-settings.php:1746
 msgid "Warn when inline CSS exceeds this size."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1772
+#: includes/admin/trait-admin-settings.php:1754
 msgid "jQuery Conflict Detection"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1777
+#: includes/admin/trait-admin-settings.php:1759
 msgid "Warn when multiple jQuery versions or sources are loaded"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1785
+#: includes/admin/trait-admin-settings.php:1767
 msgid "Meta Tag Duplication Detection"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1790
+#: includes/admin/trait-admin-settings.php:1772
 msgid "Warn when duplicate meta tags are detected (viewport, robots, OG tags)"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1798
+#: includes/admin/trait-admin-settings.php:1780
 msgid "REST API Exposure Detection"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1803
+#: includes/admin/trait-admin-settings.php:1785
 msgid "Warn when REST API exposes user information publicly"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1811
+#: includes/admin/trait-admin-settings.php:1793
 msgid "Lazy Loading Conflict Detection"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1816
+#: includes/admin/trait-admin-settings.php:1798
 msgid "Warn when multiple lazy loading implementations are detected"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1824
+#: includes/admin/trait-admin-settings.php:1806
 msgid "Mixed Content Detection"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1829
+#: includes/admin/trait-admin-settings.php:1811
 msgid "Warn when HTTP resources are loaded on HTTPS pages"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1837
+#: includes/admin/trait-admin-settings.php:1819
 msgid "Security Headers Detection"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1842
+#: includes/admin/trait-admin-settings.php:1824
 msgid "Warn when critical security headers are missing"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1850
+#: includes/admin/trait-admin-settings.php:1832
 msgid "Debug Mode Exposure"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1855
+#: includes/admin/trait-admin-settings.php:1837
 msgid "Warn when WP_DEBUG or error display is enabled in production"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1863
+#: includes/admin/trait-admin-settings.php:1845
 msgid "Cron Issues Detection"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1868
+#: includes/admin/trait-admin-settings.php:1850
 msgid "Warn when WP-Cron is disabled or has stuck jobs"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1880
+#: includes/admin/trait-admin-settings.php:1862
 msgid "Save Settings"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1893
+#: includes/admin/trait-admin-settings.php:1875
 msgid "Detected Assumptions"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1913
+#: includes/admin/trait-admin-settings.php:1895
 msgid "App Identity"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1915
+#: includes/admin/trait-admin-settings.php:1897
 msgid "Basic information about your progressive web app."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1922
+#: includes/admin/trait-admin-settings.php:1904
 msgid "Enable PWA"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1927
+#: includes/admin/trait-admin-settings.php:1909
 msgid "Enable Progressive Web App features"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1935
+#: includes/admin/trait-admin-settings.php:1917
 msgid "App Name"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1939
+#: includes/admin/trait-admin-settings.php:1921
 msgid "Full name displayed on install. Leave blank to use site title."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1947
+#: includes/admin/trait-admin-settings.php:1929
 msgid "Short Name"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1951
+#: includes/admin/trait-admin-settings.php:1933
 msgid "Short name for the home screen (12 chars max)."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1963
+#: includes/admin/trait-admin-settings.php:1945
 msgid "Shown in app stores and install dialogs. Leave blank to use site tagline."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1971
+#: includes/admin/trait-admin-settings.php:1953
 msgid "Start URL"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1982
+#: includes/admin/trait-admin-settings.php:1964
 msgid "Scope"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1986
+#: includes/admin/trait-admin-settings.php:1968
 msgid "Navigation scope. \"/\" means the entire site."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1994
+#: includes/admin/trait-admin-settings.php:1976
 msgid "Categories"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:1998
+#: includes/admin/trait-admin-settings.php:1980
 msgid "Comma-separated W3C categories (e.g. news, education, business)."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2006
+#: includes/admin/trait-admin-settings.php:1988
 msgid "Display Mode"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2022
+#: includes/admin/trait-admin-settings.php:2004
 msgid "Orientation"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2039
+#: includes/admin/trait-admin-settings.php:2021
 msgid "Appearance & Icons"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2041
+#: includes/admin/trait-admin-settings.php:2023
 msgid "Theme colors and app icons. Icons must be square PNG files."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2048
+#: includes/admin/trait-admin-settings.php:2030
 msgid "Theme Color"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2070
+#: includes/admin/trait-admin-settings.php:2052
 msgid "Icon 512x512"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2073
+#: includes/admin/trait-admin-settings.php:2055
 msgid "Primary app icon (required for installability)."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2081
+#: includes/admin/trait-admin-settings.php:2063
 msgid "Icon 192x192"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2084
+#: includes/admin/trait-admin-settings.php:2066
 msgid "Smaller icon for home screen and splash."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2092
+#: includes/admin/trait-admin-settings.php:2074
 msgid "Maskable Icon 512x512"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2095
+#: includes/admin/trait-admin-settings.php:2077
 msgid "Maskable icon for adaptive icon support (safe zone padding recommended)."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2103
+#: includes/admin/trait-admin-settings.php:2085
 msgid "Maskable Icon 192x192"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2106
+#: includes/admin/trait-admin-settings.php:2088
 msgid "Smaller maskable icon."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2115
+#: includes/admin/trait-admin-settings.php:2097
 msgid "Install Prompt"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2117
+#: includes/admin/trait-admin-settings.php:2099
 msgid "Customize the in-page install prompt shown to visitors."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2124
+#: includes/admin/trait-admin-settings.php:2106
 msgid "Show Install Prompt"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2129
+#: includes/admin/trait-admin-settings.php:2111
 msgid "Display a custom install prompt to visitors"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2137
+#: includes/admin/trait-admin-settings.php:2119
 msgid "Prompt Title"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2140
+#: includes/admin/trait-admin-settings.php:2122
 msgid "Install App"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2148
+#: includes/admin/trait-admin-settings.php:2130
 msgid "Prompt Text"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2151
+#: includes/admin/trait-admin-settings.php:2133
 msgid "Add this site to your home screen for quick access."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2159
+#: includes/admin/trait-admin-settings.php:2141
 msgid "Button Text"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2162
+#: includes/admin/trait-admin-settings.php:2144
 #: includes/features/class-pwa.php:829
 msgid "Install"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2170
+#: includes/admin/trait-admin-settings.php:2152
 msgid "Dismiss Text"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2173
+#: includes/admin/trait-admin-settings.php:2155
 #: includes/features/class-pwa.php:830
 msgid "Not now"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2181
+#: includes/admin/trait-admin-settings.php:2163
 msgid "Position"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2185
+#: includes/admin/trait-admin-settings.php:2167
 msgid "Bottom"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2186
+#: includes/admin/trait-admin-settings.php:2168
 msgid "Top"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2187
+#: includes/admin/trait-admin-settings.php:2169
 msgid "Center (modal)"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2205
+#: includes/admin/trait-admin-settings.php:2187
 msgid "Banner"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2206
+#: includes/admin/trait-admin-settings.php:2188
 msgid "Card"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2220
+#: includes/admin/trait-admin-settings.php:2202
 msgid "Re-show After (days)"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2224
+#: includes/admin/trait-admin-settings.php:2206
 msgid "Days to wait before showing prompt again after dismissal."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2233
+#: includes/admin/trait-admin-settings.php:2215
 msgid "Offline & Caching"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2235
+#: includes/admin/trait-admin-settings.php:2217
 msgid "Service worker caching and offline behavior."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2242
+#: includes/admin/trait-admin-settings.php:2224
 msgid "Cache Version"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2246
+#: includes/admin/trait-admin-settings.php:2228
 msgid "Increment to force cache refresh (e.g. v1, v2)."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2254
+#: includes/admin/trait-admin-settings.php:2236
 msgid "Precache URLs"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2258
+#: includes/admin/trait-admin-settings.php:2240
 msgid "One URL per line. These pages will be cached immediately when the service worker installs."
+msgstr ""
+
+#: includes/admin/trait-admin-settings.php:2249
+#: includes/admin/trait-admin-settings.php:2258
+msgid "Shortcuts"
+msgstr ""
+
+#: includes/admin/trait-admin-settings.php:2251
+msgid "App shortcut links shown on long-press of the app icon. Up to 4 shortcuts."
 msgstr ""
 
 #: includes/admin/trait-admin-settings.php:2267
 #: includes/admin/trait-admin-settings.php:2276
-msgid "Shortcuts"
-msgstr ""
-
-#: includes/admin/trait-admin-settings.php:2269
-msgid "App shortcut links shown on long-press of the app icon. Up to 4 shortcuts."
-msgstr ""
-
-#: includes/admin/trait-admin-settings.php:2285
-#: includes/admin/trait-admin-settings.php:2294
 msgid "Screenshots"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2287
+#: includes/admin/trait-admin-settings.php:2269
 msgid "App screenshots shown in install dialogs and app stores. Provide wide and narrow sizes."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2303
+#: includes/admin/trait-admin-settings.php:2285
 msgid "Advanced"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2305
+#: includes/admin/trait-admin-settings.php:2287
 msgid "Advanced PWA features. Only change these if you know what you're doing."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2312
+#: includes/admin/trait-admin-settings.php:2294
 msgid "Display Override"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2317
+#: includes/admin/trait-admin-settings.php:2299
 msgid "Enable display_override with window-controls-overlay fallback chain"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2325
+#: includes/admin/trait-admin-settings.php:2307
 msgid "Edge Side Panel"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2330
+#: includes/admin/trait-admin-settings.php:2312
 msgid "Allow opening in Microsoft Edge side panel"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2338
+#: includes/admin/trait-admin-settings.php:2320
 msgid "Launch Handler"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2342
+#: includes/admin/trait-admin-settings.php:2324
 msgid "Default"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2352
+#: includes/admin/trait-admin-settings.php:2334
 msgid "Controls behavior when the app is already open and a new navigation is triggered."
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2360
+#: includes/admin/trait-admin-settings.php:2342
 msgid "Share Target"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2365
+#: includes/admin/trait-admin-settings.php:2347
 msgid "Register as a Web Share Target"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2367
+#: includes/admin/trait-admin-settings.php:2349
 msgid "Action URL:"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2375
+#: includes/admin/trait-admin-settings.php:2357
 msgid "Method:"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2389
+#: includes/admin/trait-admin-settings.php:2371
 msgid "Custom Manifest JSON"
 msgstr ""
 
-#: includes/admin/trait-admin-settings.php:2393
+#: includes/admin/trait-admin-settings.php:2375
 msgid "Raw JSON to merge into the manifest. Must be a valid JSON object."
 msgstr ""
 
@@ -3238,600 +3434,868 @@ msgstr ""
 msgid "Paste your <script>, <style>, <meta>, or <link> tag here…"
 msgstr ""
 
-#: includes/admin/trait-admin-svg-icons-ui.php:55
+#: includes/admin/trait-admin-svg-icons-ui.php:48
 msgid "Enable SVG Icons"
 msgstr ""
 
-#: includes/admin/trait-admin-svg-icons-ui.php:56
+#: includes/admin/trait-admin-svg-icons-ui.php:49
 msgid "Allow inserting custom SVG icons in the block editor"
 msgstr ""
 
-#: includes/admin/trait-admin-svg-icons-ui.php:89
+#: includes/admin/trait-admin-svg-icons-ui.php:57
 msgid "Add New Icon"
 msgstr ""
 
-#: includes/admin/trait-admin-svg-icons-ui.php:91
+#: includes/admin/trait-admin-svg-icons-ui.php:59
 msgid "Slug (unique identifier)"
 msgstr ""
 
-#: includes/admin/trait-admin-svg-icons-ui.php:92
+#: includes/admin/trait-admin-svg-icons-ui.php:60
 msgid "Lowercase letters, numbers, and hyphens only"
 msgstr ""
 
-#: includes/admin/trait-admin-svg-icons-ui.php:93
+#: includes/admin/trait-admin-svg-icons-ui.php:61
 msgid "Lowercase letters, numbers, and hyphens only. This will be used to reference the icon."
 msgstr ""
 
-#: includes/admin/trait-admin-svg-icons-ui.php:96
+#: includes/admin/trait-admin-svg-icons-ui.php:64
 msgid "Display Name"
 msgstr ""
 
-#: includes/admin/trait-admin-svg-icons-ui.php:100
+#: includes/admin/trait-admin-svg-icons-ui.php:68
 msgid "SVG Code"
 msgstr ""
 
-#: includes/admin/trait-admin-svg-icons-ui.php:102
+#: includes/admin/trait-admin-svg-icons-ui.php:70
 msgid "Paste your SVG code. It will be sanitized to remove any potentially harmful content."
 msgstr ""
 
-#: includes/admin/trait-admin-svg-icons-ui.php:106
+#: includes/admin/trait-admin-svg-icons-ui.php:74
 msgid "Preview:"
 msgstr ""
 
-#: includes/admin/trait-admin-svg-icons-ui.php:111
+#: includes/admin/trait-admin-svg-icons-ui.php:79
 msgid "Save Icon"
 msgstr ""
 
-#: includes/admin/trait-admin-svg-icons-ui.php:117
+#: includes/admin/trait-admin-svg-icons-ui.php:85
 msgid "Your Icons"
 msgstr ""
 
-#: includes/admin/trait-admin-svg-icons-ui.php:122
+#: includes/admin/trait-admin-svg-icons-ui.php:90
 msgid "No icons yet. Add your first icon above."
 msgstr ""
 
-#: includes/admin/trait-admin-svg-icons-ui.php:138
+#: includes/admin/trait-admin-svg-icons-ui.php:106
 msgid "Copy shortcode"
 msgstr ""
 
-#: includes/admin/trait-admin-svg-icons-ui.php:200
+#: includes/admin/trait-admin-svg-icons-ui.php:172
 msgid "Slug is required."
 msgstr ""
 
-#: includes/admin/trait-admin-svg-icons-ui.php:204
+#: includes/admin/trait-admin-svg-icons-ui.php:176
 msgid "Valid SVG code is required."
 msgstr ""
 
-#: includes/admin/trait-admin-svg-icons-ui.php:209
+#: includes/admin/trait-admin-svg-icons-ui.php:181
 msgid "Saving..."
 msgstr ""
 
-#: includes/admin/trait-admin-svg-icons-ui.php:220
+#: includes/admin/trait-admin-svg-icons-ui.php:192
 msgid "Icon saved!"
 msgstr ""
 
-#: includes/admin/trait-admin-svg-icons-ui.php:229
+#: includes/admin/trait-admin-svg-icons-ui.php:201
 msgid "Error saving icon."
 msgstr ""
 
-#: includes/admin/trait-admin-svg-icons-ui.php:233
+#: includes/admin/trait-admin-svg-icons-ui.php:205
 msgid "Network error."
 msgstr ""
 
-#: includes/admin/trait-admin-svg-icons-ui.php:240
+#: includes/admin/trait-admin-svg-icons-ui.php:212
 msgid "Delete this icon?"
 msgstr ""
 
-#: includes/admin/trait-admin-svg-icons-ui.php:251
+#: includes/admin/trait-admin-svg-icons-ui.php:223
 msgid "Error deleting icon."
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:70
+#: includes/admin/trait-admin-task-manager-ui.php:52
 msgid "Enable Task Manager"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:71
+#: includes/admin/trait-admin-task-manager-ui.php:53
 msgid "File-based project task management"
 msgstr ""
 
 #. translators: %s: comma-separated storage error codes.
-#: includes/admin/trait-admin-task-manager-ui.php:81
+#: includes/admin/trait-admin-task-manager-ui.php:63
 #, php-format
 msgid "Task storage error(s): %s. Existing JSON files were preserved."
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:111
+#: includes/admin/trait-admin-task-manager-ui.php:93
 msgid "About Task Manager"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:113
+#: includes/admin/trait-admin-task-manager-ui.php:95
 msgid "A lightweight, file-based task management system with zero frontend footprint. Tasks are stored as JSON files in your wp-content directory."
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:118
+#: includes/admin/trait-admin-task-manager-ui.php:100
 msgid "Check/Uncheck Tasks"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:119
+#: includes/admin/trait-admin-task-manager-ui.php:101
 msgid "Click the checkbox to mark tasks complete or pending."
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:125
+#: includes/admin/trait-admin-task-manager-ui.php:107
 msgid "Tags with #hashtags"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:126
+#: includes/admin/trait-admin-task-manager-ui.php:108
 msgid "Add #tag to tasks for categorization. Example: \"Review code #urgent #frontend\""
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:132
+#: includes/admin/trait-admin-task-manager-ui.php:114
 msgid "Priority Levels (!1, !2, !3)"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:133
+#: includes/admin/trait-admin-task-manager-ui.php:115
 msgid "Add !1 (high), !2 (medium), or !3 (low) priority. Example: \"Fix bug !1\""
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:139
+#: includes/admin/trait-admin-task-manager-ui.php:121
 msgid "Notes for Each Task"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:140
+#: includes/admin/trait-admin-task-manager-ui.php:122
 msgid "Add detailed notes and context to any task."
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:146
+#: includes/admin/trait-admin-task-manager-ui.php:128
 msgid "Export & Import"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:147
+#: includes/admin/trait-admin-task-manager-ui.php:129
 msgid "Export projects as JSON for backup or sharing. Import projects from JSON."
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:153
+#: includes/admin/trait-admin-task-manager-ui.php:135
 msgid "Dashboard Widget"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:154
+#: includes/admin/trait-admin-task-manager-ui.php:136
 msgid "Show any project as a dashboard widget for quick access."
 msgstr ""
 
 #. translators: %s: directory path
-#: includes/admin/trait-admin-task-manager-ui.php:163
+#: includes/admin/trait-admin-task-manager-ui.php:145
 #, php-format
 msgid "Tasks are stored in a private folder under %s that is not reachable over the web."
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:172
+#: includes/admin/trait-admin-task-manager-ui.php:154
 msgid "New Project"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:173
+#: includes/admin/trait-admin-task-manager-ui.php:155
 msgid "Enter project name..."
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:176
-#: includes/admin/trait-admin-task-manager-ui.php:286
-#: includes/admin/trait-admin-task-manager-ui.php:290
+#: includes/admin/trait-admin-task-manager-ui.php:158
+#: includes/admin/trait-admin-task-manager-ui.php:268
+#: includes/admin/trait-admin-task-manager-ui.php:272
 msgid "Create Project"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:186
+#: includes/admin/trait-admin-task-manager-ui.php:168
 msgid "No Projects Yet"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:187
+#: includes/admin/trait-admin-task-manager-ui.php:169
 msgid "Create your first project to start managing tasks."
 msgstr ""
 
 #. translators: 1: completed count, 2: total count
-#: includes/admin/trait-admin-task-manager-ui.php:204
+#: includes/admin/trait-admin-task-manager-ui.php:186
 #, php-format
 msgid "%1$d of %2$d tasks completed"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:216
+#: includes/admin/trait-admin-task-manager-ui.php:198
 msgid "Shown on Dashboard"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:221
+#: includes/admin/trait-admin-task-manager-ui.php:203
 msgid "Open"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:224
-#: includes/admin/trait-admin-task-manager-ui.php:439
+#: includes/admin/trait-admin-task-manager-ui.php:206
+#: includes/admin/trait-admin-task-manager-ui.php:421
 msgid "Export"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:238
+#: includes/admin/trait-admin-task-manager-ui.php:220
 msgid "Import Project"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:239
+#: includes/admin/trait-admin-task-manager-ui.php:221
 msgid "Paste the JSON content exported from another project:"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:251
-#: includes/admin/trait-admin-task-manager-ui.php:600
+#: includes/admin/trait-admin-task-manager-ui.php:233
+#: includes/admin/trait-admin-task-manager-ui.php:582
 msgid "Export Project"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:252
-#: includes/admin/trait-admin-task-manager-ui.php:601
+#: includes/admin/trait-admin-task-manager-ui.php:234
+#: includes/admin/trait-admin-task-manager-ui.php:583
 msgid "Copy this JSON to save or share your project:"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:255
-#: includes/admin/trait-admin-task-manager-ui.php:604
+#: includes/admin/trait-admin-task-manager-ui.php:237
+#: includes/admin/trait-admin-task-manager-ui.php:586
 msgid "Close"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:256
-#: includes/admin/trait-admin-task-manager-ui.php:341
-#: includes/admin/trait-admin-task-manager-ui.php:605
-#: includes/admin/trait-admin-task-manager-ui.php:985
+#: includes/admin/trait-admin-task-manager-ui.php:238
+#: includes/admin/trait-admin-task-manager-ui.php:323
+#: includes/admin/trait-admin-task-manager-ui.php:587
+#: includes/admin/trait-admin-task-manager-ui.php:967
 msgid "Copy to Clipboard"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:270
+#: includes/admin/trait-admin-task-manager-ui.php:252
 msgid "Please enter a project name."
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:285
+#: includes/admin/trait-admin-task-manager-ui.php:267
 #: includes/features/class-task-manager.php:797
 msgid "Failed to create project."
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:289
-#: includes/admin/trait-admin-task-manager-ui.php:377
-#: includes/admin/trait-admin-task-manager-ui.php:764
-#: includes/admin/trait-admin-task-manager-ui.php:811
-#: includes/admin/trait-admin-task-manager-ui.php:914
+#: includes/admin/trait-admin-task-manager-ui.php:271
+#: includes/admin/trait-admin-task-manager-ui.php:359
+#: includes/admin/trait-admin-task-manager-ui.php:746
+#: includes/admin/trait-admin-task-manager-ui.php:793
+#: includes/admin/trait-admin-task-manager-ui.php:896
 msgid "Request failed."
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:298
+#: includes/admin/trait-admin-task-manager-ui.php:280
 msgid "Are you sure you want to delete the project:"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:310
+#: includes/admin/trait-admin-task-manager-ui.php:292
 #: includes/features/class-task-manager.php:819
 msgid "Failed to delete project."
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:327
-#: includes/admin/trait-admin-task-manager-ui.php:971
+#: includes/admin/trait-admin-task-manager-ui.php:309
+#: includes/admin/trait-admin-task-manager-ui.php:953
 msgid "Failed to export project."
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:358
+#: includes/admin/trait-admin-task-manager-ui.php:340
 msgid "Please paste JSON content."
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:363
-#: includes/admin/trait-admin-task-manager-ui.php:943
+#: includes/admin/trait-admin-task-manager-ui.php:345
+#: includes/admin/trait-admin-task-manager-ui.php:925
 msgid "Importing..."
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:373
+#: includes/admin/trait-admin-task-manager-ui.php:355
 #: includes/features/class-task-manager.php:1068
 msgid "Failed to import project."
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:424
+#: includes/admin/trait-admin-task-manager-ui.php:406
 msgid "List View"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:427
+#: includes/admin/trait-admin-task-manager-ui.php:409
 msgid "Column View"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:433
+#: includes/admin/trait-admin-task-manager-ui.php:415
 msgid "Show on Dashboard"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:436
+#: includes/admin/trait-admin-task-manager-ui.php:418
 msgid "Import Drafts"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:448
+#: includes/admin/trait-admin-task-manager-ui.php:430
 msgid "Search tasks..."
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:451
+#: includes/admin/trait-admin-task-manager-ui.php:433
 msgid "All Priorities"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:452
+#: includes/admin/trait-admin-task-manager-ui.php:434
 msgid "High (!1)"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:453
+#: includes/admin/trait-admin-task-manager-ui.php:435
 msgid "Medium (!2)"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:454
+#: includes/admin/trait-admin-task-manager-ui.php:436
 msgid "Low (!3)"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:457
+#: includes/admin/trait-admin-task-manager-ui.php:439
 msgid "All Status"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:458
+#: includes/admin/trait-admin-task-manager-ui.php:440
 msgid "Pending"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:459
+#: includes/admin/trait-admin-task-manager-ui.php:441
 #: assets/js/wp7-admin.js:160
 msgid "Completed"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:463
+#: includes/admin/trait-admin-task-manager-ui.php:445
 msgid "Clear Completed"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:469
+#: includes/admin/trait-admin-task-manager-ui.php:451
 msgid "Add a new task... (use @post to link, #tag for tags, !1/!2/!3 for priority)"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:473
+#: includes/admin/trait-admin-task-manager-ui.php:455
 msgid "Examples: \"Review @my-post-title !1\" or \"Update documentation #docs !3\" — Type @ to search posts"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:475
+#: includes/admin/trait-admin-task-manager-ui.php:457
 msgid "Optional notes..."
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:477
+#: includes/admin/trait-admin-task-manager-ui.php:459
 msgid "Add Task"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:484
-#: includes/admin/trait-admin-task-manager-ui.php:838
+#: includes/admin/trait-admin-task-manager-ui.php:466
+#: includes/admin/trait-admin-task-manager-ui.php:820
 msgid "No tasks yet. Add your first task above."
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:492
+#: includes/admin/trait-admin-task-manager-ui.php:474
 msgid "Drag to reorder"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:536
+#: includes/admin/trait-admin-task-manager-ui.php:518
 msgid "High"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:543
+#: includes/admin/trait-admin-task-manager-ui.php:525
 msgid "Medium"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:550
+#: includes/admin/trait-admin-task-manager-ui.php:532
 msgid "Low"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:557
+#: includes/admin/trait-admin-task-manager-ui.php:539
 msgid "No Priority"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:567
+#: includes/admin/trait-admin-task-manager-ui.php:549
 msgid "Edit Task"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:570
+#: includes/admin/trait-admin-task-manager-ui.php:552
 #: assets/js/wp7-admin.js:160
 msgid "Task"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:574
+#: includes/admin/trait-admin-task-manager-ui.php:556
 #: assets/js/wp7-admin.js:160
 msgid "Notes"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:578
+#: includes/admin/trait-admin-task-manager-ui.php:560
 #: assets/js/wp7-admin.js:160
 msgid "Priority"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:580
+#: includes/admin/trait-admin-task-manager-ui.php:562
 msgid "No priority"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:581
+#: includes/admin/trait-admin-task-manager-ui.php:563
 msgid "!1 - High"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:582
+#: includes/admin/trait-admin-task-manager-ui.php:564
 msgid "!2 - Medium"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:583
+#: includes/admin/trait-admin-task-manager-ui.php:565
 msgid "!3 - Low"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:587
+#: includes/admin/trait-admin-task-manager-ui.php:569
 #: assets/js/wp7-admin.js:160
 msgid "Tags"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:588
+#: includes/admin/trait-admin-task-manager-ui.php:570
 msgid "Comma-separated: urgent, frontend, bug"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:592
+#: includes/admin/trait-admin-task-manager-ui.php:574
 msgid "Save"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:677
+#: includes/admin/trait-admin-task-manager-ui.php:659
 msgid "No completed tasks to clear."
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:681
+#: includes/admin/trait-admin-task-manager-ui.php:663
 msgid "Are you sure you want to delete all completed tasks?"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:738
+#: includes/admin/trait-admin-task-manager-ui.php:720
 msgid "Please enter task text."
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:760
+#: includes/admin/trait-admin-task-manager-ui.php:742
 #: includes/features/class-task-manager.php:852
 msgid "Failed to add task."
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:807
-#: includes/admin/trait-admin-task-manager-ui.php:910
+#: includes/admin/trait-admin-task-manager-ui.php:789
+#: includes/admin/trait-admin-task-manager-ui.php:892
 #: includes/features/class-task-manager.php:906
 msgid "Failed to update task."
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:817
+#: includes/admin/trait-admin-task-manager-ui.php:799
 msgid "Delete this task?"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:842
+#: includes/admin/trait-admin-task-manager-ui.php:824
 #: includes/features/class-task-manager.php:931
 msgid "Failed to delete task."
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:890
+#: includes/admin/trait-admin-task-manager-ui.php:872
 msgid "Task text is required."
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:929
+#: includes/admin/trait-admin-task-manager-ui.php:911
 #: includes/features/class-task-manager.php:1137
 msgid "Failed to update setting."
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:937
+#: includes/admin/trait-admin-task-manager-ui.php:919
 msgid "Import all draft posts as tasks? This will scan for all drafts and add them to this project."
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:954
+#: includes/admin/trait-admin-task-manager-ui.php:936
 msgid "Failed to import drafts."
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:1052
+#: includes/admin/trait-admin-task-manager-ui.php:1034
 msgid "No tasks"
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:1142
+#: includes/admin/trait-admin-task-manager-ui.php:1124
 msgid "Searching..."
 msgstr ""
 
-#: includes/admin/trait-admin-task-manager-ui.php:1161
+#: includes/admin/trait-admin-task-manager-ui.php:1143
 msgid "No posts found"
 msgstr ""
 
-#: includes/core/class-module-registry.php:33
-msgid "Task Manager"
+#: includes/admin/trait-admin-utilities-ui.php:39
+msgid "Enable module"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:42
+msgid "Enable this module"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:50
+msgid "Weekly scan"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:53
+msgid "Scan weekly in small background batches"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:60
+msgid "Supported content"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:62
+msgid "Duplicate posts or pages into a new draft from the content list. Blocks, taxonomies, featured image, and page template are copied. Comments, revisions, and builder metadata are excluded unless explicitly supported by an integration."
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:79
+#: includes/admin/trait-admin-utilities-ui.php:185
+#: includes/features/class-link-health.php:332
+#: includes/features/class-link-health.php:361
+#: includes/features/class-link-health.php:546
+msgid "Administrator access is required."
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:96
+msgid "Enable Link Health before running an action."
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:137
+msgid "The activity log could not be cleared. Check private storage."
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:243
+msgid "Checks links stored in public posts and pages. Password-protected content, dynamic blocks, shortcodes, and navigation are excluded. A maximum of 1,000 unique links is checked per post; truncated reports are marked. Scans never change your content."
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:245
+msgid "Enable Link Health to view reports and start a scan."
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:251
+#: includes/admin/trait-admin-utilities-ui.php:252
+msgid "Scan progress"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:254
+msgid "Posts checked"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:260
+msgid "Start new scan"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:262
+msgid "Stop scan"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:273
+msgid "Keep this page open for continuous checking and live results. Scans also continue on your site’s background schedule when you leave."
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:274
+msgid "Enable JavaScript for live progress, or use Resume scan to process one batch at a time."
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:284
+msgid "Link results"
+msgstr ""
+
+#. translators: 1: first visible result, 2: last visible result, 3: total results.
+#: includes/admin/trait-admin-utilities-ui.php:285
+#, php-format
+msgid "%1$d–%2$d of %3$d results · 50 per page"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:287
+#: assets/js/wp7-admin.js:160
+msgid "Source"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:287
+msgid "Link"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:287
+msgid "Result"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:287
+msgid "Last checked (UTC)"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:291
+msgid "No link results on this page. Start a scan or check another results page."
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:298
+msgid "Content changed. Run a new scan."
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:302
+msgid "Partial scan"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:306
+msgid "First 1,000 unique links only"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:316
+msgid "Recheck"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:330
+msgid "OK"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:331
+msgid "Broken"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:332
+msgid "Redirected"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:333
+msgid "Inconclusive"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:334
+msgid "Unsafe URL"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:335
+msgid "Ignored"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:348
+msgid "Tracks module settings, plugin/theme changes, and post/page status changes. Stores changed field names, never their values. Keeps up to 1,000 events for 30 days. Routine visitor requests are not logged."
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:350
+msgid "Enable Site Activity to view and record events."
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:384
+msgid "The activity log could not be read. Check private storage."
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:387
+msgid "Search target or fields"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:388
+#: includes/admin/trait-admin-utilities-ui.php:396
+#: includes/features/class-site-activity.php:300
+msgid "Event"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:388
+msgid "All events"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:393
+msgid "Actor ID"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:394
+msgid "Filter"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:396
+msgid "Time (UTC)"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:396
+msgid "Actor"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:396
+#: includes/features/class-site-activity.php:304
+msgid "Target"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:396
+msgid "Details"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:400
+msgid "No activity matches these filters."
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:405
+msgid "System or anonymized user"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:411
+msgid "Delete the stored activity history"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:412
+msgid "Clear activity log"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:419
+msgid "Module settings changed"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:420
+msgid "Plugin activated"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:421
+msgid "Plugin deactivated"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:422
+msgid "Theme switched"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:423
+msgid "Plugin updated"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:424
+msgid "Theme updated"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:425
+msgid "Publishing status changed"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:436
+msgid "Previous"
 msgstr ""
 
 #: includes/core/class-module-registry.php:33
-msgid "File-based project task management with JSON storage."
+msgid "Content Tools"
+msgstr ""
+
+#: includes/core/class-module-registry.php:33
+msgid "Duplicate posts and pages into safe, editable drafts."
 msgstr ""
 
 #: includes/core/class-module-registry.php:34
+msgid "Link Health"
+msgstr ""
+
+#: includes/core/class-module-registry.php:34
+msgid "Find broken links with resumable, bounded scans."
+msgstr ""
+
+#: includes/core/class-module-registry.php:35
+#: includes/features/class-site-activity.php:292
+msgid "Site Activity"
+msgstr ""
+
+#: includes/core/class-module-registry.php:35
+msgid "Review a private, bounded history of site changes."
+msgstr ""
+
+#: includes/core/class-module-registry.php:36
+msgid "Task Manager"
+msgstr ""
+
+#: includes/core/class-module-registry.php:36
+msgid "File-based project task management with JSON storage."
+msgstr ""
+
+#: includes/core/class-module-registry.php:37
 msgid "Disable bloat, emojis, embeds, heartbeat, and more."
 msgstr ""
 
-#: includes/core/class-module-registry.php:35
+#: includes/core/class-module-registry.php:38
 msgid "Header & Footer"
 msgstr ""
 
-#: includes/core/class-module-registry.php:35
+#: includes/core/class-module-registry.php:38
 msgid "Add GA4, custom header and footer code."
 msgstr ""
 
-#: includes/core/class-module-registry.php:36
+#: includes/core/class-module-registry.php:39
 msgid "Link Management"
 msgstr ""
 
-#: includes/core/class-module-registry.php:36
+#: includes/core/class-module-registry.php:39
 msgid "Control nofollow, new tabs, and link behavior."
 msgstr ""
 
-#: includes/core/class-module-registry.php:37
+#: includes/core/class-module-registry.php:40
 msgid "Redirect Manager"
 msgstr ""
 
-#: includes/core/class-module-registry.php:37
+#: includes/core/class-module-registry.php:40
 msgid "Create and manage 301/302 URL redirects."
 msgstr ""
 
-#: includes/core/class-module-registry.php:38
+#: includes/core/class-module-registry.php:41
 msgid "Block Cleanup"
 msgstr ""
 
-#: includes/core/class-module-registry.php:38
+#: includes/core/class-module-registry.php:41
 msgid "Strip block classes from frontend output."
 msgstr ""
 
-#: includes/core/class-module-registry.php:39
+#: includes/core/class-module-registry.php:42
 msgid "Add microdata to key areas and content."
 msgstr ""
 
-#: includes/core/class-module-registry.php:40
+#: includes/core/class-module-registry.php:43
 #: includes/features/class-content-regression.php:1301
 #: includes/features/class-content-regression.php:1380
 msgid "Content Integrity"
 msgstr ""
 
-#: includes/core/class-module-registry.php:40
+#: includes/core/class-module-registry.php:43
 msgid "Detect structural regressions when posts are updated."
 msgstr ""
 
-#: includes/core/class-module-registry.php:41
+#: includes/core/class-module-registry.php:44
 msgid "Assumption Detection"
 msgstr ""
 
-#: includes/core/class-module-registry.php:41
+#: includes/core/class-module-registry.php:44
 msgid "Notice when implicit site assumptions stop being true."
 msgstr ""
 
-#: includes/core/class-module-registry.php:42
+#: includes/core/class-module-registry.php:45
 msgid "Login Security"
 msgstr ""
 
-#: includes/core/class-module-registry.php:42
+#: includes/core/class-module-registry.php:45
 msgid "Limit login attempts, customize login page, block XML-RPC."
 msgstr ""
 
-#: includes/core/class-module-registry.php:43
+#: includes/core/class-module-registry.php:46
 msgid "Meta & Copyright"
 msgstr ""
 
-#: includes/core/class-module-registry.php:43
+#: includes/core/class-module-registry.php:46
 msgid "Copyright, Dublin Core, licensing, and SEO plugin integration."
 msgstr ""
 
-#: includes/core/class-module-registry.php:44
+#: includes/core/class-module-registry.php:47
 msgid "Define reusable CSS components."
 msgstr ""
 
-#: includes/core/class-module-registry.php:45
+#: includes/core/class-module-registry.php:48
 msgid "Fonts"
 msgstr ""
 
-#: includes/core/class-module-registry.php:45
+#: includes/core/class-module-registry.php:48
 msgid "Register custom font families."
 msgstr ""
 
-#: includes/core/class-module-registry.php:46
+#: includes/core/class-module-registry.php:49
 msgid "Limit link suggestions to selected post types."
 msgstr ""
 
-#: includes/core/class-module-registry.php:47
+#: includes/core/class-module-registry.php:50
 msgid "SVG Icons"
 msgstr ""
 
-#: includes/core/class-module-registry.php:47
+#: includes/core/class-module-registry.php:50
 msgid "Upload custom SVG icons and insert them inline in the block editor."
 msgstr ""
 
-#: includes/core/class-module-registry.php:48
+#: includes/core/class-module-registry.php:51
 msgid "Progressive Web App"
 msgstr ""
 
-#: includes/core/class-module-registry.php:48
+#: includes/core/class-module-registry.php:51
 msgid "Make your site installable and work offline."
 msgstr ""
 
@@ -4377,6 +4841,78 @@ msgstr ""
 msgid "Baseline has been reset."
 msgstr ""
 
+#: includes/features/class-content-tools.php:29
+msgid "This content cannot be duplicated."
+msgstr ""
+
+#: includes/features/class-content-tools.php:33
+msgid "You cannot create a draft from this content."
+msgstr ""
+
+#: includes/features/class-content-tools.php:42
+msgid "Duplicate as draft"
+msgstr ""
+
+#: includes/features/class-content-tools.php:60
+msgid "You cannot assign the source content taxonomies."
+msgstr ""
+
+#: includes/features/class-content-tools.php:72
+msgid "You cannot copy one of the supported metadata fields."
+msgstr ""
+
+#: includes/features/class-content-tools.php:107
+msgid "Metadata could not be copied. The partial draft was removed."
+msgstr ""
+
+#: includes/features/class-link-health.php:296
+msgid "Enable Link Health and use an administrator account."
+msgstr ""
+
+#: includes/features/class-link-health.php:300
+#: includes/features/class-link-health.php:337
+#: includes/features/class-link-health.php:365
+#: includes/features/class-link-health.php:424
+msgid "Private scan storage is unavailable."
+msgstr ""
+
+#: includes/features/class-link-health.php:323
+msgid "A scan is already running or storage is unavailable. Resume the existing scan."
+msgstr ""
+
+#: includes/features/class-link-health.php:352
+#: includes/features/class-link-health.php:383
+msgid "The scan changed. Refresh its status and try again."
+msgstr ""
+
+#: includes/features/class-link-health.php:420
+msgid "Link Health is disabled."
+msgstr ""
+
+#: includes/features/class-link-health.php:441
+msgid "The scan is finished or another worker is processing a batch."
+msgstr ""
+
+#: includes/features/class-link-health.php:540
+msgid "The batch could not be saved. Resume the scan after checking private storage."
+msgstr ""
+
+#: includes/features/class-link-health.php:550
+msgid "This link is no longer in public source content."
+msgstr ""
+
+#: includes/features/class-link-health.php:580
+msgid "Content changed since the scan. Run a new scan before rechecking."
+msgstr ""
+
+#: includes/features/class-link-health.php:585
+msgid "Content changed during the check. Run a new scan."
+msgstr ""
+
+#: includes/features/class-link-health.php:588
+msgid "The source changed or a scan is updating this report. Wait for the batch to finish and retry."
+msgstr ""
+
 #: includes/features/class-link-management.php:557
 msgid "Please provide a valid URL."
 msgstr ""
@@ -4606,6 +5142,19 @@ msgstr ""
 
 #: includes/features/class-schema.php:459
 msgid "Home"
+msgstr ""
+
+#: includes/features/class-site-activity.php:260
+#: includes/features/class-site-activity.php:267
+msgid "Functionalities Site Activity"
+msgstr ""
+
+#: includes/features/class-site-activity.php:279
+msgid "Site Activity history could not be anonymized. Check private storage and retry."
+msgstr ""
+
+#: includes/features/class-site-activity.php:296
+msgid "Time"
 msgstr ""
 
 #: includes/features/class-svg-icons.php:236
@@ -4935,10 +5484,6 @@ msgstr ""
 
 #: assets/js/wp7-admin.js:160
 msgid "Explain with AI"
-msgstr ""
-
-#: assets/js/wp7-admin.js:160
-msgid "Source"
 msgstr ""
 
 #: assets/js/wp7-admin.js:160

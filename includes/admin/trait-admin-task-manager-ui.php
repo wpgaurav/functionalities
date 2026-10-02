@@ -41,26 +41,8 @@ trait Admin_Task_Manager_UI {
 		}
 		?>
 		<div class="wrap functionalities-module functionalities-task-manager">
-			<h1>
-				<span class="dashicons <?php echo \esc_attr( $module['icon'] ); ?>"></span>
-				<?php echo \esc_html( $module['title'] ); ?>
-			</h1>
+			<?php Admin_UI::render_header( $module['title'], $module['description'], 'task-manager', $project_data['name'] ?? '' ); ?>
 
-			<nav class="functionalities-breadcrumb">
-				<a href="<?php echo \esc_url( \admin_url( 'admin.php?page=functionalities' ) ); ?>">
-					<?php echo \esc_html__( 'Functionalities', 'functionalities' ); ?>
-				</a>
-				<span class="separator">›</span>
-				<?php if ( $project_data ) : ?>
-					<a href="<?php echo \esc_url( \admin_url( 'admin.php?page=functionalities&module=task-manager' ) ); ?>">
-						<?php echo \esc_html( $module['title'] ); ?>
-					</a>
-					<span class="separator">›</span>
-					<span class="current"><?php echo \esc_html( $project_data['name'] ); ?></span>
-				<?php else : ?>
-					<span class="current"><?php echo \esc_html( $module['title'] ); ?></span>
-				<?php endif; ?>
-			</nav>
 
 			<form method="post">
 				<?php \wp_nonce_field( 'functionalities_task_manager_toggle' ); ?>

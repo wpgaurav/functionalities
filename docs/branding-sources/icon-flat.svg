@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="art-title art-desc">
+  <title id="art-title">Dynamic Functionalities</title>
+  <desc id="art-desc">Four colorful modular tiles above blue platform layers, matching the Functionalities admin mark.</desc>
+  <rect width="256" height="256" rx="44" fill="#f3f7ff" />
+  <g id="modular-platform" transform="translate(22 17) scale(8.8333333333)" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m12 2 4 2.5-4 2.5-4-2.5Z" stroke="#7b51c7" />
+    <path d="m6 6 4 2.5-4 2.5-4-2.5Z" stroke="#009889" />
+    <path d="m18 6 4 2.5-4 2.5-4-2.5Z" stroke="#db702e" />
+    <path d="m12 10 4 2.5-4 2.5-4-2.5Z" stroke="#2770d9" />
+    <path d="m2 13 10 6 10-6" stroke="#2c64d8" />
+    <path d="M2 17l10 6 10-6" stroke="#153d93" />
+  </g>
+</svg>

@@ -5,57 +5,53 @@ Tags: performance, security, seo, redirection, cleanup
 Requires at least: 6.3
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.6.3
+Stable tag: 1.7.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Replace 5+ plugins with one lightweight toolkit. 16 modules for performance, security, SEO, redirects, and content management.
+19 optional WordPress modules for content tools, link checks, site activity, performance, security, redirects, and SEO.
 
 == Description ==
 
-Dynamic Functionalities replaces the stack of single-purpose plugins most WordPress sites depend on. Instead of installing separate plugins for performance cleanup, redirect management, login security, schema markup, external link control, and code snippets, you get 16 purpose-built modules in one package that loads less code than most individual plugins.
+Dynamic Functionalities brings 19 optional WordPress utilities into one dashboard. Manage content, check links, review site activity, configure redirects, add fonts and CSS components, and control performance, security, and SEO settings.
 
-Every module is independent. Enable what you need, disable what you don't. Disabled modules load zero code — no hooks, no files, no queries.
+Every module is independent and starts disabled. Enable the tools you need. Disabled feature modules are not initialized on frontend requests; their settings remain available in the admin dashboard.
 
 Full documentation lives at [functionalities.dev](https://functionalities.dev/), including a [module reference](https://functionalities.dev/modules), a [getting started guide](https://functionalities.dev/docs/getting-started), and a [complete hook reference](https://functionalities.dev/docs/hooks).
 
-= New in 1.6.0 =
+= New in 1.7.0 =
 
-A security and correctness release, tested on WordPress 7.1.
+* **Content Tools** duplicates native posts and pages into editable drafts, preserving blocks, taxonomies, the featured image, and page template.
+* **Link Health** checks links stored in public posts and pages. The open workspace processes small batches continuously, updates its progress indicator and results automatically, and shows 50 links per page across all scanned sources. Stop and resume without losing saved progress; recheck, ignore, or export results as CSV.
+* **Site Activity** records a private, searchable history of module settings, publishing status, and plugin/theme changes. History is limited to 1,000 events and 30 days.
+* **Clearer settings pages** use consistent controls, local SVG icons, Back to modules buttons, complete breadcrumbs, and a responsive sidebar for module guidance.
 
-* **Abilities API permissions tightened.** Each WordPress 7 ability now carries its own permission callback and rejects undeclared input. Previously a shared callback widened to `edit_post` whenever a request carried a `post_id`, so anyone who could edit a single post could reach administrator-only operations.
-* **Data files moved somewhere private.** Redirects, the 404 log, and task notes now live in a folder with a random name and are no longer readable at a guessable URL. Existing files migrate automatically.
-* **Snippets reach visitors intact.** Header and footer code is filtered once at save time against the author's capability instead of being re-filtered against each visitor's, which used to mangle `&&` and comparison operators for logged-out readers.
-* **Content filters use the WordPress HTML API.** Link Management, Block Cleanup, and Schema edit attributes in place instead of reserializing through DOMDocument. Pages built with Vue, Alpine, or mustache templates are processed correctly rather than skipped.
+All three new modules are off by default. Weekly Link Health scans are separately opt-in. Existing module settings carry over.
 
-Existing settings, hooks, admin URLs, and data files carry over untouched. The full list is in the changelog below.
+= Shared Infrastructure =
 
-= Why Not Just Use Separate Plugins? =
+* One autoloader and dashboard for 19 optional modules
+* Shared settings, permissions, and private storage helpers
+* Frontend assets load only when an enabled feature needs them
+* Settings export/import and a diagnostics download
 
-A typical WordPress site runs 5-10 utility plugins that each load their own CSS, JS, options, and database queries on every page load. Dynamic Functionalities consolidates these into a single plugin with shared infrastructure:
+= Site Utilities =
 
-* **One autoloader** instead of 16 separate plugin bootstraps
-* **Shared options caching** across all modules (static properties, not repeated DB calls)
-* **Zero frontend assets** unless a module explicitly requires them
-* **Single admin menu** instead of scattered settings pages
+Choose utilities according to the features your site needs. Check for overlapping behavior before enabling them alongside other plugins:
 
-= What It Replaces =
+* [Redirect Manager](https://functionalities.dev/docs/redirect-manager) module handles 301, 302, 307, and 308 redirects with file-based storage (no database bloat)
+* [Login Security](https://functionalities.dev/docs/login-security) module covers login attempt limiting, lockout durations, XML-RPC blocking, and login error hiding
+* [Link Management](https://functionalities.dev/docs/link-management) module automates nofollow, new tab behavior, and exception lists with JSON preset support
+* [Schema Settings](https://functionalities.dev/docs/schema) module adds microdata with itemscope/itemtype support and BreadcrumbList JSON-LD
+* [Header & Footer Snippets](https://functionalities.dev/docs/snippets) module handles GA4 integration and custom code injection
+* [Performance & Cleanup](https://functionalities.dev/docs/performance) module disables emojis, embeds, REST API links, XML-RPC, feeds, Gravatars, heartbeat, and more
+* [SVG Icons](https://functionalities.dev/docs/svg-icons) module lets you upload and insert SVG icons inline in the block editor
+* Fonts module registers custom font families with @font-face, WOFF2/WOFF, variable font support, and Bricks Builder integration
+* Progressive Web App module makes your site installable with service worker support
 
-Here's what you can deactivate after installing Dynamic Functionalities:
+= Content and Workflow Tools =
 
-* **Redirection / Safe Redirect Manager / 301 Redirects** — The [Redirect Manager](https://functionalities.dev/docs/redirect-manager) module handles 301, 302, 307, and 308 redirects with file-based storage (no database bloat)
-* **Limit Login Attempts Reloaded / WP Limit Login / Login LockDown** — [Login Security](https://functionalities.dev/docs/login-security) module covers login attempt limiting, lockout durations, XML-RPC blocking, and login error hiding
-* **External Links / WP External Links** — [Link Management](https://functionalities.dev/docs/link-management) module automates nofollow, new tab behavior, and exception lists with JSON preset support
-* **Schema Pro / Schema & Structured Data** — [Schema Settings](https://functionalities.dev/docs/schema) module adds microdata with itemscope/itemtype support and BreadcrumbList JSON-LD
-* **Insert Headers and Footers / WPCode** — [Header & Footer Snippets](https://functionalities.dev/docs/snippets) module handles GA4 integration and custom code injection
-* **Asset CleanUp / Perfmatters** — [Performance & Cleanup](https://functionalities.dev/docs/performance) module disables emojis, embeds, REST API links, XML-RPC, feeds, Gravatars, heartbeat, and more
-* **SVG Support / Safe SVG** — [SVG Icons](https://functionalities.dev/docs/svg-icons) module lets you upload and insert SVG icons inline in the block editor
-* **Use Any Font / Custom Fonts** — Fonts module registers custom font families with @font-face, WOFF2/WOFF, variable font support, and Bricks Builder integration
-* **PWA for WP / Super Progressive Web Apps** — Progressive Web App module makes your site installable with service worker support
-
-= Modules That Don't Have Alternatives =
-
-Some modules solve problems no other free plugin addresses:
+Additional modules help you manage content and catch changes:
 
 * **[Content Integrity](https://functionalities.dev/docs/content-regression)** — Monitors posts for structural regressions on update: dropped internal links, word count drops, heading structure changes. Catches accidental content loss before it goes live.
 * **[Assumption Detection](https://functionalities.dev/docs/assumption-detection)** — Watches for technical assumptions that silently break: schema collisions from conflicting plugins, duplicate analytics tags, redundant font loading, missing expected elements.
@@ -86,7 +82,7 @@ Some modules solve problems no other free plugin addresses:
 
 * [functionalities.dev](https://functionalities.dev/) — Documentation home
 * [Getting started](https://functionalities.dev/docs/getting-started) — Install, enable your first module, and verify it
-* [Module reference](https://functionalities.dev/modules) — What each of the 16 modules does
+* [Module reference](https://functionalities.dev/modules) — What each of the 19 modules does
 * [Dashboard guide](https://functionalities.dev/docs/dashboard) — Working with the module dashboard
 * [Hooks](https://functionalities.dev/docs/hooks) and [API reference](https://functionalities.dev/docs/api-reference) — For developers extending the plugin
 * [FAQ](https://functionalities.dev/faq) — Common questions answered in more depth than this page
@@ -94,6 +90,11 @@ Some modules solve problems no other free plugin addresses:
 * [Training](https://gauravtiwari.org/portal/course/functionalities-training/lessons) — Step-by-step module walkthroughs
 * [GitHub Issues](https://github.com/wpgaurav/functionalities/issues) — Bug reports and feature requests
 * [WordPress.org Support](https://wordpress.org/support/plugin/functionalities/) — Community support forum
+
+= Utility Modules =
+* **Content Tools** - Duplicate native posts/pages as drafts. Preserve blocks, taxonomies, featured images, and page templates; builder metadata requires an explicit integration.
+* **Link Health** - Check links stored in published, public posts/pages. Follow live progress, stop/resume scans, review 50 results per page, ignore/recheck links, and export CSV. Dynamic output is excluded; reports mark the 1,000 unique links per post limit.
+* **Site Activity** - Review settings, publishing, and plugin/theme changes. The private history retains at most 1,000 events for 30 days and supports WordPress privacy tools.
 
 == Installation ==
 
@@ -110,11 +111,11 @@ For a walkthrough with screenshots, see [Getting started](https://functionalitie
 
 = Does this plugin slow down my site? =
 
-No. Dynamic Functionalities uses lazy-loading, static caching, and fast-exit checks across all modules. Most modules add zero frontend assets. The entire plugin loads less code than many single-purpose alternatives.
+Only enabled feature modules run on frontend requests. Link checks and other monitoring run separately from content rendering. Performance depends on which tools you enable; review the settings and test your site after making changes.
 
 = Can I use only specific modules? =
 
-Yes. Every module is independent. Enable only what you need. Disabled modules don't register any hooks, load any files, or run any code.
+Yes. Every module is independent and starts disabled. Disabled feature modules are skipped by the frontend loader. Their admin settings remain available.
 
 = Will this conflict with my existing plugins? =
 
@@ -122,15 +123,15 @@ Most modules work alongside other plugins. If you already have a redirect plugin
 
 = Does it work with caching plugins? =
 
-Yes. Tested with WP Super Cache, W3 Total Cache, LiteSpeed Cache, and FlyingPress. No special configuration needed.
+The plugin can run alongside caching plugins. After changing settings that affect frontend output, refresh the relevant cached pages and confirm the result on your site.
 
 = Does it work with page builders and block themes? =
 
-Yes. All modules work with classic themes, block themes, Elementor, Bricks Builder, GenerateBlocks, and other page builders. The Fonts module has native Bricks Builder integration — custom fonts appear in the Bricks typography picker and load inside the builder canvas.
+The plugin supports classic and block themes. Fonts includes a Bricks Builder integration. Content Tools copies native post/page content and selected metadata; builder-specific metadata needs an explicit integration. Link Health checks stored anchor links, so links produced only by dynamic blocks, shortcodes, navigation, or builder rendering are outside its scan coverage.
 
 = Is the plugin compatible with Rank Math, Yoast, or other SEO plugins? =
 
-Yes. The Meta & Copyright module detects active SEO plugins and adjusts its behavior to avoid duplicate meta tags. Schema Settings works alongside SEO plugin schemas without conflicts.
+Meta & Copyright detects supported SEO plugins and adjusts its output. Review schema overlap before enabling Schema Settings alongside another schema provider. Assumption Detection can help identify duplicate output.
 
 = How are redirects stored? =
 
@@ -144,15 +145,23 @@ Yes. Export your existing redirects to CSV and import them. The importer recogni
 
 = Which WordPress versions does it support? =
 
-WordPress 6.3 and later, on PHP 7.4 and later. Version 1.6.3 is tested on WordPress 7.1. WordPress 7 features, including the Abilities API, DataViews workspaces, block bindings, and Command Palette actions, are feature-detected and remain optional on earlier supported versions.
+WordPress 6.3 and later, on PHP 7.4 and later. Version 1.7.0 is tested on WordPress 7.1. WordPress 7 features, including the Abilities API, DataViews workspaces, block bindings, and Command Palette actions, are feature-detected and remain optional on earlier supported versions.
 
 = Does the plugin send any data anywhere? =
 
-There is no telemetry. Enabled monitoring and Site Health checks request public pages and probe files on your own site. Link Management fetches an external JSON exception list only if you configure its URL. AI explanations are strictly opt-in and send only a finding an administrator explicitly submits to the configured provider. The diagnostics download excludes task content, redirects, users, secrets, and site URLs.
+There is no telemetry. Enabled Link Health requests destinations linked in public posts and pages, including external websites. Other enabled monitoring and Site Health checks request public pages and probe files on your own site. Link Management fetches an external JSON exception list only if you configure its URL. AI explanations are strictly opt-in and send only a finding an administrator explicitly submits to the configured provider. The diagnostics download excludes task content, redirects, users, secrets, and site URLs.
+
+= How does Link Health show scan progress? =
+
+With JavaScript enabled, the open Link Health workspace advances one bounded batch at a time and refreshes the status, completed-post count, checked-link count, progress bar, and results automatically. Each batch checks at most four links within a ten-second work budget. The page shows whether it is checking, waiting, stopping, stopped, or completed. Leaving or hiding the page pauses browser-driven batches; background scheduling can continue through WordPress cron or your host's cron runner.
+
+= How are Link Health results paginated? =
+
+Each page shows up to 50 link results across all scanned public posts and pages, with one Previous/Next navigation. A final partial page may contain fewer results. Existing reports remain visible while a scan updates them. A confirmed GET response of 404 or 410 is marked broken; authentication errors, rate limits, timeouts, and server errors remain inconclusive. Up to 1,000 unique links are checked per source post, and truncated reports are marked.
 
 = Where does the plugin store its files? =
 
-Generated CSS goes to `wp-content/uploads/functionalities/`. Redirects, the 404 log, and task notes go in a private folder with a random name under `wp-content/functionalities/`, protected from direct access and from directory listing. Everything else is a WordPress option.
+Generated CSS goes to `wp-content/uploads/functionalities/`. Redirects, the 404 log, task notes, Link Health scan state, and Site Activity history use guarded files in a private folder under `wp-content/functionalities/`. Link reports, result counts, and ignored-link hashes use post metadata; URL check results use expiring transients. Module settings use WordPress options.
 
 = What happens if I deactivate the plugin? =
 
@@ -167,8 +176,20 @@ Before uninstalling, go to the Functionalities dashboard and check **"Delete all
 1. Dashboard overview with module cards
 2. Content Integrity module
 3. Assumption Detection module
+4. Link Health live scan progress and results
 
 == Changelog ==
+
+= 1.7.0 =
+* Improved: Live Link Health progress and results, continuous bounded checking while the workspace is open, and 50 link results per page across all sources.
+* Fixed: Stop requests are honored after an active batch, stopped scans resume their saved cursor, and stale browser requests cannot advance or stop a newer scan.
+* Improved: Backend branding, local outline icons, consistent form controls, accessible labels, and mobile alignment.
+* Improved: Color-adaptive SVG admin mark, module back buttons and breadcrumbs, and responsive settings layouts with guidance in a right sidebar.
+* Fixed: Link Health and Site Activity now include the current module in their breadcrumbs.
+* Added: Content Tools duplicates native posts/pages into drafts with permission checks and a metadata allowlist.
+* Added: Link Health scans stored public-content links in resumable batches, with safe HTTP checks, cached results, ignore/recheck actions, and CSV export.
+* Added: Site Activity records a bounded private history of settings, publishing, and plugin/theme changes, with privacy export and anonymization.
+* All three modules are disabled by default. Link Health weekly scans are separately opt-in.
 
 = 1.6.3 =
 * Compatibility: Tested up to WordPress 7.1.
@@ -323,7 +344,7 @@ Before uninstalling, go to the Functionalities dashboard and check **"Delete all
 * Tested up to WordPress 7.0
 
 = 1.2.0 =
-* Changed: All 16 modules now require explicit activation — no module runs code until enabled
+* Changed: All 19 modules now require explicit activation — no module runs code until enabled
 * Added: Enable/disable toggle to every module settings page
 * Added: Toggle forms for Task Manager, Redirect Manager, and SVG Icons custom pages
 * Fixed: Redirect Manager and Task Manager file paths now set before enabled gate to prevent empty-path errors in admin
@@ -447,4 +468,4 @@ WordPress 7 compatibility: editor CSS now loads inside the iframed block editor.
 All modules now require explicit activation. After updating, visit Functionalities settings and enable the modules you use.
 
 = 1.1.0 =
-All features are now free and open source. 16 modules for performance, security, SEO, and content management.
+All features are now free and open source. 19 modules for performance, security, SEO, and content management.

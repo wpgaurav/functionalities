@@ -411,6 +411,9 @@ class Settings_Portability_Controller {
 	 */
 	private static function validate_module( string $slug, array $value, bool $include_code ): array {
 		$sanitizers = array(
+			'content-tools'        => 'sanitize_content_tools',
+			'link-health'          => 'sanitize_link_health',
+			'site-activity'        => 'sanitize_site_activity',
 			'link-management'      => 'sanitize_link_management',
 			'block-cleanup'        => 'sanitize_block_cleanup',
 			'editor-links'         => 'sanitize_editor_links',

@@ -82,6 +82,14 @@ final class ModuleRegistryTest extends TestCase {
 	 * @param string $mode   Request mode.
 	 * @return array
 	 */
+	public function test_each_new_module_loads_only_its_own_feature_when_enabled(): void {
+		foreach ( array( 'content-tools', 'link-health', 'site-activity' ) as $slug ) {
+			$result = $this->run_worker( $slug, 'current-version' );
+			$this->assertSame( array( 'class-' . $slug . '.php' ), $result['features'] );
+			$this->assertSame( array(), $result['storage'] );
+		}
+	}
+
 	private function run_worker( string $module, string $mode = 'frontend' ): array {
 		$worker  = __DIR__ . '/fixtures/module-registry-worker.php';
 		$command = escapeshellarg( PHP_BINARY ) . ' ' . escapeshellarg( $worker ) . ' ' . escapeshellarg( $module ) . ' ' . escapeshellarg( $mode );

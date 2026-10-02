@@ -17,6 +17,77 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Admin UI helper class.
  */
 class Admin_UI {
+	/**
+	 * Guidance collected while a module's settings render.
+	 *
+	 * @var array|null
+	 */
+	private static $guidance = null;
+
+	/** Render settings and guidance separately, keeping every form intact. */
+	public static function render_settings_layout( callable $render ): void {
+		$previous       = self::$guidance;
+		self::$guidance = array();
+		$buffer_level   = ob_get_level();
+		ob_start();
+		try {
+			$render();
+			$content  = ob_get_clean();
+			$guidance = implode( '', self::$guidance );
+		} finally {
+			while ( ob_get_level() > $buffer_level ) {
+				ob_end_clean();
+			}
+			self::$guidance = $previous;
+		}
+		echo '<div class="functionalities-settings-layout' . ( '' !== $guidance ? ' functionalities-settings-layout--with-guide' : '' ) . '"><div class="functionalities-settings-content">';
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Captured, pre-escaped admin render output.
+		echo $content;
+		echo '</div>';
+		if ( '' !== $guidance ) {
+			echo '<aside class="functionalities-settings-sidebar" aria-label="' . \esc_attr( \__( 'Module guide', 'functionalities' ) ) . '"><h2>' . \esc_html( \__( 'Module guide', 'functionalities' ) ) . '</h2>';
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Pre-escaped documentation from render_docs_section.
+			echo $guidance;
+			echo '</aside>';
+		}
+		echo '</div>';
+	}
+
+	/** Render consistent module navigation, including optional project ancestry. */
+	public static function render_navigation( string $title, string $slug, string $child = '' ): void {
+		echo '<nav class="functionalities-navigation" aria-label="' . \esc_attr__( 'Breadcrumb', 'functionalities' ) . '"><ol>';
+		echo '<li><a class="button functionalities-back" href="' . \esc_url( \admin_url( 'admin.php?page=functionalities' ) ) . '"><span class="functionalities-icon functionalities-icon--arrow-left" aria-hidden="true"></span>' . \esc_html__( 'Back to modules', 'functionalities' ) . '</a></li>';
+		echo '<li><span class="separator" aria-hidden="true">/</span>';
+		if ( '' !== $child ) {
+			echo '<a href="' . \esc_url( \admin_url( 'admin.php?page=functionalities&module=' . rawurlencode( $slug ) ) ) . '">' . \esc_html( $title ) . '</a></li><li><span class="separator" aria-hidden="true">/</span><span aria-current="page">' . \esc_html( $child ) . '</span>';
+		} else {
+			echo '<span aria-current="page">' . \esc_html( $title ) . '</span>';
+		}
+		echo '</li></ol></nav>';
+	}
+
+	/** Render the shared product header without changing a module's form controls. */
+	public static function render_header( string $title, string $description = '', string $slug = '', string $child = '' ): void {
+		if ( '' !== $slug ) {
+			self::render_navigation( $title, $slug, $child );
+		}
+		echo '<div class="functionalities-header">';
+		if ( '' === $slug ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Trusted local asset markup from Admin_Icons.
+			echo Admin_Icons::brand( 64 );
+		}
+		echo '<div class="functionalities-header__copy"><h1>';
+		if ( '' !== $slug ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Allowlisted local icon markup.
+			echo Admin_Icons::module( $slug ) . ' ';
+		}
+		echo \esc_html( $title ) . ' <span class="functionalities-version">v' . \esc_html( FUNCTIONALITIES_VERSION ) . '</span></h1>';
+		if ( '' !== $description ) {
+			echo '<p>' . \esc_html( $description ) . '</p>';
+		}
+		echo '</div></div>';
+	}
+
 
 	/**
 	 * Render a documentation section with details/summary accordion.
@@ -31,11 +102,13 @@ class Admin_UI {
 		$open_attr = $open ? ' open' : '';
 		$class     = 'functionalities-docs-accordion functionalities-docs-' . esc_attr( $type );
 
-		echo '<details class="' . esc_attr( $class ) . '"' . esc_attr( $open_attr ) . '>';
-		echo '<summary>' . esc_html( $title ) . '</summary>';
-		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Content is pre-escaped HTML from render functions.
-		echo '<div class="functionalities-docs-content">' . $content . '</div>';
-		echo '</details>';
+		$html = '<details class="' . esc_attr( $class ) . '"' . $open_attr . '><summary>' . esc_html( $title ) . '</summary><div class="functionalities-docs-content">' . $content . '</div></details>';
+		if ( null !== self::$guidance ) {
+			self::$guidance[] = $html;
+		} else {
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Content is pre-escaped HTML from render functions.
+			echo $html;
+		}
 	}
 
 	/**
@@ -54,7 +127,8 @@ class Admin_UI {
 		self::render_docs_section(
 			\__( 'What This Module Does', 'functionalities' ),
 			$content,
-			'info'
+			'info',
+			true
 		);
 	}
 
@@ -68,7 +142,8 @@ class Admin_UI {
 		self::render_docs_section(
 			\__( 'How to Use', 'functionalities' ),
 			'<p>' . esc_html( $description ) . '</p>',
-			'usage'
+			'usage',
+			true
 		);
 	}
 
@@ -114,7 +189,9 @@ class Admin_UI {
 	 * @return void
 	 */
 	public static function render_module_docs( array $config ): void {
-		echo '<div class="functionalities-module-docs">';
+		if ( null === self::$guidance ) {
+			echo '<div class="functionalities-module-docs">';
+		}
 
 		if ( ! empty( $config['features'] ) ) {
 			self::render_features_docs( $config['features'] );
@@ -132,6 +209,8 @@ class Admin_UI {
 			self::render_developer_docs( $config['hooks'] );
 		}
 
-		echo '</div>';
+		if ( null === self::$guidance ) {
+			echo '</div>';
+		}
 	}
 }
