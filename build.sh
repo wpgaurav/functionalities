@@ -46,6 +46,7 @@ REQUIRED=(
     "assets/css/admin-icons.css"
     "assets/css/admin-polish.css"
     "assets/js/admin-polish.js"
+    "assets/js/admin-link-health.js"
     "assets/icons/settings.svg"
     "assets/icons/arrow-left.svg"
     "assets/icons/LICENSE"

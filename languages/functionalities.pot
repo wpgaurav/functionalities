@@ -9,14 +9,14 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-02T05:42:49+00:00\n"
+"POT-Creation-Date: 2026-10-02T07:43:12+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: functionalities\n"
 
 #. Plugin Name of the plugin
 #: functionalities.php
-#: includes/admin/class-module-controller.php:275
+#: includes/admin/class-module-controller.php:278
 msgid "Dynamic Functionalities"
 msgstr ""
 
@@ -45,12 +45,12 @@ msgid "Settings"
 msgstr ""
 
 #: functionalities.php:114
-#: includes/admin/class-module-controller.php:350
+#: includes/admin/class-module-controller.php:353
 msgid "Support"
 msgstr ""
 
 #: functionalities.php:115
-#: includes/admin/class-module-controller.php:354
+#: includes/admin/class-module-controller.php:357
 msgid "Report Issues"
 msgstr ""
 
@@ -67,11 +67,11 @@ msgid "Back to modules"
 msgstr ""
 
 #: includes/admin/class-admin-ui.php:128
-#: includes/admin/class-module-controller.php:456
-#: includes/admin/class-module-controller.php:1005
-#: includes/admin/class-module-controller.php:1100
-#: includes/admin/class-module-controller.php:1165
-#: includes/admin/class-module-controller.php:1203
+#: includes/admin/class-module-controller.php:459
+#: includes/admin/class-module-controller.php:1008
+#: includes/admin/class-module-controller.php:1103
+#: includes/admin/class-module-controller.php:1168
+#: includes/admin/class-module-controller.php:1206
 #: includes/admin/trait-admin-settings.php:330
 #: includes/admin/trait-admin-settings.php:404
 #: includes/admin/trait-admin-settings.php:523
@@ -82,7 +82,7 @@ msgid "What This Module Does"
 msgstr ""
 
 #: includes/admin/class-admin-ui.php:143
-#: includes/admin/class-module-controller.php:1207
+#: includes/admin/class-module-controller.php:1210
 #: includes/admin/trait-admin-settings.php:334
 #: includes/admin/trait-admin-settings.php:710
 #: includes/admin/trait-admin-settings.php:884
@@ -102,6 +102,80 @@ msgstr ""
 #: includes/admin/class-admin-ui.php:179
 #: includes/admin/trait-admin-settings.php:793
 msgid "Caution"
+msgstr ""
+
+#: includes/admin/class-link-health-controller.php:31
+#: includes/admin/class-link-health-controller.php:46
+msgid "Checking links…"
+msgstr ""
+
+#: includes/admin/class-link-health-controller.php:32
+#: includes/admin/class-link-health-controller.php:48
+msgid "Finishing the current batch…"
+msgstr ""
+
+#: includes/admin/class-link-health-controller.php:33
+msgid "Retry scan"
+msgstr ""
+
+#: includes/admin/class-link-health-controller.php:34
+#: includes/admin/trait-admin-utilities-ui.php:261
+msgid "Resume scan"
+msgstr ""
+
+#: includes/admin/class-link-health-controller.php:35
+msgid "Live updates were interrupted. Reconnecting… Your background scan can continue."
+msgstr ""
+
+#: includes/admin/class-link-health-controller.php:36
+msgid "The request failed. Refresh this page and try again."
+msgstr ""
+
+#: includes/admin/class-link-health-controller.php:45
+msgid "Not started"
+msgstr ""
+
+#: includes/admin/class-link-health-controller.php:47
+msgid "Waiting for the next batch"
+msgstr ""
+
+#: includes/admin/class-link-health-controller.php:49
+msgid "Stopped"
+msgstr ""
+
+#: includes/admin/class-link-health-controller.php:50
+msgid "Scan completed"
+msgstr ""
+
+#: includes/admin/class-link-health-controller.php:51
+msgid "Link Health is disabled"
+msgstr ""
+
+#: includes/admin/class-link-health-controller.php:52
+msgid "Scan needs attention. Check private storage and retry."
+msgstr ""
+
+#. translators: 1: completed posts, 2: total posts, 3: processed links.
+#: includes/admin/class-link-health-controller.php:56
+#, php-format
+msgid "%1$d of %2$d posts completed · %3$d links checked"
+msgstr ""
+
+#: includes/admin/class-link-health-controller.php:63
+msgid "Refresh this page and sign in as an administrator."
+msgstr ""
+
+#: includes/admin/class-link-health-controller.php:69
+#: includes/admin/trait-admin-utilities-ui.php:118
+msgid "Unknown action."
+msgstr ""
+
+#: includes/admin/class-link-health-controller.php:73
+msgid "Enable Link Health before running a scan."
+msgstr ""
+
+#: includes/admin/class-link-health-controller.php:77
+msgid "Refresh the scan status before continuing."
 msgstr ""
 
 #: includes/admin/class-module-controller.php:100
@@ -131,151 +205,151 @@ msgstr ""
 msgid "Purge the retained 404 log?"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:215
+#: includes/admin/class-module-controller.php:218
 msgid "Running..."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:216
+#: includes/admin/class-module-controller.php:219
 #: includes/admin/trait-admin-settings.php:1865
 msgid "Run Detection Now"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:234
+#: includes/admin/class-module-controller.php:237
 msgid "Insufficient permissions"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:275
+#: includes/admin/class-module-controller.php:278
 msgid "Tools for your content, workflow, performance, and security. Enable only the modules you need."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:290
+#: includes/admin/class-module-controller.php:293
 msgid "Configure"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:293
+#: includes/admin/class-module-controller.php:296
 #: includes/admin/trait-admin-redirect-manager-ui.php:83
 msgid "Active"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:295
+#: includes/admin/class-module-controller.php:298
 msgid "Inactive"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:307
+#: includes/admin/class-module-controller.php:310
 msgid "Data Management"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:317
+#: includes/admin/class-module-controller.php:320
 msgid "Delete all plugin data when uninstalling"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:320
+#: includes/admin/class-module-controller.php:323
 msgid "Removes all options, post metadata, transients, and files created by this plugin. This cannot be undone."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:338
+#: includes/admin/class-module-controller.php:341
 msgid "Help & Support"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:341
+#: includes/admin/class-module-controller.php:344
 msgid "Need help with Dynamic Functionalities? Check out these resources:"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:346
+#: includes/admin/class-module-controller.php:349
 msgid "Documentation"
 msgstr ""
 
 #. translators: %1$s: Plugin version number, %2$s: Website link
-#: includes/admin/class-module-controller.php:361
+#: includes/admin/class-module-controller.php:364
 #, php-format
 msgid "Dynamic Functionalities v%1$s | Visit %2$s for more information."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:421
+#: includes/admin/class-module-controller.php:424
 msgid "Enable rel=\"nofollow\" for all external links"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:433
+#: includes/admin/class-module-controller.php:436
 msgid "One per line. Supports full URLs (https://example.com/page), domains (example.com), or partial matches (e.g., /partner/)."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:442
+#: includes/admin/class-module-controller.php:445
 msgid "Control how external and internal links are handled across your site."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:466
-#: includes/admin/class-module-controller.php:1023
-#: includes/admin/class-module-controller.php:1139
-#: includes/admin/class-module-controller.php:1179
-#: includes/admin/class-module-controller.php:1217
+#: includes/admin/class-module-controller.php:469
+#: includes/admin/class-module-controller.php:1026
+#: includes/admin/class-module-controller.php:1142
+#: includes/admin/class-module-controller.php:1182
+#: includes/admin/class-module-controller.php:1220
 msgid "Developer Hooks"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:481
+#: includes/admin/class-module-controller.php:484
 msgid "Adds target=\"_blank\" and rel=\"noopener\" to external links"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:493
+#: includes/admin/class-module-controller.php:496
 msgid "Adds target=\"_blank\" to same-domain links (see exceptions)"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:505
+#: includes/admin/class-module-controller.php:508
 msgid "One domain per line. Matching hosts will NOT be forced to open in a new tab when internal option is enabled."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:527
+#: includes/admin/class-module-controller.php:530
 msgid "Browse..."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:530
+#: includes/admin/class-module-controller.php:533
 msgid "Create JSON"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:535
+#: includes/admin/class-module-controller.php:538
 msgid "Enter a local file path or external URL to a JSON file containing exception URLs."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:538
+#: includes/admin/class-module-controller.php:541
 msgid "Format: {\"urls\": [\"https://example.com\", \"https://another.com\"]}"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:543
+#: includes/admin/class-module-controller.php:546
 msgid "Theme JSON Detected:"
 msgstr ""
 
 #. translators: %s: theme name
-#: includes/admin/class-module-controller.php:549
+#: includes/admin/class-module-controller.php:552
 #, php-format
 msgid "✓ Your active theme (%s) has an exception-urls.json file. It will be loaded automatically if no custom path is set."
 msgstr ""
 
 #. translators: %s: parent theme name
-#: includes/admin/class-module-controller.php:561
+#: includes/admin/class-module-controller.php:564
 #, php-format
 msgid "✓ Parent theme (%s) has an exception-urls.json file."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:571
+#: includes/admin/class-module-controller.php:574
 msgid "Tip:"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:572
+#: includes/admin/class-module-controller.php:575
 msgid "You can place an exception-urls.json file in your active theme's root folder and it will be loaded automatically without entering a path here."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:577
+#: includes/admin/class-module-controller.php:580
 msgid "⚠️ Security Warning:"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:579
+#: includes/admin/class-module-controller.php:582
 msgid "If using an external URL, ensure you trust the source completely. Malicious JSON files could add unwanted domains to your exception list, potentially allowing spam links to pass through without nofollow."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:582
+#: includes/admin/class-module-controller.php:585
 msgid "For security, prefer local JSON files within your WordPress installation over external URLs."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:588
+#: includes/admin/class-module-controller.php:591
 #: includes/admin/trait-admin-settings.php:338
 #: includes/admin/trait-admin-settings.php:339
 #: includes/admin/trait-admin-settings.php:414
@@ -298,28 +372,28 @@ msgstr ""
 msgid "Filter:"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:588
+#: includes/admin/class-module-controller.php:591
 msgid "change where the preset file is read from"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:597
+#: includes/admin/class-module-controller.php:600
 msgid "Create Exception URLs JSON File"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:598
+#: includes/admin/class-module-controller.php:601
 msgid "This will create a new exception-urls.json file in your active theme directory."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:600
+#: includes/admin/class-module-controller.php:603
 msgid "Edit the JSON above, then click \"Create File\" to save it to your theme."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:602
-#: includes/admin/class-module-controller.php:686
+#: includes/admin/class-module-controller.php:605
+#: includes/admin/class-module-controller.php:689
 msgid "Create File"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:603
+#: includes/admin/class-module-controller.php:606
 #: includes/admin/trait-admin-components-ui.php:370
 #: includes/admin/trait-admin-components-ui.php:433
 #: includes/admin/trait-admin-fonts-ui.php:398
@@ -330,226 +404,226 @@ msgstr ""
 msgid "Cancel"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:616
+#: includes/admin/class-module-controller.php:619
 msgid "Select JSON File"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:617
+#: includes/admin/class-module-controller.php:620
 #: includes/admin/trait-admin-fonts-ui.php:633
 msgid "Use this file"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:654
+#: includes/admin/class-module-controller.php:657
 msgid "Invalid JSON format. Please check your syntax."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:658
+#: includes/admin/class-module-controller.php:661
 #: includes/admin/trait-admin-task-manager-ui.php:257
 msgid "Creating..."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:683
-#: includes/admin/class-module-controller.php:972
+#: includes/admin/class-module-controller.php:686
+#: includes/admin/class-module-controller.php:975
 msgid "An error occurred."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:739
+#: includes/admin/class-module-controller.php:742
 msgid "Enable developer filters for exception customization"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:742
+#: includes/admin/class-module-controller.php:745
 msgid "Available filters: functionalities_exception_domains, functionalities_exception_urls"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:746
+#: includes/admin/class-module-controller.php:749
 msgid "Code Snippets (copy to your theme's functions.php or a custom plugin)"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:750
+#: includes/admin/class-module-controller.php:753
 msgid "Add Exception Domains"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:753
+#: includes/admin/class-module-controller.php:756
 msgid "Add trusted domains that should never get nofollow:"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:769
-#: includes/admin/class-module-controller.php:794
-#: includes/admin/class-module-controller.php:829
-#: includes/admin/class-module-controller.php:856
+#: includes/admin/class-module-controller.php:772
+#: includes/admin/class-module-controller.php:797
+#: includes/admin/class-module-controller.php:832
+#: includes/admin/class-module-controller.php:859
 msgid "Copy Code"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:775
+#: includes/admin/class-module-controller.php:778
 msgid "Add Exception URLs"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:778
+#: includes/admin/class-module-controller.php:781
 msgid "Add specific URLs (with wildcards) that should never get nofollow:"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:800
+#: includes/admin/class-module-controller.php:803
 msgid "Dynamic Exceptions (e.g., based on user role)"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:803
+#: includes/admin/class-module-controller.php:806
 msgid "Add exceptions dynamically based on conditions:"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:835
+#: includes/admin/class-module-controller.php:838
 msgid "Custom JSON File Path"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:838
+#: includes/admin/class-module-controller.php:841
 msgid "Override the JSON file path programmatically:"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:873
-#: includes/admin/class-module-controller.php:887
+#: includes/admin/class-module-controller.php:876
+#: includes/admin/class-module-controller.php:890
 #: includes/admin/trait-admin-task-manager-ui.php:321
 #: includes/admin/trait-admin-task-manager-ui.php:965
 msgid "Copied!"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:907
+#: includes/admin/class-module-controller.php:910
 msgid "Bulk add nofollow to a specific URL across all posts in the database. Use with caution!"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:911
-#: includes/admin/class-module-controller.php:939
+#: includes/admin/class-module-controller.php:914
+#: includes/admin/class-module-controller.php:942
 msgid "Update Database"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:922
+#: includes/admin/class-module-controller.php:925
 msgid "Please enter a URL."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:926
+#: includes/admin/class-module-controller.php:929
 msgid "This will update all posts containing this URL. Are you sure?"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:930
-#: includes/admin/class-module-controller.php:931
+#: includes/admin/class-module-controller.php:933
+#: includes/admin/class-module-controller.php:934
 msgid "Processing..."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:969
+#: includes/admin/class-module-controller.php:972
 msgid "Done."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:991
+#: includes/admin/class-module-controller.php:994
 msgid "Remove Gutenberg block-specific CSS classes from your frontend HTML for cleaner markup."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1010
+#: includes/admin/class-module-controller.php:1013
 msgid "from h1-h6 elements"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1011
+#: includes/admin/class-module-controller.php:1014
 msgid "from ul/ol elements"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1012
+#: includes/admin/class-module-controller.php:1015
 msgid "from figure/div elements"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1014
+#: includes/admin/class-module-controller.php:1017
 msgid "Classes Removed"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1033
+#: includes/admin/class-module-controller.php:1036
 msgid "Remove class \"wp-block-heading\" from headings (h1–h6)"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1038
+#: includes/admin/class-module-controller.php:1041
 msgid "Remove class \"wp-block-list\" from ul/ol"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1043
+#: includes/admin/class-module-controller.php:1046
 msgid "Remove class \".wp-block-image\" from frontend"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1050
+#: includes/admin/class-module-controller.php:1053
 msgid "Limit editor link suggestions to selected post types"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1086
+#: includes/admin/class-module-controller.php:1089
 msgid "Add copyright metadata, Dublin Core (DCMI) tags, and per-post licensing options. Works standalone or integrates with major SEO plugins."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1113
+#: includes/admin/class-module-controller.php:1116
 #: includes/admin/trait-admin-settings.php:1223
 msgid "Detected:"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1114
+#: includes/admin/class-module-controller.php:1117
 msgid "Copyright data will be added to your SEO plugin's existing schema output."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1116
+#: includes/admin/class-module-controller.php:1119
 msgid "Standalone Mode"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1117
+#: includes/admin/class-module-controller.php:1120
 msgid "No SEO plugin detected. Complete Article schema with copyright will be output independently."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1119
+#: includes/admin/class-module-controller.php:1122
 msgid "Schema.org Support"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1128
+#: includes/admin/class-module-controller.php:1131
 msgid "or Standalone"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1130
+#: includes/admin/class-module-controller.php:1133
 msgid "Compatible SEO Plugins"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1151
+#: includes/admin/class-module-controller.php:1154
 msgid "Detect structural regressions when posts are updated. This module compares each post against its own historical baseline."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1169
+#: includes/admin/class-module-controller.php:1172
 msgid "Philosophy"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1191
+#: includes/admin/class-module-controller.php:1194
 msgid "Detects when technical assumptions stop being true. This module notices changes, not problems."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1245
-#: includes/admin/class-module-controller.php:1409
+#: includes/admin/class-module-controller.php:1248
+#: includes/admin/class-module-controller.php:1412
 msgid "No assumption changes detected. All monitored items are consistent."
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1267
+#: includes/admin/class-module-controller.php:1270
 msgid "Where:"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1281
+#: includes/admin/class-module-controller.php:1284
 msgid "Why it matters:"
 msgstr ""
 
 #. translators: %s: human-readable time difference
-#: includes/admin/class-module-controller.php:1292
+#: includes/admin/class-module-controller.php:1295
 #, php-format
 msgid "Detected %s ago"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1300
+#: includes/admin/class-module-controller.php:1303
 msgid "Dismiss"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1303
+#: includes/admin/class-module-controller.php:1306
 msgid "Snooze 7 days"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1306
+#: includes/admin/class-module-controller.php:1309
 msgid "Ignore permanently"
 msgstr ""
 
-#: includes/admin/class-module-controller.php:1441
+#: includes/admin/class-module-controller.php:1444
 #: includes/admin/trait-admin-fonts-ui.php:379
 #: includes/admin/trait-admin-fonts-ui.php:386
 #: includes/admin/trait-admin-fonts-ui.php:469
@@ -1364,13 +1438,13 @@ msgid "Prev"
 msgstr ""
 
 #: includes/admin/trait-admin-components-ui.php:391
-#: includes/admin/trait-admin-utilities-ui.php:423
+#: includes/admin/trait-admin-utilities-ui.php:437
 msgid "Next"
 msgstr ""
 
 #. translators: 1: current page number, 2: total pages
 #: includes/admin/trait-admin-components-ui.php:396
-#: includes/admin/trait-admin-utilities-ui.php:419
+#: includes/admin/trait-admin-utilities-ui.php:433
 #, php-format
 msgid "Page %1$d of %2$d"
 msgstr ""
@@ -1749,7 +1823,7 @@ msgstr ""
 
 #: includes/admin/trait-admin-redirect-manager-ui.php:132
 #: includes/admin/trait-admin-redirect-manager-ui.php:175
-#: includes/admin/trait-admin-utilities-ui.php:260
+#: includes/admin/trait-admin-utilities-ui.php:287
 msgid "Actions"
 msgstr ""
 
@@ -1762,7 +1836,7 @@ msgid "Export JSON"
 msgstr ""
 
 #: includes/admin/trait-admin-redirect-manager-ui.php:158
-#: includes/admin/trait-admin-utilities-ui.php:254
+#: includes/admin/trait-admin-utilities-ui.php:270
 msgid "Export CSV"
 msgstr ""
 
@@ -1835,7 +1909,7 @@ msgid "Create redirect"
 msgstr ""
 
 #: includes/admin/trait-admin-redirect-manager-ui.php:182
-#: includes/admin/trait-admin-utilities-ui.php:291
+#: includes/admin/trait-admin-utilities-ui.php:318
 msgid "Ignore"
 msgstr ""
 
@@ -3685,7 +3759,6 @@ msgid "Pending"
 msgstr ""
 
 #: includes/admin/trait-admin-task-manager-ui.php:441
-#: includes/admin/trait-admin-utilities-ui.php:308
 #: assets/js/wp7-admin.js:160
 msgid "Completed"
 msgstr ""
@@ -3868,248 +3941,222 @@ msgstr ""
 msgid "Duplicate posts or pages into a new draft from the content list. Blocks, taxonomies, featured image, and page template are copied. Comments, revisions, and builder metadata are excluded unless explicitly supported by an integration."
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:78
-#: includes/admin/trait-admin-utilities-ui.php:184
-#: includes/features/class-link-health.php:267
-#: includes/features/class-link-health.php:442
+#: includes/admin/trait-admin-utilities-ui.php:79
+#: includes/admin/trait-admin-utilities-ui.php:185
+#: includes/features/class-link-health.php:332
+#: includes/features/class-link-health.php:361
+#: includes/features/class-link-health.php:546
 msgid "Administrator access is required."
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:95
+#: includes/admin/trait-admin-utilities-ui.php:96
 msgid "Enable Link Health before running an action."
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:117
-msgid "Unknown action."
-msgstr ""
-
-#: includes/admin/trait-admin-utilities-ui.php:136
+#: includes/admin/trait-admin-utilities-ui.php:137
 msgid "The activity log could not be cleared. Check private storage."
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:227
+#: includes/admin/trait-admin-utilities-ui.php:243
 msgid "Checks links stored in public posts and pages. Password-protected content, dynamic blocks, shortcodes, and navigation are excluded. A maximum of 1,000 unique links is checked per post; truncated reports are marked. Scans never change your content."
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:229
+#: includes/admin/trait-admin-utilities-ui.php:245
 msgid "Enable Link Health to view reports and start a scan."
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:241
+#: includes/admin/trait-admin-utilities-ui.php:251
+#: includes/admin/trait-admin-utilities-ui.php:252
 msgid "Scan progress"
 msgstr ""
 
-#. translators: 1: scan state, 2: completed post count, 3: processed link count.
-#: includes/admin/trait-admin-utilities-ui.php:242
-#, php-format
-msgid "%1$s: %2$d posts completed, %3$d link checks processed."
-msgstr ""
-
-#: includes/admin/trait-admin-utilities-ui.php:244
-msgid "The scan encountered an error. Check private storage and resume the scan."
-msgstr ""
-
-#: includes/admin/trait-admin-utilities-ui.php:249
-msgid "Resume one batch"
-msgstr ""
-
-#: includes/admin/trait-admin-utilities-ui.php:250
-msgid "Stop scan"
-msgstr ""
-
-#: includes/admin/trait-admin-utilities-ui.php:252
-msgid "Start new scan"
-msgstr ""
-
-#: includes/admin/trait-admin-utilities-ui.php:257
-msgid "Background batches run when WordPress cron is triggered. You can resume manually when cron is delayed. Authentication errors, rate limits, and timeouts are inconclusive."
-msgstr ""
-
-#: includes/admin/trait-admin-utilities-ui.php:258
-msgid "Link results"
+#: includes/admin/trait-admin-utilities-ui.php:254
+msgid "Posts checked"
 msgstr ""
 
 #: includes/admin/trait-admin-utilities-ui.php:260
+msgid "Start new scan"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:262
+msgid "Stop scan"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:273
+msgid "Keep this page open for continuous checking and live results. Scans also continue on your site’s background schedule when you leave."
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:274
+msgid "Enable JavaScript for live progress, or use Resume scan to process one batch at a time."
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:284
+msgid "Link results"
+msgstr ""
+
+#. translators: 1: first visible result, 2: last visible result, 3: total results.
+#: includes/admin/trait-admin-utilities-ui.php:285
+#, php-format
+msgid "%1$d–%2$d of %3$d results · 50 per page"
+msgstr ""
+
+#: includes/admin/trait-admin-utilities-ui.php:287
 #: assets/js/wp7-admin.js:160
 msgid "Source"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:260
+#: includes/admin/trait-admin-utilities-ui.php:287
 msgid "Link"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:260
+#: includes/admin/trait-admin-utilities-ui.php:287
 msgid "Result"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:260
+#: includes/admin/trait-admin-utilities-ui.php:287
 msgid "Last checked (UTC)"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:264
+#: includes/admin/trait-admin-utilities-ui.php:291
 msgid "No link results on this page. Start a scan or check another results page."
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:271
+#: includes/admin/trait-admin-utilities-ui.php:298
 msgid "Content changed. Run a new scan."
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:275
+#: includes/admin/trait-admin-utilities-ui.php:302
 msgid "Partial scan"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:279
+#: includes/admin/trait-admin-utilities-ui.php:306
 msgid "First 1,000 unique links only"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:289
+#: includes/admin/trait-admin-utilities-ui.php:316
 msgid "Recheck"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:297
-msgid "Source posts"
-msgstr ""
-
-#: includes/admin/trait-admin-utilities-ui.php:299
-msgid "Links in this source post"
-msgstr ""
-
-#: includes/admin/trait-admin-utilities-ui.php:306
-msgid "Not started"
-msgstr ""
-
-#: includes/admin/trait-admin-utilities-ui.php:307
-msgid "Running"
-msgstr ""
-
-#: includes/admin/trait-admin-utilities-ui.php:309
-msgid "Stopped"
-msgstr ""
-
-#: includes/admin/trait-admin-utilities-ui.php:310
-msgid "Storage error"
-msgstr ""
-
-#: includes/admin/trait-admin-utilities-ui.php:316
+#: includes/admin/trait-admin-utilities-ui.php:330
 msgid "OK"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:317
+#: includes/admin/trait-admin-utilities-ui.php:331
 msgid "Broken"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:318
+#: includes/admin/trait-admin-utilities-ui.php:332
 msgid "Redirected"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:319
+#: includes/admin/trait-admin-utilities-ui.php:333
 msgid "Inconclusive"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:320
+#: includes/admin/trait-admin-utilities-ui.php:334
 msgid "Unsafe URL"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:321
+#: includes/admin/trait-admin-utilities-ui.php:335
 msgid "Ignored"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:334
+#: includes/admin/trait-admin-utilities-ui.php:348
 msgid "Tracks module settings, plugin/theme changes, and post/page status changes. Stores changed field names, never their values. Keeps up to 1,000 events for 30 days. Routine visitor requests are not logged."
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:336
+#: includes/admin/trait-admin-utilities-ui.php:350
 msgid "Enable Site Activity to view and record events."
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:370
+#: includes/admin/trait-admin-utilities-ui.php:384
 msgid "The activity log could not be read. Check private storage."
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:373
+#: includes/admin/trait-admin-utilities-ui.php:387
 msgid "Search target or fields"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:374
-#: includes/admin/trait-admin-utilities-ui.php:382
+#: includes/admin/trait-admin-utilities-ui.php:388
+#: includes/admin/trait-admin-utilities-ui.php:396
 #: includes/features/class-site-activity.php:300
 msgid "Event"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:374
+#: includes/admin/trait-admin-utilities-ui.php:388
 msgid "All events"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:379
+#: includes/admin/trait-admin-utilities-ui.php:393
 msgid "Actor ID"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:380
+#: includes/admin/trait-admin-utilities-ui.php:394
 msgid "Filter"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:382
+#: includes/admin/trait-admin-utilities-ui.php:396
 msgid "Time (UTC)"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:382
+#: includes/admin/trait-admin-utilities-ui.php:396
 msgid "Actor"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:382
+#: includes/admin/trait-admin-utilities-ui.php:396
 #: includes/features/class-site-activity.php:304
 msgid "Target"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:382
+#: includes/admin/trait-admin-utilities-ui.php:396
 msgid "Details"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:386
+#: includes/admin/trait-admin-utilities-ui.php:400
 msgid "No activity matches these filters."
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:391
+#: includes/admin/trait-admin-utilities-ui.php:405
 msgid "System or anonymized user"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:397
+#: includes/admin/trait-admin-utilities-ui.php:411
 msgid "Delete the stored activity history"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:398
+#: includes/admin/trait-admin-utilities-ui.php:412
 msgid "Clear activity log"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:405
+#: includes/admin/trait-admin-utilities-ui.php:419
 msgid "Module settings changed"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:406
+#: includes/admin/trait-admin-utilities-ui.php:420
 msgid "Plugin activated"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:407
+#: includes/admin/trait-admin-utilities-ui.php:421
 msgid "Plugin deactivated"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:408
+#: includes/admin/trait-admin-utilities-ui.php:422
 msgid "Theme switched"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:409
+#: includes/admin/trait-admin-utilities-ui.php:423
 msgid "Plugin updated"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:410
+#: includes/admin/trait-admin-utilities-ui.php:424
 msgid "Theme updated"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:411
+#: includes/admin/trait-admin-utilities-ui.php:425
 msgid "Publishing status changed"
 msgstr ""
 
-#: includes/admin/trait-admin-utilities-ui.php:422
+#: includes/admin/trait-admin-utilities-ui.php:436
 msgid "Previous"
 msgstr ""
 
@@ -4818,49 +4865,51 @@ msgstr ""
 msgid "Metadata could not be copied. The partial draft was removed."
 msgstr ""
 
-#: includes/features/class-link-health.php:231
+#: includes/features/class-link-health.php:296
 msgid "Enable Link Health and use an administrator account."
 msgstr ""
 
-#: includes/features/class-link-health.php:235
-#: includes/features/class-link-health.php:271
-#: includes/features/class-link-health.php:327
+#: includes/features/class-link-health.php:300
+#: includes/features/class-link-health.php:337
+#: includes/features/class-link-health.php:365
+#: includes/features/class-link-health.php:424
 msgid "Private scan storage is unavailable."
 msgstr ""
 
-#: includes/features/class-link-health.php:258
+#: includes/features/class-link-health.php:323
 msgid "A scan is already running or storage is unavailable. Resume the existing scan."
 msgstr ""
 
-#: includes/features/class-link-health.php:286
-msgid "Wait for the current batch to finish, then stop the scan."
+#: includes/features/class-link-health.php:352
+#: includes/features/class-link-health.php:383
+msgid "The scan changed. Refresh its status and try again."
 msgstr ""
 
-#: includes/features/class-link-health.php:323
+#: includes/features/class-link-health.php:420
 msgid "Link Health is disabled."
 msgstr ""
 
-#: includes/features/class-link-health.php:344
+#: includes/features/class-link-health.php:441
 msgid "The scan is finished or another worker is processing a batch."
 msgstr ""
 
-#: includes/features/class-link-health.php:436
+#: includes/features/class-link-health.php:540
 msgid "The batch could not be saved. Resume the scan after checking private storage."
 msgstr ""
 
-#: includes/features/class-link-health.php:446
+#: includes/features/class-link-health.php:550
 msgid "This link is no longer in public source content."
 msgstr ""
 
-#: includes/features/class-link-health.php:476
+#: includes/features/class-link-health.php:580
 msgid "Content changed since the scan. Run a new scan before rechecking."
 msgstr ""
 
-#: includes/features/class-link-health.php:481
+#: includes/features/class-link-health.php:585
 msgid "Content changed during the check. Run a new scan."
 msgstr ""
 
-#: includes/features/class-link-health.php:484
+#: includes/features/class-link-health.php:588
 msgid "The source changed or a scan is updating this report. Wait for the batch to finish and retry."
 msgstr ""
 

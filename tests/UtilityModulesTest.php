@@ -16,12 +16,14 @@ require_once dirname( __DIR__ ) . '/includes/storage/class-data-directory.php';
 require_once dirname( __DIR__ ) . '/includes/storage/class-atomic-json-store.php';
 require_once dirname( __DIR__ ) . '/includes/features/class-content-tools.php';
 require_once dirname( __DIR__ ) . '/includes/features/class-link-health.php';
+require_once dirname( __DIR__ ) . '/includes/admin/class-link-health-controller.php';
 require_once dirname( __DIR__ ) . '/includes/features/class-site-activity.php';
 
 class UtilityDatabaseSpy {
 	public $posts = 'wp_posts';
+	public $postmeta = 'wp_postmeta';
 	private $cursor = 0;
-	public function prepare( $sql, $cursor ) {
+	public function prepare( $sql, $cursor, ...$arguments ) {
 		$this->cursor = $cursor;
 		return $sql;
 	}
@@ -31,12 +33,26 @@ class UtilityDatabaseSpy {
 	public function get_var( $sql ) {
 		$posts = $GLOBALS['functionalities_test_posts'];
 		ksort( $posts );
+		if ( false !== stripos( $sql, 'COUNT(*)' ) ) {
+			return count( array_filter( $posts, function ( $post ) { return $post->ID > $this->cursor && Links::public_post( $post->ID ); } ) );
+		}
 		foreach ( $posts as $id => $post ) {
 			if ( $id > $this->cursor && Links::public_post( $id ) ) {
 				return $id;
 			}
 		}
 		return 0;
+	}
+	public function get_results( $sql ) {
+		$posts = $GLOBALS['functionalities_test_posts'];
+		ksort( $posts );
+		$rows = array();
+		foreach ( $posts as $id => $post ) {
+			if ( Links::public_post( $id ) && is_array( get_post_meta( $id, Links::META_KEY, true ) ) ) {
+				$rows[] = (object) array( 'ID' => $id, 'link_count' => $GLOBALS['functionalities_test_post_meta'][ $id ][ Links::COUNT_KEY ] ?? null );
+			}
+		}
+		return $rows;
 	}
 }
 
@@ -65,6 +81,7 @@ final class UtilityModulesTest extends TestCase {
 		$GLOBALS['functionalities_test_insert_fail'] = false;
 		$GLOBALS['functionalities_test_next_id'] = 100;
 		$GLOBALS['functionalities_test_user_id'] = 7;
+		$GLOBALS['functionalities_test_nonce_valid'] = true;
 		$GLOBALS['wpdb'] = new UtilityDatabaseSpy();
 		Directory::flush();
 	}
@@ -79,6 +96,7 @@ final class UtilityModulesTest extends TestCase {
 		$GLOBALS['functionalities_test_filter_values'] = array();
 		$GLOBALS['functionalities_test_taxonomies'] = array();
 		$GLOBALS['functionalities_http_handler'] = null;
+		unset( $GLOBALS['functionalities_test_nonce_valid'] );
 		Directory::flush();
 	}
 	private function post( int $id = 10, string $content = '' ): WP_Post {
@@ -234,6 +252,108 @@ final class UtilityModulesTest extends TestCase {
 		$this->assertInstanceOf( WP_Error::class, Links::run_batch() );
 		$this->assertInstanceOf( WP_Error::class, Links::start_scan() );
 		$this->assertSame( 25, Links::state()['cursor'] );
+		$this->assertSame( 0, $GLOBALS['functionalities_http_calls'] );
+	}
+	public function test_stop_during_a_batch_is_honored_when_the_worker_finishes(): void {
+		$this->require_core();
+		$this->post( 10, '<a href="https://example.test/one">One</a>' );
+		$requested = null;
+		$GLOBALS['functionalities_http_handler'] = static function () use ( &$requested ) {
+			$requested = Links::stop_scan();
+			return array( 'response' => array( 'code' => 200 ) );
+		};
+		Links::start_scan();
+		$finished = Links::run_batch();
+		$this->assertIsArray( $requested );
+		$this->assertSame( 'stopping', $requested['status'] );
+		$this->assertSame( 'stopped', $finished['status'] );
+		$this->assertSame( array(), $finished['lease'] );
+		$this->assertFalse( wp_next_scheduled( Links::CRON_HOOK ) );
+	}
+	public function test_a_stale_browser_cannot_advance_or_stop_a_new_scan(): void {
+		$this->require_core();
+		$this->post( 10, '<a href="https://example.test/one">One</a>' );
+		$old = Links::start_scan();
+		Links::stop_scan();
+		$new = Links::start_scan();
+		$this->assertInstanceOf( WP_Error::class, Links::run_batch( $old['run'] ) );
+		$this->assertInstanceOf( WP_Error::class, Links::stop_scan( $old['run'] ) );
+		$this->assertSame( $new['run'], Links::state()['run'] );
+		$this->assertSame( 'running', Links::state()['status'] );
+		$this->assertSame( 0, $GLOBALS['functionalities_http_calls'] );
+	}
+	public function test_stopped_scan_resumes_its_cursor_and_expired_cancellation_settles(): void {
+		$this->require_core();
+		$this->post( 10, '<a href="https://example.test/one">One</a>' );
+		$scan = Links::start_scan();
+		$path = Directory::file( 'link-health-state.json' );
+		Store::update( $path, static function ( $data ) {
+			$data['cursor'] = 10;
+			$data['posts'] = 1;
+			$data['urls'] = 4;
+			$data['status'] = 'stopping';
+			$data['lease'] = array( 'token' => 'expired', 'until' => time() - 1 );
+			return $data;
+		} );
+		$this->assertSame( 'stopped', Links::state()['status'] );
+		$resumed = Links::resume_scan( $scan['run'] );
+		$this->assertSame( 'running', $resumed['status'] );
+		$this->assertSame( 10, $resumed['cursor'] );
+		$this->assertSame( 4, $resumed['urls'] );
+		$this->assertNotFalse( wp_next_scheduled( Links::CRON_HOOK ) );
+	}
+	public function test_progress_is_read_only_and_distinguishes_waiting_from_processing(): void {
+		$this->post();
+		$this->post( 20 );
+		Links::start_scan();
+		$this->assertSame( 'waiting', Links::progress()['phase'] );
+		$this->assertSame( 2, Links::progress()['total'] );
+		Store::update( Directory::file( 'link-health-state.json' ), static function ( $data ) {
+			$data['lease'] = array( 'token' => 'private-lease-token', 'until' => time() + 60 );
+			return $data;
+		} );
+		$this->assertSame( 'checking', Links::progress()['phase'] );
+		$this->assertStringNotContainsString( 'private-lease-token', json_encode( Links::progress() ) );
+		$this->assertSame( 0, $GLOBALS['functionalities_http_calls'] );
+	}
+	public function test_results_are_fifty_links_across_sources_with_complete_pagination(): void {
+		foreach ( array( 10, 20, 30, 40 ) as $id ) {
+			$post = $this->post( $id );
+			if ( 40 === $id ) { $post->post_password = 'private'; }
+			$rows = array();
+			for ( $i = 0; $i < 40; ++$i ) {
+				$url = 'https://example.test/' . $id . '-' . $i;
+				$rows[ md5( $url ) ] = array( 'url' => $url, 'status' => 'ok', 'code' => 200, 'checked' => 1, 'chain' => array() );
+			}
+			update_post_meta( $id, Links::META_KEY, array( 'rows' => $rows, 'hash' => '', 'complete' => true ) );
+		}
+		$first = Links::report_page( 1 );
+		$second = Links::report_page( 2 );
+		$last = Links::report_page( 3 );
+		$this->assertSame( 120, $first['total'] );
+		$this->assertSame( 3, $first['pages'] );
+		$this->assertCount( 50, $first['rows'] );
+		$this->assertCount( 50, $second['rows'] );
+		$this->assertCount( 20, $last['rows'] );
+		$all = array_column( array_merge( $first['rows'], $second['rows'], $last['rows'] ), 'url' );
+		$this->assertCount( 120, array_unique( $all ) );
+		$this->assertSame( 'https://example.test/20-9', $first['rows'][49]['url'] );
+		$this->assertSame( 'https://example.test/20-10', $second['rows'][0]['url'] );
+		$this->assertSame( 3, Links::report_page( 99 )['page'] );
+		$this->assertSame( 40, get_post_meta( 10, Links::COUNT_KEY, true ) );
+		$this->assertSame( 0, $GLOBALS['functionalities_http_calls'] );
+	}
+	public function test_live_endpoint_rejects_missing_capability_and_invalid_nonce(): void {
+		foreach ( array( 'capability', 'nonce' ) as $guard ) {
+			$GLOBALS['functionalities_test_caps']['manage_options'] = 'capability' !== $guard;
+			$GLOBALS['functionalities_test_nonce_valid'] = 'nonce' !== $guard;
+			try {
+				\Functionalities\Admin\Link_Health_Controller::ajax();
+				$this->fail( 'Unauthorized requests must terminate.' );
+			} catch ( Functionalities_Test_Response $response ) {
+				$this->assertFalse( $response->success );
+			}
+		}
 		$this->assertSame( 0, $GLOBALS['functionalities_http_calls'] );
 	}
 	public function test_content_edit_during_request_prevents_stale_result_publication(): void {

@@ -22,6 +22,8 @@ All-in-one WordPress optimization toolkit with 19 modules for performance, secur
 
 All modules are accessed through a unified dashboard at `wp-admin/admin.php?page=functionalities`. Click any module card to configure its settings.
 
+Link Health shows live scan activity, a progress bar, checked-link counts, and 50 results per page across all scanned sources. Keep its workspace open for continuous bounded checking; Stop finishes the current batch and Resume continues from saved progress. See [live scan verification](docs/link-health-live-verification.md).
+
 ## Backend branding and controls
 
 The admin sidebar and dashboard use a simplified vector version of the Functionalities mark that follows WordPress's UI colors. Individual module pages show their own icon, a Back to modules button, and complete breadcrumbs. Settings and module guidance use a responsive grid, with guidance in the right sidebar on wide screens and below settings on smaller screens. Module/action icons are bundled Tabler outline SVGs with their MIT license. Backend controls share consistent spacing, sizing, focus states, and accessible labels, including responsive font and PWA repeaters. See [UI verification](docs/ui-polish-verification.md) and [sidebar verification](docs/ui-sidebar-verification.md).

@@ -68,6 +68,7 @@ trait Admin_Utilities_UI {
 
 	/** Register action handling before the module's enabled state is consulted. */
 	public static function init_utility_actions(): void {
+		Link_Health_Controller::init();
 		\add_action( 'admin_post_functionalities_link_health', array( __CLASS__, 'handle_link_health_action' ) );
 		\add_action( 'admin_post_functionalities_activity_clear', array( __CLASS__, 'handle_activity_clear' ) );
 	}
@@ -99,7 +100,7 @@ trait Admin_Utilities_UI {
 				$result = \Functionalities\Features\Link_Health::start_scan();
 				break;
 			case 'resume':
-				$result = \Functionalities\Features\Link_Health::run_batch();
+				$result = 'stopped' === ( \Functionalities\Features\Link_Health::state()['status'] ?? '' ) ? \Functionalities\Features\Link_Health::resume_scan() : \Functionalities\Features\Link_Health::run_batch();
 				break;
 			case 'stop':
 				$result = \Functionalities\Features\Link_Health::stop_scan();
@@ -167,7 +168,7 @@ trait Admin_Utilities_UI {
 	/** Render a nonce-protected form for one Link Health operation. */
 	private static function link_health_button( string $operation, string $label, int $post_id = 0, string $url = '' ): void {
 		?>
-		<form method="post" action="<?php echo \esc_url( \admin_url( 'admin-post.php' ) ); ?>" class="functionalities-utility-action">
+		<form method="post" action="<?php echo \esc_url( \admin_url( 'admin-post.php' ) ); ?>" class="functionalities-utility-action" data-link-action="<?php echo \esc_attr( $operation ); ?>">
 			<?php \wp_nonce_field( 'functionalities_link_health' ); ?>
 			<input type="hidden" name="action" value="functionalities_link_health">
 			<input type="hidden" name="operation" value="<?php echo \esc_attr( $operation ); ?>">
@@ -217,7 +218,22 @@ trait Admin_Utilities_UI {
 
 	/** Render scan status and results without issuing any URL requests. */
 	public static function render_module_link_health( array $module ): void {
-		self::utility_workspace( $module, 'link_health', array( __CLASS__, 'render_link_health_workspace' ) );
+		self::utility_header( $module, 'link_health' );
+		Admin_UI::render_settings_layout(
+			static function () {
+				self::utility_settings( 'link_health' );
+				Admin_UI::render_module_docs( Module_Docs::get( 'link-health' ) );
+				self::render_link_health_workspace();
+			}
+		);
+		if ( \Functionalities\Core\Module_Registry::is_enabled( 'link-health' ) ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only results pagination.
+			$page = max( 1, \absint( $_GET['report_page'] ?? 1 ) );
+			echo '<div data-link-report class="functionalities-link-report">';
+			self::render_link_health_report( $page );
+			echo '</div>';
+		}
+		echo '</div>';
 	}
 
 	/** Render report controls and status alongside their own settings. */
@@ -230,39 +246,50 @@ trait Admin_Utilities_UI {
 			<?php return; ?>
 		<?php endif; ?>
 		<?php
-		$state = \Functionalities\Features\Link_Health::state();
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only pagination.
-		$page   = max( 1, \absint( $_GET['report_page'] ?? 1 ) );
-		$report = \Functionalities\Features\Link_Health::report_page( $page );
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only pagination within the source post.
-		$link_page  = max( 1, \absint( $_GET['link_page'] ?? 1 ) );
-		$link_pages = (int) ceil( count( $report['rows'] ) / 50 );
+		$progress = Link_Health_Controller::progress();
 		?>
+		<section class="functionalities-link-progress" data-link-health data-progress="<?php echo \esc_attr( \wp_json_encode( $progress ) ); ?>" aria-label="<?php echo \esc_attr__( 'Scan progress', 'functionalities' ); ?>">
 		<h2><?php \esc_html_e( 'Scan progress', 'functionalities' ); ?></h2>
-		<p role="status"><?php echo \esc_html( sprintf( /* translators: 1: scan state, 2: completed post count, 3: processed link count. */ \__( '%1$s: %2$d posts completed, %3$d link checks processed.', 'functionalities' ), self::scan_state_label( $state['status'] ?? 'idle' ), $state['posts'] ?? 0, $state['urls'] ?? 0 ) ); ?></p>
-		<?php if ( ! empty( $state['error'] ) ) : ?>
-			<div class="notice notice-error"><p><?php \esc_html_e( 'The scan encountered an error. Check private storage and resume the scan.', 'functionalities' ); ?></p></div>
-		<?php endif; ?>
+		<p class="functionalities-link-state"><span class="spinner" data-link-spinner aria-hidden="true"></span><strong data-link-label role="status" aria-live="polite"><?php echo \esc_html( $progress['label'] ); ?></strong></p>
+		<progress data-link-meter max="100" value="<?php echo \esc_attr( $progress['percent'] ); ?>" aria-label="<?php echo \esc_attr__( 'Posts checked', 'functionalities' ); ?>"></progress>
+		<p data-link-summary><?php echo \esc_html( $progress['summary'] ); ?></p>
+		<p data-link-error role="alert" hidden></p>
 		<div class="functionalities-utility-actions">
 		<?php
-		if ( 'running' === ( $state['status'] ?? '' ) ) {
-			self::link_health_button( 'resume', \__( 'Resume one batch', 'functionalities' ) );
-			self::link_health_button( 'stop', \__( 'Stop scan', 'functionalities' ) );
-		} else {
-			self::link_health_button( 'start', \__( 'Start new scan', 'functionalities' ) );
+		foreach ( array(
+			'start'  => \__( 'Start new scan', 'functionalities' ),
+			'resume' => \__( 'Resume scan', 'functionalities' ),
+			'stop'   => \__( 'Stop scan', 'functionalities' ),
+		) as $operation => $label ) {
+			$active = in_array( $progress['status'], array( 'running', 'stopping' ), true );
+			$show   = 'start' === $operation ? ! $active && 'stopped' !== $progress['status'] : ( 'stop' === $operation ? $active : 'stopped' === $progress['status'] || 'running' === $progress['status'] );
+			echo '<span data-link-control="' . \esc_attr( $operation ) . '"' . ( $show ? '' : ' hidden' ) . '>';
+			self::link_health_button( $operation, $label );
+			echo '</span>';
 		}
 		self::link_health_button( 'export', \__( 'Export CSV', 'functionalities' ) );
 		?>
 		</div>
-		<p><?php \esc_html_e( 'Background batches run when WordPress cron is triggered. You can resume manually when cron is delayed. Authentication errors, rate limits, and timeouts are inconclusive.', 'functionalities' ); ?></p>
+		<p class="description"><?php \esc_html_e( 'Keep this page open for continuous checking and live results. Scans also continue on your site’s background schedule when you leave.', 'functionalities' ); ?></p>
+		<noscript><p><?php \esc_html_e( 'Enable JavaScript for live progress, or use Resume scan to process one batch at a time.', 'functionalities' ); ?></p></noscript>
+		</section>
+		<?php
+	}
+
+	/** Render one global page of 50 link results, independently of the scan controls. */
+	public static function render_link_health_report( int $page = 1 ): void {
+		$report = \Functionalities\Features\Link_Health::report_page( $page );
+		$page   = $report['page'];
+		?>
 		<h2><?php \esc_html_e( 'Link results', 'functionalities' ); ?></h2>
+		<p data-link-page="<?php echo \esc_attr( $page ); ?>"><?php echo \esc_html( sprintf( /* translators: 1: first visible result, 2: last visible result, 3: total results. */ \__( '%1$d–%2$d of %3$d results · 50 per page', 'functionalities' ), $report['total'] ? ( $page - 1 ) * 50 + 1 : 0, min( $page * 50, $report['total'] ), $report['total'] ) ); ?></p>
 		<div class="functionalities-utility-table"><table class="widefat striped">
 		<thead><tr><th><?php \esc_html_e( 'Source', 'functionalities' ); ?></th><th><?php \esc_html_e( 'Link', 'functionalities' ); ?></th><th><?php \esc_html_e( 'Result', 'functionalities' ); ?></th><th><?php \esc_html_e( 'Last checked (UTC)', 'functionalities' ); ?></th><th><?php \esc_html_e( 'Actions', 'functionalities' ); ?></th></tr></thead><tbody>
 		<?php
 		if ( ! $report['rows'] ) :
 			?>
 			<tr><td colspan="5"><?php \esc_html_e( 'No link results on this page. Start a scan or check another results page.', 'functionalities' ); ?></td></tr><?php endif; ?>
-		<?php foreach ( array_slice( $report['rows'], ( $link_page - 1 ) * 50, 50 ) as $row ) : ?>
+		<?php foreach ( $report['rows'] as $row ) : ?>
 		<tr>
 			<td><a href="<?php echo \esc_url( \get_edit_post_link( $row['post_id'] ) ); ?>"><?php echo \esc_html( $row['title'] ); ?></a>
 			<?php
@@ -294,23 +321,10 @@ trait Admin_Utilities_UI {
 		</tr>
 		<?php endforeach; ?>
 		</tbody></table></div>
-		<p><?php \esc_html_e( 'Source posts', 'functionalities' ); ?></p>
-		<?php self::utility_pagination( 'link-health', 'report_page', $page, $report['pages'] ); ?>
-		<p><?php \esc_html_e( 'Links in this source post', 'functionalities' ); ?></p>
-		<?php self::utility_pagination( 'link-health', 'link_page', $link_page, $link_pages ); ?>
+		<?php self::utility_pagination( 'link-health', 'report_page', $page, $report['pages'], \admin_url( 'admin.php' ) ); ?>
 		<?php
 	}
 
-	private static function scan_state_label( string $state ): string {
-		$labels = array(
-			'idle'      => \__( 'Not started', 'functionalities' ),
-			'running'   => \__( 'Running', 'functionalities' ),
-			'completed' => \__( 'Completed', 'functionalities' ),
-			'stopped'   => \__( 'Stopped', 'functionalities' ),
-			'error'     => \__( 'Storage error', 'functionalities' ),
-		);
-		return $labels[ $state ] ?? $labels['idle'];
-	}
 	private static function link_status_label( string $status ): string {
 		$labels = array(
 			'ok'         => \__( 'OK', 'functionalities' ),
@@ -414,7 +428,7 @@ trait Admin_Utilities_UI {
 	}
 
 	/** Preserve report filters when moving between pages. */
-	private static function utility_pagination( string $module, string $key, int $page, int $pages ): void {
+	private static function utility_pagination( string $module, string $key, int $page, int $pages, string $base = '' ): void {
 		?>
 		<p><?php echo \esc_html( sprintf( /* translators: 1: current page number, 2: total pages */ \__( 'Page %1$d of %2$d', 'functionalities' ), $page, max( 1, $pages ) ) ); ?>
 		<?php
@@ -434,8 +448,9 @@ trait Admin_Utilities_UI {
 							'page'      => 'functionalities',
 							'module'    => $module,
 							$key        => $number,
-							'link_page' => 'report_page' === $key ? 1 : ( 'link_page' === $key ? $number : null ),
-						)
+							'link_page' => null,
+						),
+						'' !== $base ? $base : false
 					)
 				);
 				?>

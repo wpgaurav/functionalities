@@ -520,7 +520,7 @@ if ( ! function_exists( 'get_current_user_id' ) ) {
 
 if ( ! function_exists( 'check_ajax_referer' ) ) {
 	function check_ajax_referer( $action, $query_arg = false, $stop = true ) {
-		return true;
+		return $GLOBALS['functionalities_test_nonce_valid'] ?? true;
 	}
 }
 
@@ -705,7 +705,10 @@ if ( ! function_exists( 'wp_delete_post' ) ) {
 	}
 }
 if ( ! function_exists( 'add_post_meta' ) ) {
-	function add_post_meta( $id, $key, $value ) {
+	function add_post_meta( $id, $key, $value, $unique = false ) {
+		if ( $unique && array_key_exists( $key, $GLOBALS['functionalities_test_post_meta'][ $id ] ?? array() ) ) {
+			return false;
+		}
 		if ( ! empty( $GLOBALS['functionalities_test_meta_fail'] ) ) {
 			return false;
 		}
@@ -716,6 +719,11 @@ if ( ! function_exists( 'add_post_meta' ) ) {
 if ( ! function_exists( 'get_permalink' ) ) {
 	function get_permalink( $id ) {
 		return 'https://example.test/post-' . $id . '/';
+	}
+}
+if ( ! function_exists( 'get_the_title' ) ) {
+	function get_the_title( $id ) {
+		return $GLOBALS['functionalities_test_posts'][ $id ]->post_title ?? '';
 	}
 }
 if ( ! function_exists( 'wp_generate_uuid4' ) ) {

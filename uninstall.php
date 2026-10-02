@@ -102,6 +102,7 @@ $functionalities_cleanup_site = static function (): void {
 
 	$functionalities_meta_keys = array(
 		'_functionalities_link_health',
+		'_functionalities_link_health_count',
 		'_functionalities_link_health_ignored',
 		'_functionalities_content_snapshot',
 		'_functionalities_regression_settings',

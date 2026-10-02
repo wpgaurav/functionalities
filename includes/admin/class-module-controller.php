@@ -185,6 +185,9 @@ class Module_Controller {
 			\wp_enqueue_style( 'wp-color-picker' );
 			$deps[] = 'wp-color-picker';
 		}
+		if ( 'link-health' === $module ) {
+			Link_Health_Controller::enqueue();
+		}
 
 		\wp_enqueue_style(
 			'functionalities-admin',

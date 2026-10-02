@@ -15,12 +15,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /** Scan links without making requests during content rendering. */
 class Link_Health {
-	const CRON_HOOK      = 'functionalities_link_health_batch';
-	const WEEKLY_HOOK    = 'functionalities_link_health_weekly';
-	const META_KEY       = '_functionalities_link_health';
-	const IGNORE_KEY     = '_functionalities_link_health_ignored';
-	const CACHE_PREFIX   = 'functionalities_link_health_';
-	const MAX_POST_LINKS = 1000;
+	const CRON_HOOK        = 'functionalities_link_health_batch';
+	const WEEKLY_HOOK      = 'functionalities_link_health_weekly';
+	const META_KEY         = '_functionalities_link_health';
+	const COUNT_KEY        = '_functionalities_link_health_count';
+	const IGNORE_KEY       = '_functionalities_link_health_ignored';
+	const CACHE_PREFIX     = 'functionalities_link_health_';
+	const MAX_POST_LINKS   = 1000;
+	const RESULTS_PER_PAGE = 50;
 
 	/** Attach worker hooks only when enabled. */
 	public static function init(): void {
@@ -55,6 +57,24 @@ class Link_Health {
 		if ( ! \wp_next_scheduled( self::CRON_HOOK ) ) {
 			\wp_schedule_single_event( time() + 60, self::CRON_HOOK );
 		}
+	}
+
+	/** A finished worker must not cancel a newer run's background event. */
+	private static function clear_batch_schedule( string $run ): void {
+		$path = Data_Directory::file( 'link-health-state.json' );
+		if ( '' === $path ) {
+			return;
+		}
+		Atomic_JSON_Store::update(
+			$path,
+			static function ( $data ) use ( $run ) {
+				if ( ( $data['run'] ?? '' ) !== $run || 'running' === ( $data['status'] ?? '' ) ) {
+					return null;
+				}
+				\wp_clear_scheduled_hook( self::CRON_HOOK );
+				return $data;
+			}
+		);
 	}
 
 	/** Resolve URL syntax without fetching or rewriting the source content. */
@@ -203,7 +223,12 @@ class Link_Health {
 					$report          = $current;
 				}
 				$saved = \update_post_meta( $post_id, self::META_KEY, $report );
-				return false === $saved && $report !== \get_post_meta( $post_id, self::META_KEY, true ) ? null : $state;
+				if ( false === $saved && $report !== \get_post_meta( $post_id, self::META_KEY, true ) ) {
+					return null;
+				}
+				$count = count( (array) ( $report['rows'] ?? array() ) );
+				\update_post_meta( $post_id, self::COUNT_KEY, $count );
+				return (int) \get_post_meta( $post_id, self::COUNT_KEY, true ) === $count ? $state : null;
 			}
 		);
 		return $result['success'];
@@ -219,9 +244,49 @@ class Link_Health {
 			);
 		}
 		$result = Atomic_JSON_Store::read( $path );
+		if ( $result['success'] && 'stopping' === ( $result['data']['status'] ?? '' ) && (int) ( $result['data']['lease']['until'] ?? 0 ) <= time() ) {
+			$result = Atomic_JSON_Store::update(
+				$path,
+				static function ( $data ) {
+					if ( 'stopping' === ( $data['status'] ?? '' ) && (int) ( $data['lease']['until'] ?? 0 ) <= time() ) {
+						$data['status']   = 'stopped';
+						$data['finished'] = time();
+						$data['lease']    = array();
+					}
+					return $data;
+				}
+			);
+		}
 		return $result['success'] ? $result['data'] : array(
 			'status' => 'error',
 			'error'  => $result['error'],
+		);
+	}
+
+	/** Public progress data; never expose the private worker lease or fetch links. */
+	public static function progress(): array {
+		$state   = self::state();
+		$status  = $state['status'] ?? 'idle';
+		$posts   = max( 0, (int) ( $state['posts'] ?? 0 ) );
+		$busy    = (int) ( $state['lease']['until'] ?? 0 ) > time();
+		$enabled = \Functionalities\Core\Module_Registry::is_enabled( 'link-health' );
+		$phase   = ! $enabled ? 'disabled' : ( ! empty( $state['error'] ) ? 'error' : $status );
+		if ( 'running' === $phase ) {
+			$phase = $busy ? 'checking' : 'waiting';
+		}
+		global $wpdb;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Current public post count for the administrator's live progress display.
+		$remaining = 'completed' === $status ? 0 : (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$wpdb->posts} WHERE ID > %d AND post_type IN ('post','page') AND post_status = 'publish' AND post_password = ''", (int) ( $state['cursor'] ?? 0 ) ) );
+		$total     = $posts + $remaining;
+		return array(
+			'run'     => (string) ( $state['run'] ?? '' ),
+			'status'  => $status,
+			'phase'   => $phase,
+			'posts'   => $posts,
+			'links'   => max( 0, (int) ( $state['urls'] ?? 0 ) ),
+			'total'   => $total,
+			'percent' => 'completed' === $status ? 100 : min( 99, $total ? (int) floor( 100 * $posts / $total ) : 0 ),
+			'updated' => (int) ( $state['updated'] ?? $state['started'] ?? 0 ),
 		);
 	}
 
@@ -237,7 +302,7 @@ class Link_Health {
 		$result = Atomic_JSON_Store::update(
 			$path,
 			static function ( $data ) {
-				if ( 'running' === ( $data['status'] ?? '' ) ) {
+				if ( in_array( $data['status'] ?? '', array( 'running', 'stopping' ), true ) || (int) ( $data['lease']['until'] ?? 0 ) > time() ) {
 					return null;
 				}
 				return array(
@@ -261,8 +326,37 @@ class Link_Health {
 		return $result['data'];
 	}
 
+	/** Continue a stopped scan from its saved cursor, preserving existing results. */
+	public static function resume_scan( string $expected_run = '' ) {
+		if ( ! \current_user_can( 'manage_options' ) || ! \Functionalities\Core\Module_Registry::is_enabled( 'link-health' ) ) {
+			return new \WP_Error( 'forbidden', \__( 'Administrator access is required.', 'functionalities' ) );
+		}
+		self::state(); // Settle an expired cancellation before resuming.
+		$path = Data_Directory::file( 'link-health-state.json' );
+		if ( '' === $path ) {
+			return new \WP_Error( 'storage_unavailable', \__( 'Private scan storage is unavailable.', 'functionalities' ) );
+		}
+		$result = Atomic_JSON_Store::update(
+			$path,
+			static function ( $data ) use ( $expected_run ) {
+				if ( 'stopped' !== ( $data['status'] ?? '' ) || (int) ( $data['lease']['until'] ?? 0 ) > time() || ( '' !== $expected_run && ( $data['run'] ?? '' ) !== $expected_run ) ) {
+					return null;
+				}
+				$data['status']   = 'running';
+				$data['finished'] = 0;
+				unset( $data['error'] );
+				return $data;
+			}
+		);
+		if ( ! $result['success'] ) {
+			return new \WP_Error( $result['error'], \__( 'The scan changed. Refresh its status and try again.', 'functionalities' ) );
+		}
+		self::schedule_batch();
+		return $result['data'];
+	}
+
 	/** Stop a scan between batches, without deleting cached results. */
-	public static function stop_scan() {
+	public static function stop_scan( string $expected_run = '' ) {
 		if ( ! \current_user_can( 'manage_options' ) ) {
 			return new \WP_Error( 'forbidden', \__( 'Administrator access is required.', 'functionalities' ) );
 		}
@@ -272,20 +366,23 @@ class Link_Health {
 		}
 		$result = Atomic_JSON_Store::update(
 			$path,
-			static function ( $data ) {
-				if ( (int) ( $data['lease']['until'] ?? 0 ) > time() ) {
+			static function ( $data ) use ( $expected_run ) {
+				if ( '' !== $expected_run && ( $data['run'] ?? '' ) !== $expected_run ) {
 					return null;
 				}
-				$data['status']   = 'stopped';
-				$data['finished'] = time();
-				$data['lease']    = array();
+				$busy             = (int) ( $data['lease']['until'] ?? 0 ) > time();
+				$data['status']   = $busy ? 'stopping' : 'stopped';
+				$data['finished'] = $busy ? 0 : time();
+				if ( ! $busy ) {
+					$data['lease'] = array();
+				}
 				return $data;
 			}
 		);
 		if ( ! $result['success'] ) {
-			return new \WP_Error( $result['error'], \__( 'Wait for the current batch to finish, then stop the scan.', 'functionalities' ) );
+			return new \WP_Error( $result['error'], \__( 'The scan changed. Refresh its status and try again.', 'functionalities' ) );
 		}
-		\wp_clear_scheduled_hook( self::CRON_HOOK );
+		self::clear_batch_schedule( (string) ( $result['data']['run'] ?? '' ) );
 		return $result['data'];
 	}
 
@@ -295,7 +392,7 @@ class Link_Health {
 		if ( empty( $options['weekly_scan'] ) ) {
 			return;
 		}
-		if ( 'running' !== ( self::state()['status'] ?? '' ) ) {
+		if ( ! in_array( self::state()['status'] ?? '', array( 'running', 'stopping' ), true ) ) {
 			self::start_scan( true );
 		}
 		self::run_batch();
@@ -318,7 +415,7 @@ class Link_Health {
 	 *
 	 * @throws \RuntimeException Internally caught to leave failed writes resumable.
 	 */
-	public static function run_batch() { // phpcs:ignore Squiz.Commenting.FunctionCommentThrowTag.Missing -- Write failures are caught within this worker.
+	public static function run_batch( string $expected_run = '' ) { // phpcs:ignore Squiz.Commenting.FunctionCommentThrowTag.Missing -- Write failures are caught within this worker.
 		if ( ! \Functionalities\Core\Module_Registry::is_enabled( 'link-health' ) ) {
 			return new \WP_Error( 'disabled', \__( 'Link Health is disabled.', 'functionalities' ) );
 		}
@@ -329,8 +426,8 @@ class Link_Health {
 		$token = \wp_generate_uuid4();
 		$claim = Atomic_JSON_Store::update(
 			$path,
-			static function ( $data ) use ( $token ) {
-				if ( 'running' !== ( $data['status'] ?? '' ) || (int) ( $data['lease']['until'] ?? 0 ) > time() ) {
+			static function ( $data ) use ( $token, $expected_run ) {
+				if ( 'running' !== ( $data['status'] ?? '' ) || (int) ( $data['lease']['until'] ?? 0 ) > time() || ( '' !== $expected_run && ( $data['run'] ?? '' ) !== $expected_run ) ) {
 					return null;
 				}
 				$data['lease'] = array(
@@ -426,12 +523,19 @@ class Link_Health {
 				if ( ( $current['lease']['token'] ?? '' ) !== $token || ( $current['run'] ?? '' ) !== $data['run'] ) {
 					return null;
 				}
-				$data['lease'] = array();
+				if ( 'stopping' === ( $current['status'] ?? '' ) ) {
+					$data['status']   = 'stopped';
+					$data['finished'] = time();
+				}
+				$data['updated'] = time();
+				$data['lease']   = array();
 				return $data;
 			}
 		);
-		if ( 'running' === $data['status'] && \Functionalities\Core\Module_Registry::is_enabled( 'link-health' ) ) {
+		if ( $finish['success'] && 'running' === $finish['data']['status'] && \Functionalities\Core\Module_Registry::is_enabled( 'link-health' ) ) {
 			self::schedule_batch();
+		} elseif ( $finish['success'] ) {
+			self::clear_batch_schedule( (string) $finish['data']['run'] );
 		}
 		return $finish['success'] ? $finish['data'] : new \WP_Error( $finish['error'], \__( 'The batch could not be saved. Resume the scan after checking private storage.', 'functionalities' ) );
 	}
@@ -487,23 +591,32 @@ class Link_Health {
 		return $result;
 	}
 
-	/** Page through posts with reports; never fetch URLs while viewing results. */
+	/** Page through link rows across all public sources, loading only selected reports. */
 	public static function report_page( int $page = 1 ): array {
-		$query = new \WP_Query(
-			array(
-				'post_type'      => array( 'post', 'page' ),
-				'post_status'    => 'publish',
-				'has_password'   => false,
-				'meta_key'       => self::META_KEY,
-				'fields'         => 'ids',
-				'posts_per_page' => 1,
-				'paged'          => max( 1, $page ),
-				'orderby'        => 'ID',
-				'order'          => 'ASC',
-			)
-		); // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Paginated explicit reports workspace only.
-		$rows  = array();
-		foreach ( $query->posts as $post_id ) {
+		global $wpdb;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Lightweight counts avoid loading every serialized report on each live refresh.
+		$sources = $wpdb->get_results( $wpdb->prepare( "SELECT p.ID, c.meta_value AS link_count FROM {$wpdb->posts} p INNER JOIN {$wpdb->postmeta} r ON r.post_id = p.ID AND r.meta_key = %s LEFT JOIN {$wpdb->postmeta} c ON c.post_id = p.ID AND c.meta_key = %s WHERE p.post_type IN ('post','page') AND p.post_status = 'publish' AND p.post_password = '' ORDER BY p.ID ASC", self::META_KEY, self::COUNT_KEY ) );
+		$index   = array();
+		foreach ( (array) $sources as $source ) {
+			$post_id = (int) $source->ID;
+			if ( null === $source->link_count ) {
+				// Backfill reports from earlier candidates once; do not replace a worker's new count.
+				$existing = (array) \get_post_meta( $post_id, self::META_KEY, true );
+				\add_post_meta( $post_id, self::COUNT_KEY, count( (array) ( $existing['rows'] ?? array() ) ), true );
+				$source->link_count = \get_post_meta( $post_id, self::COUNT_KEY, true );
+			}
+			$index[ $post_id ] = max( 0, (int) $source->link_count );
+		}
+		$total  = array_sum( $index );
+		$pages  = max( 1, (int) ceil( $total / self::RESULTS_PER_PAGE ) );
+		$page   = min( max( 1, $page ), $pages );
+		$offset = ( $page - 1 ) * self::RESULTS_PER_PAGE;
+		$rows   = array();
+		foreach ( $index as $post_id => $count ) {
+			if ( $offset >= $count ) {
+				$offset -= $count;
+				continue;
+			}
 			$post = self::public_post( (int) $post_id );
 			if ( ! $post ) {
 				continue;
@@ -511,7 +624,7 @@ class Link_Health {
 			$report  = (array) \get_post_meta( $post_id, self::META_KEY, true );
 			$ignored = (array) \get_post_meta( $post_id, self::IGNORE_KEY, true );
 			$stale   = ( $report['hash'] ?? '' ) !== self::content_hash( $post );
-			foreach ( (array) ( $report['rows'] ?? array() ) as $key => $row ) {
+			foreach ( array_slice( (array) ( $report['rows'] ?? array() ), $offset, self::RESULTS_PER_PAGE - count( $rows ), true ) as $key => $row ) {
 				$row['post_id']   = (int) $post_id;
 				$row['title']     = \get_the_title( $post_id );
 				$row['stale']     = $stale;
@@ -522,10 +635,16 @@ class Link_Health {
 				}
 				$rows[] = $row;
 			}
+			$offset = 0;
+			if ( count( $rows ) >= self::RESULTS_PER_PAGE ) {
+				break;
+			}
 		}
 		return array(
 			'rows'  => $rows,
-			'pages' => (int) $query->max_num_pages,
+			'pages' => $pages,
+			'page'  => $page,
+			'total' => $total,
 		);
 	}
 }
