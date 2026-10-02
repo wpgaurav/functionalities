@@ -5,8 +5,8 @@
       128,
       128
     ],
-    "bytes": 33338,
-    "sha256": "ab6be817f755dfcf41429bc697114b94f5cd1a829e4ecda19c5ad8c9e671ce06"
+    "bytes": 26059,
+    "sha256": "5d60c276f788117dd298b06b8650ae28c9387c54f45766454ea8dfd960658113"
   },
   {
     "path": ".wordpress-org/icon-256x256.png",
@@ -14,8 +14,8 @@
       256,
       256
     ],
-    "bytes": 108874,
-    "sha256": "58c923d13f7e53ec35bd43010963135b52d3b2a1af724fdaab42f1fd654441f8"
+    "bytes": 80309,
+    "sha256": "13348e9d8e731621427bf6a171858a016b9e069f1637d729295b6d0f386e575a"
   },
   {
     "path": ".wordpress-org/banner-772x250.png",
@@ -23,8 +23,8 @@
       772,
       250
     ],
-    "bytes": 238490,
-    "sha256": "3614cd7b0c8443e7a5baa86e50b46b491d2f5fec29171a3013181d454d342f6c"
+    "bytes": 196875,
+    "sha256": "6ea5f09e6b9995f96d4bfbb5130cf3f5370309f2208090df04948b3e3d10b805"
   },
   {
     "path": ".wordpress-org/banner-1544x500.png",
@@ -32,7 +32,7 @@
       1544,
       500
     ],
-    "bytes": 814727,
-    "sha256": "898f214095d5955b9e54da6eb3d7bfb984fda8d7a9ac094b8872d7cb9904824c"
+    "bytes": 684132,
+    "sha256": "75f4cb2225b45a53f3cd2ec7c2e67f053eca36473a35aa964818198a7b79ef75"
   }
 ]
