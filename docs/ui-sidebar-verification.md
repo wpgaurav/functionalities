@@ -1,6 +1,6 @@
 # Module navigation, SVG mark, and settings sidebar
 
-The backend mark is an original monoline simplification of the official four-module platform graphic. `assets/brand/functionalities-admin.svg` contains editable vector paths, with no embedded raster image. CSS masks inherit WordPress menu colors, including hover/current states. The dashboard uses the same geometry in its admin accent color. The detailed marketing master remains available for directory branding.
+The backend mark is an original monoline simplification of the official four-module platform graphic. `assets/brand/functionalities-admin.svg` contains editable vector paths, with no embedded raster image. CSS masks inherit WordPress menu colors, including hover/current states. The dashboard uses the same geometry in its admin accent color. The [colorful listing icon and bento banner](branding-assets.md) reuse this silhouette for WordPress.org.
 
 Every module header includes a Back to modules button and a semantic breadcrumb with the current module. Task Manager also retains project ancestry. Individual settings pages show their module glyph without repeating the product mark. The navigation arrow comes from `~/Icons/svg/outline/arrow-left.svg`; the bundled Tabler subset now contains 54 icons with its MIT license.
 
